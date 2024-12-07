@@ -50,6 +50,11 @@ export function useCommunityChannels(workspaceId: string | null) {
         }
 
         setPrivateChannels(privateData || []);
+
+        // If active channel was deleted, reset it
+        if (activeChannel && !privateData?.find(channel => channel.id === activeChannel.id)) {
+          setActiveChannel(null);
+        }
       }
 
       // Set active channel to first public channel if none is selected
@@ -62,12 +67,33 @@ export function useCommunityChannels(workspaceId: string | null) {
 
     // Subscribe to channel changes
     const channelSubscription = supabase
-      .channel('public:channels')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'channels' },
+      .channel('channels')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'channels'
+        },
         (payload) => {
           console.log('Channel change received:', payload);
-          fetchChannels();
+          
+          // Handle different types of changes
+          if (payload.eventType === 'DELETE') {
+            const deletedId = payload.old?.id;
+            if (deletedId) {
+              setPrivateChannels(prev => prev.filter(channel => channel.id !== deletedId));
+              setPublicChannels(prev => prev.filter(channel => channel.id !== deletedId));
+              
+              // If active channel was deleted, reset it
+              if (activeChannel?.id === deletedId) {
+                setActiveChannel(null);
+              }
+            }
+          } else {
+            // For INSERT and UPDATE, fetch all channels again
+            fetchChannels();
+          }
         }
       )
       .subscribe();
