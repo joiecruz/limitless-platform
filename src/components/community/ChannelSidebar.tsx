@@ -4,6 +4,21 @@ import { Channel } from "@/types/community";
 import { ChannelButton } from "./ChannelButton";
 import { CreateChannelDialog } from "./CreateChannelDialog";
 import { useChannelNotifications } from "@/hooks/useChannelNotifications";
+import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChannelSidebarProps {
   publicChannels: Channel[];
@@ -21,6 +36,29 @@ export function ChannelSidebar({
   onCreatePrivateChannel,
 }: ChannelSidebarProps) {
   const { unreadCounts } = useChannelNotifications(activeChannel);
+  const { toast } = useToast();
+
+  const handleDeleteChannel = async (channelId: string) => {
+    const { error } = await supabase
+      .from("channels")
+      .delete()
+      .eq("id", channelId);
+
+    if (error) {
+      console.error("Error deleting channel:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete channel",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Channel deleted successfully",
+    });
+  };
 
   return (
     <div className="w-64 bg-gray-50 border-r flex-shrink-0 h-full">
@@ -51,14 +89,44 @@ export function ChannelSidebar({
           </div>
           <div className="space-y-1">
             {privateChannels.map((channel) => (
-              <ChannelButton
-                key={channel.id}
-                channel={channel}
-                isPrivate
-                isActive={activeChannel?.id === channel.id}
-                unreadCount={unreadCounts[channel.id] || 0}
-                onClick={() => onChannelSelect(channel)}
-              />
+              <div key={channel.id} className="flex items-center group">
+                <ChannelButton
+                  channel={channel}
+                  isPrivate
+                  isActive={activeChannel?.id === channel.id}
+                  unreadCount={unreadCounts[channel.id] || 0}
+                  onClick={() => onChannelSelect(channel)}
+                  className="flex-grow"
+                />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Channel</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete the channel "{channel.name}"? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={() => handleDeleteChannel(channel.id)}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             ))}
           </div>
         </div>
