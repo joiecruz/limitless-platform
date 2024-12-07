@@ -1,7 +1,12 @@
-import { Home, BookOpen, Users, Settings, Download, Briefcase } from "lucide-react";
+import { Home, BookOpen, Users, Settings, Download, Briefcase, LogOut } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUser } from "@supabase/auth-helpers-react";
+import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -15,9 +20,16 @@ export const navigation = [
 export function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
+  const user = useUser();
+  const supabase = useSupabaseClient();
+  
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
   
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       <nav className="space-y-1 px-3 mb-6">
         {navigation.map((item) => (
           <a
@@ -35,21 +47,46 @@ export function Navigation() {
         ))}
       </nav>
       
-      <div className="px-3 py-4 border-t border-gray-200">
-        <div className="flex items-center gap-3 px-2">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-medium text-gray-700 truncate">
-              John Doe
-            </span>
-            <span className="text-xs text-gray-500 truncate">
-              john@example.com
-            </span>
-          </div>
-        </div>
+      <div className="mt-auto px-3 py-4 border-t border-gray-200">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="flex items-center gap-3 px-2 w-full hover:bg-gray-100 rounded-lg transition-colors">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarFallback>
+                  {user?.user_metadata?.first_name?.[0]}
+                  {user?.user_metadata?.last_name?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0 text-left">
+                <span className="text-sm font-medium text-gray-700 truncate">
+                  {user?.user_metadata?.first_name} {user?.user_metadata?.last_name}
+                </span>
+                <span className="text-xs text-gray-500 truncate">
+                  {user?.email}
+                </span>
+              </div>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56" align="start">
+            <div className="space-y-1">
+              <button
+                onClick={() => navigate("/dashboard/settings")}
+                className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                <Settings className="h-4 w-4" />
+                Account Settings
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Log out
+              </button>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );
