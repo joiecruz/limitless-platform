@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Users, BookOpen } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface Course {
   id: string;
@@ -22,6 +23,7 @@ interface Enrollment {
 
 const Courses = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["courses"],
@@ -69,6 +71,49 @@ const Courses = () => {
     },
   });
 
+  const enrollMutation = useMutation({
+    mutationFn: async (courseId: string) => {
+      const { data: userSession } = await supabase.auth.getSession();
+      if (!userSession?.session?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+
+      const { data, error } = await supabase
+        .from('enrollments')
+        .insert([
+          {
+            course_id: courseId,
+            user_id: userSession.session.user.id,
+            progress: 0
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error enrolling in course:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["enrollments"] });
+      toast({
+        title: "Success",
+        description: "Successfully enrolled in the course!",
+      });
+    },
+    onError: (error) => {
+      console.error('Error enrolling in course:', error);
+      toast({
+        title: "Error",
+        description: "Failed to enroll in the course. Please try again later.",
+        variant: "destructive",
+      });
+    },
+  });
+
   if (coursesLoading) {
     return <div>Loading...</div>;
   }
@@ -85,21 +130,21 @@ const Courses = () => {
           const enrollment = enrollments?.find((e) => e.course_id === course.id);
           
           return (
-            <Link key={course.id} to={`/courses/${course.id}/lessons`}>
-              <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-video relative">
-                  <img
-                    src={course.image_url || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d'}
-                    alt={course.title}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-                <CardHeader>
-                  <CardTitle>{course.title}</CardTitle>
-                  <CardDescription>{course.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {enrollment ? (
+            <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="aspect-video relative">
+                <img
+                  src={course.image_url || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d'}
+                  alt={course.title}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              <CardHeader>
+                <CardTitle>{course.title}</CardTitle>
+                <CardDescription>{course.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {enrollment ? (
+                  <>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Progress</span>
@@ -107,7 +152,15 @@ const Courses = () => {
                       </div>
                       <Progress value={enrollment.progress} className="h-2" />
                     </div>
-                  ) : (
+                    <Link 
+                      to={`/courses/${course.id}/lessons`}
+                      className="block w-full"
+                    >
+                      <Button className="w-full">Continue Learning</Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <BookOpen className="h-4 w-4" />
@@ -118,10 +171,17 @@ const Courses = () => {
                         <span>{course.enrollee_count || 0} enrolled</span>
                       </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
+                    <Button 
+                      className="w-full"
+                      onClick={() => enrollMutation.mutate(course.id)}
+                      disabled={enrollMutation.isPending}
+                    >
+                      {enrollMutation.isPending ? "Enrolling..." : "Enroll Now"}
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           );
         })}
       </div>
