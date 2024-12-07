@@ -16,9 +16,11 @@ export function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = useUser();
+  
+  console.log("Current user data:", user);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col min-h-0 h-full">
       <nav className="flex-1 space-y-1 px-3">
         {navigation.map((item) => (
           <a
@@ -37,7 +39,7 @@ export function Navigation() {
       </nav>
       
       {user && (
-        <div className="px-3 py-4 border-t border-gray-200">
+        <div className="mt-auto px-3 py-4 border-t border-gray-200">
           <div className="flex items-center gap-3 px-2">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.user_metadata?.avatar_url} />
@@ -47,7 +49,7 @@ export function Navigation() {
             </Avatar>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium text-gray-700 truncate">
-                {user.user_metadata?.full_name || 'User'}
+                {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
               </span>
               <span className="text-xs text-gray-500 truncate">
                 {user.email}
