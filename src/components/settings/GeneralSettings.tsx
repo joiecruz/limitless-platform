@@ -30,23 +30,23 @@ export function GeneralSettings() {
     setIsLoading(true);
     try {
       // Check if slug is already taken
-      const { data: existingWorkspace, error: checkError } = await supabase
+      const { data: existingWorkspaces, error: checkError } = await supabase
         .from('workspaces')
         .select('id')
         .eq('slug', data.slug)
-        .neq('id', currentWorkspace.id)
-        .single();
+        .neq('id', currentWorkspace.id);
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         throw checkError;
       }
 
-      if (existingWorkspace) {
+      if (existingWorkspaces && existingWorkspaces.length > 0) {
         toast({
           title: "Error",
           description: "This workspace URL is already taken. Please choose another one.",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
