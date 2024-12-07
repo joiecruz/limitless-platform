@@ -7,9 +7,10 @@ import { DeleteMessage } from "./MessageActions/DeleteMessage";
 interface MessageListProps {
   messages: Message[];
   onReaction: (messageId: string, emoji: string) => void;
+  onDeleteMessage: (messageId: string) => void;
 }
 
-export function MessageList({ messages, onReaction }: MessageListProps) {
+export function MessageList({ messages, onReaction, onDeleteMessage }: MessageListProps) {
   const formatMessageContent = (content: string) => {
     // Replace @mentions with styled spans
     return content.replace(/@(\w+)/g, '<span class="text-primary font-semibold">@$1</span>');
@@ -37,7 +38,11 @@ export function MessageList({ messages, onReaction }: MessageListProps) {
               <span className="text-xs text-gray-500">
                 {format(new Date(message.created_at), 'MMM d, h:mm a')}
               </span>
-              <DeleteMessage messageId={message.id} userId={message.user_id} />
+              <DeleteMessage 
+                messageId={message.id} 
+                userId={message.user_id} 
+                onDelete={() => onDeleteMessage(message.id)}
+              />
             </div>
             {message.content && (
               <p 

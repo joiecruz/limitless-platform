@@ -1,25 +1,24 @@
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 
 interface DeleteMessageProps {
   messageId: string;
   userId: string;
+  onDelete: () => void;
 }
 
-export function DeleteMessage({ messageId, userId }: DeleteMessageProps) {
-  const { toast } = useToast();
+export function DeleteMessage({ messageId, userId, onDelete }: DeleteMessageProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
 
-  const handleDeleteMessage = async () => {
+  const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      console.log("Starting delete process for message:", messageId);
+      console.log("Attempting to delete message:", messageId);
 
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) {
         console.log("No authenticated user found");
         toast({
@@ -30,12 +29,9 @@ export function DeleteMessage({ messageId, userId }: DeleteMessageProps) {
         return;
       }
 
-      console.log("Current user:", user.id);
-      console.log("Message owner:", userId);
-
-      // Check if the message belongs to the current user
+      // Check if the current user is the message author
       if (user.id !== userId) {
-        console.log("User does not own this message");
+        console.log("User is not authorized to delete this message");
         toast({
           title: "Error",
           description: "You can only delete your own messages",
@@ -44,38 +40,11 @@ export function DeleteMessage({ messageId, userId }: DeleteMessageProps) {
         return;
       }
 
-      // Delete message reactions first
-      const { error: reactionError } = await supabase
-        .from("message_reactions")
-        .delete()
-        .eq("message_id", messageId);
+      // Call the parent's onDelete handler
+      onDelete();
 
-      if (reactionError) {
-        console.error("Error deleting message reactions:", reactionError);
-        throw reactionError;
-      }
-
-      console.log("Successfully deleted reactions");
-
-      // Then delete the message
-      const { error: messageError } = await supabase
-        .from("messages")
-        .delete()
-        .eq("id", messageId);
-
-      if (messageError) {
-        console.error("Error deleting message:", messageError);
-        throw messageError;
-      }
-
-      console.log("Successfully deleted message");
-
-      toast({
-        title: "Success",
-        description: "Message deleted successfully",
-      });
     } catch (error) {
-      console.error("Error in delete process:", error);
+      console.error("Error in delete handler:", error);
       toast({
         title: "Error",
         description: "Failed to delete message",
@@ -88,9 +57,10 @@ export function DeleteMessage({ messageId, userId }: DeleteMessageProps) {
 
   return (
     <button
-      onClick={handleDeleteMessage}
+      onClick={handleDelete}
       disabled={isDeleting}
-      className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-gray-400 hover:text-red-500 disabled:opacity-50"
+      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:text-red-600 disabled:opacity-50"
+      title="Delete message"
     >
       <Trash2 className="h-4 w-4" />
     </button>
