@@ -44,16 +44,11 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
 
         console.log("User found:", user.id);
 
-        // Fetch workspaces directly with a simpler query
+        // Fetch workspaces with a join instead of a subquery
         const { data: memberWorkspaces, error: workspacesError } = await supabase
-          .from('workspaces')
-          .select('id, name, slug')
-          .in('id', (
-            supabase
-              .from('workspace_members')
-              .select('workspace_id')
-              .eq('user_id', user.id)
-          ));
+          .from('workspace_members')
+          .select('workspace:workspaces(id, name, slug)')
+          .eq('user_id', user.id);
 
         if (workspacesError) {
           console.error('Error fetching workspaces:', workspacesError);
@@ -63,10 +58,17 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         console.log("Workspaces data:", memberWorkspaces);
         
         if (memberWorkspaces && memberWorkspaces.length > 0) {
-          setWorkspaces(memberWorkspaces);
+          // Transform the data to match the Workspace interface
+          const transformedWorkspaces = memberWorkspaces.map(item => ({
+            id: item.workspace.id,
+            name: item.workspace.name,
+            slug: item.workspace.slug
+          }));
+          
+          setWorkspaces(transformedWorkspaces);
           // Only set current workspace if none is selected
           if (!currentWorkspace) {
-            setCurrentWorkspace(memberWorkspaces[0]);
+            setCurrentWorkspace(transformedWorkspaces[0]);
           }
         } else {
           console.log("No workspaces found for user");
