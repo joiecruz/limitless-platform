@@ -37,6 +37,7 @@ export function GeneralSettings() {
         .neq('id', currentWorkspace.id);
 
       if (checkError) {
+        console.error('Error checking slug:', checkError);
         throw checkError;
       }
 
@@ -51,18 +52,31 @@ export function GeneralSettings() {
       }
 
       // Update workspace
-      const { data: updatedWorkspace, error } = await supabase
+      const { error: updateError } = await supabase
         .from('workspaces')
         .update({
           name: data.name,
           slug: data.slug,
           updated_at: new Date().toISOString(),
         })
+        .eq('id', currentWorkspace.id);
+
+      if (updateError) {
+        console.error('Error updating workspace:', updateError);
+        throw updateError;
+      }
+
+      // Fetch the updated workspace to ensure we have the latest data
+      const { data: updatedWorkspace, error: fetchError } = await supabase
+        .from('workspaces')
+        .select('*')
         .eq('id', currentWorkspace.id)
-        .select()
         .single();
 
-      if (error) throw error;
+      if (fetchError) {
+        console.error('Error fetching updated workspace:', fetchError);
+        throw fetchError;
+      }
 
       if (updatedWorkspace) {
         setCurrentWorkspace({
