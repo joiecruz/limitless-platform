@@ -28,16 +28,26 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
+        console.log("Fetching workspaces...");
         const { data: user } = await supabase.auth.getUser();
-        if (!user.user) return;
+        if (!user.user) {
+          console.log("No user found");
+          setIsLoading(false);
+          return;
+        }
 
+        console.log("User found:", user.user.id);
         const { data: workspaceMembers, error: membersError } = await supabase
           .from('workspace_members')
           .select('workspace_id')
           .eq('user_id', user.user.id);
 
-        if (membersError) throw membersError;
+        if (membersError) {
+          console.error('Error fetching workspace members:', membersError);
+          throw membersError;
+        }
 
+        console.log("Workspace members:", workspaceMembers);
         if (workspaceMembers && workspaceMembers.length > 0) {
           const workspaceIds = workspaceMembers.map(member => member.workspace_id);
           const { data: workspacesData, error: workspacesError } = await supabase
@@ -45,18 +55,24 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
             .select('*')
             .in('id', workspaceIds);
 
-          if (workspacesError) throw workspacesError;
+          if (workspacesError) {
+            console.error('Error fetching workspaces:', workspacesError);
+            throw workspacesError;
+          }
 
-          setWorkspaces(workspacesData || []);
-          if (workspacesData && workspacesData.length > 0 && !currentWorkspace) {
-            setCurrentWorkspace(workspacesData[0]);
+          console.log("Workspaces data:", workspacesData);
+          if (workspacesData) {
+            setWorkspaces(workspacesData);
+            if (workspacesData.length > 0 && !currentWorkspace) {
+              setCurrentWorkspace(workspacesData[0]);
+            }
           }
         }
       } catch (error) {
-        console.error('Error fetching workspaces:', error);
+        console.error('Error in fetchWorkspaces:', error);
         toast({
           title: "Error",
-          description: "Failed to load workspaces",
+          description: "Failed to load workspaces. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -65,7 +81,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
     };
 
     fetchWorkspaces();
-  }, []);
+  }, [currentWorkspace, setCurrentWorkspace]);
 
   const handleCreateWorkspace = async () => {
     toast({
@@ -79,19 +95,23 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
       <DropdownMenu>
         <DropdownMenuTrigger className="workspace-select w-full" disabled={isLoading}>
           <span className="truncate">
-            {isLoading ? "Loading..." : currentWorkspace?.name || "No workspace"}
+            {isLoading ? "Loading workspaces..." : currentWorkspace?.name || "No workspace"}
           </span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          {workspaces.map((workspace) => (
-            <DropdownMenuItem
-              key={workspace.id}
-              onClick={() => setCurrentWorkspace(workspace)}
-            >
-              {workspace.name}
-            </DropdownMenuItem>
-          ))}
+          {workspaces.length === 0 && !isLoading ? (
+            <DropdownMenuItem disabled>No workspaces found</DropdownMenuItem>
+          ) : (
+            workspaces.map((workspace) => (
+              <DropdownMenuItem
+                key={workspace.id}
+                onClick={() => setCurrentWorkspace(workspace)}
+              >
+                {workspace.name}
+              </DropdownMenuItem>
+            ))
+          )}
           <DropdownMenuItem onClick={handleCreateWorkspace}>
             <span className="text-primary-600">+ Create Workspace</span>
           </DropdownMenuItem>
