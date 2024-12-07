@@ -7,10 +7,10 @@ export interface Channel {
 
 export interface MessageReaction {
   id: string;
-  message_id: string;
-  user_id: string;
   emoji: string;
-  created_at: string;
+  user_id: string;
+  message_id?: string;
+  created_at?: string;
 }
 
 export interface Message {
