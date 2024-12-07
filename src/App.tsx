@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Courses from "./pages/Courses";
+import Lessons from "./pages/Lessons";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,14 @@ const App = () => {
               element={
                 <DashboardLayout>
                   <Courses />
+                </DashboardLayout>
+              }
+            />
+            <Route
+              path="/courses/:courseId/lessons"
+              element={
+                <DashboardLayout>
+                  <Lessons />
                 </DashboardLayout>
               }
             />
