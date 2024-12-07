@@ -1,9 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CourseProgress from "./CourseProgress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 interface CourseEnrollmentProps {
   courseId: string;
+  courseTitle?: string;
   isEnrolled: boolean;
   progress?: number;
   onEnroll: () => void;
@@ -12,11 +23,24 @@ interface CourseEnrollmentProps {
 
 const CourseEnrollment = ({ 
   courseId, 
+  courseTitle,
   isEnrolled, 
   progress = 0, 
   onEnroll, 
   isEnrolling 
 }: CourseEnrollmentProps) => {
+  const [showDialog, setShowDialog] = useState(false);
+  const navigate = useNavigate();
+
+  const handleEnroll = async () => {
+    await onEnroll();
+    setShowDialog(true);
+  };
+
+  const handleDialogAction = () => {
+    navigate(`/courses/${courseId}/lessons`);
+  };
+
   if (isEnrolled) {
     return (
       <div className="space-y-4">
@@ -29,13 +53,31 @@ const CourseEnrollment = ({
   }
 
   return (
-    <Button 
-      className="w-full"
-      onClick={onEnroll}
-      disabled={isEnrolling}
-    >
-      {isEnrolling ? "Enrolling..." : "Enroll Now"}
-    </Button>
+    <>
+      <Button 
+        className="w-full"
+        onClick={handleEnroll}
+        disabled={isEnrolling}
+      >
+        {isEnrolling ? "Enrolling..." : "Enroll Now"}
+      </Button>
+
+      <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Congratulations! 🎉</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are now enrolled in {courseTitle || "this course"}. Ready to start learning?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleDialogAction}>
+              Let's Begin!
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

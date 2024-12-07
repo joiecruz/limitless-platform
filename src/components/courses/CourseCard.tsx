@@ -49,6 +49,7 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
         
         <CourseEnrollment
           courseId={course.id}
+          courseTitle={course.title}
           isEnrolled={!!enrollment}
           progress={enrollment?.progress}
           onEnroll={onEnroll}
