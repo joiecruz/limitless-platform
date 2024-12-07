@@ -33,11 +33,16 @@ const CourseEnrollment = ({
   const navigate = useNavigate();
 
   const handleEnroll = async () => {
-    await onEnroll();
-    setShowDialog(true);
+    try {
+      await onEnroll();
+      setShowDialog(true);
+    } catch (error) {
+      console.error('Error enrolling:', error);
+    }
   };
 
   const handleDialogAction = () => {
+    setShowDialog(false);
     navigate(`/courses/${courseId}/lessons`);
   };
 
