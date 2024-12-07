@@ -7,6 +7,8 @@ export function useReactionOperations(messages: Message[], onMessagesUpdate: (me
 
   const handleReaction = async (messageId: string, emoji: string) => {
     try {
+      console.log("Handling reaction:", { messageId, emoji });
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
@@ -28,6 +30,7 @@ export function useReactionOperations(messages: Message[], onMessagesUpdate: (me
       if (fetchError) throw fetchError;
 
       if (existingReactions && existingReactions.length > 0) {
+        console.log("Removing existing reaction");
         // Remove existing reaction
         const { error: deleteError } = await supabase
           .from('message_reactions')
@@ -52,6 +55,7 @@ export function useReactionOperations(messages: Message[], onMessagesUpdate: (me
         });
         onMessagesUpdate(updatedMessages);
       } else {
+        console.log("Adding new reaction");
         // Add new reaction
         const { data: newReaction, error: insertError } = await supabase
           .from('message_reactions')

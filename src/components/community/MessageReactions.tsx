@@ -2,6 +2,8 @@ import { MessageReaction } from "@/types/community";
 import { Button } from "@/components/ui/button";
 import { Smile } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 const EMOJI_LIST = ["👍", "❤️", "😂", "🎉", "🤔", "😢", "🔥", "👀"];
 
@@ -12,6 +14,35 @@ interface MessageReactionsProps {
 }
 
 export function MessageReactions({ messageId, reactions, onReaction }: MessageReactionsProps) {
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
+
+  // Group reactions by emoji and track user IDs who reacted
+  const reactionGroups = reactions.reduce((acc, reaction) => {
+    if (!acc[reaction.emoji]) {
+      acc[reaction.emoji] = {
+        count: 0,
+        userIds: new Set(),
+      };
+    }
+    acc[reaction.emoji].count++;
+    acc[reaction.emoji].userIds.add(reaction.user_id);
+    return acc;
+  }, {} as Record<string, { count: number; userIds: Set<string> }>);
+
+  const hasUserReacted = (emoji: string) => {
+    return currentUserId && reactionGroups[emoji]?.userIds.has(currentUserId);
+  };
+
   return (
     <div className="flex items-center space-x-2 mt-2">
       <Popover>
@@ -35,16 +66,15 @@ export function MessageReactions({ messageId, reactions, onReaction }: MessageRe
         </PopoverContent>
       </Popover>
       <div className="flex gap-1">
-        {Object.entries(
-          reactions.reduce((acc, reaction) => {
-            acc[reaction.emoji] = (acc[reaction.emoji] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>)
-        ).map(([emoji, count]) => (
+        {Object.entries(reactionGroups).map(([emoji, { count }]) => (
           <button
             key={emoji}
             onClick={() => onReaction(messageId, emoji)}
-            className="bg-gray-100 hover:bg-gray-200 rounded px-2 py-1 text-sm"
+            className={`rounded px-2 py-1 text-sm transition-colors ${
+              hasUserReacted(emoji)
+                ? 'bg-primary/10 hover:bg-primary/20'
+                : 'bg-gray-100 hover:bg-gray-200'
+            }`}
           >
             {emoji} {count}
           </button>
