@@ -153,6 +153,13 @@ const Lesson = () => {
 
             {lesson.video_url && <VideoPlayer videoUrl={lesson.video_url} />}
 
+            <div className="prose max-w-none mt-8">
+              <h2 className="text-2xl font-semibold mb-4">Lesson Content</h2>
+              <div className="text-gray-800">
+                {lesson.body_content || lesson.description || "No content available for this lesson."}
+              </div>
+            </div>
+
             <LessonNavigation
               previousLesson={previousLesson}
               nextLesson={nextLesson}
