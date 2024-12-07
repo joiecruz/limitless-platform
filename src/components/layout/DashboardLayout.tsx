@@ -27,7 +27,7 @@ const UserProfileSection = () => {
   if (!user) return null;
   
   return (
-    <div className="border-t border-gray-200 p-4 mt-auto">
+    <div className="border-t border-gray-200 p-4">
       <div className="flex items-center gap-3">
         <Avatar>
           <AvatarImage src={user.user_metadata.avatar_url} />
@@ -80,8 +80,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="flex min-h-0 flex-1 flex-col">
-              <div className="flex-1 overflow-y-auto">
+            <div className="flex h-[calc(100vh-5rem)] flex-col justify-between">
+              <div className="flex-1 overflow-y-auto px-4">
                 <WorkspaceSelector
                   currentWorkspace={currentWorkspace}
                   setCurrentWorkspace={setCurrentWorkspace}
@@ -103,8 +103,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="h-12 w-auto"
               />
             </div>
-            <div className="flex min-h-0 flex-1 flex-col">
-              <div className="flex-1 overflow-y-auto">
+            <div className="flex h-[calc(100vh-5rem)] flex-col justify-between">
+              <div className="flex-1 overflow-y-auto px-4">
                 <WorkspaceSelector
                   currentWorkspace={currentWorkspace}
                   setCurrentWorkspace={setCurrentWorkspace}
