@@ -18,8 +18,8 @@ export function Navigation() {
   const user = useUser();
 
   return (
-    <div className="flex flex-col h-full justify-between">
-      <nav className="space-y-1 px-3">
+    <div className="flex flex-col h-full">
+      <nav className="flex-1 space-y-1 px-3">
         {navigation.map((item) => (
           <a
             key={item.name}
@@ -37,7 +37,7 @@ export function Navigation() {
       </nav>
       
       {user && (
-        <div className="mt-auto px-3 py-4 border-t border-gray-200">
+        <div className="px-3 py-4 border-t border-gray-200">
           <div className="flex items-center gap-3 px-2">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.user_metadata?.avatar_url} />

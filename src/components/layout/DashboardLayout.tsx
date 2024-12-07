@@ -52,8 +52,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-4">
+            <div className="flex-1 overflow-y-auto">
+              <div className="px-4">
                 <WorkspaceSelector
                   currentWorkspace={currentWorkspace}
                   setCurrentWorkspace={setCurrentWorkspace}
@@ -74,8 +74,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="h-12 w-auto"
               />
             </div>
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-4">
+            <div className="flex-1">
+              <div className="px-4">
                 <WorkspaceSelector
                   currentWorkspace={currentWorkspace}
                   setCurrentWorkspace={setCurrentWorkspace}
