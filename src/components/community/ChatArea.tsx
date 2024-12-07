@@ -29,20 +29,26 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
 
   const { handleReaction } = useReactionOperations(localMessages, setLocalMessages);
 
+  if (!activeChannel) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-white">
+        <p className="text-gray-500">Select a channel to start chatting</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col bg-white">
-      {activeChannel && <ChatHeader channel={activeChannel} />}
-
+      <ChatHeader channel={activeChannel} />
       <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
         <MessageList 
           messages={localMessages}
           onReaction={handleReaction}
         />
       </ScrollArea>
-
       <div className="p-4 border-t bg-white">
         <MessageInput
-          channelName={activeChannel?.name || ''}
+          channelName={activeChannel.name}
           onSendMessage={onSendMessage}
         />
       </div>
