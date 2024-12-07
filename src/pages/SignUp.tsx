@@ -58,14 +58,6 @@ export default function SignUp() {
           view="sign_up"
           providers={[]}
           redirectTo={`${window.location.origin}/dashboard`}
-          onError={(error) => {
-            console.error('Auth error:', error);
-            toast({
-              title: "Sign Up Error",
-              description: error.message,
-              variant: "destructive"
-            });
-          }}
         />
       </div>
     </div>

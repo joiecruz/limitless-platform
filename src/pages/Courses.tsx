@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Users, BookOpen } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Course {
   id: string;
@@ -19,43 +20,51 @@ interface Enrollment {
 }
 
 const Courses = () => {
+  const { toast } = useToast();
+
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
-      // Temporary mock data until we implement the database
-      const mockCourses: Course[] = [
-        {
-          id: "1",
-          title: "Introduction to Web Development",
-          description: "Learn the fundamentals of web development with HTML, CSS, and JavaScript.",
-          image_url: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-          lesson_count: 12,
-          enrollee_count: 156,
-        },
-        {
-          id: "2",
-          title: "Advanced React Patterns",
-          description: "Master advanced React patterns and build scalable applications.",
-          image_url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-          lesson_count: 8,
-          enrollee_count: 89,
-        },
-      ];
-      return mockCourses;
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*');
+      
+      if (error) {
+        console.error('Error fetching courses:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load courses. Please try again later.",
+          variant: "destructive",
+        });
+        return [];
+      }
+      
+      return data as Course[];
     },
   });
 
   const { data: enrollments } = useQuery({
     queryKey: ["enrollments"],
     queryFn: async () => {
-      // Temporary mock data until we implement the database
-      const mockEnrollments: Enrollment[] = [
-        {
-          course_id: "1",
-          progress: 45,
-        },
-      ];
-      return mockEnrollments;
+      const { data: userSession } = await supabase.auth.getSession();
+      if (!userSession?.session?.user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('enrollments')
+        .select('course_id, progress')
+        .eq('user_id', userSession.session.user.id);
+      
+      if (error) {
+        console.error('Error fetching enrollments:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load course progress. Please try again later.",
+          variant: "destructive",
+        });
+        return [];
+      }
+      
+      return data as Enrollment[];
     },
   });
 
@@ -78,7 +87,7 @@ const Courses = () => {
             <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="aspect-video relative">
                 <img
-                  src={course.image_url}
+                  src={course.image_url || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d'}
                   alt={course.title}
                   className="object-cover w-full h-full"
                 />
@@ -100,11 +109,11 @@ const Courses = () => {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <BookOpen className="h-4 w-4" />
-                      <span>{course.lesson_count} lessons</span>
+                      <span>{course.lesson_count || 0} lessons</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-4 w-4" />
-                      <span>{course.enrollee_count} enrolled</span>
+                      <span>{course.enrollee_count || 0} enrolled</span>
                     </div>
                   </div>
                 )}
