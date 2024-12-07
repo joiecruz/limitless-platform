@@ -1,110 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
-import { useForm } from "react-hook-form";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
-interface FormValues {
-  name: string;
-  slug: string;
-}
+import { WorkspaceForm } from "./WorkspaceForm";
+import { useWorkspaceUpdate } from "@/hooks/useWorkspaceUpdate";
 
 export function GeneralSettings() {
   const { currentWorkspace, setCurrentWorkspace } = useContext(WorkspaceContext);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
-    defaultValues: {
-      name: currentWorkspace?.name || "",
-      slug: currentWorkspace?.slug || "",
-    }
-  });
-
-  const onSubmit = async (data: FormValues) => {
-    if (!currentWorkspace?.id) return;
-    
-    setIsLoading(true);
-    try {
-      console.log('Checking for existing workspace with slug:', data.slug);
-      // Check if slug is already taken
-      const { data: existingWorkspaces, error: checkError } = await supabase
-        .from('workspaces')
-        .select('id')
-        .eq('slug', data.slug)
-        .neq('id', currentWorkspace.id);
-
-      if (checkError) {
-        console.error('Error checking slug:', checkError);
-        throw checkError;
-      }
-
-      if (existingWorkspaces && existingWorkspaces.length > 0) {
-        toast({
-          title: "Error",
-          description: "This workspace URL is already taken. Please choose another one.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('Updating workspace with data:', data);
-      // Update workspace
-      const { error: updateError } = await supabase
-        .from('workspaces')
-        .update({
-          name: data.name,
-          slug: data.slug,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', currentWorkspace.id);
-
-      if (updateError) {
-        console.error('Error updating workspace:', updateError);
-        throw updateError;
-      }
-
-      // Fetch the updated workspace to ensure we have the latest data
-      const { data: updatedWorkspace, error: fetchError } = await supabase
-        .from('workspaces')
-        .select('*')
-        .eq('id', currentWorkspace.id)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching updated workspace:', fetchError);
-        throw fetchError;
-      }
-
-      console.log('Successfully fetched updated workspace:', updatedWorkspace);
-      if (updatedWorkspace) {
-        // Update the current workspace in context with all fields
-        setCurrentWorkspace({
-          id: updatedWorkspace.id,
-          name: updatedWorkspace.name,
-          slug: updatedWorkspace.slug
-        });
-
-        toast({
-          title: "Success",
-          description: "Workspace settings updated successfully.",
-        });
-      }
-    } catch (error) {
-      console.error('Error updating workspace:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update workspace settings. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { updateWorkspace, isLoading } = useWorkspaceUpdate(currentWorkspace, setCurrentWorkspace);
 
   return (
     <div className="space-y-6">
@@ -115,48 +16,14 @@ export function GeneralSettings() {
         </p>
       </div>
       
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Workspace Name</Label>
-          <Input 
-            id="name"
-            {...register("name", { required: "Workspace name is required" })}
-            placeholder="Enter workspace name"
-          />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
-          )}
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="slug">Workspace URL</Label>
-          <div className="flex items-center space-x-2">
-            <Input 
-              id="slug"
-              {...register("slug", {
-                required: "Workspace URL is required",
-                pattern: {
-                  value: /^[a-z0-9-]+$/,
-                  message: "Only lowercase letters, numbers, and hyphens are allowed"
-                }
-              })}
-              placeholder="your-workspace"
-              className="w-[180px]"
-            />
-            <span className="text-sm text-muted-foreground">.limitlesslab.io</span>
-          </div>
-          {errors.slug && (
-            <p className="text-sm text-destructive">{errors.slug.message}</p>
-          )}
-          <p className="text-sm text-muted-foreground">
-            This is your workspace's unique subdomain.
-          </p>
-        </div>
-        
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Changes"}
-        </Button>
-      </form>
+      <WorkspaceForm 
+        defaultValues={{
+          name: currentWorkspace?.name || "",
+          slug: currentWorkspace?.slug || "",
+        }}
+        onSubmit={updateWorkspace}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
