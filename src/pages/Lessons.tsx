@@ -108,7 +108,7 @@ const Lessons = () => {
         </p>
       </div>
 
-      <div className="max-w-3xl space-y-8">
+      <div className="max-w-3xl mx-auto space-y-8">
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">Course progress</h2>
           <div className="space-y-2">
