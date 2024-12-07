@@ -10,37 +10,57 @@ export function useCommunityChannels(workspaceId: string | null) {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!workspaceId) return;
-
     const fetchChannels = async () => {
-      const { data: channels, error } = await supabase
+      // Fetch public channels (is_public = true)
+      const { data: publicData, error: publicError } = await supabase
         .from("channels")
         .select("*")
-        .eq("workspace_id", workspaceId)
+        .eq("is_public", true)
         .order("name");
 
-      if (error) {
-        console.error("Error fetching channels:", error);
+      if (publicError) {
+        console.error("Error fetching public channels:", publicError);
         toast({
           title: "Error",
-          description: "Failed to load channels",
+          description: "Failed to load public channels",
           variant: "destructive",
         });
         return;
       }
 
-      // Split channels into public and private (for demo, first half public, second half private)
-      const midPoint = Math.ceil(channels.length / 2);
-      setPublicChannels(channels.slice(0, midPoint));
-      setPrivateChannels(channels.slice(midPoint));
+      setPublicChannels(publicData || []);
 
-      if (channels.length > 0 && !activeChannel) {
-        setActiveChannel(channels[0]);
+      // Fetch private channels for the current workspace
+      if (workspaceId) {
+        const { data: privateData, error: privateError } = await supabase
+          .from("channels")
+          .select("*")
+          .eq("workspace_id", workspaceId)
+          .eq("is_public", false)
+          .order("name");
+
+        if (privateError) {
+          console.error("Error fetching private channels:", privateError);
+          toast({
+            title: "Error",
+            description: "Failed to load private channels",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setPrivateChannels(privateData || []);
+      }
+
+      // Set active channel to first public channel if none is selected
+      if (!activeChannel && publicData && publicData.length > 0) {
+        setActiveChannel(publicData[0]);
       }
     };
 
     fetchChannels();
 
+    // Subscribe to channel changes
     const channelSubscription = supabase
       .channel('public:channels')
       .on('postgres_changes', 

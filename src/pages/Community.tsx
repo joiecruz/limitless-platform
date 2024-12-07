@@ -13,11 +13,14 @@ export default function Community() {
   const { messages, sendMessage } = useCommunityMessages(activeChannel);
 
   useEffect(() => {
-    const fetchWorkspace = async () => {
-      const { data: workspace, error } = await supabase
-        .from("workspaces")
-        .select("id")
-        .eq("slug", "community")
+    const fetchUserWorkspace = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: workspaceMember, error } = await supabase
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", user.id)
         .single();
 
       if (error) {
@@ -30,10 +33,12 @@ export default function Community() {
         return;
       }
 
-      setWorkspaceId(workspace.id);
+      if (workspaceMember) {
+        setWorkspaceId(workspaceMember.workspace_id);
+      }
     };
 
-    fetchWorkspace();
+    fetchUserWorkspace();
   }, []);
 
   const handleCreatePrivateChannel = async (name: string) => {
@@ -63,6 +68,7 @@ export default function Community() {
         {
           name,
           workspace_id: workspaceId,
+          is_public: false,
           description: `Private channel created by ${user.email}`,
         },
       ])
