@@ -1,8 +1,7 @@
 import { Message } from "@/types/community";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format } from "date-fns";
+import { Avatar } from "@/components/ui/avatar";
 import { MessageReactions } from "./MessageReactions";
-import { DeleteMessage } from "./MessageActions/DeleteMessage";
+import { format } from "date-fns";
 
 interface MessageListProps {
   messages: Message[];
@@ -10,54 +9,35 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages, onReaction }: MessageListProps) {
-  const formatMessageContent = (content: string) => {
-    // Replace @mentions with styled spans
-    return content.replace(/@(\w+)/g, '<span class="text-primary font-semibold">@$1</span>');
-  };
-
-  if (messages.length === 0) {
-    return <p className="text-gray-500 text-center">No messages yet</p>;
-  }
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {messages.map((message) => (
-        <div key={message.id} className="flex items-start space-x-3 group">
+        <div key={message.id} className="group flex items-start gap-3">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={message.profiles?.avatar_url || ''} />
-            <AvatarFallback>
-              {message.profiles?.username?.charAt(0).toUpperCase() || '?'}
-            </AvatarFallback>
+            <img
+              src={message.profiles?.avatar_url || "/placeholder.svg"}
+              alt={message.profiles?.username || "User"}
+              className="object-cover"
+            />
           </Avatar>
-          <div className="flex-1">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium text-gray-900">
-                {message.profiles?.username || 'Unknown User'}
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm">
+                {message.profiles?.username || "Anonymous"}
               </span>
               <span className="text-xs text-gray-500">
-                {format(new Date(message.created_at), 'MMM d, h:mm a')}
+                {format(new Date(message.created_at), "MMM d, h:mm a")}
               </span>
-              <DeleteMessage 
-                messageId={message.id} 
-                userId={message.user_id}
-              />
             </div>
-            {message.content && (
-              <p 
-                className="text-gray-700 mt-1"
-                dangerouslySetInnerHTML={{ 
-                  __html: formatMessageContent(message.content) 
-                }}
-              />
-            )}
+            <p className="text-sm text-gray-700">{message.content}</p>
             {message.image_url && (
-              <img 
-                src={message.image_url} 
-                alt="Message attachment" 
-                className="mt-2 max-w-sm rounded-lg shadow-sm"
+              <img
+                src={message.image_url}
+                alt="Message attachment"
+                className="max-w-sm rounded-lg border"
               />
             )}
-            <MessageReactions 
+            <MessageReactions
               messageId={message.id}
               reactions={message.message_reactions || []}
               onReaction={onReaction}
