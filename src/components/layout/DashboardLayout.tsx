@@ -27,7 +27,7 @@ const UserProfileSection = () => {
   if (!user) return null;
   
   return (
-    <div className="border-t border-gray-200 p-4">
+    <div className="border-t border-gray-200 p-4 mt-auto">
       <div className="flex items-center gap-3">
         <Avatar>
           <AvatarImage src={user.user_metadata.avatar_url} />
@@ -80,14 +80,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="flex flex-1 flex-col overflow-y-auto">
-              <WorkspaceSelector
-                currentWorkspace={currentWorkspace}
-                setCurrentWorkspace={setCurrentWorkspace}
-              />
-              <Navigation />
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="flex-1 overflow-y-auto">
+                <WorkspaceSelector
+                  currentWorkspace={currentWorkspace}
+                  setCurrentWorkspace={setCurrentWorkspace}
+                />
+                <Navigation />
+              </div>
+              <UserProfileSection />
             </div>
-            <UserProfileSection />
           </div>
         </div>
 
@@ -101,14 +103,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="h-12 w-auto"
               />
             </div>
-            <div className="flex flex-1 flex-col overflow-y-auto">
-              <WorkspaceSelector
-                currentWorkspace={currentWorkspace}
-                setCurrentWorkspace={setCurrentWorkspace}
-              />
-              <Navigation />
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="flex-1 overflow-y-auto">
+                <WorkspaceSelector
+                  currentWorkspace={currentWorkspace}
+                  setCurrentWorkspace={setCurrentWorkspace}
+                />
+                <Navigation />
+              </div>
+              <UserProfileSection />
             </div>
-            <UserProfileSection />
           </div>
         </div>
 
