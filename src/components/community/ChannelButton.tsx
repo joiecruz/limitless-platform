@@ -8,6 +8,7 @@ interface ChannelButtonProps {
   isActive: boolean;
   unreadCount: number;
   onClick: () => void;
+  className?: string;
 }
 
 export function ChannelButton({
@@ -16,13 +17,14 @@ export function ChannelButton({
   isActive,
   unreadCount,
   onClick,
+  className,
 }: ChannelButtonProps) {
   return (
     <Button
       variant="ghost"
       className={`w-full justify-start text-gray-600 hover:text-primary-600 hover:bg-primary-50 relative ${
         isActive ? "bg-primary-50 text-primary-600" : ""
-      }`}
+      } ${className || ""}`}
       onClick={onClick}
     >
       {isPrivate ? (
