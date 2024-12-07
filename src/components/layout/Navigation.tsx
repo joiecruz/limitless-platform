@@ -16,7 +16,7 @@ export function Navigation() {
   const navigate = useNavigate();
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1">
       <nav className="space-y-1 px-3">
         {navigation.map((item) => (
           <a
