@@ -14,27 +14,45 @@ export default function Community() {
 
   useEffect(() => {
     const fetchUserWorkspace = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log("No user found");
+          return;
+        }
+        console.log("User found:", user.id);
 
-      const { data: workspaceMember, error } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user.id)
-        .single();
+        // Get user's workspace membership
+        const { data: workspaceMember, error: memberError } = await supabase
+          .from("workspace_members")
+          .select("workspace_id, workspaces(id, name, slug)")
+          .eq("user_id", user.id)
+          .single();
 
-      if (error) {
-        console.error("Error fetching workspace:", error);
+        if (memberError) {
+          console.error("Error fetching workspace member:", memberError);
+          toast({
+            title: "Error",
+            description: "Failed to load workspace",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (workspaceMember) {
+          console.log("Workspace member found:", workspaceMember);
+          setWorkspaceId(workspaceMember.workspace_id);
+        } else {
+          console.log("No workspace membership found");
+        }
+      } catch (error) {
+        console.error("Error in fetchUserWorkspace:", error);
         toast({
           title: "Error",
           description: "Failed to load workspace",
           variant: "destructive",
         });
-        return;
-      }
-
-      if (workspaceMember) {
-        setWorkspaceId(workspaceMember.workspace_id);
       }
     };
 
