@@ -139,7 +139,9 @@ const Lesson = () => {
           onOpenChange={setIsOpen}
         />
 
-        <div className="flex-1 overflow-auto">
+        <div className={`flex-1 overflow-auto transition-all duration-300 ${
+          isOpen ? 'ml-80' : 'ml-0'
+        }`}>
           <div className="max-w-4xl mx-auto px-6 py-8">
             <LessonContent
               title={lesson.title}
