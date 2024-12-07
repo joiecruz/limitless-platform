@@ -47,14 +47,28 @@ export function useCommunityMessages(activeChannel: Channel | null) {
       .channel(`public:messages:channel_id=eq.${activeChannel.id}`)
       .on('postgres_changes', 
         { 
-          event: '*', 
+          event: 'INSERT', 
           schema: 'public', 
           table: 'messages',
           filter: `channel_id=eq.${activeChannel.id}`
         },
         (payload) => {
-          console.log('Message change received:', payload);
+          console.log('Message inserted:', payload);
           fetchMessages();
+        }
+      )
+      .on('postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+          filter: `channel_id=eq.${activeChannel.id}`
+        },
+        (payload) => {
+          console.log('Message deleted:', payload);
+          setMessages(currentMessages => 
+            currentMessages.filter(msg => msg.id !== payload.old.id)
+          );
         }
       )
       .subscribe();
