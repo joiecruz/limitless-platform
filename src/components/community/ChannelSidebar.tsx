@@ -23,7 +23,7 @@ export function ChannelSidebar({
   const { unreadCounts } = useChannelNotifications(activeChannel);
 
   return (
-    <div className="w-64 bg-gray-50 border-r flex-shrink-0">
+    <div className="w-64 bg-gray-50 border-r flex-shrink-0 h-full">
       <ScrollArea className="h-full">
         <div className="p-4">
           <h2 className="text-gray-500 uppercase text-xs font-semibold mb-2">

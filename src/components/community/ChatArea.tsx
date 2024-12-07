@@ -29,7 +29,7 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
   const { handleReaction } = useReactionOperations(localMessages, setLocalMessages);
 
   return (
-    <div className="flex-1 flex flex-col bg-white min-h-screen max-h-screen">
+    <div className="flex-1 flex flex-col bg-white h-full">
       {activeChannel ? (
         <>
           <ChatHeader channel={activeChannel} />
@@ -49,7 +49,7 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
           </div>
         </>
       ) : (
-        <>
+        <div className="flex-1 flex flex-col">
           <div className="border-b px-6 py-4">
             <h1 className="text-xl font-semibold text-gray-900">Welcome to Community</h1>
             <p className="text-sm text-gray-500 mt-1">Select a channel to start chatting</p>
@@ -57,7 +57,7 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
           <div className="flex-1 flex items-center justify-center">
             <p className="text-gray-500">Select a channel to start chatting</p>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
