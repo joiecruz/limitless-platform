@@ -44,35 +44,29 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
 
         console.log("User found:", user.id);
 
-        // Fetch workspaces through workspace_members table using a join
-        const { data: workspacesData, error: workspacesError } = await supabase
-          .from('workspace_members')
-          .select(`
-            workspace:workspaces (
-              id,
-              name,
-              slug
-            )
-          `)
-          .eq('user_id', user.id);
+        // Fetch workspaces directly with a simpler query
+        const { data: memberWorkspaces, error: workspacesError } = await supabase
+          .from('workspaces')
+          .select('id, name, slug')
+          .in('id', (
+            supabase
+              .from('workspace_members')
+              .select('workspace_id')
+              .eq('user_id', user.id)
+          ));
 
         if (workspacesError) {
           console.error('Error fetching workspaces:', workspacesError);
           throw workspacesError;
         }
 
-        console.log("Workspaces data:", workspacesData);
+        console.log("Workspaces data:", memberWorkspaces);
         
-        // Transform the data to match our Workspace interface
-        const transformedWorkspaces = workspacesData
-          .map(item => item.workspace)
-          .filter((workspace): workspace is Workspace => workspace !== null);
-
-        if (transformedWorkspaces.length > 0) {
-          setWorkspaces(transformedWorkspaces);
+        if (memberWorkspaces && memberWorkspaces.length > 0) {
+          setWorkspaces(memberWorkspaces);
           // Only set current workspace if none is selected
           if (!currentWorkspace) {
-            setCurrentWorkspace(transformedWorkspaces[0]);
+            setCurrentWorkspace(memberWorkspaces[0]);
           }
         } else {
           console.log("No workspaces found for user");
