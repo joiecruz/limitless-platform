@@ -3,9 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Projects", href: "/dashboard/projects", icon: Briefcase },
+  { name: "Projects", href: "/projects", icon: Briefcase },
   { name: "Courses", href: "/courses", icon: BookOpen },
-  { name: "Tools", href: "/dashboard/tools", icon: Download },
+  { name: "Tools", href: "/tools", icon: Download },
   { name: "Community", href: "/community", icon: Users },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];

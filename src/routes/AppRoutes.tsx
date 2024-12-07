@@ -50,6 +50,7 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route
         path="/courses/:courseId/lessons/:lessonId"
         element={<Lesson />}
+        handle={{ crumb: () => "Individual Lesson" }}
       />
       <Route
         path="/dashboard/*"
@@ -98,6 +99,7 @@ export default function AppRoutes({ session }: AppRoutesProps) {
             <Navigate to="/signin" replace />
           )
         }
+        handle={{ crumb: () => "Individual Tool" }}
       />
       <Route
         path="/community"
