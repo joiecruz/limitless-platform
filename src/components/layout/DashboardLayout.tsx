@@ -22,35 +22,35 @@ export const WorkspaceContext = createContext<WorkspaceContextType>({
   setCurrentWorkspace: () => {},
 });
 
+const UserProfileSection = () => {
+  const user = useUser();
+  if (!user) return null;
+  
+  return (
+    <div className="border-t border-gray-200 p-4">
+      <div className="flex items-center gap-3">
+        <Avatar>
+          <AvatarImage src={user.user_metadata.avatar_url} />
+          <AvatarFallback>
+            {user.email?.charAt(0).toUpperCase() || 'U'}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col overflow-hidden">
+          <span className="text-sm font-medium truncate">
+            {user.user_metadata.full_name || 'User'}
+          </span>
+          <span className="text-xs text-gray-500 truncate">
+            {user.email}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
-  const user = useUser();
-
-  const UserProfileSection = () => {
-    if (!user) return null;
-    
-    return (
-      <div className="border-t border-gray-200 p-4">
-        <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src={user.user_metadata.avatar_url} />
-            <AvatarFallback>
-              {user.email?.charAt(0).toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-medium truncate">
-              {user.user_metadata.full_name || 'User'}
-            </span>
-            <span className="text-xs text-gray-500 truncate">
-              {user.email}
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <WorkspaceContext.Provider value={{ currentWorkspace, setCurrentWorkspace }}>
@@ -80,7 +80,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex flex-1 flex-col overflow-y-auto">
               <WorkspaceSelector
                 currentWorkspace={currentWorkspace}
                 setCurrentWorkspace={setCurrentWorkspace}
@@ -101,7 +101,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="h-12 w-auto"
               />
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex flex-1 flex-col overflow-y-auto">
               <WorkspaceSelector
                 currentWorkspace={currentWorkspace}
                 setCurrentWorkspace={setCurrentWorkspace}
