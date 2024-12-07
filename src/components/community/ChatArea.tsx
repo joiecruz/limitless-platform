@@ -29,15 +29,17 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
   const { handleReaction } = useReactionOperations(localMessages, setLocalMessages);
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
+    <div className="flex-1 flex flex-col bg-white h-[calc(100vh-5rem)] overflow-hidden">
       {activeChannel ? (
         <>
           <ChatHeader channel={activeChannel} />
-          <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
-            <MessageList 
-              messages={localMessages}
-              onReaction={handleReaction}
-            />
+          <ScrollArea className="flex-1" ref={scrollAreaRef}>
+            <div className="p-6">
+              <MessageList 
+                messages={localMessages}
+                onReaction={handleReaction}
+              />
+            </div>
           </ScrollArea>
           <div className="p-4 border-t bg-white">
             <MessageInput
