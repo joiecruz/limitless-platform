@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
-interface Tool {
+export interface Tool {
   id: string;
   title: string;
   subtitle: string;
@@ -12,30 +13,30 @@ interface Tool {
   downloadUrl?: string;
 }
 
-const tools: Tool[] = [
+export const tools: Tool[] = [
   {
-    id: "1",
+    id: "persona-worksheet",
     title: "Persona Development Worksheet",
     subtitle: "Stakeholder and Persona Mapping",
-    description: "Est sit reprehenderit exercitation voluptate proident ipsum commodo sint ullamco non tempor veniam duis",
+    description: "Create detailed personas by outlining users' goals, challenges, behaviors, and preferences, enabling you to tailor solutions to their specific needs",
     imageUrl: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7",
     price: null,
     downloadUrl: "#"
   },
   {
-    id: "2",
+    id: "smart-goals",
     title: "SMART Goals Worksheet",
     subtitle: "Evaluation and Feedback",
-    description: "Est sit reprehenderit exercitation voluptate proident ipsum commodo sint ullamco non tempor veniam duis",
+    description: "Set specific, measurable, achievable, relevant, and time-bound goals with our comprehensive SMART goals worksheet",
     imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
     price: null,
     downloadUrl: "#"
   },
   {
-    id: "3",
+    id: "user-testing",
     title: "User Testing Checklist",
     subtitle: "Evaluation and Feedback",
-    description: "Est sit reprehenderit exercitation voluptate proident ipsum commodo sint ullamco non tempor veniam duis",
+    description: "Ensure thorough user testing with our comprehensive checklist covering all aspects of the testing process",
     imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475",
     price: 45.00
   }
@@ -53,43 +54,45 @@ export default function Tools() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tools.map((tool) => (
-          <Card key={tool.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="aspect-video relative">
-              <img
-                src={tool.imageUrl}
-                alt={tool.title}
-                className="object-cover w-full h-full"
-              />
-              <div className="absolute top-3 right-3">
-                <span className="px-2 py-1 text-xs font-medium bg-white rounded-full">
-                  {tool.price === null ? "Free" : `$${tool.price.toFixed(2)}`}
-                </span>
+          <Link key={tool.id} to={`/tools/${tool.id}`}>
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
+              <div className="aspect-video relative">
+                <img
+                  src={tool.imageUrl}
+                  alt={tool.title}
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute top-3 right-3">
+                  <span className="px-2 py-1 text-xs font-medium bg-white rounded-full">
+                    {tool.price === null ? "Free" : `$${tool.price.toFixed(2)}`}
+                  </span>
+                </div>
               </div>
-            </div>
-            <CardHeader>
-              <CardTitle className="leading-tight">{tool.title}</CardTitle>
-              <CardDescription className="text-primary-600">{tool.subtitle}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-500">{tool.description}</p>
-              <Button 
-                className="w-full"
-                variant={tool.price === null ? "default" : "secondary"}
-              >
-                {tool.price === null ? (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4 mr-2" />
-                    Unlock for ${tool.price.toFixed(2)}
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
+              <CardHeader>
+                <CardTitle className="leading-tight">{tool.title}</CardTitle>
+                <CardDescription className="text-primary-600">{tool.subtitle}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-500">{tool.description}</p>
+                <Button 
+                  className="w-full"
+                  variant={tool.price === null ? "default" : "secondary"}
+                >
+                  {tool.price === null ? (
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Unlock for ${tool.price.toFixed(2)}
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>

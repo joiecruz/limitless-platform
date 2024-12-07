@@ -10,6 +10,7 @@ import Lesson from "@/pages/Lesson";
 import Community from "@/pages/Community";
 import Projects from "@/pages/Projects";
 import Tools from "@/pages/Tools";
+import ToolDetails from "@/pages/ToolDetails";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -80,6 +81,18 @@ export default function AppRoutes({ session }: AppRoutesProps) {
           session ? (
             <DashboardLayout>
               <Tools />
+            </DashboardLayout>
+          ) : (
+            <Navigate to="/signin" replace />
+          )
+        }
+      />
+      <Route
+        path="/tools/:toolId"
+        element={
+          session ? (
+            <DashboardLayout>
+              <ToolDetails />
             </DashboardLayout>
           ) : (
             <Navigate to="/signin" replace />
