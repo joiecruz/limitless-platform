@@ -18,6 +18,11 @@ export function useCommunityMessages(activeChannel: Channel | null) {
           profiles (
             username,
             avatar_url
+          ),
+          message_reactions (
+            id,
+            emoji,
+            user_id
           )
         `)
         .eq("channel_id", activeChannel.id)
@@ -54,19 +59,37 @@ export function useCommunityMessages(activeChannel: Channel | null) {
       )
       .subscribe();
 
+    // Also subscribe to reactions
+    const reactionSubscription = supabase
+      .channel('public:message_reactions')
+      .on('postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_reactions'
+        },
+        (payload) => {
+          console.log('Reaction change received:', payload);
+          fetchMessages();
+        }
+      )
+      .subscribe();
+
     return () => {
       messageSubscription.unsubscribe();
+      reactionSubscription.unsubscribe();
     };
   }, [activeChannel]);
 
-  const sendMessage = async (content: string) => {
-    if (!activeChannel || !content.trim()) return;
+  const sendMessage = async (content: string, imageUrl?: string) => {
+    if (!activeChannel || (!content.trim() && !imageUrl)) return;
 
     const { error } = await supabase
       .from("messages")
       .insert([
         {
           content,
+          image_url: imageUrl,
           channel_id: activeChannel.id,
           user_id: (await supabase.auth.getUser()).data.user?.id,
         },

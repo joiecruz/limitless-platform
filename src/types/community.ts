@@ -5,6 +5,14 @@ export interface Channel {
   workspace_id: string | null;
 }
 
+export interface MessageReaction {
+  id: string;
+  message_id: string;
+  user_id: string;
+  emoji: string;
+  created_at: string;
+}
+
 export interface Message {
   id: string;
   content: string;
@@ -18,4 +26,5 @@ export interface Message {
     username: string | null;
     avatar_url: string | null;
   } | null;
+  message_reactions?: MessageReaction[];
 }
