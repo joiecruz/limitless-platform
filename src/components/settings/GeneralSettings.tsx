@@ -29,7 +29,7 @@ export function GeneralSettings() {
         <div className="space-y-2">
           <Label htmlFor="slug">Workspace URL</Label>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">limitlesslab.app/</span>
+            <span className="text-sm text-muted-foreground">limitlesslab.io/</span>
             <Input 
               id="slug" 
               placeholder={currentWorkspace?.slug || "your-workspace"}
