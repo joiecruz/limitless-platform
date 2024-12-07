@@ -100,17 +100,17 @@ const Lessons = () => {
   const progress = (completedLessons / mockLessons.length) * 100;
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8">
+    <div className="animate-fade-in max-w-3xl mx-auto">
+      <div className="mb-8 text-center">
         <h1 className="text-2xl font-semibold text-gray-900">{course.title}</h1>
         <p className="mt-1 text-sm text-gray-500">
           Track your progress and complete the lessons
         </p>
       </div>
 
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div className="space-y-8">
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold">Course progress</h2>
+          <h2 className="text-xl font-semibold text-center">Course progress</h2>
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>{completedLessons}/{mockLessons.length} lessons completed</span>
@@ -121,7 +121,7 @@ const Lessons = () => {
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Course content</h2>
+          <h2 className="text-xl font-semibold text-center">Course content</h2>
           <div className="space-y-2">
             {mockLessons.map((lesson) => (
               <div
