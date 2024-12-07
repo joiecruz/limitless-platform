@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Users, BookOpen } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -143,8 +143,19 @@ const Courses = () => {
                 <CardDescription>{course.description}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <BookOpen className="h-4 w-4" />
+                    <span>{course.lesson_count || 0} lessons</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    <span>{course.enrollee_count || 0} enrolled</span>
+                  </div>
+                </div>
+                
                 {enrollment ? (
-                  <>
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Progress</span>
@@ -158,27 +169,15 @@ const Courses = () => {
                     >
                       <Button className="w-full">Continue Learning</Button>
                     </Link>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <BookOpen className="h-4 w-4" />
-                        <span>{course.lesson_count || 0} lessons</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        <span>{course.enrollee_count || 0} enrolled</span>
-                      </div>
-                    </div>
-                    <Button 
-                      className="w-full"
-                      onClick={() => enrollMutation.mutate(course.id)}
-                      disabled={enrollMutation.isPending}
-                    >
-                      {enrollMutation.isPending ? "Enrolling..." : "Enroll Now"}
-                    </Button>
-                  </>
+                  <Button 
+                    className="w-full"
+                    onClick={() => enrollMutation.mutate(course.id)}
+                    disabled={enrollMutation.isPending}
+                  >
+                    {enrollMutation.isPending ? "Enrolling..." : "Enroll Now"}
+                  </Button>
                 )}
               </CardContent>
             </Card>
