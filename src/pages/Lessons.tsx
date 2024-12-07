@@ -3,29 +3,26 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Check, Lock } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Lock, PlayCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 interface Lesson {
   id: string;
   title: string;
-  isCompleted: boolean;
-  isLocked: boolean;
+  description: string;
+  video_url: string | null;
+  release_date: string;
+  order: number;
+  duration: number | null;
 }
-
-const mockLessons: Lesson[] = [
-  { id: "1", title: "Lesson 0: Welcome to the Limitel", isCompleted: true, isLocked: false },
-  { id: "2", title: "Identifying Community Needs through AI-Powered Research", isCompleted: true, isLocked: false },
-  { id: "3", title: "Empathy and Problem Definition with AI Insights", isCompleted: false, isLocked: false },
-  { id: "4", title: "Ideation and Brainstorming with AI Assistance", isCompleted: false, isLocked: true },
-];
 
 const Lessons = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const { toast } = useToast();
 
   // Fetch course details
-  const { data: course, isLoading: courseLoading, error: courseError } = useQuery({
+  const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", courseId],
     queryFn: async () => {
       if (!courseId) throw new Error("Course ID is required");
@@ -51,7 +48,34 @@ const Lessons = () => {
     enabled: !!courseId,
   });
 
-  // Fetch enrollment status
+  // Fetch lessons
+  const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
+    queryKey: ["lessons", courseId],
+    queryFn: async () => {
+      if (!courseId) throw new Error("Course ID is required");
+
+      const { data, error } = await supabase
+        .from("lessons")
+        .select("*")
+        .eq("course_id", courseId)
+        .order("order");
+
+      if (error) {
+        console.error("Error fetching lessons:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load lessons. Please try again later.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      return data as Lesson[];
+    },
+    enabled: !!courseId,
+  });
+
+  // Fetch enrollment and progress
   const { data: enrollment, isLoading: enrollmentLoading } = useQuery({
     queryKey: ["enrollment", courseId],
     queryFn: async () => {
@@ -82,13 +106,8 @@ const Lessons = () => {
   });
 
   // Loading states
-  if (courseLoading || enrollmentLoading) {
+  if (courseLoading || lessonsLoading || enrollmentLoading) {
     return <div>Loading...</div>;
-  }
-
-  // Error state
-  if (courseError) {
-    return <div>Error loading course. Please try again later.</div>;
   }
 
   // Course not found
@@ -96,8 +115,22 @@ const Lessons = () => {
     return <div>Course not found</div>;
   }
 
-  const completedLessons = mockLessons.filter(lesson => lesson.isCompleted).length;
-  const progress = (completedLessons / mockLessons.length) * 100;
+  const isLessonLocked = (releaseDate: string) => {
+    return new Date(releaseDate) > new Date();
+  };
+
+  const handleLessonClick = (lesson: Lesson) => {
+    if (isLessonLocked(lesson.release_date)) {
+      toast({
+        title: "Lesson Locked",
+        description: `This lesson will be available on ${format(new Date(lesson.release_date), 'MMMM dd, yyyy')}`,
+      });
+      return;
+    }
+    
+    // Handle lesson navigation or video playback here
+    console.log("Opening lesson:", lesson.title);
+  };
 
   return (
     <div className="animate-fade-in max-w-3xl mx-auto">
@@ -113,39 +146,51 @@ const Lessons = () => {
           <h2 className="text-xl font-semibold">Course progress</h2>
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>{completedLessons}/{mockLessons.length} lessons completed</span>
-              <span>{Math.round(progress)}%</span>
+              <span>{enrollment?.progress || 0}% completed</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={enrollment?.progress || 0} className="h-2" />
           </div>
         </div>
 
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Course content</h2>
           <div className="space-y-2">
-            {mockLessons.map((lesson) => (
-              <div
-                key={lesson.id}
-                className={`flex items-center gap-3 p-4 rounded-lg border ${
-                  lesson.isCompleted ? "bg-primary-50" : "bg-white"
-                }`}
-              >
-                <div className="flex-shrink-0">
-                  {lesson.isCompleted ? (
-                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
+            {lessons.map((lesson) => {
+              const locked = isLessonLocked(lesson.release_date);
+              return (
+                <button
+                  key={lesson.id}
+                  onClick={() => handleLessonClick(lesson)}
+                  disabled={locked}
+                  className={`w-full flex items-center gap-3 p-4 rounded-lg border ${
+                    locked ? "bg-gray-50 cursor-not-allowed" : "bg-white hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="flex-shrink-0">
+                    {locked ? (
+                      <Lock className="w-5 h-5 text-muted-foreground" />
+                    ) : (
+                      <PlayCircle className="w-5 h-5 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className={`font-medium ${locked ? "text-muted-foreground" : ""}`}>
+                      {lesson.title}
                     </div>
-                  ) : lesson.isLocked ? (
-                    <Lock className="w-5 h-5 text-muted-foreground" />
-                  ) : (
-                    <div className="w-5 h-5 rounded-full border-2 border-muted-foreground" />
+                    {lesson.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {lesson.description}
+                      </p>
+                    )}
+                  </div>
+                  {lesson.duration && (
+                    <div className="text-sm text-muted-foreground">
+                      {lesson.duration} min
+                    </div>
                   )}
-                </div>
-                <span className={lesson.isLocked ? "text-muted-foreground" : ""}>
-                  {lesson.title}
-                </span>
-              </div>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
