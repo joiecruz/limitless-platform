@@ -10,6 +10,7 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import Courses from "./pages/Courses";
 
 const queryClient = new QueryClient();
 
@@ -33,7 +34,7 @@ const App = () => {
   }, []);
 
   if (loading) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   return (
@@ -55,6 +56,7 @@ const App = () => {
               path="/signup"
               element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
             />
+            <Route path="/courses" element={<Courses />} />
             <Route
               path="/dashboard/*"
               element={
