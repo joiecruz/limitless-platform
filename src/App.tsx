@@ -13,6 +13,7 @@ import SignUp from "./pages/SignUp";
 import Courses from "./pages/Courses";
 import Lessons from "./pages/Lessons";
 import Lesson from "./pages/Lesson";
+import Community from "./pages/Community";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +85,18 @@ const App = () => {
                 session ? (
                   <DashboardLayout>
                     <Dashboard />
+                  </DashboardLayout>
+                ) : (
+                  <Navigate to="/signin" replace />
+                )
+              }
+            />
+            <Route
+              path="/community"
+              element={
+                session ? (
+                  <DashboardLayout>
+                    <Community />
                   </DashboardLayout>
                 ) : (
                   <Navigate to="/signin" replace />
