@@ -157,7 +157,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span className="text-xl font-semibold text-primary-600">Limitless Lab</span>
           </div>
         </div>
-        <main className="py-6">
+        <main className="py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {children}
           </div>
