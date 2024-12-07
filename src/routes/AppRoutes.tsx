@@ -11,6 +11,7 @@ import Community from "@/pages/Community";
 import Projects from "@/pages/Projects";
 import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
+import Settings from "@/pages/Settings";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -107,6 +108,18 @@ export default function AppRoutes({ session }: AppRoutesProps) {
           session ? (
             <DashboardLayout>
               <Community />
+            </DashboardLayout>
+          ) : (
+            <Navigate to="/signin" replace />
+          )
+        }
+      />
+      <Route
+        path="/dashboard/settings"
+        element={
+          session ? (
+            <DashboardLayout>
+              <Settings />
             </DashboardLayout>
           ) : (
             <Navigate to="/signin" replace />
