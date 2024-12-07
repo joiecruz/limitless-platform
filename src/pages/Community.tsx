@@ -10,13 +10,42 @@ export default function Community() {
   const [privateChannels, setPrivateChannels] = useState<Channel[]>([]);
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Fetch the community workspace ID
   useEffect(() => {
+    const fetchWorkspace = async () => {
+      const { data: workspace, error } = await supabase
+        .from("workspaces")
+        .select("id")
+        .eq("slug", "community")
+        .single();
+
+      if (error) {
+        console.error("Error fetching workspace:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load workspace",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setWorkspaceId(workspace.id);
+    };
+
+    fetchWorkspace();
+  }, []);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+
     const fetchChannels = async () => {
       const { data: channels, error } = await supabase
         .from("channels")
         .select("*")
+        .eq("workspace_id", workspaceId)
         .order("name");
 
       if (error) {
@@ -55,7 +84,7 @@ export default function Community() {
     return () => {
       channelSubscription.unsubscribe();
     };
-  }, []);
+  }, [workspaceId]);
 
   useEffect(() => {
     if (!activeChannel) return;
@@ -133,6 +162,15 @@ export default function Community() {
   };
 
   const handleCreatePrivateChannel = async (name: string) => {
+    if (!workspaceId) {
+      toast({
+        title: "Error",
+        description: "Workspace not loaded",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -144,15 +182,12 @@ export default function Community() {
       return;
     }
 
-    // For now, we'll use a default workspace. In a real app, you'd get this from the current context
-    const defaultWorkspaceId = "your-workspace-id";
-
     const { data: channel, error } = await supabase
       .from("channels")
       .insert([
         {
           name,
-          workspace_id: defaultWorkspaceId,
+          workspace_id: workspaceId,
           description: `Private channel created by ${user.email}`,
         },
       ])
@@ -173,8 +208,6 @@ export default function Community() {
       title: "Success",
       description: `Channel "${name}" created successfully`,
     });
-
-    // The channel will be automatically added through the subscription
   };
 
   return (
