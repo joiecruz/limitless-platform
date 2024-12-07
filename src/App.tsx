@@ -56,7 +56,14 @@ const App = () => {
               path="/signup"
               element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
             />
-            <Route path="/courses" element={<Courses />} />
+            <Route
+              path="/courses"
+              element={
+                <DashboardLayout>
+                  <Courses />
+                </DashboardLayout>
+              }
+            />
             <Route
               path="/dashboard/*"
               element={
