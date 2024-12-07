@@ -87,17 +87,36 @@ const Lesson = () => {
         return;
       }
 
-      // Update enrollment progress
-      const { error: enrollmentError } = await supabase
+      // First check if enrollment exists
+      const { data: existingEnrollment } = await supabase
         .from("enrollments")
-        .upsert({
-          user_id: session.user.id,
-          course_id: courseId,
-          progress: Math.round(((currentIndex + 1) / totalLessons) * 100),
-        });
+        .select("*")
+        .eq("user_id", session.user.id)
+        .eq("course_id", courseId)
+        .single();
 
-      if (enrollmentError) {
-        throw enrollmentError;
+      if (existingEnrollment) {
+        // Update existing enrollment
+        const { error: updateError } = await supabase
+          .from("enrollments")
+          .update({
+            progress: Math.round(((currentIndex + 1) / totalLessons) * 100),
+          })
+          .eq("user_id", session.user.id)
+          .eq("course_id", courseId);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create new enrollment
+        const { error: insertError } = await supabase
+          .from("enrollments")
+          .insert({
+            user_id: session.user.id,
+            course_id: courseId,
+            progress: Math.round(((currentIndex + 1) / totalLessons) * 100),
+          });
+
+        if (insertError) throw insertError;
       }
 
       toast({
