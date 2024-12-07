@@ -1,4 +1,4 @@
-import { Hash, Lock } from "lucide-react";
+import { Hash, Lock, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,17 @@ export function ChannelSidebar({
 
           <Separator className="my-4" />
 
-          <h2 className="text-gray-500 uppercase text-xs font-semibold mb-2">Private Channels</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-gray-500 uppercase text-xs font-semibold">Private Channels</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 hover:bg-primary-50 hover:text-primary-600"
+              title="Create Private Channel"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="space-y-1">
             {privateChannels.map((channel) => (
               <Button

@@ -34,7 +34,7 @@ export default function Community() {
   }, []);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] -mt-20 -mx-8">
+    <div className="flex h-[calc(100vh-8rem)] -mt-20 -mx-8">
       <ChannelSidebar
         publicChannels={publicChannels}
         privateChannels={privateChannels}
