@@ -1,59 +1,75 @@
-import { Briefcase, BookOpen, Download, Users } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { BookOpen, Users, FolderKanban, Download } from "lucide-react";
+import { WorkspaceSelector } from "@/components/layout/WorkspaceSelector";
+import { useState } from "react";
 
-const modules = [
-  {
-    title: "Projects",
-    description: "Manage your innovation projects and track their progress",
-    icon: Briefcase,
-    count: 12,
-    href: "/dashboard/projects",
-  },
-  {
-    title: "Courses",
-    description: "Access learning materials and track your progress",
-    icon: BookOpen,
-    count: 5,
-    href: "/dashboard/courses",
-  },
-  {
-    title: "Tools",
-    description: "Download resources, worksheets, and innovation toolkits",
-    icon: Download,
-    count: 24,
-    href: "/dashboard/tools",
-  },
-  {
-    title: "Community",
-    description: "Connect with other innovators in real-time",
-    icon: Users,
-    count: 156,
-    href: "/dashboard/community",
-  },
-];
+interface Workspace {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 export default function Dashboard() {
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
+
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Welcome back</h1>
-        <p className="mt-1 text-sm text-gray-500">
+    <div className="flex-1 space-y-6 p-8">
+      <WorkspaceSelector 
+        currentWorkspace={currentWorkspace}
+        setCurrentWorkspace={setCurrentWorkspace}
+      />
+      
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+        <p className="text-muted-foreground">
           Here's an overview of your innovation journey
         </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {modules.map((module) => (
-          <a key={module.title} href={module.href} className="module-card">
-            <div className="flex items-center justify-between">
-              <div className="rounded-lg bg-primary-50 p-2">
-                <module.icon className="h-5 w-5 text-primary-600" />
-              </div>
-              <span className="text-sm font-medium text-gray-500">{module.count}</span>
-            </div>
-            <h2 className="mt-4 text-lg font-medium text-gray-900">{module.title}</h2>
-            <p className="mt-1 text-sm text-gray-500">{module.description}</p>
-          </a>
-        ))}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="p-6 space-y-2">
+          <div className="flex items-center justify-between">
+            <FolderKanban className="h-5 w-5 text-indigo-600" />
+            <span className="text-2xl font-bold">12</span>
+          </div>
+          <h3 className="font-semibold">Projects</h3>
+          <p className="text-sm text-muted-foreground">
+            Manage your innovation projects and track their progress
+          </p>
+        </Card>
+
+        <Card className="p-6 space-y-2">
+          <div className="flex items-center justify-between">
+            <BookOpen className="h-5 w-5 text-indigo-600" />
+            <span className="text-2xl font-bold">5</span>
+          </div>
+          <h3 className="font-semibold">Courses</h3>
+          <p className="text-sm text-muted-foreground">
+            Access learning materials and track your progress
+          </p>
+        </Card>
+
+        <Card className="p-6 space-y-2">
+          <div className="flex items-center justify-between">
+            <Download className="h-5 w-5 text-indigo-600" />
+            <span className="text-2xl font-bold">24</span>
+          </div>
+          <h3 className="font-semibold">Tools</h3>
+          <p className="text-sm text-muted-foreground">
+            Download resources, worksheets, and innovation toolkits
+          </p>
+        </Card>
+
+        <Card className="p-6 space-y-2">
+          <div className="flex items-center justify-between">
+            <Users className="h-5 w-5 text-indigo-600" />
+            <span className="text-2xl font-bold">156</span>
+          </div>
+          <h3 className="font-semibold">Community</h3>
+          <p className="text-sm text-muted-foreground">
+            Connect with other innovators in real-time
+          </p>
+        </Card>
       </div>
     </div>
   );
