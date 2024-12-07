@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { ChatHeader } from "./ChatHeader";
-import { useMessageOperations } from "@/hooks/useMessageOperations";
 import { useReactionOperations } from "@/hooks/useReactionOperations";
 
 interface ChatAreaProps {
@@ -28,7 +27,6 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
     }
   }, [localMessages]);
 
-  const { handleMessageDelete } = useMessageOperations(localMessages, setLocalMessages);
   const { handleReaction } = useReactionOperations(localMessages, setLocalMessages);
 
   return (
@@ -39,7 +37,6 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
         <MessageList 
           messages={localMessages}
           onReaction={handleReaction}
-          onDeleteMessage={handleMessageDelete}
         />
       </ScrollArea>
 

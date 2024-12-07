@@ -2,21 +2,22 @@ import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useMessageOperations } from "@/hooks/useMessageOperations";
 
 interface DeleteMessageProps {
   messageId: string;
   userId: string;
-  onDelete: () => void;
 }
 
-export function DeleteMessage({ messageId, userId, onDelete }: DeleteMessageProps) {
+export function DeleteMessage({ messageId, userId }: DeleteMessageProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { handleMessageDelete } = useMessageOperations();
   const { toast } = useToast();
 
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      console.log("Attempting to delete message:", messageId);
+      console.log("Starting delete process for message:", messageId);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -40,9 +41,10 @@ export function DeleteMessage({ messageId, userId, onDelete }: DeleteMessageProp
         return;
       }
 
-      // Call the parent's onDelete handler
-      onDelete();
-
+      const success = await handleMessageDelete(messageId);
+      if (!success) {
+        console.log("Message deletion failed");
+      }
     } catch (error) {
       console.error("Error in delete handler:", error);
       toast({

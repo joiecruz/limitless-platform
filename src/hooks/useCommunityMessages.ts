@@ -11,6 +11,7 @@ export function useCommunityMessages(activeChannel: Channel | null) {
     if (!activeChannel) return;
 
     const fetchMessages = async () => {
+      console.log("Fetching messages for channel:", activeChannel.id);
       const { data, error } = await supabase
         .from("messages")
         .select(`
@@ -38,26 +39,51 @@ export function useCommunityMessages(activeChannel: Channel | null) {
         return;
       }
 
+      console.log("Fetched messages:", data?.length || 0);
       setMessages(data || []);
     };
 
+    // Initial fetch
     fetchMessages();
 
-    const messageSubscription = supabase
-      .channel(`public:messages:channel_id=eq.${activeChannel.id}`)
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
+    // Set up real-time subscription for new messages
+    const subscription = supabase
+      .channel(`messages:${activeChannel.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
           table: 'messages',
           filter: `channel_id=eq.${activeChannel.id}`
         },
-        (payload) => {
-          console.log('Message inserted:', payload);
-          fetchMessages();
+        async (payload) => {
+          console.log('New message received:', payload);
+          // Fetch the complete message with profiles and reactions
+          const { data, error } = await supabase
+            .from("messages")
+            .select(`
+              *,
+              profiles (
+                username,
+                avatar_url
+              ),
+              message_reactions (
+                id,
+                emoji,
+                user_id
+              )
+            `)
+            .eq("id", payload.new.id)
+            .single();
+
+          if (!error && data) {
+            setMessages(current => [...current, data]);
+          }
         }
       )
-      .on('postgres_changes',
+      .on(
+        'postgres_changes',
         {
           event: 'DELETE',
           schema: 'public',
@@ -66,32 +92,17 @@ export function useCommunityMessages(activeChannel: Channel | null) {
         },
         (payload) => {
           console.log('Message deleted:', payload);
-          setMessages(currentMessages => 
-            currentMessages.filter(msg => msg.id !== payload.old.id)
+          setMessages(current => 
+            current.filter(msg => msg.id !== payload.old.id)
           );
         }
       )
       .subscribe();
 
-    // Also subscribe to reactions
-    const reactionSubscription = supabase
-      .channel('public:message_reactions')
-      .on('postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'message_reactions'
-        },
-        (payload) => {
-          console.log('Reaction change received:', payload);
-          fetchMessages();
-        }
-      )
-      .subscribe();
-
+    // Cleanup subscription on unmount or channel change
     return () => {
-      messageSubscription.unsubscribe();
-      reactionSubscription.unsubscribe();
+      console.log("Cleaning up message subscription");
+      subscription.unsubscribe();
     };
   }, [activeChannel]);
 
