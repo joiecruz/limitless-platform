@@ -41,7 +41,6 @@ export default function Community() {
 
     fetchChannels();
 
-    // Subscribe to channel changes
     const channelSubscription = supabase
       .channel('public:channels')
       .on('postgres_changes', 
@@ -89,7 +88,6 @@ export default function Community() {
 
     fetchMessages();
 
-    // Subscribe to message changes for the active channel
     const messageSubscription = supabase
       .channel(`public:messages:channel_id=eq.${activeChannel.id}`)
       .on('postgres_changes', 
@@ -134,15 +132,32 @@ export default function Community() {
     }
   };
 
-  const handleCreatePrivateChannel = async (name: string, workspaceId: string) => {
-    const { error } = await supabase
+  const handleCreatePrivateChannel = async (name: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a channel",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // For now, we'll use a default workspace. In a real app, you'd get this from the current context
+    const defaultWorkspaceId = "your-workspace-id";
+
+    const { data: channel, error } = await supabase
       .from("channels")
       .insert([
         {
           name,
-          workspace_id: workspaceId,
+          workspace_id: defaultWorkspaceId,
+          description: `Private channel created by ${user.email}`,
         },
-      ]);
+      ])
+      .select()
+      .single();
 
     if (error) {
       console.error("Error creating channel:", error);
@@ -151,7 +166,15 @@ export default function Community() {
         description: "Failed to create channel",
         variant: "destructive",
       });
+      return;
     }
+
+    toast({
+      title: "Success",
+      description: `Channel "${name}" created successfully`,
+    });
+
+    // The channel will be automatically added through the subscription
   };
 
   return (
