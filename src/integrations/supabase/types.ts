@@ -119,6 +119,53 @@ export type Database = {
           },
         ]
       }
+      lessons: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          description: string | null
+          duration: number | null
+          id: string
+          order: number
+          release_date: string | null
+          title: string
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          order: number
+          release_date?: string | null
+          title: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          order?: number
+          release_date?: string | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_reactions: {
         Row: {
           created_at: string

@@ -21,12 +21,14 @@ const mockLessons: Lesson[] = [
 ];
 
 const Lessons = () => {
-  const { courseId } = useParams();
+  const { courseId } = useParams<{ courseId: string }>();
   const { toast } = useToast();
 
-  const { data: course, isLoading } = useQuery({
+  const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", courseId],
     queryFn: async () => {
+      if (!courseId) throw new Error("Course ID is required");
+
       const { data, error } = await supabase
         .from("courses")
         .select("*")
@@ -44,11 +46,14 @@ const Lessons = () => {
 
       return data;
     },
+    enabled: !!courseId,
   });
 
   const { data: enrollment } = useQuery({
     queryKey: ["enrollment", courseId],
     queryFn: async () => {
+      if (!courseId) throw new Error("Course ID is required");
+
       const { data: userSession } = await supabase.auth.getSession();
       if (!userSession?.session?.user?.id) return null;
 
@@ -69,9 +74,10 @@ const Lessons = () => {
 
       return data;
     },
+    enabled: !!courseId,
   });
 
-  if (isLoading) {
+  if (courseLoading) {
     return <div>Loading...</div>;
   }
 
