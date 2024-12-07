@@ -119,7 +119,7 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
         )}
       </div>
       <CardHeader>
-        <CardTitle className="leading-snug">{course.title}</CardTitle>
+        <CardTitle className="leading-[1.4]">{course.title}</CardTitle>
         <CardDescription>{course.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
