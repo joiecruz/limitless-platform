@@ -29,13 +29,17 @@ export function GeneralSettings() {
         <div className="space-y-2">
           <Label htmlFor="slug">Workspace URL</Label>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">limitlesslab.io/</span>
             <Input 
               id="slug" 
               placeholder={currentWorkspace?.slug || "your-workspace"}
               defaultValue={currentWorkspace?.slug}
+              className="w-[180px]"
             />
+            <span className="text-sm text-muted-foreground">.limitlesslab.io</span>
           </div>
+          <p className="text-sm text-muted-foreground">
+            This is your workspace's unique subdomain.
+          </p>
         </div>
         
         <Button>Save Changes</Button>
