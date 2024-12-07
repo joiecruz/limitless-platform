@@ -2,10 +2,7 @@ import { Message } from "@/types/community";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { MessageReactions } from "./MessageReactions";
-import { Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useMemo } from "react";
+import { DeleteMessage } from "./MessageActions/DeleteMessage";
 
 interface MessageListProps {
   messages: Message[];
@@ -13,70 +10,6 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages, onReaction }: MessageListProps) {
-  const { toast } = useToast();
-
-  const handleDeleteMessage = async (messageId: string, userId: string) => {
-    try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to delete messages",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Check if the message belongs to the current user
-      if (user.id !== userId) {
-        toast({
-          title: "Error",
-          description: "You can only delete your own messages",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log("Attempting to delete message:", messageId);
-
-      // Delete message reactions first
-      const { error: reactionError } = await supabase
-        .from("message_reactions")
-        .delete()
-        .eq("message_id", messageId);
-
-      if (reactionError) {
-        console.error("Error deleting message reactions:", reactionError);
-        throw reactionError;
-      }
-
-      // Then delete the message
-      const { error: messageError } = await supabase
-        .from("messages")
-        .delete()
-        .eq("id", messageId);
-
-      if (messageError) {
-        console.error("Error deleting message:", messageError);
-        throw messageError;
-      }
-
-      toast({
-        title: "Success",
-        description: "Message deleted successfully",
-      });
-    } catch (error) {
-      console.error("Error deleting message:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete message",
-        variant: "destructive",
-      });
-    }
-  };
-
   const formatMessageContent = (content: string) => {
     // Replace @mentions with styled spans
     return content.replace(/@(\w+)/g, '<span class="text-primary font-semibold">@$1</span>');
@@ -104,12 +37,7 @@ export function MessageList({ messages, onReaction }: MessageListProps) {
               <span className="text-xs text-gray-500">
                 {format(new Date(message.created_at), 'MMM d, h:mm a')}
               </span>
-              <button
-                onClick={() => handleDeleteMessage(message.id, message.user_id)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-gray-400 hover:text-red-500"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              <DeleteMessage messageId={message.id} userId={message.user_id} />
             </div>
             {message.content && (
               <p 
