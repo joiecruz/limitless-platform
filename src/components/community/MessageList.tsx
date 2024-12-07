@@ -17,8 +17,20 @@ export function MessageList({ messages, onReaction }: MessageListProps) {
 
   const handleDeleteMessage = async (messageId: string, userId: string) => {
     try {
+      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.id !== userId) {
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to delete messages",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check if the message belongs to the current user
+      if (user.id !== userId) {
         toast({
           title: "Error",
           description: "You can only delete your own messages",
@@ -27,12 +39,29 @@ export function MessageList({ messages, onReaction }: MessageListProps) {
         return;
       }
 
-      const { error } = await supabase
+      console.log("Attempting to delete message:", messageId);
+
+      // Delete message reactions first
+      const { error: reactionError } = await supabase
+        .from("message_reactions")
+        .delete()
+        .eq("message_id", messageId);
+
+      if (reactionError) {
+        console.error("Error deleting message reactions:", reactionError);
+        throw reactionError;
+      }
+
+      // Then delete the message
+      const { error: messageError } = await supabase
         .from("messages")
         .delete()
         .eq("id", messageId);
 
-      if (error) throw error;
+      if (messageError) {
+        console.error("Error deleting message:", messageError);
+        throw messageError;
+      }
 
       toast({
         title: "Success",
