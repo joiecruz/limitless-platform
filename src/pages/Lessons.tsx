@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,6 @@ interface Lesson {
 
 const Lessons = () => {
   const { courseId } = useParams<{ courseId: string }>();
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   // Fetch course details
@@ -129,7 +128,8 @@ const Lessons = () => {
       return;
     }
     
-    navigate(`/courses/${courseId}/lessons/${lesson.id}`);
+    // Handle lesson navigation or video playback here
+    console.log("Opening lesson:", lesson.title);
   };
 
   return (
