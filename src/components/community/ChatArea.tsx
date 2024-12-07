@@ -21,7 +21,6 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
   }, [messages]);
 
   useEffect(() => {
-    // Scroll to bottom when messages change
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
@@ -29,35 +28,35 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
 
   const { handleReaction } = useReactionOperations(localMessages, setLocalMessages);
 
-  if (!activeChannel) {
-    return (
-      <div className="flex-1 flex flex-col bg-white">
-        <div className="border-b px-6 py-4">
-          <h1 className="text-xl font-semibold text-gray-900">Welcome to Community</h1>
-          <p className="text-sm text-gray-500 mt-1">Select a channel to start chatting</p>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-gray-500">Select a channel to start chatting</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex-1 flex flex-col bg-white">
-      <ChatHeader channel={activeChannel} />
-      <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
-        <MessageList 
-          messages={localMessages}
-          onReaction={handleReaction}
-        />
-      </ScrollArea>
-      <div className="p-4 border-t bg-white">
-        <MessageInput
-          channelName={activeChannel.name}
-          onSendMessage={onSendMessage}
-        />
-      </div>
+      {activeChannel ? (
+        <>
+          <ChatHeader channel={activeChannel} />
+          <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
+            <MessageList 
+              messages={localMessages}
+              onReaction={handleReaction}
+            />
+          </ScrollArea>
+          <div className="p-4 border-t bg-white">
+            <MessageInput
+              channelName={activeChannel.name}
+              onSendMessage={onSendMessage}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="border-b px-6 py-4">
+            <h1 className="text-xl font-semibold text-gray-900">Welcome to Community</h1>
+            <p className="text-sm text-gray-500 mt-1">Select a channel to start chatting</p>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-gray-500">Select a channel to start chatting</p>
+          </div>
+        </>
+      )}
     </div>
   );
 }
