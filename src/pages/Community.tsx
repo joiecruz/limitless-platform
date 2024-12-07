@@ -16,7 +16,9 @@ export default function Community() {
     const fetchUserWorkspace = async () => {
       try {
         // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
+        
         if (!user) {
           console.log("No user found");
           return;
@@ -26,7 +28,14 @@ export default function Community() {
         // Get user's workspace membership
         const { data: workspaceMember, error: memberError } = await supabase
           .from("workspace_members")
-          .select("workspace_id, workspaces(id, name, slug)")
+          .select(`
+            workspace_id,
+            workspaces (
+              id,
+              name,
+              slug
+            )
+          `)
           .eq("user_id", user.id)
           .single();
 
