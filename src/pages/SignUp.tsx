@@ -3,13 +3,15 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      if (event === 'SIGNED_IN') {
         navigate("/dashboard");
       }
     });
@@ -25,6 +27,20 @@ export default function SignUp() {
           <p className="mt-2 text-sm text-gray-600">
             Join Limitless Lab and start your innovation journey
           </p>
+          <div className="mt-4 text-sm text-gray-600">
+            <p>Test credentials you can use:</p>
+            <div className="mt-2 p-4 bg-gray-100 rounded-md text-left">
+              <p className="text-sm font-medium">Email: test@example.com</p>
+              <p className="text-sm font-medium">Password: Test123456</p>
+            </div>
+            <div className="mt-4">
+              <p>Password requirements:</p>
+              <ul className="list-disc list-inside text-xs text-gray-500 mt-1">
+                <li>Minimum 6 characters</li>
+                <li>At least one letter and one number</li>
+              </ul>
+            </div>
+          </div>
         </div>
         <Auth
           supabaseClient={supabase}
@@ -42,6 +58,14 @@ export default function SignUp() {
           view="sign_up"
           providers={[]}
           redirectTo={`${window.location.origin}/dashboard`}
+          onError={(error) => {
+            console.error('Auth error:', error);
+            toast({
+              title: "Sign Up Error",
+              description: error.message,
+              variant: "destructive"
+            });
+          }}
         />
       </div>
     </div>

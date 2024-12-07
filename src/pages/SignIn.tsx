@@ -13,7 +13,7 @@ export default function SignIn() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         navigate("/dashboard");
-      } else if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
+      } else if (event === 'SIGNED_OUT') {
         navigate("/signin");
       }
     });
@@ -30,11 +30,18 @@ export default function SignIn() {
             Sign in to your Limitless Lab account
           </p>
           <div className="mt-4 text-sm text-gray-600">
-            <p>Password requirements:</p>
-            <ul className="list-disc list-inside text-xs text-gray-500 mt-1">
-              <li>Minimum 6 characters</li>
-              <li>At least one letter and one number</li>
-            </ul>
+            <p>Test credentials you can use:</p>
+            <div className="mt-2 p-4 bg-gray-100 rounded-md text-left">
+              <p className="text-sm font-medium">Email: test@example.com</p>
+              <p className="text-sm font-medium">Password: Test123456</p>
+            </div>
+            <div className="mt-4">
+              <p>Password requirements:</p>
+              <ul className="list-disc list-inside text-xs text-gray-500 mt-1">
+                <li>Minimum 6 characters</li>
+                <li>At least one letter and one number</li>
+              </ul>
+            </div>
           </div>
         </div>
         <Auth
@@ -52,16 +59,6 @@ export default function SignIn() {
           }}
           providers={[]}
           redirectTo={`${window.location.origin}/dashboard`}
-          onError={(error) => {
-            console.error('Auth error:', error);
-            toast({
-              title: "Authentication Error",
-              description: error.message === "Invalid login credentials" 
-                ? "Invalid email or password. Please try again." 
-                : error.message,
-              variant: "destructive"
-            });
-          }}
         />
       </div>
     </div>
