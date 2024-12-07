@@ -1,6 +1,7 @@
 interface LessonContentProps {
   title: string;
   description: string | null;
+  bodyContent: string | null;
   currentIndex: number;
   totalLessons: number;
 }
@@ -8,6 +9,7 @@ interface LessonContentProps {
 const LessonContent = ({
   title,
   description,
+  bodyContent,
   currentIndex,
   totalLessons,
 }: LessonContentProps) => {
@@ -18,8 +20,13 @@ const LessonContent = ({
       </div>
       <h1 className="text-3xl font-semibold text-gray-900">{title}</h1>
       {description && (
-        <div className="prose max-w-none mb-8">
+        <div className="prose max-w-none mt-4">
           <p className="text-gray-600">{description}</p>
+        </div>
+      )}
+      {bodyContent && (
+        <div className="prose max-w-none mt-8">
+          <div className="text-gray-800">{bodyContent}</div>
         </div>
       )}
     </div>

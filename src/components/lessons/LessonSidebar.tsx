@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, PanelLeftClose, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -46,7 +46,11 @@ const LessonSidebar = ({
           </Link>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="icon" className="w-8 h-8">
-              <ArrowLeft className="w-4 h-4" />
+              {isOpen ? (
+                <PanelLeftClose className="w-4 h-4" />
+              ) : (
+                <PanelLeft className="w-4 h-4" />
+              )}
             </Button>
           </CollapsibleTrigger>
         </div>

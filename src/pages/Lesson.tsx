@@ -14,6 +14,7 @@ const Lesson = () => {
     lessonId: string;
   }>();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
 
   // Fetch lesson details
@@ -143,6 +144,7 @@ const Lesson = () => {
             <LessonContent
               title={lesson.title}
               description={lesson.description}
+              bodyContent={lesson.body_content}
               currentIndex={currentIndex}
               totalLessons={totalLessons}
             />
