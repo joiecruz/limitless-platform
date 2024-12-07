@@ -7,6 +7,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -21,11 +23,41 @@ export function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = useUser();
-  const supabase = useSupabaseClient();
+  const supabaseClient = useSupabaseClient();
+  const [profile, setProfile] = useState<any>(null);
+  
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, avatar_url')
+      .eq('id', user?.id)
+      .single();
+    
+    if (!error && data) {
+      setProfile(data);
+    }
+  };
   
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     navigate("/");
+  };
+
+  const getInitials = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
+    }
+    return user?.email?.[0].toUpperCase() || '?';
+  };
+
+  const getDefaultAvatar = () => {
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`;
   };
   
   return (
@@ -52,15 +84,12 @@ export function Navigation() {
           <PopoverTrigger asChild>
             <button className="flex items-center gap-3 px-2 w-full hover:bg-gray-100 rounded-lg transition-colors">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.user_metadata?.avatar_url} />
-                <AvatarFallback>
-                  {user?.user_metadata?.first_name?.[0]}
-                  {user?.user_metadata?.last_name?.[0]}
-                </AvatarFallback>
+                <AvatarImage src={profile?.avatar_url || getDefaultAvatar()} />
+                <AvatarFallback>{getInitials()}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col min-w-0 text-left">
                 <span className="text-sm font-medium text-gray-700 truncate">
-                  {user?.user_metadata?.first_name} {user?.user_metadata?.last_name}
+                  {profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : user?.email}
                 </span>
                 <span className="text-xs text-gray-500 truncate">
                   {user?.email}
