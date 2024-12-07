@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex flex-col h-full">
+          <div className="flex h-full flex-col">
             <div className="flex items-center justify-between px-4 py-4">
               <img 
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
@@ -52,15 +52,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 flex flex-col">
-                <div className="px-4">
-                  <WorkspaceSelector
-                    currentWorkspace={currentWorkspace}
-                    setCurrentWorkspace={setCurrentWorkspace}
-                  />
-                  <Navigation />
-                </div>
+            <div className="flex h-full flex-col">
+              <div className="px-4">
+                <WorkspaceSelector
+                  currentWorkspace={currentWorkspace}
+                  setCurrentWorkspace={setCurrentWorkspace}
+                />
+                <Navigation />
               </div>
             </div>
           </div>
@@ -68,7 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Desktop sidebar */}
         <div className="hidden lg:block lg:fixed lg:inset-y-0 lg:flex lg:w-64">
-          <div className="flex flex-col flex-grow border-r border-gray-200 bg-white">
+          <div className="flex h-full flex-col border-r border-gray-200 bg-white">
             <div className="flex items-center px-6 py-4">
               <img 
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
@@ -76,15 +74,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="h-12 w-auto"
               />
             </div>
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 flex flex-col">
-                <div className="px-4">
-                  <WorkspaceSelector
-                    currentWorkspace={currentWorkspace}
-                    setCurrentWorkspace={setCurrentWorkspace}
-                  />
-                  <Navigation />
-                </div>
+            <div className="flex h-full flex-col">
+              <div className="px-4">
+                <WorkspaceSelector
+                  currentWorkspace={currentWorkspace}
+                  setCurrentWorkspace={setCurrentWorkspace}
+                />
+                <Navigation />
               </div>
             </div>
           </div>
