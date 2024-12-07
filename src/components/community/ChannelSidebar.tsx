@@ -4,7 +4,7 @@ import { Channel } from "@/types/community";
 import { ChannelButton } from "./ChannelButton";
 import { CreateChannelDialog } from "./CreateChannelDialog";
 import { useChannelNotifications } from "@/hooks/useChannelNotifications";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface ChannelSidebarProps {
   publicChannels: Channel[];
@@ -37,12 +38,17 @@ export function ChannelSidebar({
 }: ChannelSidebarProps) {
   const { unreadCounts } = useChannelNotifications(activeChannel);
   const { toast } = useToast();
+  const [deletingChannelId, setDeletingChannelId] = useState<string | null>(null);
 
   const handleDeleteChannel = async (channelId: string) => {
+    setDeletingChannelId(channelId);
+    
     const { error } = await supabase
       .from("channels")
       .delete()
       .eq("id", channelId);
+
+    setDeletingChannelId(null);
 
     if (error) {
       console.error("Error deleting channel:", error);
@@ -104,8 +110,13 @@ export function ChannelSidebar({
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100 hover:text-red-600"
+                      disabled={deletingChannelId === channel.id}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      {deletingChannelId === channel.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
