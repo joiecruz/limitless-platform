@@ -29,6 +29,7 @@ export function GeneralSettings() {
     
     setIsLoading(true);
     try {
+      console.log('Checking for existing workspace with slug:', data.slug);
       // Check if slug is already taken
       const { data: existingWorkspaces, error: checkError } = await supabase
         .from('workspaces')
@@ -51,6 +52,7 @@ export function GeneralSettings() {
         return;
       }
 
+      console.log('Updating workspace with data:', data);
       // Update workspace
       const { error: updateError } = await supabase
         .from('workspaces')
@@ -78,11 +80,13 @@ export function GeneralSettings() {
         throw fetchError;
       }
 
+      console.log('Successfully fetched updated workspace:', updatedWorkspace);
       if (updatedWorkspace) {
+        // Update the current workspace in context with all fields
         setCurrentWorkspace({
-          ...currentWorkspace,
+          id: updatedWorkspace.id,
           name: updatedWorkspace.name,
-          slug: updatedWorkspace.slug,
+          slug: updatedWorkspace.slug
         });
 
         toast({
