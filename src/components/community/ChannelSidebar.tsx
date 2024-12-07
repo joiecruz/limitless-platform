@@ -18,17 +18,17 @@ export function ChannelSidebar({
   onChannelSelect,
 }: ChannelSidebarProps) {
   return (
-    <div className="w-64 bg-gray-800 flex-shrink-0">
+    <div className="w-64 bg-gray-50 border-r flex-shrink-0">
       <ScrollArea className="h-full">
         <div className="p-4">
-          <h2 className="text-gray-400 uppercase text-xs font-semibold mb-2">Public Channels</h2>
+          <h2 className="text-gray-500 uppercase text-xs font-semibold mb-2">Public Channels</h2>
           <div className="space-y-1">
             {publicChannels.map((channel) => (
               <Button
                 key={channel.id}
                 variant="ghost"
-                className={`w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700 ${
-                  activeChannel?.id === channel.id ? "bg-gray-700 text-white" : ""
+                className={`w-full justify-start text-gray-600 hover:text-primary-600 hover:bg-primary-50 ${
+                  activeChannel?.id === channel.id ? "bg-primary-50 text-primary-600" : ""
                 }`}
                 onClick={() => onChannelSelect(channel)}
               >
@@ -38,16 +38,16 @@ export function ChannelSidebar({
             ))}
           </div>
 
-          <Separator className="my-4 bg-gray-700" />
+          <Separator className="my-4" />
 
-          <h2 className="text-gray-400 uppercase text-xs font-semibold mb-2">Private Channels</h2>
+          <h2 className="text-gray-500 uppercase text-xs font-semibold mb-2">Private Channels</h2>
           <div className="space-y-1">
             {privateChannels.map((channel) => (
               <Button
                 key={channel.id}
                 variant="ghost"
-                className={`w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700 ${
-                  activeChannel?.id === channel.id ? "bg-gray-700 text-white" : ""
+                className={`w-full justify-start text-gray-600 hover:text-primary-600 hover:bg-primary-50 ${
+                  activeChannel?.id === channel.id ? "bg-primary-50 text-primary-600" : ""
                 }`}
                 onClick={() => onChannelSelect(channel)}
               >

@@ -19,7 +19,7 @@ const navigation = [
   { name: "Projects", href: "/dashboard/projects", icon: Briefcase },
   { name: "Courses", href: "/courses", icon: BookOpen },
   { name: "Tools", href: "/dashboard/tools", icon: Download },
-  { name: "Community", href: "/dashboard/community", icon: Users },
+  { name: "Community", href: "/community", icon: Users },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
