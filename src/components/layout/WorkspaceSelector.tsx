@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { CreateWorkspaceDialog } from "@/components/workspace/CreateWorkspaceDialog";
+import { Separator } from "@/components/ui/separator";
 
 interface Workspace {
   id: string;
@@ -87,6 +89,21 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
     };
 
     fetchWorkspaces();
+
+    const workspaceSubscription = supabase
+      .channel('public:workspaces')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'workspace_members' },
+        () => {
+          console.log('Workspace changes detected, refreshing...');
+          fetchWorkspaces();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      workspaceSubscription.unsubscribe();
+    };
   }, [currentWorkspace, setCurrentWorkspace, toast]);
 
   return (
@@ -111,6 +128,8 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
               {workspace.name}
             </DropdownMenuItem>
           ))}
+          <Separator className="my-2" />
+          <CreateWorkspaceDialog />
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
