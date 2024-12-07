@@ -48,7 +48,7 @@ export default function Community() {
         { event: '*', schema: 'public', table: 'channels' },
         (payload) => {
           console.log('Channel change received:', payload);
-          fetchChannels(); // Refresh channels
+          fetchChannels();
         }
       )
       .subscribe();
@@ -66,7 +66,7 @@ export default function Community() {
         .from("messages")
         .select(`
           *,
-          profiles:user_id (
+          profiles (
             username,
             avatar_url
           )
@@ -84,7 +84,7 @@ export default function Community() {
         return;
       }
 
-      setMessages(data);
+      setMessages(data || []);
     };
 
     fetchMessages();
@@ -101,7 +101,7 @@ export default function Community() {
         },
         (payload) => {
           console.log('Message change received:', payload);
-          fetchMessages(); // Refresh messages
+          fetchMessages();
         }
       )
       .subscribe();
