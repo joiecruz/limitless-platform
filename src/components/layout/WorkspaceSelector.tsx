@@ -44,10 +44,15 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
 
         console.log("User found:", user.id);
 
-        // Fetch workspaces with a join instead of a subquery
         const { data: memberWorkspaces, error: workspacesError } = await supabase
           .from('workspace_members')
-          .select('workspace:workspaces(id, name, slug)')
+          .select(`
+            workspace:workspaces (
+              id,
+              name,
+              slug
+            )
+          `)
           .eq('user_id', user.id);
 
         if (workspacesError) {
@@ -58,7 +63,6 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         console.log("Workspaces data:", memberWorkspaces);
         
         if (memberWorkspaces && memberWorkspaces.length > 0) {
-          // Transform the data to match the Workspace interface
           const transformedWorkspaces = memberWorkspaces.map(item => ({
             id: item.workspace.id,
             name: item.workspace.name,
@@ -66,13 +70,9 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
           }));
           
           setWorkspaces(transformedWorkspaces);
-          // Only set current workspace if none is selected
           if (!currentWorkspace) {
             setCurrentWorkspace(transformedWorkspaces[0]);
           }
-        } else {
-          console.log("No workspaces found for user");
-          setWorkspaces([]);
         }
       } catch (error) {
         console.error('Error in fetchWorkspaces:', error);
@@ -89,38 +89,28 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
     fetchWorkspaces();
   }, [currentWorkspace, setCurrentWorkspace, toast]);
 
-  const handleCreateWorkspace = async () => {
-    toast({
-      title: "Coming Soon",
-      description: "Workspace creation will be implemented soon!",
-    });
-  };
-
   return (
     <div className="px-4 pb-4">
       <DropdownMenu>
-        <DropdownMenuTrigger className="workspace-select w-full" disabled={isLoading}>
+        <DropdownMenuTrigger 
+          className="flex w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
+          disabled={isLoading}
+        >
           <span className="truncate">
             {isLoading ? "Loading workspaces..." : currentWorkspace?.name || "No workspace"}
           </span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          {workspaces.length === 0 && !isLoading ? (
-            <DropdownMenuItem disabled>No workspaces found</DropdownMenuItem>
-          ) : (
-            workspaces.map((workspace) => (
-              <DropdownMenuItem
-                key={workspace.id}
-                onClick={() => setCurrentWorkspace(workspace)}
-              >
-                {workspace.name}
-              </DropdownMenuItem>
-            ))
-          )}
-          <DropdownMenuItem onClick={handleCreateWorkspace}>
-            <span className="text-primary-600">+ Create Workspace</span>
-          </DropdownMenuItem>
+          {workspaces.map((workspace) => (
+            <DropdownMenuItem
+              key={workspace.id}
+              onClick={() => setCurrentWorkspace(workspace)}
+              className="cursor-pointer"
+            >
+              {workspace.name}
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
