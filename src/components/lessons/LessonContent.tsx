@@ -26,7 +26,7 @@ const LessonContent = ({
       )}
       {bodyContent && (
         <div className="prose max-w-none mt-8">
-          <div className="text-gray-800">{bodyContent}</div>
+          <div>{bodyContent}</div>
         </div>
       )}
     </div>
