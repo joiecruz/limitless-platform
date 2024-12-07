@@ -29,22 +29,43 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
+      // Check if user already reacted with this emoji
+      const { data: existingReactions } = await supabase
         .from('message_reactions')
-        .insert([
-          {
-            message_id: messageId,
-            user_id: user.id,
-            emoji: emoji,
-          },
-        ]);
+        .select('*')
+        .eq('message_id', messageId)
+        .eq('user_id', user.id)
+        .eq('emoji', emoji);
 
-      if (error) throw error;
+      if (existingReactions && existingReactions.length > 0) {
+        // If reaction exists, remove it (toggle behavior)
+        const { error: deleteError } = await supabase
+          .from('message_reactions')
+          .delete()
+          .eq('message_id', messageId)
+          .eq('user_id', user.id)
+          .eq('emoji', emoji);
+
+        if (deleteError) throw deleteError;
+      } else {
+        // If no reaction exists, add it
+        const { error: insertError } = await supabase
+          .from('message_reactions')
+          .insert([
+            {
+              message_id: messageId,
+              user_id: user.id,
+              emoji: emoji,
+            },
+          ]);
+
+        if (insertError) throw insertError;
+      }
     } catch (error) {
-      console.error('Error adding reaction:', error);
+      console.error('Error handling reaction:', error);
       toast({
         title: "Error",
-        description: "Failed to add reaction",
+        description: "Failed to handle reaction",
         variant: "destructive",
       });
     }
