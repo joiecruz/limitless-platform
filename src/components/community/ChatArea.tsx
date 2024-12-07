@@ -29,7 +29,7 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
   const { handleReaction } = useReactionOperations(localMessages, setLocalMessages);
 
   return (
-    <div className="flex-1 flex flex-col bg-white h-[calc(100vh-4rem)]">
+    <div className="flex-1 flex flex-col bg-white h-[calc(100vh-4rem)] mt-[50px]">
       {activeChannel ? (
         <>
           <ChatHeader channel={activeChannel} />
