@@ -123,16 +123,18 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
         <CardDescription>{course.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <BookOpen className="h-4 w-4" />
-            <span>{course.lesson_count || 0} lessons</span>
+        {!enrollment && (
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <BookOpen className="h-4 w-4" />
+              <span>{course.lesson_count || 0} lessons</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>{course.enrollee_count || 0} enrolled</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            <span>{course.enrollee_count || 0} enrolled</span>
-          </div>
-        </div>
+        )}
         
         <CourseEnrollment
           courseId={course.id}
