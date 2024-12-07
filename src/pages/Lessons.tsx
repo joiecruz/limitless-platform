@@ -1,7 +1,6 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Lock, PlayCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +19,7 @@ interface Lesson {
 const Lessons = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Fetch course details
   const { data: course, isLoading: courseLoading } = useQuery({
@@ -123,13 +123,15 @@ const Lessons = () => {
     if (isLessonLocked(lesson.release_date)) {
       toast({
         title: "Lesson Locked",
-        description: `This lesson will be available on ${format(new Date(lesson.release_date), 'MMMM dd, yyyy')}`,
+        description: `This lesson will be available on ${format(
+          new Date(lesson.release_date),
+          "MMMM dd, yyyy"
+        )}`,
       });
       return;
     }
-    
-    // Handle lesson navigation or video playback here
-    console.log("Opening lesson:", lesson.title);
+
+    navigate(`/courses/${courseId}/lessons/${lesson.id}`);
   };
 
   return (
@@ -163,7 +165,9 @@ const Lessons = () => {
                   onClick={() => handleLessonClick(lesson)}
                   disabled={locked}
                   className={`w-full flex items-center gap-3 p-4 rounded-lg border ${
-                    locked ? "bg-gray-50 cursor-not-allowed" : "bg-white hover:bg-gray-50"
+                    locked
+                      ? "bg-gray-50 cursor-not-allowed"
+                      : "bg-white hover:bg-gray-50"
                   }`}
                 >
                   <div className="flex-shrink-0">
@@ -174,7 +178,11 @@ const Lessons = () => {
                     )}
                   </div>
                   <div className="flex-1 text-left">
-                    <div className={`font-medium ${locked ? "text-muted-foreground" : ""}`}>
+                    <div
+                      className={`font-medium ${
+                        locked ? "text-muted-foreground" : ""
+                      }`}
+                    >
                       {lesson.title}
                     </div>
                     {lesson.description && (

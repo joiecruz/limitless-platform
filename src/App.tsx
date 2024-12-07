@@ -12,6 +12,7 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Courses from "./pages/Courses";
 import Lessons from "./pages/Lessons";
+import Lesson from "./pages/Lesson";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,10 @@ const App = () => {
                   <Lessons />
                 </DashboardLayout>
               }
+            />
+            <Route
+              path="/courses/:courseId/lessons/:lessonId"
+              element={<Lesson />}
             />
             <Route
               path="/dashboard/*"
