@@ -1,10 +1,8 @@
-import { useState, createContext, useContext } from "react";
+import { useState, createContext } from "react";
 import { X } from "lucide-react";
 import { WorkspaceSelector } from "./WorkspaceSelector";
 import { Navigation } from "./Navigation";
 import { MobileHeader } from "./MobileHeader";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUser } from "@supabase/auth-helpers-react";
 
 interface Workspace {
   id: string;
@@ -21,32 +19,6 @@ export const WorkspaceContext = createContext<WorkspaceContextType>({
   currentWorkspace: null,
   setCurrentWorkspace: () => {},
 });
-
-const UserProfileSection = () => {
-  const user = useUser();
-  if (!user) return null;
-  
-  return (
-    <div className="border-t border-gray-200 p-4">
-      <div className="flex items-center gap-3">
-        <Avatar>
-          <AvatarImage src={user.user_metadata.avatar_url} />
-          <AvatarFallback>
-            {user.email?.charAt(0).toUpperCase() || 'U'}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col overflow-hidden">
-          <span className="text-sm font-medium truncate">
-            {user.user_metadata.full_name || 'User'}
-          </span>
-          <span className="text-xs text-gray-500 truncate">
-            {user.email}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -88,7 +60,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 />
                 <Navigation />
               </div>
-              <UserProfileSection />
             </div>
           </div>
         </div>
@@ -111,7 +82,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 />
                 <Navigation />
               </div>
-              <UserProfileSection />
             </div>
           </div>
         </div>
