@@ -1,7 +1,7 @@
 import { Home, BookOpen, Users, Settings, Download, Briefcase, LogOut } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useUser } from "@supabase/auth-helpers-react";
 import {
   Popover,
   PopoverContent,
@@ -23,7 +23,6 @@ export function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = useUser();
-  const supabaseClient = useSupabaseClient();
   const [profile, setProfile] = useState<any>(null);
   
   useEffect(() => {
@@ -45,7 +44,7 @@ export function Navigation() {
   };
   
   const handleLogout = async () => {
-    await supabaseClient.auth.signOut();
+    await supabase.auth.signOut();
     navigate("/");
   };
 
