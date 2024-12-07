@@ -29,44 +29,64 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
     const fetchWorkspaces = async () => {
       try {
         console.log("Fetching workspaces...");
-        const { data: user } = await supabase.auth.getUser();
-        if (!user.user) {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error('Error fetching user:', userError);
+          throw userError;
+        }
+
+        if (!user) {
           console.log("No user found");
           setIsLoading(false);
           return;
         }
 
-        console.log("User found:", user.user.id);
-        const { data: workspaceMembers, error: membersError } = await supabase
+        console.log("User found:", user.id);
+        
+        // First fetch workspace memberships
+        const { data: memberships, error: membershipsError } = await supabase
           .from('workspace_members')
           .select('workspace_id')
-          .eq('user_id', user.user.id);
+          .eq('user_id', user.id)
+          .throwOnError();
 
-        if (membersError) {
-          console.error('Error fetching workspace members:', membersError);
-          throw membersError;
+        if (membershipsError) {
+          console.error('Error fetching workspace members:', membershipsError);
+          throw membershipsError;
         }
 
-        console.log("Workspace members:", workspaceMembers);
-        if (workspaceMembers && workspaceMembers.length > 0) {
-          const workspaceIds = workspaceMembers.map(member => member.workspace_id);
-          const { data: workspacesData, error: workspacesError } = await supabase
-            .from('workspaces')
-            .select('*')
-            .in('id', workspaceIds);
+        if (!memberships || memberships.length === 0) {
+          console.log("No workspace memberships found");
+          setWorkspaces([]);
+          setIsLoading(false);
+          return;
+        }
 
-          if (workspacesError) {
-            console.error('Error fetching workspaces:', workspacesError);
-            throw workspacesError;
-          }
+        console.log("Workspace memberships:", memberships);
+        
+        // Then fetch the actual workspaces
+        const workspaceIds = memberships.map(m => m.workspace_id);
+        const { data: workspacesData, error: workspacesError } = await supabase
+          .from('workspaces')
+          .select('*')
+          .in('id', workspaceIds)
+          .throwOnError();
 
-          console.log("Workspaces data:", workspacesData);
-          if (workspacesData) {
-            setWorkspaces(workspacesData);
-            if (workspacesData.length > 0 && !currentWorkspace) {
-              setCurrentWorkspace(workspacesData[0]);
-            }
+        if (workspacesError) {
+          console.error('Error fetching workspaces:', workspacesError);
+          throw workspacesError;
+        }
+
+        console.log("Workspaces data:", workspacesData);
+        
+        if (workspacesData && workspacesData.length > 0) {
+          setWorkspaces(workspacesData);
+          if (!currentWorkspace) {
+            setCurrentWorkspace(workspacesData[0]);
           }
+        } else {
+          setWorkspaces([]);
         }
       } catch (error) {
         console.error('Error in fetchWorkspaces:', error);
@@ -81,7 +101,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
     };
 
     fetchWorkspaces();
-  }, [currentWorkspace, setCurrentWorkspace]);
+  }, [currentWorkspace, setCurrentWorkspace, toast]);
 
   const handleCreateWorkspace = async () => {
     toast({
