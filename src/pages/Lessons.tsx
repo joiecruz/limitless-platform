@@ -24,7 +24,8 @@ const Lessons = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const { toast } = useToast();
 
-  const { data: course, isLoading: courseLoading } = useQuery({
+  // Fetch course details
+  const { data: course, isLoading: courseLoading, error: courseError } = useQuery({
     queryKey: ["course", courseId],
     queryFn: async () => {
       if (!courseId) throw new Error("Course ID is required");
@@ -36,6 +37,7 @@ const Lessons = () => {
         .single();
 
       if (error) {
+        console.error("Error fetching course:", error);
         toast({
           title: "Error",
           description: "Failed to load course details. Please try again later.",
@@ -49,7 +51,8 @@ const Lessons = () => {
     enabled: !!courseId,
   });
 
-  const { data: enrollment } = useQuery({
+  // Fetch enrollment status
+  const { data: enrollment, isLoading: enrollmentLoading } = useQuery({
     queryKey: ["enrollment", courseId],
     queryFn: async () => {
       if (!courseId) throw new Error("Course ID is required");
@@ -65,6 +68,7 @@ const Lessons = () => {
         .single();
 
       if (error && error.code !== "PGRST116") {
+        console.error("Error fetching enrollment:", error);
         toast({
           title: "Error",
           description: "Failed to load enrollment details. Please try again later.",
@@ -77,10 +81,17 @@ const Lessons = () => {
     enabled: !!courseId,
   });
 
-  if (courseLoading) {
+  // Loading states
+  if (courseLoading || enrollmentLoading) {
     return <div>Loading...</div>;
   }
 
+  // Error state
+  if (courseError) {
+    return <div>Error loading course. Please try again later.</div>;
+  }
+
+  // Course not found
   if (!course) {
     return <div>Course not found</div>;
   }
