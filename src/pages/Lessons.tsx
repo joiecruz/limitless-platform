@@ -100,13 +100,15 @@ const Lessons = () => {
   const progress = (completedLessons / mockLessons.length) * 100;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 px-4">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">{course.title}</h1>
-          <Button>Continue course</Button>
-        </div>
-        
+    <div className="animate-fade-in">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-900">{course.title}</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Track your progress and complete the lessons
+        </p>
+      </div>
+
+      <div className="max-w-3xl space-y-8">
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">Course progress</h2>
           <div className="space-y-2">
@@ -117,34 +119,34 @@ const Lessons = () => {
             <Progress value={progress} className="h-2" />
           </div>
         </div>
-      </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Course content</h2>
-        <div className="space-y-2">
-          {mockLessons.map((lesson) => (
-            <div
-              key={lesson.id}
-              className={`flex items-center gap-3 p-4 rounded-lg border ${
-                lesson.isCompleted ? "bg-primary-50" : "bg-white"
-              }`}
-            >
-              <div className="flex-shrink-0">
-                {lesson.isCompleted ? (
-                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                    <Check className="w-3 h-3 text-white" />
-                  </div>
-                ) : lesson.isLocked ? (
-                  <Lock className="w-5 h-5 text-muted-foreground" />
-                ) : (
-                  <div className="w-5 h-5 rounded-full border-2 border-muted-foreground" />
-                )}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Course content</h2>
+          <div className="space-y-2">
+            {mockLessons.map((lesson) => (
+              <div
+                key={lesson.id}
+                className={`flex items-center gap-3 p-4 rounded-lg border ${
+                  lesson.isCompleted ? "bg-primary-50" : "bg-white"
+                }`}
+              >
+                <div className="flex-shrink-0">
+                  {lesson.isCompleted ? (
+                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  ) : lesson.isLocked ? (
+                    <Lock className="w-5 h-5 text-muted-foreground" />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border-2 border-muted-foreground" />
+                  )}
+                </div>
+                <span className={lesson.isLocked ? "text-muted-foreground" : ""}>
+                  {lesson.title}
+                </span>
               </div>
-              <span className={lesson.isLocked ? "text-muted-foreground" : ""}>
-                {lesson.title}
-              </span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
