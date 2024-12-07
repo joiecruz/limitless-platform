@@ -26,19 +26,37 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
 
   const handleReaction = async (messageId: string, emoji: string) => {
     try {
+      console.log("Handling reaction:", { messageId, emoji });
+      
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log("No authenticated user found");
+        toast({
+          title: "Error",
+          description: "You must be logged in to react to messages",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Check if user already reacted with this emoji
-      const { data: existingReactions } = await supabase
+      const { data: existingReactions, error: fetchError } = await supabase
         .from('message_reactions')
         .select('*')
         .eq('message_id', messageId)
         .eq('user_id', user.id)
         .eq('emoji', emoji);
 
+      if (fetchError) {
+        console.error("Error fetching existing reactions:", fetchError);
+        throw fetchError;
+      }
+
+      console.log("Existing reactions:", existingReactions);
+
       if (existingReactions && existingReactions.length > 0) {
         // If reaction exists, remove it (toggle behavior)
+        console.log("Removing existing reaction");
         const { error: deleteError } = await supabase
           .from('message_reactions')
           .delete()
@@ -46,9 +64,13 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
           .eq('user_id', user.id)
           .eq('emoji', emoji);
 
-        if (deleteError) throw deleteError;
+        if (deleteError) {
+          console.error("Error deleting reaction:", deleteError);
+          throw deleteError;
+        }
       } else {
         // If no reaction exists, add it
+        console.log("Adding new reaction");
         const { error: insertError } = await supabase
           .from('message_reactions')
           .insert([
@@ -59,7 +81,10 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
             },
           ]);
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("Error inserting reaction:", insertError);
+          throw insertError;
+        }
       }
     } catch (error) {
       console.error('Error handling reaction:', error);
