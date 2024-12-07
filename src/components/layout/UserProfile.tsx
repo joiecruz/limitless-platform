@@ -16,19 +16,26 @@ export function UserProfile() {
   const [profile, setProfile] = useState<any>(null);
   
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       fetchProfile();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchProfile = async () => {
+    console.log('Fetching profile for user:', user?.id);
     const { data, error } = await supabase
       .from('profiles')
       .select('first_name, last_name, avatar_url')
       .eq('id', user?.id)
       .single();
     
-    if (!error && data) {
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return;
+    }
+    
+    if (data) {
+      console.log('Profile data:', data);
       setProfile(data);
     }
   };
@@ -43,6 +50,13 @@ export function UserProfile() {
       return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
     }
     return user?.email?.[0].toUpperCase() || '?';
+  };
+
+  const getDisplayName = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return user?.email;
   };
 
   const getDefaultAvatar = () => {
@@ -60,7 +74,7 @@ export function UserProfile() {
             </Avatar>
             <div className="flex flex-col min-w-0 text-left">
               <span className="text-sm font-medium text-gray-700 truncate">
-                {profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : user?.email}
+                {getDisplayName()}
               </span>
               <span className="text-xs text-gray-500 truncate">
                 {user?.email}
