@@ -14,6 +14,7 @@ import Courses from "./pages/Courses";
 import Lessons from "./pages/Lessons";
 import Lesson from "./pages/Lesson";
 import Community from "./pages/Community";
+import Projects from "./pages/Projects";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,18 @@ const App = () => {
                 session ? (
                   <DashboardLayout>
                     <Dashboard />
+                  </DashboardLayout>
+                ) : (
+                  <Navigate to="/signin" replace />
+                )
+              }
+            />
+            <Route
+              path="/projects"
+              element={
+                session ? (
+                  <DashboardLayout>
+                    <Projects />
                   </DashboardLayout>
                 ) : (
                   <Navigate to="/signin" replace />
