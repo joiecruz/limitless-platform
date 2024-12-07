@@ -43,35 +43,17 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         }
 
         console.log("User found:", user.id);
-        
-        // First fetch workspace memberships
-        const { data: memberships, error: membershipsError } = await supabase
-          .from('workspace_members')
-          .select('workspace_id')
-          .eq('user_id', user.id)
-          .throwOnError();
 
-        if (membershipsError) {
-          console.error('Error fetching workspace members:', membershipsError);
-          throw membershipsError;
-        }
-
-        if (!memberships || memberships.length === 0) {
-          console.log("No workspace memberships found");
-          setWorkspaces([]);
-          setIsLoading(false);
-          return;
-        }
-
-        console.log("Workspace memberships:", memberships);
-        
-        // Then fetch the actual workspaces
-        const workspaceIds = memberships.map(m => m.workspace_id);
+        // Single query to get workspaces through the workspace_members join
         const { data: workspacesData, error: workspacesError } = await supabase
           .from('workspaces')
-          .select('*')
-          .in('id', workspaceIds)
-          .throwOnError();
+          .select('id, name, slug')
+          .in('id', (
+            supabase
+              .from('workspace_members')
+              .select('workspace_id')
+              .eq('user_id', user.id)
+          ));
 
         if (workspacesError) {
           console.error('Error fetching workspaces:', workspacesError);
@@ -82,10 +64,12 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         
         if (workspacesData && workspacesData.length > 0) {
           setWorkspaces(workspacesData);
+          // Only set current workspace if none is selected
           if (!currentWorkspace) {
             setCurrentWorkspace(workspacesData[0]);
           }
         } else {
+          console.log("No workspaces found for user");
           setWorkspaces([]);
         }
       } catch (error) {
