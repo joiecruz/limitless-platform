@@ -31,12 +31,17 @@ export function useCommunityChannels(workspaceId: string | null) {
     return data;
   }, [toast]);
 
-  const fetchPrivateChannels = useCallback(async (wsId: string) => {
-    console.log("Fetching private channels for workspace:", wsId);
+  const fetchPrivateChannels = useCallback(async () => {
+    if (!workspaceId) {
+      console.log("No workspace ID provided, skipping private channels fetch");
+      return [];
+    }
+
+    console.log("Fetching private channels for workspace:", workspaceId);
     const { data, error } = await supabase
       .from("channels")
       .select("*")
-      .eq("workspace_id", wsId)
+      .eq("workspace_id", workspaceId)
       .eq("is_public", false)
       .order("name");
 
@@ -47,12 +52,12 @@ export function useCommunityChannels(workspaceId: string | null) {
         description: "Failed to load private channels",
         variant: "destructive",
       });
-      return null;
+      return [];
     }
 
     console.log("Fetched private channels:", data);
     return data;
-  }, [toast]);
+  }, [workspaceId, toast]);
 
   const handleWorkspaceChange = useCallback(async () => {
     console.log("Handling workspace change. Current workspace:", workspaceId);
@@ -74,10 +79,8 @@ export function useCommunityChannels(workspaceId: string | null) {
 
     // Fetch private channels only if workspace is selected
     if (workspaceId) {
-      const privateData = await fetchPrivateChannels(workspaceId);
-      if (privateData) {
-        setPrivateChannels(privateData);
-      }
+      const privateData = await fetchPrivateChannels();
+      setPrivateChannels(privateData || []);
     }
 
     // Set default active channel if none is selected
