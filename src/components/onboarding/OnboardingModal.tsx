@@ -45,6 +45,15 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
 
   const progress = (currentStep / TOTAL_STEPS) * 100;
 
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
   const handleNext = async (stepData: Partial<OnboardingData>) => {
     const updatedData = { ...formData, ...stepData };
     setFormData(updatedData);
@@ -55,41 +64,56 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("No user found");
 
-        const { error } = await supabase
+        // Update profile
+        const { error: profileError } = await supabase
           .from("profiles")
           .update({
             first_name: updatedData.firstName,
             last_name: updatedData.lastName,
             role: updatedData.role,
             company_size: updatedData.companySize,
-            goals: JSON.stringify(updatedData.goals), // Convert array to JSON string
+            goals: JSON.stringify(updatedData.goals),
             referral_source: updatedData.referralSource
           })
           .eq("id", user.id);
 
-        if (error) throw error;
+        if (profileError) throw profileError;
 
-        // Update workspace name if provided
-        if (updatedData.workspaceName) {
-          const { error: workspaceError } = await supabase
-            .from("workspaces")
-            .update({ name: updatedData.workspaceName })
-            .eq("id", user.id);
+        // Create workspace with unique slug
+        const slug = generateSlug(updatedData.workspaceName);
+        const { data: workspace, error: workspaceError } = await supabase
+          .from("workspaces")
+          .insert({
+            name: updatedData.workspaceName,
+            slug: `${slug}-${Date.now()}`
+          })
+          .select()
+          .single();
 
-          if (workspaceError) throw workspaceError;
-        }
+        if (workspaceError) throw workspaceError;
+
+        // Add user as workspace owner
+        const { error: memberError } = await supabase
+          .from("workspace_members")
+          .insert({
+            workspace_id: workspace.id,
+            user_id: user.id,
+            role: 'owner'
+          });
+
+        if (memberError) throw memberError;
 
         toast({
-          title: "Profile updated",
-          description: "Your profile has been successfully updated.",
+          title: "Setup complete",
+          description: "Your profile and workspace have been created successfully.",
         });
 
         if (onOpenChange) onOpenChange(false);
       } catch (error: any) {
-        console.error("Error updating profile:", error);
+        console.error("Error in onboarding:", error);
         toast({
           title: "Error",
-          description: error.message || "Failed to update profile",
+          description: error.message || "Failed to complete setup",
           variant: "destructive",
         });
       } finally {
@@ -128,9 +152,9 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] p-0">
-        <Progress value={progress} className="rounded-none" />
-        <div className="p-6">
+      <DialogContent className="sm:max-w-[600px] h-[600px] p-0 overflow-hidden">
+        <Progress value={progress} className="rounded-none h-1" />
+        <div className="p-6 overflow-y-auto flex-1">
           <DialogHeader>
             <div className="space-y-6">
               {renderStep()}
