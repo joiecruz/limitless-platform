@@ -1,12 +1,19 @@
-import { useUser } from "@supabase/auth-helpers-react";
-import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const user = useUser();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/signin", { replace: true });
+      }
+    });
 
-  if (!user) {
-    return <Navigate to="/signin" replace />;
-  }
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   return <>{children}</>;
 }

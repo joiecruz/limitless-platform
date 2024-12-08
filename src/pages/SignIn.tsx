@@ -3,7 +3,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -11,10 +11,8 @@ export default function SignIn() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' && session) {
         navigate("/dashboard");
-      } else if (event === 'SIGNED_OUT') {
-        navigate("/signin");
       }
     });
 
@@ -96,7 +94,7 @@ export default function SignIn() {
             redirectTo={`${window.location.origin}/dashboard`}
           />
 
-          {/* Test Credentials Section - Collapsible on Mobile */}
+          {/* Test Credentials Section */}
           <div className="mt-8 p-4 bg-gray-50 rounded-lg text-sm space-y-3 md:block">
             <p className="font-medium text-gray-700">Test credentials you can use:</p>
             <div className="p-3 bg-white rounded-md shadow-sm">
