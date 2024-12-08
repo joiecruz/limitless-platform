@@ -2,13 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [showOnboarding, setShowOnboarding] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -127,7 +128,10 @@ export default function Dashboard() {
         </div>
 
         {/* Onboarding Modal */}
-        <OnboardingModal />
+        <OnboardingModal 
+          open={showOnboarding} 
+          onOpenChange={setShowOnboarding}
+        />
       </div>
     </RequireAuth>
   );

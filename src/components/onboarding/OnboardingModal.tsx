@@ -18,11 +18,16 @@ const options: OnboardingOption[] = [
   { value: "school", label: "School" },
 ];
 
-export function OnboardingModal() {
+interface OnboardingModalProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalProps) {
   const [selectedOption, setSelectedOption] = useState<string>("");
 
   return (
-    <Dialog open={true}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] p-8">
         <DialogHeader>
           <DialogTitle className="text-3xl font-semibold text-center mb-4">
