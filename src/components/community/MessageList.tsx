@@ -13,7 +13,7 @@ export function MessageList({ messages, onReaction }: MessageListProps) {
     if (profile?.first_name || profile?.last_name) {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     }
-    return profile?.username || "Anonymous";
+    return "Anonymous";
   };
 
   const getInitials = (profile: Message['profiles']) => {
@@ -21,7 +21,7 @@ export function MessageList({ messages, onReaction }: MessageListProps) {
     if (profile.first_name || profile.last_name) {
       return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
     }
-    return profile.username?.[0]?.toUpperCase() || '?';
+    return '?';
   };
 
   return (
