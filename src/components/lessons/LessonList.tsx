@@ -1,8 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, PlayCircle } from "lucide-react";
+import { Lock, PlayCircle, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Lesson {
   id: string;
@@ -23,6 +25,24 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Fetch user's enrollment to check lesson completion
+  const { data: enrollment } = useQuery({
+    queryKey: ["enrollment", courseId],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return null;
+
+      const { data } = await supabase
+        .from("enrollments")
+        .select("*")
+        .eq("course_id", courseId)
+        .eq("user_id", session.user.id)
+        .single();
+
+      return data;
+    },
+  });
+
   const isLessonLocked = (releaseDate: string) => {
     return new Date(releaseDate) > new Date();
   };
@@ -42,12 +62,20 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
     navigate(`/courses/${courseId}/lessons/${lesson.id}`);
   };
 
+  // Calculate if a lesson is completed based on progress
+  const isLessonCompleted = (lessonOrder: number) => {
+    if (!enrollment?.progress) return false;
+    const lessonProgress = (lessonOrder / lessons.length) * 100;
+    return enrollment.progress >= lessonProgress;
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Course content</h2>
       <div className="space-y-2">
         {lessons.map((lesson) => {
           const locked = isLessonLocked(lesson.release_date);
+          const completed = isLessonCompleted(lesson.order);
           return (
             <button
               key={lesson.id}
@@ -62,6 +90,8 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
               <div className="flex-shrink-0">
                 {locked ? (
                   <Lock className="w-5 h-5 text-muted-foreground" />
+                ) : completed ? (
+                  <Check className="w-5 h-5 text-primary" />
                 ) : (
                   <PlayCircle className="w-5 h-5 text-primary" />
                 )}
