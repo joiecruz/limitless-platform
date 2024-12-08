@@ -129,11 +129,11 @@ export default function Register() {
         <div className="w-full flex items-center justify-center p-12">
           <div className="max-w-lg">
             <blockquote className="text-xl font-medium text-gray-900">
-              "Limitless Lab has transformed the way we approach innovation. The platform's intuitive design and comprehensive resources have made it easier than ever to bring our ideas to life."
+              "Innovation is not just about creating something new – it's about creating something that makes a positive impact on the world. Every small change we make today can lead to transformative solutions tomorrow."
             </blockquote>
             <div className="mt-4">
-              <p className="font-semibold">Sarah Johnson</p>
-              <p className="text-sm text-gray-600">Innovation Lead, TechCorp</p>
+              <p className="font-semibold">Dr. Emily Chen</p>
+              <p className="text-sm text-gray-600">Global Innovation Director, Impact Solutions</p>
             </div>
           </div>
         </div>
