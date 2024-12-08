@@ -2,14 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import CourseProgress from "./CourseProgress";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useState } from "react";
 
 interface CourseEnrollmentProps {
@@ -67,24 +66,27 @@ const CourseEnrollment = ({
         {isEnrolling ? "Enrolling..." : "Enroll Now"}
       </Button>
 
-      <AlertDialog 
+      <Dialog 
         open={showDialog} 
         onOpenChange={setShowDialog}
       >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Congratulations! 🎉</AlertDialogTitle>
-            <AlertDialogDescription>
+        <DialogContent className="max-w-md aspect-square flex flex-col">
+          <DialogHeader className="flex-grow flex flex-col items-center justify-center text-center px-6">
+            <DialogTitle className="text-2xl mb-2">Congratulations! 🎉</DialogTitle>
+            <DialogDescription className="text-lg">
               You are now enrolled in {courseTitle || "this course"}. Ready to start learning?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={handleDialogAction}>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              className="w-full"
+              onClick={handleDialogAction}
+            >
               Let's Begin!
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
