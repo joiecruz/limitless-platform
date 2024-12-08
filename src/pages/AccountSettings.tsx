@@ -45,8 +45,8 @@ export default function AccountSettings() {
     try {
       const formData = new FormData(e.currentTarget);
       const updates = {
-        first_name: formData.get('firstName'),
-        last_name: formData.get('lastName'),
+        first_name: String(formData.get('firstName')),
+        last_name: String(formData.get('lastName')),
         avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       };
