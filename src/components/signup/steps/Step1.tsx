@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TextStep } from "./TextStep";
 import { SignupData } from "../types";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PasswordRequirements } from "./PasswordRequirements";
 
 interface Step1Props {
   formData: SignupData;
@@ -41,40 +41,15 @@ export const Step1 = ({ formData, handleInputChange, nextStep, loading }: Step1P
     return !emailError && !passwordError && !isChecking;
   };
 
-  const checkEmailExists = async (email: string) => {
-    try {
-      const { count } = await supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .eq('id', email);
-      
-      return count !== null && count > 0;
-    } catch (error) {
-      console.error("Error checking email:", error);
-      return false;
-    }
-  };
-
   const handleNext = async () => {
     const newErrors: { [key: string]: string } = {};
     setIsChecking(true);
     
     try {
-      // Email format validation
+      // Email validation
       const emailError = validateEmail(formData.email);
       if (emailError) {
         newErrors.email = emailError;
-      } else {
-        // Check if email already exists
-        const emailExists = await checkEmailExists(formData.email);
-        if (emailExists) {
-          newErrors.email = "This email is already registered";
-          toast({
-            title: "Email already exists",
-            description: "Please use a different email address or sign in.",
-            variant: "destructive",
-          });
-        }
       }
       
       // Password validation
