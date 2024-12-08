@@ -9,17 +9,11 @@ interface MessageInputProps {
   onSendMessage: (content: string, imageUrl?: string) => void;
 }
 
-interface User {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-}
-
 export function MessageInput({ channelName, onSendMessage }: MessageInputProps) {
   const [newMessage, setNewMessage] = useState("");
   const [mentionSearch, setMentionSearch] = useState("");
   const [showMentions, setShowMentions] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<{ username: string; id: string }[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -32,8 +26,8 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name")
-        .not("id", "is", null);
+        .select("username, id")
+        .not("username", "is", null);
 
       if (!error && data) {
         setUsers(data);
@@ -68,9 +62,9 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
     }
   };
 
-  const handleMentionSelect = (displayName: string) => {
+  const handleMentionSelect = (username: string) => {
     const lastAtSymbol = newMessage.lastIndexOf("@");
-    const newValue = newMessage.slice(0, lastAtSymbol) + `@${displayName} `;
+    const newValue = newMessage.slice(0, lastAtSymbol) + `@${username} `;
     setNewMessage(newValue);
     setShowMentions(false);
     inputRef.current?.focus();
