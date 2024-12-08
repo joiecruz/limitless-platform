@@ -76,7 +76,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
       if (!value) return;
       if (onOpenChange) onOpenChange(value);
     }}>
-      <DialogContent className="sm:max-w-[600px] h-[500px] p-0" hideCloseButton>
+      <DialogContent className="sm:max-w-[600px] h-[500px] p-0 [&>button]:hidden">
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">
