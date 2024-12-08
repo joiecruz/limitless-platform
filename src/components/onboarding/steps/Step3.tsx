@@ -2,6 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { OnboardingData } from "../types";
+import { useState } from "react";
 
 interface Step3Props {
   onNext: (data: Partial<OnboardingData>) => void;
@@ -22,13 +23,16 @@ const REFERRAL_SOURCES = [
 ];
 
 export function Step3({ onNext, onBack, data, loading }: Step3Props) {
+  const [selectedSource, setSelectedSource] = useState<string>(data.referralSource || "");
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
     onNext({
-      referralSource: formData.get("referralSource") as string,
+      referralSource: selectedSource,
     });
   };
+
+  const isValid = selectedSource !== "";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -38,10 +42,9 @@ export function Step3({ onNext, onBack, data, loading }: Step3Props) {
       </div>
 
       <RadioGroup 
-        name="referralSource" 
-        defaultValue={data.referralSource}
+        value={selectedSource}
+        onValueChange={setSelectedSource}
         className="flex flex-wrap gap-2"
-        required
       >
         {REFERRAL_SOURCES.map((source) => (
           <div key={source} className="inline-flex rounded-[5px] border border-muted p-3 hover:bg-muted/50 transition-colors [&:has(:checked)]:border-primary [&:has(:checked)]:bg-primary-50">
@@ -72,7 +75,7 @@ export function Step3({ onNext, onBack, data, loading }: Step3Props) {
         <Button 
           type="submit" 
           className="flex-1 rounded-[5px]" 
-          disabled={loading}
+          disabled={loading || !isValid}
         >
           Continue
         </Button>

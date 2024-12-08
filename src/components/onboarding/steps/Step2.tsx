@@ -2,6 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { OnboardingData } from "../types";
+import { useState } from "react";
 
 interface Step2Props {
   onNext: (data: Partial<OnboardingData>) => void;
@@ -19,18 +20,26 @@ const GOALS = [
 ];
 
 export function Step2({ onNext, onBack, data, loading }: Step2Props) {
+  const [selectedGoals, setSelectedGoals] = useState<string[]>(data.goals || []);
+
+  const handleGoalChange = (goal: string, checked: boolean) => {
+    setSelectedGoals(prev => 
+      checked ? [...prev, goal] : prev.filter(g => g !== goal)
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const selectedGoals = GOALS.filter(goal => formData.get(goal) === "on");
     onNext({ goals: selectedGoals });
   };
+
+  const isValid = selectedGoals.length > 0;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1">
         <h2 className="text-2xl font-semibold leading-tight">What do you want to accomplish?</h2>
-        <p className="text-muted-foreground">Select your goals</p>
+        <p className="text-muted-foreground">Select your goals (at least one)</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -43,7 +52,8 @@ export function Step2({ onNext, onBack, data, loading }: Step2Props) {
               <Checkbox
                 id={goal}
                 name={goal}
-                defaultChecked={data.goals.includes(goal)}
+                checked={selectedGoals.includes(goal)}
+                onCheckedChange={(checked) => handleGoalChange(goal, checked as boolean)}
                 className="hidden"
               />
               <Label 
@@ -69,7 +79,7 @@ export function Step2({ onNext, onBack, data, loading }: Step2Props) {
         <Button 
           type="submit" 
           className="flex-1 rounded-[5px]" 
-          disabled={loading}
+          disabled={loading || !isValid}
         >
           Continue
         </Button>
