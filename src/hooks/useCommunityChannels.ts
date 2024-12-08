@@ -113,6 +113,10 @@ export function useCommunityChannels(workspaceId: string | null) {
           if (payload.eventType === 'DELETE') {
             const deletedId = payload.old?.id;
             if (deletedId) {
+              // For private channels, only remove if it belongs to current workspace
+              if (!payload.old.is_public && payload.old.workspace_id !== workspaceId) {
+                return;
+              }
               setPrivateChannels(prev => prev.filter(channel => channel.id !== deletedId));
               setPublicChannels(prev => prev.filter(channel => channel.id !== deletedId));
               
@@ -129,8 +133,13 @@ export function useCommunityChannels(workspaceId: string | null) {
               console.log("Adding new private channel to workspace:", workspaceId);
               setPrivateChannels(prev => [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name)));
             }
-          } else {
-            // For UPDATE, refresh all channels
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            const updatedChannel = payload.new as Channel;
+            // For private channels, only update if it belongs to current workspace
+            if (!updatedChannel.is_public && updatedChannel.workspace_id !== workspaceId) {
+              return;
+            }
+            // Refresh channels to ensure proper filtering
             console.log("Refreshing channels after update");
             await handleWorkspaceChange();
           }
