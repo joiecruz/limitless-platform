@@ -17,9 +17,7 @@ export function BillingSettings() {
           </p>
         </div>
         
-        <Button disabled className="opacity-50 cursor-not-allowed">
-          Upgrade Plan
-        </Button>
+        <Button>Upgrade Plan</Button>
       </div>
     </div>
   );

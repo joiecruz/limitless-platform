@@ -63,11 +63,11 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         }
       />
       <Route
-        path="/dashboard"
+        path="/dashboard/*"
         element={
           <RequireAuth>
             <DashboardLayout>
-              <Settings />
+              <Dashboard />
             </DashboardLayout>
           </RequireAuth>
         }
@@ -108,6 +108,16 @@ export default function AppRoutes({ session }: AppRoutesProps) {
           <RequireAuth>
             <DashboardLayout>
               <Community />
+            </DashboardLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/dashboard/settings"
+        element={
+          <RequireAuth>
+            <DashboardLayout>
+              <Settings />
             </DashboardLayout>
           </RequireAuth>
         }
