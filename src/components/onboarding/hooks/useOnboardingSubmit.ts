@@ -19,10 +19,13 @@ export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: bo
   };
 
   const handleSubmit = async (formData: OnboardingData) => {
+    console.log('Starting onboarding submission with data:', formData);
     setLoading(true);
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
+
+      console.log('Updating profile for user:', user.id);
 
       // Update profile
       const { error: profileError } = await supabase
@@ -32,31 +35,41 @@ export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: bo
           last_name: formData.lastName,
           role: formData.role,
           company_size: formData.companySize,
-          goals: JSON.stringify(formData.goals),
+          goals: formData.goals,
           referral_source: formData.referralSource
         })
         .eq("id", user.id);
 
-      if (profileError) throw profileError;
-
-      // Create workspace with unique slug
-      const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
-      
-      // Use RPC to create workspace and add member in a single transaction
-      const { data: workspace, error: workspaceError } = await supabase
-        .rpc('create_workspace_with_owner', {
-          workspace_name: formData.workspaceName,
-          workspace_slug: slug,
-          owner_id: user.id
-        });
-
-      if (workspaceError) {
-        console.error('Error creating workspace:', workspaceError);
-        throw workspaceError;
+      if (profileError) {
+        console.error('Error updating profile:', profileError);
+        throw profileError;
       }
 
-      // Invalidate queries to refresh workspace data
-      await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      console.log('Profile updated successfully');
+
+      // Create workspace with unique slug
+      if (formData.workspaceName) {
+        console.log('Creating workspace:', formData.workspaceName);
+        const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
+        
+        // Use RPC to create workspace and add member in a single transaction
+        const { data: workspace, error: workspaceError } = await supabase
+          .rpc('create_workspace_with_owner', {
+            workspace_name: formData.workspaceName,
+            workspace_slug: slug,
+            owner_id: user.id
+          });
+
+        if (workspaceError) {
+          console.error('Error creating workspace:', workspaceError);
+          throw workspaceError;
+        }
+
+        console.log('Workspace created successfully:', workspace);
+
+        // Invalidate queries to refresh workspace data
+        await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      }
 
       toast({
         title: "Setup complete",
