@@ -4,6 +4,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
+import Register from "@/pages/Register";
 import Courses from "@/pages/Courses";
 import Lessons from "@/pages/Lessons";
 import Lesson from "@/pages/Lesson";
@@ -33,6 +34,10 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route
         path="/signup"
         element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
+      />
+      <Route
+        path="/register"
+        element={session ? <Navigate to="/dashboard" replace /> : <Register />}
       />
       <Route
         path="/courses"
