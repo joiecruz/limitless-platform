@@ -44,6 +44,17 @@ export default function Register() {
     }
   };
 
+  // Check if form is valid
+  const isFormValid = () => {
+    return email.trim() !== "" && 
+           /\S+@\S+\.\S+/.test(email) && 
+           password.length >= 8 &&
+           /[a-z]/.test(password) &&
+           /[A-Z]/.test(password) &&
+           /\d/.test(password) &&
+           /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  };
+
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Register Form */}
@@ -91,7 +102,12 @@ export default function Register() {
               />
               <PasswordRequirements password={password} />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loading || !isFormValid()}
+              variant={isFormValid() ? "default" : "secondary"}
+            >
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
             <p className="text-center text-sm text-gray-600">
