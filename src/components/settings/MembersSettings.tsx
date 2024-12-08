@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -11,8 +12,9 @@ import {
 } from "@/components/ui/table";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
 
 interface WorkspaceMember {
   profiles: {
@@ -21,11 +23,14 @@ interface WorkspaceMember {
     email?: string;
   };
   role: string;
+  last_active: string;
 }
 
 export function MembersSettings() {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [isInviting, setIsInviting] = useState(false);
   const { toast } = useToast();
 
   const { data: members, isLoading } = useQuery({
@@ -37,6 +42,7 @@ export function MembersSettings() {
         .from('workspace_members')
         .select(`
           role,
+          last_active,
           profiles (
             first_name,
             last_name
@@ -54,13 +60,51 @@ export function MembersSettings() {
     enabled: !!currentWorkspace?.id,
   });
 
-  const handleInvite = async (email: string) => {
-    // TODO: Implement invite functionality
-    toast({
-      title: "Coming Soon",
-      description: "Invite functionality will be implemented soon.",
-    });
-    setIsInviteDialogOpen(false);
+  const handleInvite = async () => {
+    if (!inviteEmail || !currentWorkspace) return;
+
+    setIsInviting(true);
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', userData.user.id)
+        .single();
+
+      const inviterName = profileData?.first_name && profileData?.last_name
+        ? `${profileData.first_name} ${profileData.last_name}`
+        : 'A team member';
+
+      const { error } = await supabase.functions.invoke('send-workspace-invite', {
+        body: {
+          email: inviteEmail,
+          workspaceId: currentWorkspace.id,
+          workspaceName: currentWorkspace.name,
+          inviterName,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Invitation Sent",
+        description: `An invitation has been sent to ${inviteEmail}`,
+      });
+      setIsInviteDialogOpen(false);
+      setInviteEmail("");
+    } catch (error: any) {
+      console.error('Error sending invite:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send invitation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsInviting(false);
+    }
   };
 
   if (!currentWorkspace) {
@@ -90,10 +134,21 @@ export function MembersSettings() {
               <DialogTitle>Invite Members</DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <p className="text-sm text-muted-foreground">
-                This feature is coming soon. You'll be able to invite team members via email.
-              </p>
+              <Input
+                type="email"
+                placeholder="Enter email address"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
             </div>
+            <DialogFooter>
+              <Button
+                onClick={handleInvite}
+                disabled={!inviteEmail || isInviting}
+              >
+                {isInviting ? "Sending..." : "Send Invitation"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
         
@@ -112,6 +167,7 @@ export function MembersSettings() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Last Active</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -123,6 +179,9 @@ export function MembersSettings() {
                         : 'Unnamed Member'}
                     </TableCell>
                     <TableCell className="capitalize">{member.role}</TableCell>
+                    <TableCell>
+                      {formatDistanceToNow(new Date(member.last_active), { addSuffix: true })}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
