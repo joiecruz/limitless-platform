@@ -1,7 +1,6 @@
 import { LogOut, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUser } from "@supabase/auth-helpers-react";
 import {
   Popover,
   PopoverContent,
@@ -12,31 +11,43 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function UserProfile() {
   const navigate = useNavigate();
-  const user = useUser();
   const [profile, setProfile] = useState<any>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    if (user?.id) {
-      fetchProfile();
-    }
-  }, [user?.id]);
+    fetchUserAndProfile();
+  }, []);
 
-  const fetchProfile = async () => {
-    console.log('Fetching profile for user:', user?.id);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('first_name, last_name, avatar_url')
-      .eq('id', user?.id)
-      .single();
+  const fetchUserAndProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('No user found');
+        return;
+      }
+
+      setUserEmail(user.email || '');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, avatar_url')
+        .eq('id', user.id)
+        .single();
     
-    if (error) {
-      console.error('Error fetching profile:', error);
-      return;
-    }
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
     
-    if (data) {
-      console.log('Profile data:', data);
-      setProfile(data);
+      if (data) {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -49,19 +60,33 @@ export function UserProfile() {
     if (profile?.first_name || profile?.last_name) {
       return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
     }
-    return user?.email?.[0].toUpperCase() || '?';
+    return userEmail?.[0]?.toUpperCase() || '?';
   };
 
   const getDisplayName = () => {
     if (profile?.first_name || profile?.last_name) {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     }
-    return user?.email;
+    return userEmail;
   };
 
   const getDefaultAvatar = () => {
     return `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`;
   };
+
+  if (loading) {
+    return (
+      <div className="mt-auto px-3 py-4 border-t border-gray-200">
+        <div className="flex items-center gap-3 px-2">
+          <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
+          <div className="flex flex-col flex-1">
+            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-1" />
+            <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-auto px-3 py-4 border-t border-gray-200">
@@ -77,7 +102,7 @@ export function UserProfile() {
                 {getDisplayName()}
               </span>
               <span className="text-xs text-gray-500 truncate">
-                {user?.email}
+                {userEmail}
               </span>
             </div>
           </button>
