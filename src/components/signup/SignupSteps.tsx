@@ -9,10 +9,6 @@ export function SignupSteps() {
   const [formData, setFormData] = useState<SignupData>({
     email: "",
     password: "",
-    role: "",
-    companySize: "",
-    referralSource: "",
-    goals: "",
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -22,17 +18,9 @@ export function SignupSteps() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData({ ...formData, [name]: value });
-  };
-
   const handleSignup = async () => {
     console.log("Starting signup process with data:", {
       email: formData.email,
-      role: formData.role,
-      company_size: formData.companySize,
-      referral_source: formData.referralSource,
-      goals: formData.goals
     });
     
     setLoading(true);
@@ -41,12 +29,6 @@ export function SignupSteps() {
         email: formData.email,
         password: formData.password,
         options: {
-          data: {
-            role: formData.role,
-            company_size: formData.companySize,
-            referral_source: formData.referralSource,
-            goals: formData.goals
-          },
           emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
@@ -83,7 +65,6 @@ export function SignupSteps() {
   const stepProps = {
     formData,
     handleInputChange,
-    handleSelectChange,
     nextStep: handleSignup,
     loading,
   };

@@ -8,9 +8,10 @@ interface Step1Props {
   formData: SignupData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   nextStep: () => void;
+  loading: boolean;
 }
 
-export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => {
+export const Step1 = ({ formData, handleInputChange, nextStep, loading }: Step1Props) => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isChecking, setIsChecking] = useState(false);
   const { toast } = useToast();
@@ -122,7 +123,7 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
       values={formData}
       onChange={handleInputChange}
       onNext={handleNext}
-      loading={isChecking}
+      loading={loading || isChecking}
       fieldsContainerClassName="flex gap-4 flex-wrap"
       isNextDisabled={!isFormValid()}
     />
