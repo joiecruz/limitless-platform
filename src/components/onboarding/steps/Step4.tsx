@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { OnboardingData } from "../OnboardingModal";
+import { OnboardingData } from "../types";
 
 interface Step4Props {
   onNext: (data: Partial<OnboardingData>) => void;

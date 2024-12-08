@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { OnboardingData } from "../OnboardingModal";
+import { OnboardingData } from "../types";
 
 interface Step1Props {
   onNext: (data: Partial<OnboardingData>) => void;

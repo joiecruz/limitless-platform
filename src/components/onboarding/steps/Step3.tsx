@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { OnboardingData } from "../OnboardingModal";
+import { OnboardingData } from "../types";
 
 interface Step3Props {
   onNext: (data: Partial<OnboardingData>) => void;
