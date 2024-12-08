@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface WorkspaceMember {
   profiles: {
@@ -30,6 +31,7 @@ export function MembersSettings() {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [selectedRole, setSelectedRole] = useState("member");
   const [isInviting, setIsInviting] = useState(false);
   const { toast } = useToast();
 
@@ -84,6 +86,7 @@ export function MembersSettings() {
           workspaceId: currentWorkspace.id,
           workspaceName: currentWorkspace.name,
           inviterName,
+          role: selectedRole,
         },
       });
 
@@ -95,6 +98,7 @@ export function MembersSettings() {
       });
       setIsInviteDialogOpen(false);
       setInviteEmail("");
+      setSelectedRole("member");
     } catch (error: any) {
       console.error('Error sending invite:', error);
       toast({
@@ -133,13 +137,28 @@ export function MembersSettings() {
             <DialogHeader>
               <DialogTitle>Invite Members</DialogTitle>
             </DialogHeader>
-            <div className="py-4">
-              <Input
-                type="email"
-                placeholder="Enter email address"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-              />
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Input
+                  type="email"
+                  placeholder="Enter email address"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Role</label>
+                <Select value={selectedRole} onValueChange={setSelectedRole}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="member">Member</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter>
               <Button
