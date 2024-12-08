@@ -52,20 +52,30 @@ export function useWorkspaceUpdate(
       console.log('Updating workspace with ID:', currentWorkspace.id);
       console.log('Update data:', { name: data.name, slug: newSlug });
 
-      const { data: updatedWorkspace, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('workspaces')
         .update({
           name: data.name,
           slug: newSlug,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', currentWorkspace.id)
-        .select()
-        .single();
+        .eq('id', currentWorkspace.id);
 
       if (updateError) {
         console.error('Error updating workspace:', updateError);
         throw updateError;
+      }
+
+      // Fetch the updated workspace
+      const { data: updatedWorkspace, error: fetchError } = await supabase
+        .from('workspaces')
+        .select('*')
+        .eq('id', currentWorkspace.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching updated workspace:', fetchError);
+        throw fetchError;
       }
 
       console.log('Update successful:', updatedWorkspace);
