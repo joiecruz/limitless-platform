@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import CourseProgress from "./CourseProgress";
 import { useToast } from "@/hooks/use-toast";
+import { ArrowRight } from "lucide-react";
 
 interface CourseEnrollmentProps {
   courseId: string;
@@ -53,7 +54,10 @@ const CourseEnrollment = ({
       <div className="space-y-4">
         <CourseProgress progress={progress} />
         <Link to={`/courses/${courseId}/lessons`} className="block w-full">
-          <Button className="w-full">Continue Learning</Button>
+          <Button className="w-full">
+            {progress === 0 ? "Start Learning" : "Continue Learning"}
+            <ArrowRight className="ml-2" />
+          </Button>
         </Link>
       </div>
     );
