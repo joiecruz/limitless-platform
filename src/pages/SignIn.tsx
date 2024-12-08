@@ -25,6 +25,12 @@ export default function SignIn() {
         }
 
         if (session) {
+          if (!session.user.email_confirmed_at) {
+            console.log("SignIn - Email not confirmed, redirecting to verify-email");
+            localStorage.setItem('verificationEmail', session.user.email || '');
+            navigate("/verify-email", { replace: true });
+            return;
+          }
           console.log("SignIn - Active session found, redirecting to dashboard");
           navigate("/dashboard");
         }
@@ -42,6 +48,12 @@ export default function SignIn() {
       console.log("SignIn - Auth state changed:", event, session);
 
       if (event === 'SIGNED_IN' && session) {
+        if (!session.user.email_confirmed_at) {
+          console.log("SignIn - Email not confirmed, redirecting to verify-email");
+          localStorage.setItem('verificationEmail', session.user.email || '');
+          navigate("/verify-email", { replace: true });
+          return;
+        }
         console.log("SignIn - User signed in, redirecting to dashboard");
         navigate("/dashboard");
       }
