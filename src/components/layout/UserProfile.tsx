@@ -3,43 +3,47 @@ import {
   Popover,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { ProfileDisplay } from "./ProfileDisplay";
 import { ProfileMenu } from "./ProfileMenu";
 
 export function UserProfile() {
-  const { data: session } = useQuery({
+  const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
       return user;
     }
   });
   
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile'],
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['profile', session?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
+      if (!session?.id) {
         throw new Error('No user found');
       }
 
       const { data, error } = await supabase
         .from('profiles')
         .select('first_name, last_name, avatar_url')
-        .eq('id', user.id)
+        .eq('id', session.id)
         .single();
     
       if (error) {
         console.error('Error fetching profile:', error);
-        throw error;
+        // Return a default profile instead of throwing
+        return {
+          first_name: '',
+          last_name: '',
+          avatar_url: null
+        };
       }
     
       return data;
-    }
+    },
+    enabled: !!session?.id // Only run this query when we have a session
   });
 
   const getInitials = () => {
@@ -60,7 +64,7 @@ export function UserProfile() {
     return `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`;
   };
 
-  if (isLoading) {
+  if (sessionLoading || profileLoading) {
     return (
       <div className="mt-auto px-3 py-4 border-t border-gray-200">
         <div className="flex items-center gap-3 px-2">
