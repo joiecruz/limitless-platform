@@ -44,7 +44,7 @@ export const Step2 = ({
           render={({ slots }) => (
             <InputOTPGroup className="gap-2 flex justify-center">
               {slots.map((slot, idx) => (
-                <InputOTPSlot key={idx} {...slot} className="w-14 h-14 text-lg" />
+                <InputOTPSlot key={idx} {...slot} index={idx} className="w-14 h-14 text-lg" />
               ))}
             </InputOTPGroup>
           )}
