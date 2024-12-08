@@ -25,8 +25,8 @@ export default function Community() {
         }
         console.log("User found:", user.id);
 
-        // Get user's workspace membership
-        const { data: workspaceMember, error: memberError } = await supabase
+        // Get user's workspace memberships
+        const { data: workspaceMembers, error: memberError } = await supabase
           .from("workspace_members")
           .select(`
             workspace_id,
@@ -36,11 +36,10 @@ export default function Community() {
               slug
             )
           `)
-          .eq("user_id", user.id)
-          .single();
+          .eq("user_id", user.id);
 
         if (memberError) {
-          console.error("Error fetching workspace member:", memberError);
+          console.error("Error fetching workspace members:", memberError);
           toast({
             title: "Error",
             description: "Failed to load workspace",
@@ -49,11 +48,12 @@ export default function Community() {
           return;
         }
 
-        if (workspaceMember) {
-          console.log("Workspace member found:", workspaceMember);
-          setWorkspaceId(workspaceMember.workspace_id);
+        // Use the first workspace if available
+        if (workspaceMembers && workspaceMembers.length > 0) {
+          console.log("Workspace members found:", workspaceMembers);
+          setWorkspaceId(workspaceMembers[0].workspace_id);
         } else {
-          console.log("No workspace membership found");
+          console.log("No workspace memberships found");
         }
       } catch (error) {
         console.error("Error in fetchUserWorkspace:", error);
@@ -67,56 +67,6 @@ export default function Community() {
 
     fetchUserWorkspace();
   }, []);
-
-  const handleCreatePrivateChannel = async (name: string) => {
-    if (!workspaceId) {
-      toast({
-        title: "Error",
-        description: "Workspace not loaded",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to create a channel",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { data: channel, error } = await supabase
-      .from("channels")
-      .insert([
-        {
-          name,
-          workspace_id: workspaceId,
-          is_public: false,
-          description: `Private channel created by ${user.email}`,
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating channel:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create channel",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Success",
-      description: `Channel "${name}" created successfully`,
-    });
-  };
 
   return (
     <div className="fixed inset-0 lg:left-64 pt-0 flex">
