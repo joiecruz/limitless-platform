@@ -69,7 +69,14 @@ export default function InvitePage() {
           description: error.message || "Failed to process invitation",
           variant: "destructive",
         });
-        navigate("/signin");
+        navigate("/signin", { 
+          state: { 
+            isInvited: true,
+            email: searchParams.get("email"),
+            workspaceId: searchParams.get("workspace"),
+            role: searchParams.get("role")
+          } 
+        });
       } finally {
         setLoading(false);
       }
