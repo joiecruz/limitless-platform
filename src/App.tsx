@@ -9,7 +9,14 @@ import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      networkMode: 'always',
+    },
+  },
+});
 
 const App = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -27,7 +34,7 @@ const App = () => {
           console.error("Error getting session:", error);
           // Clear session and storage on error
           setSession(null);
-          localStorage.clear(); // Clear all local storage
+          localStorage.removeItem('supabase.auth.token');
           await supabase.auth.signOut();
           return;
         }
@@ -44,7 +51,7 @@ const App = () => {
         console.error("Error in getInitialSession:", error);
         // Clear session and storage on error
         setSession(null);
-        localStorage.clear(); // Clear all local storage
+        localStorage.removeItem('supabase.auth.token');
         await supabase.auth.signOut();
       } finally {
         setLoading(false);
@@ -57,11 +64,11 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("Auth state changed:", event, currentSession);
       
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         // Clear session and cached data
         setSession(null);
         queryClient.clear();
-        localStorage.clear(); // Clear all local storage
+        localStorage.removeItem('supabase.auth.token');
         toast({
           title: "Signed out",
           description: "You have been signed out successfully.",
@@ -71,6 +78,13 @@ const App = () => {
 
       if (event === 'SIGNED_IN' && currentSession) {
         console.log("User signed in:", currentSession);
+        setSession(currentSession);
+        return;
+      }
+
+      // Handle token refresh
+      if (event === 'TOKEN_REFRESHED' && currentSession) {
+        console.log("Token refreshed:", currentSession);
         setSession(currentSession);
         return;
       }
