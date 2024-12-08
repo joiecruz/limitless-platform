@@ -3,77 +3,63 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export default function AccountSettings() {
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [userEmail, setUserEmail] = useState<string>('');
-  const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchUserAndProfile();
-  }, []);
-
-  const fetchUserAndProfile = async () => {
-    try {
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('No user found');
-        return;
-      }
+      return user;
+    }
+  });
 
-      setUserEmail(user.email || '');
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      if (!session?.id) return null;
 
-      const { data: profileData, error: profileError } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', session.id)
         .single();
     
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        return;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
       }
     
-      if (profileData) {
-        setProfile(profileData);
-        setAvatarUrl(profileData.avatar_url);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data;
+    },
+    enabled: !!session?.id
+  });
 
   const handleSubmit = async (formData: { firstName: string; lastName: string }) => {
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
+      if (!session?.id) {
         throw new Error('No user found');
       }
 
       const updates = {
         first_name: formData.firstName,
         last_name: formData.lastName,
-        avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       };
 
       const { error } = await supabase
         .from('profiles')
         .update(updates)
-        .eq('id', user.id);
+        .eq('id', session.id);
 
       if (error) throw error;
 
-      // Invalidate the profile query to trigger a refetch
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       
       toast({
@@ -81,6 +67,7 @@ export default function AccountSettings() {
         description: "Profile updated successfully",
       });
     } catch (error) {
+      console.error('Error updating profile:', error);
       toast({
         title: "Error",
         description: "Failed to update profile",
@@ -91,6 +78,21 @@ export default function AccountSettings() {
     }
   };
 
+  if (profileLoading) {
+    return (
+      <div className="max-w-xl mx-auto py-8 px-4">
+        <h1 className="text-2xl font-bold mb-8">Account Settings</h1>
+        <div className="bg-white p-6 rounded-lg border">
+          <div className="animate-pulse space-y-4">
+            <div className="h-10 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-xl mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-8">Account Settings</h1>
@@ -98,7 +100,7 @@ export default function AccountSettings() {
         <ProfileForm
           loading={loading}
           profile={profile}
-          userEmail={userEmail}
+          userEmail={session?.email || ''}
           onSubmit={handleSubmit}
         />
       </div>

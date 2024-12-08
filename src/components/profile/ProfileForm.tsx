@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ProfileFormProps {
   loading: boolean;
@@ -13,6 +13,13 @@ interface ProfileFormProps {
 export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFormProps) {
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
+
+  useEffect(() => {
+    if (profile) {
+      setFirstName(profile.first_name || '');
+      setLastName(profile.last_name || '');
+    }
+  }, [profile]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,7 +58,7 @@ export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFo
         <Input
           id="email"
           type="email"
-          value={userEmail || ''}
+          value={userEmail}
           disabled
           className="bg-muted"
         />
