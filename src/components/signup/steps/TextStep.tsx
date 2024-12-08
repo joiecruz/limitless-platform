@@ -1,17 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SignupData } from "../types";
 
 interface TextStepProps {
   title?: string;
   fields: {
-    name: string;
+    name: keyof SignupData;
     label: string;
     type?: string;
     placeholder?: string;
     required?: boolean;
   }[];
-  values: Record<string, string>;
+  values: SignupData;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onNext: () => void;
   onPrev?: () => void;
