@@ -34,6 +34,18 @@ export function SignupSteps() {
   const handleInitialSignup = async () => {
     setLoading(true);
     try {
+      console.log("Signing up with data:", {
+        email: formData.email,
+        metadata: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          role: formData.role,
+          company_size: formData.companySize,
+          referral_source: formData.referralSource,
+          goals: formData.goals,
+        }
+      });
+
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -41,6 +53,10 @@ export function SignupSteps() {
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
+            role: formData.role,
+            company_size: formData.companySize,
+            referral_source: formData.referralSource,
+            goals: formData.goals,
           },
         },
       });
@@ -74,6 +90,7 @@ export function SignupSteps() {
         });
       }
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast({
         title: "Error",
         description: error.message,
