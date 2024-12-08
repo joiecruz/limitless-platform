@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface InviteMemberDialogProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function InviteMemberDialog({
   const [selectedRole, setSelectedRole] = useState("member");
   const [isInviting, setIsInviting] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleInvite = async () => {
     if (!inviteEmail || !workspaceId) return;
@@ -58,6 +60,10 @@ export function InviteMemberDialog({
         title: "Invitation Sent",
         description: `An invitation has been sent to ${inviteEmail}`,
       });
+      
+      // Invalidate the workspace members query to refresh the list
+      queryClient.invalidateQueries(['workspace-members', workspaceId]);
+      
       onOpenChange(false);
       setInviteEmail("");
       setSelectedRole("member");

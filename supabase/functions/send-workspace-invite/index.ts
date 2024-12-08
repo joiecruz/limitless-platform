@@ -15,6 +15,7 @@ interface InviteRequest {
   workspaceId: string;
   workspaceName: string;
   inviterName: string;
+  role: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -23,9 +24,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, workspaceId, workspaceName, inviterName } = await req.json() as InviteRequest;
+    const { email, workspaceId, workspaceName, inviterName, role } = await req.json() as InviteRequest;
 
-    console.log(`Sending workspace invite to ${email} for workspace ${workspaceName}`);
+    console.log(`Sending workspace invite to ${email} for workspace ${workspaceName} with role ${role}`);
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -40,9 +41,10 @@ const handler = async (req: Request): Promise<Response> => {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>You've been invited!</h2>
-            <p>${inviterName} has invited you to join ${workspaceName} on our platform.</p>
+            <p>${inviterName} has invited you to join ${workspaceName} on our platform as a ${role}.</p>
             <p>Click the link below to accept the invitation:</p>
-            <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}" style="display: inline-block; background-color: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
+            <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" 
+               style="display: inline-block; background-color: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
               Accept Invitation
             </a>
             <p>If you didn't expect this invitation, you can safely ignore this email.</p>
