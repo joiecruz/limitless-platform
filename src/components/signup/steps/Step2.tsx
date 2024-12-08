@@ -23,7 +23,7 @@ export const Step2 = ({
     <div className="space-y-2 text-center">
       <h2 className="text-4xl font-bold tracking-tight">Verify your account</h2>
       <img 
-        src="/lovable-uploads/440455ea-f8d0-4e60-bfc4-0c17bd3b1323.png" 
+        src="/lovable-uploads/0dd5367c-3e22-4eff-a5b1-2604397dfba8.png" 
         alt="Verification" 
         className="mx-auto w-48 h-48 my-8"
       />
