@@ -9,8 +9,8 @@ const EnrollmentLoadingScreen = ({ courseTitle, onComplete }: EnrollmentLoadingS
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Set a random duration between 1-3 minutes (in milliseconds)
-    const duration = Math.floor(Math.random() * (180000 - 60000) + 60000);
+    // Set a duration between 30-45 seconds (in milliseconds)
+    const duration = Math.floor(Math.random() * (45000 - 30000) + 30000);
     const interval = 100; // Update every 100ms for smooth progress
     const steps = duration / interval;
     const increment = 100 / steps;
