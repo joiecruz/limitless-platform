@@ -28,8 +28,7 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
     const newErrors: { [key: string]: string } = {};
     
     // Validate required fields
-    if (!formData.firstName) newErrors.firstName = "First name is required";
-    if (!formData.lastName) newErrors.lastName = "Last name is required";
+    if (!formData.fullName) newErrors.fullName = "Full name is required";
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -51,18 +50,11 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
     <TextStep
       fields={[
         {
-          name: "firstName",
-          label: "First Name",
+          name: "fullName",
+          label: "Full Name",
           required: true,
-          containerClassName: "flex-1",
-          error: errors.firstName,
-        },
-        {
-          name: "lastName",
-          label: "Last Name",
-          required: true,
-          containerClassName: "flex-1",
-          error: errors.lastName,
+          containerClassName: "w-full",
+          error: errors.fullName,
         },
         {
           name: "email",

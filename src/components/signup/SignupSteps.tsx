@@ -10,8 +10,7 @@ export function SignupSteps() {
   const [formData, setFormData] = useState<SignupData>({
     email: "",
     password: "",
-    firstName: "",
-    lastName: "",
+    fullName: "",
     workspaceName: "",
     role: "",
     companySize: "",
@@ -34,14 +33,13 @@ export function SignupSteps() {
   const handleInitialSignup = async () => {
     setLoading(true);
     try {
-      // Create the user with Supabase Auth with metadata for the trigger
+      // Create the user with Supabase Auth with metadata
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
+            full_name: formData.fullName,
             role: formData.role,
             company_size: formData.companySize,
             referral_source: formData.referralSource,

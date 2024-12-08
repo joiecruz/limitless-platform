@@ -1,8 +1,7 @@
 export interface SignupData {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   workspaceName: string;
   role: string;
   companySize: string;
