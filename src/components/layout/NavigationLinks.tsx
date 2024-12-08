@@ -1,8 +1,5 @@
 import { Home, BookOpen, Users, Settings, Download, Briefcase } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 
 export const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -16,40 +13,23 @@ export const navigation = [
 export function NavigationLinks() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [showOnboarding, setShowOnboarding] = useState(false);
 
   return (
-    <>
-      <nav className="space-y-1 px-3 mb-6">
-        {navigation.map((item) => (
-          <a
-            key={item.name}
-            href={item.href}
-            className={`nav-item ${location.pathname === item.href ? "active" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(item.href);
-            }}
-          >
-            <item.icon className="h-5 w-5" />
-            <span>{item.name}</span>
-          </a>
-        ))}
-
-        {/* Temporary Onboarding Toggle Button */}
-        <Button 
-          variant="outline" 
-          className="w-full mt-4"
-          onClick={() => setShowOnboarding(true)}
+    <nav className="space-y-1 px-3 mb-6">
+      {navigation.map((item) => (
+        <a
+          key={item.name}
+          href={item.href}
+          className={`nav-item ${location.pathname === item.href ? "active" : ""}`}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate(item.href);
+          }}
         >
-          Show Onboarding
-        </Button>
-      </nav>
-
-      <OnboardingModal 
-        open={showOnboarding} 
-        onOpenChange={setShowOnboarding}
-      />
-    </>
+          <item.icon className="h-5 w-5" />
+          <span>{item.name}</span>
+        </a>
+      ))}
+    </nav>
   );
 }
