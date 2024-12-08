@@ -1,31 +1,16 @@
-import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { CreateWorkspaceDialog } from "@/components/workspace/CreateWorkspaceDialog";
+import { useQueryClient } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-
-interface Workspace {
-  id: string;
-  name: string | null;
-  slug: string | null;
-}
-
-// Define the exact structure that Supabase returns
-interface WorkspaceMemberWithWorkspace {
-  workspace: {
-    id: string;
-    name: string | null;
-    slug: string | null;
-  };
-}
+import { CreateWorkspaceDialog } from "@/components/workspace/CreateWorkspaceDialog";
+import { WorkspaceList } from "@/components/workspace/WorkspaceList";
+import { useWorkspaces } from "@/components/workspace/useWorkspaces";
+import { Workspace } from "@/components/workspace/types";
+import { useEffect } from "react";
 
 interface WorkspaceSelectorProps {
   currentWorkspace: Workspace | null;
@@ -33,68 +18,8 @@ interface WorkspaceSelectorProps {
 }
 
 export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: WorkspaceSelectorProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const { data: workspaces, isLoading } = useQuery({
-    queryKey: ['workspaces'],
-    queryFn: async () => {
-      console.log('Fetching workspaces...');
-      try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError) {
-          console.error('Error fetching user:', userError);
-          throw userError;
-        }
-
-        if (!user) {
-          console.log("No user found");
-          return [];
-        }
-
-        console.log("User found:", user.id);
-
-        const { data: memberWorkspaces, error: workspacesError } = await supabase
-          .from('workspace_members')
-          .select(`
-            workspace:workspaces (
-              id,
-              name,
-              slug
-            )
-          `)
-          .eq('user_id', user.id);
-
-        if (workspacesError) {
-          console.error('Error fetching workspaces:', workspacesError);
-          throw workspacesError;
-        }
-
-        console.log('Raw workspace data:', memberWorkspaces);
-        
-        // Safely type and transform the response
-        const formattedWorkspaces = (memberWorkspaces as WorkspaceMemberWithWorkspace[]).map(item => ({
-          id: item.workspace.id,
-          name: item.workspace.name || 'Unnamed Workspace',
-          slug: item.workspace.slug || 'unnamed'
-        }));
-
-        console.log('Formatted workspaces:', formattedWorkspaces);
-        return formattedWorkspaces;
-      } catch (error) {
-        console.error('Error in fetchWorkspaces:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load workspaces. Please try again.",
-          variant: "destructive",
-        });
-        return [];
-      }
-    },
-    refetchOnWindowFocus: true,
-    staleTime: 1000,
-  });
+  const { data: workspaces, isLoading } = useWorkspaces();
 
   // Set initial workspace
   useEffect(() => {
@@ -127,15 +52,10 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
           <ChevronDown className="h-4 w-4 opacity-50" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          {workspaces?.map((workspace) => (
-            <DropdownMenuItem
-              key={workspace.id}
-              onClick={() => handleWorkspaceSelect(workspace)}
-              className="cursor-pointer"
-            >
-              {workspace.name || 'Unnamed Workspace'}
-            </DropdownMenuItem>
-          ))}
+          <WorkspaceList 
+            workspaces={workspaces} 
+            onSelect={handleWorkspaceSelect}
+          />
           <Separator className="my-2" />
           <CreateWorkspaceDialog />
         </DropdownMenuContent>
