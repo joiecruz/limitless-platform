@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import LessonSidebar from "@/components/lessons/LessonSidebar";
 import VideoPlayer from "@/components/lessons/VideoPlayer";
+import LessonContent from "@/components/lessons/LessonContent";
 import LessonNavigation from "@/components/lessons/LessonNavigation";
 
 const Lesson = () => {
@@ -161,25 +162,15 @@ const Lesson = () => {
           isOpen ? 'ml-80' : 'ml-0'
         }`}>
           <div className="max-w-4xl mx-auto px-6 py-8">
-            <div className="mb-8">
-              <div className="text-sm text-gray-500 mb-2">
-                Lesson {currentIndex + 1} of {totalLessons}
-              </div>
-              <h1 className="text-3xl font-semibold text-gray-900">{lesson.title}</h1>
-              {lesson.description && (
-                <div className="prose max-w-none mt-4">
-                  <p className="text-gray-600">{lesson.description}</p>
-                </div>
-              )}
-            </div>
+            <LessonContent
+              title={lesson.title}
+              description={lesson.description}
+              bodyContent={lesson.body_content}
+              currentIndex={currentIndex}
+              totalLessons={totalLessons}
+            />
 
             {lesson.video_url && <VideoPlayer videoUrl={lesson.video_url} />}
-
-            <div className="prose max-w-none mt-8">
-              <div className="text-gray-800 space-y-6">
-                {lesson.body_content || lesson.description || "No content available for this lesson."}
-              </div>
-            </div>
 
             <LessonNavigation
               previousLesson={previousLesson}
