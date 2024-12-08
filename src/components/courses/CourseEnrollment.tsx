@@ -69,12 +69,12 @@ const CourseEnrollment = ({
 
       <AlertDialog 
         open={showDialog} 
-        onOpenChange={setShowDialog}
+        onOpenChange={(open) => {
+          // Only allow opening the dialog, prevent closing
+          if (open) setShowDialog(true);
+        }}
       >
-        <AlertDialogContent 
-          onPointerDownOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
-        >
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Congratulations! 🎉</AlertDialogTitle>
             <AlertDialogDescription>
