@@ -152,7 +152,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] h-[600px] p-0">
+      <DialogContent className="sm:max-w-[600px] h-[500px] p-0">
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">
