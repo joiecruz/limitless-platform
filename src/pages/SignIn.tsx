@@ -92,6 +92,7 @@ export default function SignIn() {
               },
             }}
             theme="default"
+            providers={[]}
             redirectTo={`${window.location.origin}/dashboard`}
           />
 
