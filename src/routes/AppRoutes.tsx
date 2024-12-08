@@ -14,7 +14,6 @@ import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
 import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
-import NotFound from "@/pages/NotFound";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 
 interface AppRoutesProps {
@@ -24,7 +23,6 @@ interface AppRoutesProps {
 export default function AppRoutes({ session }: AppRoutesProps) {
   return (
     <Routes>
-      {/* Public routes */}
       <Route
         path="/"
         element={<Navigate to={session ? "/dashboard" : "/signin"} replace />}
@@ -41,8 +39,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         path="/verify-email"
         element={<VerifyEmail />}
       />
-
-      {/* Protected routes */}
       <Route
         path="/courses"
         element={
@@ -141,9 +137,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
           </RequireAuth>
         }
       />
-
-      {/* Catch-all route for 404s */}
-      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
