@@ -19,7 +19,13 @@ export default function Register() {
   };
 
   const validatePassword = (password: string) => {
-    return password.length >= 6;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const isLongEnough = password.length >= 8;
+
+    return hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar && isLongEnough;
   };
 
   const handleSignUp = async () => {
@@ -35,7 +41,7 @@ export default function Register() {
     if (!validatePassword(password)) {
       toast({
         title: "Invalid password",
-        description: "Password must be at least 6 characters long",
+        description: "Please ensure your password meets all requirements",
         variant: "destructive",
       });
       return;
