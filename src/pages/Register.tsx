@@ -18,11 +18,24 @@ export default function Register() {
     return /\S+@\S+\.\S+/.test(email);
   };
 
+  const validatePassword = (password: string) => {
+    return password.length >= 6;
+  };
+
   const handleSignUp = async () => {
     if (!validateEmail(email)) {
       toast({
         title: "Invalid email",
         description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      toast({
+        title: "Invalid password",
+        description: "Password must be at least 6 characters long",
         variant: "destructive",
       });
       return;
@@ -34,6 +47,16 @@ export default function Register() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            first_name: "",
+            last_name: "",
+            role: "",
+            company_size: "",
+            referral_source: "",
+            goals: ""
+          }
+        }
       });
 
       console.log("Signup response:", { data, error });
