@@ -14,7 +14,6 @@ import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
 import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
-import InvitePage from "@/pages/InvitePage";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 
 interface AppRoutesProps {
@@ -39,10 +38,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route
         path="/verify-email"
         element={<VerifyEmail />}
-      />
-      <Route
-        path="/invite"
-        element={<InvitePage />}
       />
       <Route
         path="/courses"
