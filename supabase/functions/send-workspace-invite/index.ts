@@ -39,68 +39,85 @@ const handler = async (req: Request): Promise<Response> => {
         subject: `Join ${workspaceName} on our platform`,
         html: `
           <!DOCTYPE html>
-          <html>
-            <head>
-              <style>
-                body { 
-                  font-family: Arial, sans-serif;
-                  line-height: 1.6;
-                  color: #333;
-                }
-                .container {
-                  max-width: 600px;
-                  margin: 0 auto;
-                  padding: 20px;
-                }
-                .header {
-                  background-color: #f8f9fa;
-                  padding: 20px;
-                  border-radius: 8px;
-                  margin-bottom: 20px;
-                }
-                .button {
-                  display: inline-block;
-                  padding: 12px 24px;
-                  background-color: #0070f3;
-                  color: white;
-                  text-decoration: none;
-                  border-radius: 5px;
-                  margin: 20px 0;
-                }
-                .footer {
-                  font-size: 14px;
-                  color: #666;
-                  margin-top: 30px;
-                  padding-top: 20px;
-                  border-top: 1px solid #eee;
-                }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h2>You're Invited! 🎉</h2>
-                </div>
-                
-                <p>Hello,</p>
-                
-                <p>${inviterName} has invited you to join <strong>${workspaceName}</strong> as a <strong>${role}</strong>.</p>
-                
-                <p>As a ${role}, you'll be able to collaborate with the team and contribute to the workspace.</p>
-                
-                <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" 
-                   class="button">
-                  Accept Invitation
-                </a>
-                
-                <p>This invitation link will expire in 7 days. If you don't have an account yet, you'll be able to create one when accepting the invitation.</p>
-                
-                <div class="footer">
-                  <p>If you didn't expect this invitation, you can safely ignore this email.</p>
-                  <p>This is an automated message, please do not reply to this email.</p>
-                </div>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>You've Been Invited</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background-color: #f9f9f9;
+                margin: 0;
+                padding: 0;
+              }
+              .email-container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              }
+              .email-header {
+                text-align: center;
+                margin-bottom: 20px;
+              }
+              .email-body {
+                text-align: center;
+                color: #333333;
+              }
+              .email-body h2 {
+                font-size: 24px;
+                margin-bottom: 16px;
+              }
+              .email-body p {
+                font-size: 16px;
+                margin-bottom: 24px;
+                line-height: 1.5;
+              }
+              .email-button {
+                display: inline-block;
+                background-color: #0066cc;
+                color: #ffffff;
+                text-decoration: none;
+                padding: 12px 24px;
+                border-radius: 4px;
+                font-size: 16px;
+                margin-top: 20px;
+              }
+              .email-footer {
+                margin-top: 30px;
+                text-align: center;
+                font-size: 12px;
+                color: #888888;
+              }
+              .email-footer p {
+                margin: 5px 0;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="email-container">
+              <!-- Header Section -->
+              <div class="email-header">
+                <h2>You've been invited!</h2>
               </div>
-            </body>
+              <!-- Body Section -->
+              <div class="email-body">
+                <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on our platform as a ${role}.</p>
+                <p>Click the link below to accept the invitation:</p>
+                <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" class="email-button">Accept Invitation</a>
+                <p style="margin-top: 16px; font-size: 14px; color: #666666;">If you didn't expect this invitation, you can safely ignore this email.</p>
+              </div>
+              <!-- Footer Section -->
+              <div class="email-footer">
+                <p>Limitless Lab</p>
+                <p>5F RFM Corporate Center, Pioneer Street, Mandaluyong City, Philippines</p>
+                <p>#2 Venture Drive #19-21 Vision Exchange, Singapore, 608526</p>
+              </div>
+            </div>
+          </body>
           </html>
         `,
       }),
