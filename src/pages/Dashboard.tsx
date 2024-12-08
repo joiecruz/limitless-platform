@@ -1,6 +1,7 @@
-import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { ArrowRight } from "lucide-react";
 
 export default function Dashboard() {
   // Query to get user profile data
@@ -86,76 +87,14 @@ export default function Dashboard() {
               </div>
               <a
                 href={link.link}
-                className="inline-flex px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center text-primary hover:gap-2 transition-all group/link"
               >
                 {link.action}
+                <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0" />
               </a>
             </div>
           </Card>
         ))}
-      </div>
-
-      {/* Featured Sections */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Courses */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold">Recent Courses</h2>
-            <a
-              href="/courses"
-              className="text-sm text-primary hover:text-primary/90 transition-colors"
-            >
-              View all
-            </a>
-          </div>
-          <div className="space-y-4">
-            {[1, 2].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <img
-                  src={`https://images.unsplash.com/photo-148${i}312338219-ce68d2c6f44d`}
-                  alt="Course thumbnail"
-                  className="h-16 w-16 rounded-lg object-cover"
-                />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium truncate">Innovation Fundamentals {i + 1}</h3>
-                  <p className="text-sm text-muted-foreground truncate">
-                    Essential concepts for innovation success
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Popular Tools */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold">Popular Tools</h2>
-            <a
-              href="/tools"
-              className="text-sm text-primary hover:text-primary/90 transition-colors"
-            >
-              View all
-            </a>
-          </div>
-          <div className="space-y-4">
-            {[1, 2].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <img
-                  src={`https://images.unsplash.com/photo-151${i}770660439-4636190af475`}
-                  alt="Tool thumbnail"
-                  className="h-16 w-16 rounded-lg object-cover"
-                />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium truncate">Innovation Toolkit {i + 1}</h3>
-                  <p className="text-sm text-muted-foreground truncate">
-                    Essential tools for your innovation process
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
       </div>
     </div>
   );
