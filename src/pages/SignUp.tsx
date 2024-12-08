@@ -1,11 +1,13 @@
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { SignupSteps } from "@/components/signup/SignupSteps";
-import { QuotesCarousel } from "@/components/signup/QuotesCarousel";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -18,31 +20,45 @@ export default function SignUp() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Sign Up Form */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <img 
-              src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
-              alt="Limitless Lab"
-              className="h-12 w-auto mx-auto mb-8"
-            />
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-              Create your account
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Join Limitless Lab and start your innovation journey
-            </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 animate-fade-in">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900">Create your account</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Join Limitless Lab and start your innovation journey
+          </p>
+          <div className="mt-4 text-sm text-gray-600">
+            <p>Test credentials you can use:</p>
+            <div className="mt-2 p-4 bg-gray-100 rounded-md text-left">
+              <p className="text-sm font-medium">Email: test@example.com</p>
+              <p className="text-sm font-medium">Password: Test123456</p>
+            </div>
+            <div className="mt-4">
+              <p>Password requirements:</p>
+              <ul className="list-disc list-inside text-xs text-gray-500 mt-1">
+                <li>Minimum 6 characters</li>
+                <li>At least one letter and one number</li>
+              </ul>
+            </div>
           </div>
-          
-          <SignupSteps />
         </div>
-      </div>
-
-      {/* Right Side - Quotes */}
-      <div className="hidden lg:flex lg:flex-1 bg-primary-50">
-        <QuotesCarousel />
+        <Auth
+          supabaseClient={supabase}
+          appearance={{
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: 'rgb(var(--color-primary-600))',
+                  brandAccent: 'rgb(var(--color-primary-700))'
+                }
+              }
+            }
+          }}
+          view="sign_up"
+          providers={[]}
+          redirectTo={`${window.location.origin}/dashboard`}
+        />
       </div>
     </div>
   );

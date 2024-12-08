@@ -262,43 +262,31 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          company_size: string | null
           created_at: string
           first_name: string | null
-          goals: string | null
           id: string
           is_admin: boolean | null
           last_name: string | null
-          referral_source: string | null
-          role: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
-          company_size?: string | null
           created_at?: string
           first_name?: string | null
-          goals?: string | null
           id: string
           is_admin?: boolean | null
           last_name?: string | null
-          referral_source?: string | null
-          role?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
-          company_size?: string | null
           created_at?: string
           first_name?: string | null
-          goals?: string | null
           id?: string
           is_admin?: boolean | null
           last_name?: string | null
-          referral_source?: string | null
-          role?: string | null
           updated_at?: string
           username?: string | null
         }
