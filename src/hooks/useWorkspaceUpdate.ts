@@ -35,26 +35,27 @@ export function useWorkspaceUpdate(
     
     setIsLoading(true);
     try {
-      console.log('Checking slug availability for:', data.slug);
       // First check if slug exists for other workspaces
-      const { count, error: checkError } = await supabase
-        .from('workspaces')
-        .select('*', { count: 'exact', head: true })
-        .eq('slug', data.slug)
-        .neq('id', currentWorkspace.id);
+      if (data.slug !== currentWorkspace.slug) {
+        const { data: existingWorkspaces, error: checkError } = await supabase
+          .from('workspaces')
+          .select('id')
+          .eq('slug', data.slug)
+          .neq('id', currentWorkspace.id);
 
-      if (checkError) {
-        console.error('Error checking slug:', checkError);
-        throw checkError;
-      }
+        if (checkError) {
+          console.error('Error checking slug:', checkError);
+          throw checkError;
+        }
 
-      if (count && count > 0) {
-        toast({
-          title: "Error",
-          description: "This workspace URL is already taken. Please choose another one.",
-          variant: "destructive",
-        });
-        return;
+        if (existingWorkspaces && existingWorkspaces.length > 0) {
+          toast({
+            title: "Error",
+            description: "This workspace URL is already taken. Please choose another one.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       console.log('Updating workspace with ID:', currentWorkspace.id);
@@ -75,10 +76,6 @@ export function useWorkspaceUpdate(
       if (updateError) {
         console.error('Error updating workspace:', updateError);
         throw updateError;
-      }
-
-      if (!updatedWorkspace) {
-        throw new Error('Workspace not found or update failed');
       }
 
       console.log('Update successful:', updatedWorkspace);
