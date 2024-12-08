@@ -7,6 +7,7 @@ import LessonSidebar from "@/components/lessons/LessonSidebar";
 import VideoPlayer from "@/components/lessons/VideoPlayer";
 import LessonContent from "@/components/lessons/LessonContent";
 import LessonNavigation from "@/components/lessons/LessonNavigation";
+import LessonBodyContent from "@/components/lessons/LessonBodyContent";
 
 const Lesson = () => {
   const { courseId, lessonId } = useParams<{
@@ -179,12 +180,7 @@ const Lesson = () => {
             {lesson.video_url && <VideoPlayer videoUrl={lesson.video_url} />}
             
             {/* Lesson body content */}
-            {lesson.body_content && (
-              <article 
-                className="prose prose-slate max-w-none mt-8 prose-headings:text-gray-900 prose-p:text-gray-800 prose-a:text-primary-600 prose-strong:text-gray-900 prose-code:text-primary-600 prose-pre:bg-gray-900 prose-pre:text-gray-100"
-                dangerouslySetInnerHTML={{ __html: lesson.body_content }}
-              />
-            )}
+            <LessonBodyContent content={lesson.body_content} />
 
             <LessonNavigation
               previousLesson={previousLesson}
