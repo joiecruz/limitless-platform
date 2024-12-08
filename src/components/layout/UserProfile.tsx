@@ -10,7 +10,13 @@ import { ProfileDisplay } from "./ProfileDisplay";
 import { ProfileMenu } from "./ProfileMenu";
 
 export function UserProfile() {
-  const [userEmail, setUserEmail] = useState<string>('');
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
+    }
+  });
   
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -20,8 +26,6 @@ export function UserProfile() {
       if (!user) {
         throw new Error('No user found');
       }
-
-      setUserEmail(user.email || '');
 
       const { data, error } = await supabase
         .from('profiles')
@@ -42,14 +46,14 @@ export function UserProfile() {
     if (profile?.first_name || profile?.last_name) {
       return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
     }
-    return userEmail?.[0]?.toUpperCase() || '?';
+    return session?.email?.[0]?.toUpperCase() || '?';
   };
 
   const getDisplayName = () => {
     if (profile?.first_name || profile?.last_name) {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     }
-    return userEmail;
+    return session?.email || '';
   };
 
   const getDefaultAvatar = () => {
@@ -79,7 +83,7 @@ export function UserProfile() {
               avatarUrl={profile?.avatar_url || getDefaultAvatar()}
               initials={getInitials()}
               displayName={getDisplayName()}
-              email={userEmail}
+              email={session?.email || ''}
             />
           </button>
         </PopoverTrigger>
