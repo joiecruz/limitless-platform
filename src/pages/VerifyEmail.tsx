@@ -4,18 +4,49 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function VerifyEmail() {
   const [email, setEmail] = useState<string>("");
   const [isResending, setIsResending] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('verificationEmail');
     if (storedEmail) {
       setEmail(storedEmail);
     }
-  }, []);
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in:', session?.user.id);
+        try {
+          // Call our edge function to handle workspace creation
+          const { error } = await supabase.functions.invoke('handle-email-verification', {
+            body: { user_id: session?.user.id }
+          });
+
+          if (error) throw error;
+
+          // Navigate to dashboard after successful verification and workspace creation
+          navigate('/dashboard');
+        } catch (error: any) {
+          console.error('Error handling email verification:', error);
+          toast({
+            title: "Error",
+            description: "There was an error setting up your workspace. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   const handleResendEmail = async () => {
     if (!email) return;
