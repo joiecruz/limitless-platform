@@ -23,9 +23,6 @@ export function useWorkspaceUpdate(
   const queryClient = useQueryClient();
 
   const updateWorkspace = async (data: WorkspaceUpdateData) => {
-    console.log('Starting workspace update with data:', data);
-    console.log('Current workspace:', currentWorkspace);
-
     if (!currentWorkspace?.id) {
       console.error('No workspace selected');
       toast({
@@ -38,7 +35,7 @@ export function useWorkspaceUpdate(
     
     setIsLoading(true);
     try {
-      console.log('Checking for existing workspace with slug:', data.slug);
+      // First check if slug exists
       const { data: existingWorkspaces, error: checkError } = await supabase
         .from('workspaces')
         .select('id')
@@ -51,7 +48,6 @@ export function useWorkspaceUpdate(
       }
 
       if (existingWorkspaces && existingWorkspaces.length > 0) {
-        console.log('Slug already exists');
         toast({
           title: "Error",
           description: "This workspace URL is already taken. Please choose another one.",
@@ -60,8 +56,8 @@ export function useWorkspaceUpdate(
         return;
       }
 
-      console.log('Updating workspace with data:', data);
-      const { data: updatedData, error: updateError } = await supabase
+      // Then update the workspace
+      const { data: workspace, error: updateError } = await supabase
         .from('workspaces')
         .update({
           name: data.name,
@@ -69,7 +65,7 @@ export function useWorkspaceUpdate(
           updated_at: new Date().toISOString(),
         })
         .eq('id', currentWorkspace.id)
-        .select()
+        .select('id, name, slug')
         .single();
 
       if (updateError) {
@@ -77,27 +73,20 @@ export function useWorkspaceUpdate(
         throw updateError;
       }
 
-      console.log('Update successful:', updatedData);
-
-      if (updatedData) {
-        // Update local state
-        const updatedWorkspace = {
-          id: updatedData.id,
-          name: updatedData.name,
-          slug: updatedData.slug
-        };
-        console.log('Setting current workspace to:', updatedWorkspace);
-        setCurrentWorkspace(updatedWorkspace);
-
-        // Invalidate and refetch queries
-        console.log('Invalidating queries');
-        await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-
-        toast({
-          title: "Success",
-          description: "Workspace settings updated successfully.",
-        });
+      if (!workspace) {
+        throw new Error('No workspace returned after update');
       }
+
+      // Update local state
+      setCurrentWorkspace(workspace);
+
+      // Invalidate queries
+      await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+
+      toast({
+        title: "Success",
+        description: "Workspace settings updated successfully.",
+      });
     } catch (error) {
       console.error('Error in updateWorkspace:', error);
       toast({
