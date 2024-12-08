@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { TextStep } from "./TextStep";
 import { SignupData } from "../types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Step1Props {
   formData: SignupData;
@@ -10,6 +12,8 @@ interface Step1Props {
 
 export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isChecking, setIsChecking] = useState(false);
+  const { toast } = useToast();
 
   const validatePassword = (password: string) => {
     const requirements = [
@@ -24,22 +28,66 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
     return failedRequirements.length === 0 ? "" : `Password must contain ${failedRequirements.map(r => r.message).join(", ")}`;
   };
 
-  const handleNext = () => {
-    const newErrors: { [key: string]: string } = {};
-    
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+  const checkEmailExists = async (email: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+        },
+      });
+      
+      if (error && error.message.includes("User not found")) {
+        return false; // Email doesn't exist
+      }
+      return true; // Email exists
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return false;
     }
+  };
+
+  const handleNext = async () => {
+    const newErrors: { [key: string]: string } = {};
+    setIsChecking(true);
     
-    const passwordError = validatePassword(formData.password);
-    if (passwordError) newErrors.password = passwordError;
+    try {
+      // Email format validation
+      if (!formData.email) {
+        newErrors.email = "Email is required";
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = "Please enter a valid email address";
+      } else {
+        // Check if email already exists
+        const emailExists = await checkEmailExists(formData.email);
+        if (emailExists) {
+          newErrors.email = "This email is already registered";
+          toast({
+            title: "Email already exists",
+            description: "Please use a different email address or sign in.",
+            variant: "destructive",
+          });
+        }
+      }
+      
+      // Password validation
+      const passwordError = validatePassword(formData.password);
+      if (passwordError) newErrors.password = passwordError;
 
-    setErrors(newErrors);
+      setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
-      nextStep();
+      if (Object.keys(newErrors).length === 0) {
+        nextStep();
+      }
+    } catch (error) {
+      console.error("Validation error:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while validating your information",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChecking(false);
     }
   };
 
@@ -68,6 +116,7 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
       values={formData}
       onChange={handleInputChange}
       onNext={handleNext}
+      loading={isChecking}
       fieldsContainerClassName="flex gap-4 flex-wrap"
     />
   );

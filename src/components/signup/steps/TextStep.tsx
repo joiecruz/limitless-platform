@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SignupData } from "../types";
 import { PasswordRequirements } from "./PasswordRequirements";
+import { Loader2 } from "lucide-react";
 
 interface TextStepProps {
   title?: string;
@@ -19,6 +20,7 @@ interface TextStepProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onNext: () => void;
   onPrev?: () => void;
+  loading?: boolean;
   fieldsContainerClassName?: string;
 }
 
@@ -29,6 +31,7 @@ export function TextStep({
   onChange, 
   onNext, 
   onPrev,
+  loading,
   fieldsContainerClassName
 }: TextStepProps) {
   return (
@@ -49,6 +52,7 @@ export function TextStep({
               onChange={onChange}
               placeholder={field.placeholder}
               className={`mt-1 ${field.error ? 'border-red-500' : ''}`}
+              disabled={loading}
             />
             {field.error && (
               <p className="text-sm text-red-500 mt-1">{field.error}</p>
@@ -61,7 +65,7 @@ export function TextStep({
       </div>
       <div className="flex gap-2">
         {onPrev && (
-          <Button type="button" onClick={onPrev} variant="outline">
+          <Button type="button" onClick={onPrev} variant="outline" disabled={loading}>
             Back
           </Button>
         )}
@@ -69,8 +73,16 @@ export function TextStep({
           type="button" 
           onClick={onNext} 
           className="flex-1"
+          disabled={loading}
         >
-          Continue
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Checking...
+            </>
+          ) : (
+            "Continue"
+          )}
         </Button>
       </div>
     </div>
