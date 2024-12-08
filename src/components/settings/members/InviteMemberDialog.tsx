@@ -62,7 +62,9 @@ export function InviteMemberDialog({
       });
       
       // Invalidate the workspace members query to refresh the list
-      queryClient.invalidateQueries(['workspace-members', workspaceId]);
+      queryClient.invalidateQueries({
+        queryKey: ['workspace-members', workspaceId]
+      });
       
       onOpenChange(false);
       setInviteEmail("");
