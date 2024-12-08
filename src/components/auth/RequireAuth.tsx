@@ -6,7 +6,15 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/signin", { replace: true });
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         navigate("/signin", { replace: true });
       }
