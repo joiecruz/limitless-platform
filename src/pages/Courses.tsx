@@ -97,10 +97,6 @@ const Courses = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["enrollments"] });
-      toast({
-        title: "Success",
-        description: "Successfully enrolled in the course!",
-      });
     },
     onError: (error) => {
       console.error('Error enrolling in course:', error);
