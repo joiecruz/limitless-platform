@@ -30,7 +30,7 @@ export function MembersSettings() {
         .select(`
           role,
           last_active,
-          profiles (
+          profiles!inner (
             first_name,
             last_name
           )
@@ -42,7 +42,7 @@ export function MembersSettings() {
         throw error;
       }
 
-      return data as WorkspaceMember[];
+      return (data as unknown as WorkspaceMember[]) || [];
     },
     enabled: !!currentWorkspace?.id,
   });

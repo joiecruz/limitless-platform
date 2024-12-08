@@ -65,7 +65,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         console.log('Fetched workspaces:', memberWorkspaces);
         
         // Map the nested workspace data to match the expected format
-        const formattedWorkspaces = memberWorkspaces?.map(item => ({
+        const formattedWorkspaces: Workspace[] = memberWorkspaces?.map(item => ({
           id: item.workspace.id,
           name: item.workspace.name,
           slug: item.workspace.slug
