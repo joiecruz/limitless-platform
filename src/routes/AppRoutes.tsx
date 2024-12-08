@@ -12,6 +12,7 @@ import Projects from "@/pages/Projects";
 import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
 import Settings from "@/pages/Settings";
+import AccountSettings from "@/pages/AccountSettings";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -120,6 +121,18 @@ export default function AppRoutes({ session }: AppRoutesProps) {
           session ? (
             <DashboardLayout>
               <Settings />
+            </DashboardLayout>
+          ) : (
+            <Navigate to="/signin" replace />
+          )
+        }
+      />
+      <Route
+        path="/account-settings"
+        element={
+          session ? (
+            <DashboardLayout>
+              <AccountSettings />
             </DashboardLayout>
           ) : (
             <Navigate to="/signin" replace />
