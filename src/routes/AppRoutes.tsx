@@ -37,7 +37,7 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       />
       <Route
         path="/verify-email"
-        element={!session ? <Navigate to="/signin" replace /> : <VerifyEmail />}
+        element={<VerifyEmail />}
       />
       <Route
         path="/courses"
