@@ -31,6 +31,10 @@ export default function SignIn() {
             alt="Limitless Lab"
             className="h-12 w-auto mx-auto mb-6"
           />
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Sign in</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Where innovation meets possibility – your journey to limitless learning begins here
+          </p>
         </div>
 
         {/* Sign In Card */}
@@ -84,9 +88,8 @@ export default function SignIn() {
                 },
               },
             }}
-            providers={['google', 'facebook']}
-            redirectTo={`${window.location.origin}/dashboard`}
             theme="default"
+            redirectTo={`${window.location.origin}/dashboard`}
           />
 
           {/* Test Credentials Section - Collapsible on Mobile */}
