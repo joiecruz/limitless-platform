@@ -19,7 +19,7 @@ export function ProfileDisplay({ avatarUrl, initials, displayName, email }: Prof
           {displayName}
         </span>
         <span className="text-xs text-gray-500 truncate">
-          {email}
+          {email || 'No email provided'}
         </span>
       </div>
     </div>
