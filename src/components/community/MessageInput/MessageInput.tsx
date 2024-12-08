@@ -9,11 +9,18 @@ interface MessageInputProps {
   onSendMessage: (content: string, imageUrl?: string) => void;
 }
 
+interface User {
+  id: string;
+  username?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+}
+
 export function MessageInput({ channelName, onSendMessage }: MessageInputProps) {
   const [newMessage, setNewMessage] = useState("");
   const [mentionSearch, setMentionSearch] = useState("");
   const [showMentions, setShowMentions] = useState(false);
-  const [users, setUsers] = useState<{ username: string; id: string }[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -26,7 +33,7 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("username, id")
+        .select("id, username, first_name, last_name")
         .not("username", "is", null);
 
       if (!error && data) {
