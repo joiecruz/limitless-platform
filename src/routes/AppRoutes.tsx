@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
-import SignUp from "@/pages/SignUp";
+import SignIn from "@/pages/SignIn";
 import Register from "@/pages/Register";
 import Courses from "@/pages/Courses";
 import Lessons from "@/pages/Lessons";
@@ -24,11 +24,11 @@ export default function AppRoutes({ session }: AppRoutesProps) {
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={session ? "/dashboard" : "/register"} replace />}
+        element={<Navigate to={session ? "/dashboard" : "/signin"} replace />}
       />
       <Route
-        path="/signup"
-        element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
+        path="/signin"
+        element={session ? <Navigate to="/dashboard" replace /> : <SignIn />}
       />
       <Route
         path="/register"
