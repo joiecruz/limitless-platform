@@ -19,7 +19,7 @@ interface Workspace {
 }
 
 interface WorkspaceMemberResponse {
-  workspace: Workspace;
+  workspace: Workspace;  // Now correctly typed as a single workspace object
 }
 
 interface WorkspaceSelectorProps {
@@ -69,7 +69,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         console.log('Raw workspace data:', memberWorkspaces);
         
         // Map the nested workspace data to match the expected format
-        const formattedWorkspaces = (memberWorkspaces as WorkspaceMemberResponse[]).map(item => ({
+        const formattedWorkspaces = memberWorkspaces.map(item => ({
           id: item.workspace.id,
           name: item.workspace.name || 'Unnamed Workspace',
           slug: item.workspace.slug || 'unnamed'
