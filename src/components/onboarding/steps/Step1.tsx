@@ -63,6 +63,7 @@ export function Step1({ onNext, data, loading }: Step1Props) {
               name="firstName"
               defaultValue={data.firstName}
               required
+              className="rounded-[5px]"
             />
           </div>
           <div className="space-y-2">
@@ -72,6 +73,7 @@ export function Step1({ onNext, data, loading }: Step1Props) {
               name="lastName"
               defaultValue={data.lastName}
               required
+              className="rounded-[5px]"
             />
           </div>
         </div>
@@ -79,7 +81,7 @@ export function Step1({ onNext, data, loading }: Step1Props) {
         <div className="space-y-2">
           <Label htmlFor="role">What best describes you?</Label>
           <Select name="role" defaultValue={data.role} required>
-            <SelectTrigger>
+            <SelectTrigger className="rounded-[5px]">
               <SelectValue placeholder="Select your role" />
             </SelectTrigger>
             <SelectContent>
@@ -95,7 +97,7 @@ export function Step1({ onNext, data, loading }: Step1Props) {
         <div className="space-y-2">
           <Label htmlFor="companySize">How many employees does your company have?</Label>
           <Select name="companySize" defaultValue={data.companySize} required>
-            <SelectTrigger>
+            <SelectTrigger className="rounded-[5px]">
               <SelectValue placeholder="Select company size" />
             </SelectTrigger>
             <SelectContent>
@@ -109,7 +111,7 @@ export function Step1({ onNext, data, loading }: Step1Props) {
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading}>
+      <Button type="submit" className="w-full rounded-[5px]" disabled={loading}>
         Continue
       </Button>
     </form>
