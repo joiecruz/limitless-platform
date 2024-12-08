@@ -57,13 +57,37 @@ export default function SignIn() {
         console.log("SignIn - User signed in, redirecting to dashboard");
         navigate("/dashboard");
       }
+
+      // Handle email not confirmed error
+      if (event === 'USER_UPDATED' && session?.user.email && !session.user.email_confirmed_at) {
+        localStorage.setItem('verificationEmail', session.user.email);
+        navigate("/verify-email", { replace: true });
+        toast({
+          title: "Email verification required",
+          description: "Please check your email to verify your account.",
+        });
+      }
     });
 
     return () => {
       console.log("SignIn - Cleaning up auth listener");
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, toast]);
+
+  const handleAuthError = (error: any) => {
+    console.error("Auth error:", error);
+    if (error.message.includes("Email not confirmed")) {
+      const email = localStorage.getItem('verificationEmail');
+      if (email) {
+        navigate("/verify-email", { replace: true });
+        toast({
+          title: "Email verification required",
+          description: "Please check your email to verify your account.",
+        });
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -139,6 +163,7 @@ export default function SignIn() {
             providers={[]}
             redirectTo={`${window.location.origin}/dashboard`}
             showLinks={false}
+            onError={handleAuthError}
           />
           
           {/* Sign Up Link */}
