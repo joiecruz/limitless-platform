@@ -130,6 +130,7 @@ export type Database = {
       }
       innovation_tools: {
         Row: {
+          category: string
           created_at: string
           description: string
           download_url: string | null
@@ -142,6 +143,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string
           created_at?: string
           description: string
           download_url?: string | null
@@ -154,6 +156,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string
           created_at?: string
           description?: string
           download_url?: string | null

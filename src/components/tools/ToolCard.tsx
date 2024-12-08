@@ -66,23 +66,26 @@ export function ToolCard({ tool }: ToolCardProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-gray-500">{tool.description}</p>
-          <Button
-            className="w-full"
-            variant={tool.type === 'premium' ? "secondary" : "default"}
-            onClick={handleDownload}
-          >
-            {tool.type === 'free' ? (
-              <>
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </>
-            ) : (
-              <>
-                <Lock className="w-4 h-4 mr-2" />
-                Unlock for ${tool.price?.toFixed(2)}
-              </>
-            )}
-          </Button>
+          <div className="space-y-4">
+            <span className="text-xs text-gray-500 block">{tool.category}</span>
+            <Button
+              className="w-full"
+              variant={tool.type === 'premium' ? "secondary" : "default"}
+              onClick={handleDownload}
+            >
+              {tool.type === 'free' ? (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4 mr-2" />
+                  Unlock for ${tool.price?.toFixed(2)}
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </Link>

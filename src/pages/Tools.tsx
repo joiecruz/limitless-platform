@@ -12,6 +12,7 @@ export interface Tool {
   price: number | null;
   downloadUrl?: string;
   type: 'free' | 'premium';
+  category: string;
 }
 
 const fetchTools = async () => {
@@ -29,7 +30,8 @@ const fetchTools = async () => {
     imageUrl: tool.image_url,
     price: tool.price,
     downloadUrl: tool.download_url,
-    type: tool.type
+    type: tool.type,
+    category: tool.category
   }));
 };
 
@@ -51,6 +53,15 @@ export default function Tools() {
     );
   }
 
+  // Group tools by category
+  const toolsByCategory = tools?.reduce((acc, tool) => {
+    if (!acc[tool.category]) {
+      acc[tool.category] = [];
+    }
+    acc[tool.category].push(tool);
+    return acc;
+  }, {} as Record<string, Tool[]>) || {};
+
   return (
     <div className="animate-fade-in">
       <div className="mb-8">
@@ -61,9 +72,16 @@ export default function Tools() {
           Download free worksheets and resources to supercharge your innovation process
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tools?.map((tool) => (
-          <ToolCard key={tool.id} tool={tool} />
+      <div className="space-y-12">
+        {Object.entries(toolsByCategory).map(([category, categoryTools]) => (
+          <div key={category}>
+            <h2 className="text-2xl font-semibold mb-6">{category}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categoryTools.map((tool) => (
+                <ToolCard key={tool.id} tool={tool} />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </div>
