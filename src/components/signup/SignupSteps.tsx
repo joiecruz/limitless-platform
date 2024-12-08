@@ -25,31 +25,32 @@ export function SignupSteps() {
     
     setLoading(true);
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
-        }
       });
 
-      if (signUpError) {
-        console.error("Signup error:", signUpError);
-        throw signUpError;
+      if (error) {
+        console.error("Signup error:", error);
+        throw error;
       }
 
       console.log("Signup response:", data);
 
-      // Store email in localStorage for verify-email page
-      localStorage.setItem('verificationEmail', formData.email);
-      
-      console.log("Navigating to verify-email page");
-      navigate("/verify-email", { replace: true });
+      if (data?.user) {
+        // Store email in localStorage for verify-email page
+        localStorage.setItem('verificationEmail', formData.email);
+        
+        console.log("Navigating to verify-email page");
+        navigate("/verify-email");
 
-      toast({
-        title: "Check your email",
-        description: "We've sent you a verification link to complete your registration.",
-      });
+        toast({
+          title: "Check your email",
+          description: "We've sent you a verification link to complete your registration.",
+        });
+      } else {
+        throw new Error("No user data returned from signup");
+      }
     } catch (error: any) {
       console.error("Error in handleSignup:", error);
       toast({
