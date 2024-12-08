@@ -34,10 +34,20 @@ export function SignupSteps() {
   const handleInitialSignup = async () => {
     setLoading(true);
     try {
-      // Create the user with Supabase Auth - without metadata
+      // Create the user with Supabase Auth with metadata for the trigger
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            role: formData.role,
+            company_size: formData.companySize,
+            referral_source: formData.referralSource,
+            goals: formData.goals
+          }
+        }
       });
 
       if (signUpError) throw signUpError;
