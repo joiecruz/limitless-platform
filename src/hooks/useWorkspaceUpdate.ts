@@ -46,6 +46,18 @@ export function useWorkspaceUpdate(
     
     setIsLoading(true);
     try {
+      // First verify the workspace exists
+      const { data: existingWorkspace, error: checkError } = await supabase
+        .from('workspaces')
+        .select()
+        .eq('id', currentWorkspace.id)
+        .single();
+
+      if (checkError) {
+        console.error('Error checking workspace:', checkError);
+        throw new Error('Workspace not found');
+      }
+
       const newSlug = generateSlug(data.name);
       console.log('Updating workspace with ID:', currentWorkspace.id);
       console.log('Update data:', { name: data.name, slug: newSlug });
