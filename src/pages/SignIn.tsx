@@ -30,7 +30,6 @@ export default function SignIn() {
             localStorage.setItem('verificationEmail', session.user.email || '');
             navigate("/verify-email", { replace: true });
             toast({
-              title: "Email verification required",
               description: "Please confirm your email to log in. Check your inbox, and if you don't see it, look in your spam or junk folder for the confirmation link.",
             });
             return;
@@ -57,7 +56,6 @@ export default function SignIn() {
           localStorage.setItem('verificationEmail', session.user.email || '');
           navigate("/verify-email", { replace: true });
           toast({
-            title: "Email verification required",
             description: "Please confirm your email to log in. Check your inbox, and if you don't see it, look in your spam or junk folder for the confirmation link.",
           });
           return;
@@ -71,7 +69,6 @@ export default function SignIn() {
         localStorage.setItem('verificationEmail', session.user.email);
         navigate("/verify-email", { replace: true });
         toast({
-          title: "Email verification required",
           description: "Please confirm your email to log in. Check your inbox, and if you don't see it, look in your spam or junk folder for the confirmation link.",
         });
       }
@@ -176,4 +173,3 @@ export default function SignIn() {
       </div>
     </div>
   );
-}
