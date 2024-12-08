@@ -15,21 +15,36 @@ export default function AccountSettings() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.id) {
+    console.log('Current user:', user);
+    if (!user) {
+      console.log('No user found, skipping profile fetch');
+      return;
+    }
+    
+    if (user.id) {
+      console.log('User ID found, fetching profile:', user.id);
       fetchProfile();
     }
-  }, [user?.id]);
+  }, [user]);
 
   const fetchProfile = async () => {
+    if (!user?.id) {
+      console.log('No user ID available for fetch');
+      return;
+    }
+
     try {
-      console.log('Fetching profile for user:', user?.id);
+      console.log('Fetching profile for user:', user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
       
       console.log('Profile data:', data);
       if (data) {
@@ -48,6 +63,16 @@ export default function AccountSettings() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!user?.id) {
+      console.log('No user ID available for update');
+      toast({
+        title: "Error",
+        description: "User not authenticated",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -59,10 +84,11 @@ export default function AccountSettings() {
         updated_at: new Date().toISOString(),
       };
 
+      console.log('Updating profile with:', updates);
       const { error } = await supabase
         .from('profiles')
         .update(updates)
-        .eq('id', user?.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 
@@ -130,6 +156,14 @@ export default function AccountSettings() {
     }
     return user?.email?.[0].toUpperCase() || '?';
   };
+
+  if (!user) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <p>Please sign in to access account settings.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
