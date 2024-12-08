@@ -62,7 +62,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
             last_name: updatedData.lastName,
             role: updatedData.role,
             company_size: updatedData.companySize,
-            goals: updatedData.goals,
+            goals: JSON.stringify(updatedData.goals), // Convert array to JSON string
             referral_source: updatedData.referralSource
           })
           .eq("id", user.id);
