@@ -93,22 +93,6 @@ export default function SignIn() {
             providers={[]}
             redirectTo={`${window.location.origin}/dashboard`}
           />
-
-          {/* Test Credentials Section */}
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg text-sm space-y-3 md:block">
-            <p className="font-medium text-gray-700">Test credentials you can use:</p>
-            <div className="p-3 bg-white rounded-md shadow-sm">
-              <p className="text-gray-600">Email: test@example.com</p>
-              <p className="text-gray-600">Password: Test123456</p>
-            </div>
-            <div className="mt-3">
-              <p className="font-medium text-gray-700">Password requirements:</p>
-              <ul className="list-disc list-inside text-gray-600 mt-1 text-xs">
-                <li>Minimum 6 characters</li>
-                <li>At least one letter and one number</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
     </div>
