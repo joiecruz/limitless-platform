@@ -61,13 +61,12 @@ export function ToolCard({ tool }: ToolCardProps) {
         <CardHeader>
           <CardTitle className="leading-tight">{tool.title}</CardTitle>
           <CardDescription className="text-primary-600">
-            {tool.subtitle}
+            {tool.category}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-gray-500">{tool.description}</p>
-          <div className="space-y-4">
-            <span className="text-xs text-gray-500 block">{tool.category}</span>
+          <div>
             <Button
               className="w-full"
               variant={tool.type === 'premium' ? "secondary" : "default"}
