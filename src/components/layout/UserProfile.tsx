@@ -1,19 +1,16 @@
-import { LogOut, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Popover,
-  PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { ProfileDisplay } from "./ProfileDisplay";
+import { ProfileMenu } from "./ProfileMenu";
 
 export function UserProfile() {
-  const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string>('');
-  const queryClient = useQueryClient();
   
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
@@ -40,12 +37,6 @@ export function UserProfile() {
       return data;
     }
   });
-  
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    queryClient.clear();
-    navigate("/");
-  };
 
   const getInitials = () => {
     if (profile?.first_name || profile?.last_name) {
@@ -83,39 +74,16 @@ export function UserProfile() {
     <div className="mt-auto px-3 py-4 border-t border-gray-200">
       <Popover>
         <PopoverTrigger asChild>
-          <button className="flex items-center gap-3 px-2 w-full hover:bg-gray-100 rounded-lg transition-colors">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={profile?.avatar_url || getDefaultAvatar()} />
-              <AvatarFallback>{getInitials()}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col min-w-0 text-left">
-              <span className="text-sm font-medium text-gray-700 truncate">
-                {getDisplayName()}
-              </span>
-              <span className="text-xs text-gray-500 truncate">
-                {userEmail}
-              </span>
-            </div>
+          <button className="w-full">
+            <ProfileDisplay
+              avatarUrl={profile?.avatar_url || getDefaultAvatar()}
+              initials={getInitials()}
+              displayName={getDisplayName()}
+              email={userEmail}
+            />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-56" align="start">
-          <div className="space-y-1">
-            <button
-              onClick={() => navigate("/account-settings")}
-              className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              <Settings className="h-4 w-4" />
-              Account Settings
-            </button>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
-            >
-              <LogOut className="h-4 w-4" />
-              Log out
-            </button>
-          </div>
-        </PopoverContent>
+        <ProfileMenu />
       </Popover>
     </div>
   );
