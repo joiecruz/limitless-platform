@@ -1,67 +1,8 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 export default function VerifyEmail() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/signin");
-      } else if (session.user.email_confirmed_at) {
-        navigate("/dashboard");
-      } else {
-        setUserEmail(session.user.email);
-      }
-    };
-
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT") {
-        navigate("/signin");
-      } else if (session?.user.email_confirmed_at) {
-        navigate("/dashboard");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const handleResendEmail = async () => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: userEmail!,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Verification email sent",
-        description: "Please check your inbox for the verification link.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to resend verification email",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
@@ -92,12 +33,10 @@ export default function VerifyEmail() {
                 </svg>
               </div>
               <h2 className="text-2xl font-semibold mb-2">Verify your email address</h2>
-              {userEmail && (
-                <p className="text-gray-600 mb-1">
-                  A verification email has been sent to{" "}
-                  <span className="font-medium text-gray-900">{userEmail}</span>
-                </p>
-              )}
+              <p className="text-gray-600 mb-1">
+                A verification email has been sent to{" "}
+                <span className="font-medium text-gray-900">example@email.com</span>
+              </p>
               <p className="text-gray-600">
                 Please check your email and click the link provided to complete your account registration.
               </p>
@@ -107,19 +46,9 @@ export default function VerifyEmail() {
               <p className="text-sm text-gray-500">
                 If you don't receive the email within 5 minutes, please check your spam folder or click below to resend.
               </p>
-              <Button
-                className="w-full"
-                onClick={handleResendEmail}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  "Resend Verification Email"
-                )}
+              <Button className="w-full">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Resend Verification Email
               </Button>
             </div>
           </CardContent>
