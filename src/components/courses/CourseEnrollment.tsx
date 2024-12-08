@@ -2,8 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import CourseProgress from "./CourseProgress";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
-import EnrollmentLoadingScreen from "./EnrollmentLoadingScreen";
 
 interface CourseEnrollmentProps {
   courseId: string;
@@ -24,7 +22,6 @@ const CourseEnrollment = ({
 }: CourseEnrollmentProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
 
   const handleEnroll = async () => {
     console.log('Starting enrollment process');
@@ -39,8 +36,8 @@ const CourseEnrollment = ({
         description: `You are now enrolled in ${courseTitle || "this course"}`,
       });
 
-      // Show loading screen
-      setShowLoadingScreen(true);
+      // Navigate to lessons page
+      navigate(`/courses/${courseId}/lessons`);
     } catch (error) {
       console.error('Error enrolling:', error);
       toast({
@@ -49,11 +46,6 @@ const CourseEnrollment = ({
         variant: "destructive",
       });
     }
-  };
-
-  const handleLoadingComplete = () => {
-    // Navigate to lessons page after loading
-    navigate(`/courses/${courseId}/lessons`);
   };
 
   if (isEnrolled) {
@@ -68,22 +60,13 @@ const CourseEnrollment = ({
   }
 
   return (
-    <>
-      <Button 
-        className="w-full"
-        onClick={handleEnroll}
-        disabled={isEnrolling}
-      >
-        {isEnrolling ? "Enrolling..." : "Enroll Now"}
-      </Button>
-
-      {showLoadingScreen && (
-        <EnrollmentLoadingScreen
-          courseTitle={courseTitle || "this course"}
-          onComplete={handleLoadingComplete}
-        />
-      )}
-    </>
+    <Button 
+      className="w-full"
+      onClick={handleEnroll}
+      disabled={isEnrolling}
+    >
+      {isEnrolling ? "Enrolling..." : "Enroll Now"}
+    </Button>
   );
 };
 
