@@ -120,7 +120,7 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
         )}
       </div>
       <CardHeader>
-        <CardTitle className="leading-[1.2]">{course.title}</CardTitle>
+        <CardTitle className="leading-[1.2] line-clamp-3 min-h-[4.8em]">{course.title}</CardTitle>
         <CardDescription className="line-clamp-2">{course.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
