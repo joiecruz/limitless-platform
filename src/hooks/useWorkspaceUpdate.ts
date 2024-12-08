@@ -36,10 +36,10 @@ export function useWorkspaceUpdate(
     setIsLoading(true);
     try {
       console.log('Checking slug availability for:', data.slug);
-      // First check if slug exists
+      // First check if slug exists for other workspaces
       const { count, error: checkError } = await supabase
         .from('workspaces')
-        .select('id', { count: 'exact', head: true })
+        .select('*', { count: 'exact', head: true })
         .eq('slug', data.slug)
         .neq('id', currentWorkspace.id);
 
@@ -69,8 +69,8 @@ export function useWorkspaceUpdate(
           updated_at: new Date().toISOString(),
         })
         .eq('id', currentWorkspace.id)
-        .select('*')
-        .maybeSingle();
+        .select()
+        .single();
 
       if (updateError) {
         console.error('Error updating workspace:', updateError);
