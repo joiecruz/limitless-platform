@@ -2,24 +2,24 @@ import { useEffect, useState } from "react";
 
 const quotes = [
   {
-    text: "Innovation is the ability to see change as an opportunity - not a threat.",
-    author: "Steve Jobs"
+    text: "Innovation is taking two things that exist and putting them together in a new way.",
+    author: "Tom Freston"
   },
   {
     text: "The best way to predict the future is to create it.",
     author: "Peter Drucker"
   },
   {
+    text: "Every great innovation is built on a foundation of necessity.",
+    author: "Anonymous"
+  },
+  {
     text: "Innovation distinguishes between a leader and a follower.",
     author: "Steve Jobs"
   },
   {
-    text: "Social innovation is the future of innovation.",
-    author: "Muhammad Yunus"
-  },
-  {
-    text: "Every great innovation is built on a foundation of necessity.",
-    author: "Anonymous"
+    text: "The only way to discover the limits of the possible is to go beyond them into the impossible.",
+    author: "Arthur C. Clarke"
   }
 ];
 
