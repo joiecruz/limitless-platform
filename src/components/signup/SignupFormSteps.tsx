@@ -1,11 +1,10 @@
-import { TextStep } from "./steps/TextStep";
-import { ButtonGridStep } from "./steps/ButtonGridStep";
-import { TextareaStep } from "./steps/TextareaStep";
+import { Step1 } from "./steps/Step1";
+import { Step2 } from "./steps/Step2";
+import { Step3 } from "./steps/Step3";
+import { Step4 } from "./steps/Step4";
+import { Step5 } from "./steps/Step5";
+import { Step6 } from "./steps/Step6";
 import { SignupData } from "./types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Button } from "@/components/ui/button";
 
 interface StepProps {
   formData: SignupData;
@@ -20,105 +19,8 @@ interface StepProps {
   handleResendCode?: () => void;
 }
 
-export const Step1 = ({ formData, handleInputChange, nextStep }: StepProps) => (
-  <TextStep
-    fields={[
-      {
-        name: "firstName",
-        label: "First Name",
-        required: true,
-        containerClassName: "flex-1"
-      },
-      {
-        name: "lastName",
-        label: "Last Name",
-        required: true,
-        containerClassName: "flex-1"
-      },
-      {
-        name: "email",
-        label: "Work Email",
-        type: "email",
-        placeholder: "you@company.com",
-        required: true
-      },
-      {
-        name: "password",
-        label: "Password",
-        type: "password",
-        placeholder: "••••••••",
-        required: true
-      }
-    ]}
-    values={formData}
-    onChange={handleInputChange}
-    onNext={nextStep}
-    fieldsContainerClassName="flex gap-4 flex-wrap"
-  />
-);
-
-export const Step2 = ({ 
-  formData, 
-  verificationCode = "", 
-  setVerificationCode = () => {}, 
-  handleVerification = () => {},
-  handleResendCode = () => {}
-}: StepProps) => (
-  <div className="space-y-6">
-    <div className="space-y-2 text-center">
-      <h2 className="text-3xl font-bold tracking-tight">Verify your account</h2>
-      <img 
-        src="/lovable-uploads/37e245fb-5fd3-44f3-b31a-e507313f2db8.png" 
-        alt="Verification" 
-        className="mx-auto w-32 h-32 my-6"
-      />
-      <p className="text-2xl font-semibold">We just emailed you.</p>
-      <p className="text-gray-500">
-        Please enter the code we emailed you.
-      </p>
-      <p className="text-gray-900 font-medium mt-4">{formData.email}</p>
-    </div>
-
-    <div className="space-y-4">
-      <InputOTP
-        value={verificationCode}
-        onChange={(value) => setVerificationCode(value)}
-        maxLength={6}
-        render={({ slots }) => (
-          <InputOTPGroup className="gap-2 flex justify-center">
-            {slots.map((slot, idx) => (
-              <InputOTPSlot key={idx} {...slot} className="w-12 h-12 text-lg" />
-            ))}
-          </InputOTPGroup>
-        )}
-      />
-
-      <Button 
-        onClick={handleVerification}
-        className="w-full"
-        size="lg"
-      >
-        Verify
-      </Button>
-
-      <div className="text-center space-x-1 text-sm">
-        <button 
-          onClick={handleResendCode}
-          className="text-primary hover:underline"
-        >
-          Resend code
-        </button>
-        <span>or</span>
-        <button 
-          onClick={() => {}}
-          className="text-primary hover:underline"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-  </div>
-);
+// Export all steps
+export { Step1, Step2, Step3, Step4, Step5, Step6 };
 
 export const Step3 = ({ formData, handleSelectChange, nextStep, prevStep }: StepProps) => (
   <div className="space-y-4">
