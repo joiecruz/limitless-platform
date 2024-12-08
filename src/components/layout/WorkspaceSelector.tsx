@@ -18,7 +18,7 @@ interface Workspace {
   slug: string | null;
 }
 
-interface WorkspaceMember {
+interface WorkspaceMemberResponse {
   workspace: {
     id: string;
     name: string | null;
@@ -73,7 +73,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         console.log('Fetched workspaces:', memberWorkspaces);
         
         // Map the nested workspace data to match the expected format
-        const formattedWorkspaces: Workspace[] = (memberWorkspaces || []).map((item: WorkspaceMember) => ({
+        const formattedWorkspaces: Workspace[] = (memberWorkspaces || []).map((item: WorkspaceMemberResponse) => ({
           id: item.workspace.id,
           name: item.workspace.name || 'Unnamed Workspace',
           slug: item.workspace.slug || 'unnamed'
