@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -126,6 +127,20 @@ export default function SignIn() {
             providers={[]}
             redirectTo={`${window.location.origin}/dashboard`}
           />
+          
+          {/* Sign Up Link */}
+          <div className="text-center mt-4">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{" "}
+              <Button
+                variant="link"
+                className="p-0 h-auto font-semibold text-primary hover:text-primary/80"
+                onClick={() => navigate("/signup")}
+              >
+                Sign up
+              </Button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
