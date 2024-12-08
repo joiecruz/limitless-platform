@@ -162,15 +162,29 @@ const Lesson = () => {
           isOpen ? 'ml-80' : 'ml-0'
         }`}>
           <div className="max-w-4xl mx-auto px-6 py-8">
+            {/* Header and description */}
+            <div className="mb-8">
+              <div className="text-sm text-gray-500 mb-2">
+                Lesson {currentIndex + 1} of {totalLessons}
+              </div>
+              <h1 className="text-3xl font-semibold text-gray-900">{lesson.title}</h1>
+              {lesson.description && (
+                <div className="prose max-w-none mt-4">
+                  <p className="text-gray-600">{lesson.description}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Video player */}
             {lesson.video_url && <VideoPlayer videoUrl={lesson.video_url} />}
             
-            <LessonContent
-              title={lesson.title}
-              description={lesson.description}
-              bodyContent={lesson.body_content}
-              currentIndex={currentIndex}
-              totalLessons={totalLessons}
-            />
+            {/* Lesson body content */}
+            {lesson.body_content && (
+              <article 
+                className="prose prose-slate max-w-none mt-8 prose-headings:text-gray-900 prose-p:text-gray-800 prose-a:text-primary-600 prose-strong:text-gray-900 prose-code:text-primary-600 prose-pre:bg-gray-900 prose-pre:text-gray-100"
+                dangerouslySetInnerHTML={{ __html: lesson.body_content }}
+              />
+            )}
 
             <LessonNavigation
               previousLesson={previousLesson}
