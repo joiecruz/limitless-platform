@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, PlayCircle } from "lucide-react";
+import { Lock, PlayCircle, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
@@ -63,7 +63,7 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
                 {locked ? (
                   <Lock className="w-5 h-5 text-muted-foreground" />
                 ) : (
-                  <PlayCircle className="w-5 h-5 text-primary" />
+                  <CheckCircle className="w-5 h-5 text-primary" />
                 )}
               </div>
               <div className="flex-1 text-left">
