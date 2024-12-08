@@ -65,8 +65,8 @@ export default function Community() {
     fetchUserWorkspace();
   }, []);
 
-  const handleCreatePrivateChannel = async (name: string, wsId: string) => {
-    if (!wsId) {
+  const handleCreatePrivateChannel = async (name: string) => {
+    if (!workspaceId) {
       toast({
         title: "Error",
         description: "Workspace not loaded",
@@ -86,24 +86,15 @@ export default function Community() {
       return;
     }
 
-    // Check if a channel with this name already exists in the workspace
-    const { data: existingChannels, error: checkError } = await supabase
+    // First check if a channel with this name already exists in the workspace
+    const { data: existingChannel } = await supabase
       .from("channels")
       .select()
-      .eq("workspace_id", wsId)
-      .eq("name", name);
+      .eq("workspace_id", workspaceId)
+      .eq("name", name)
+      .single();
 
-    if (checkError) {
-      console.error("Error checking existing channels:", checkError);
-      toast({
-        title: "Error",
-        description: "Failed to check existing channels",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (existingChannels && existingChannels.length > 0) {
+    if (existingChannel) {
       toast({
         title: "Error",
         description: "A channel with this name already exists in this workspace",
@@ -117,7 +108,7 @@ export default function Community() {
       .from("channels")
       .insert({
         name,
-        workspace_id: wsId,
+        workspace_id: workspaceId,
         is_public: false,
         description: `Private channel created by ${user.email}`,
       })
@@ -149,7 +140,6 @@ export default function Community() {
         activeChannel={activeChannel}
         onChannelSelect={setActiveChannel}
         onCreatePrivateChannel={handleCreatePrivateChannel}
-        workspaceId={workspaceId || ""}
       />
       <ChatArea 
         activeChannel={activeChannel}
