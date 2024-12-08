@@ -162,6 +162,8 @@ const Lesson = () => {
           isOpen ? 'ml-80' : 'ml-0'
         }`}>
           <div className="max-w-4xl mx-auto px-6 py-8">
+            {lesson.video_url && <VideoPlayer videoUrl={lesson.video_url} />}
+            
             <LessonContent
               title={lesson.title}
               description={lesson.description}
@@ -169,8 +171,6 @@ const Lesson = () => {
               currentIndex={currentIndex}
               totalLessons={totalLessons}
             />
-
-            {lesson.video_url && <VideoPlayer videoUrl={lesson.video_url} />}
 
             <LessonNavigation
               previousLesson={previousLesson}
