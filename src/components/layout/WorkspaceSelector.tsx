@@ -45,6 +45,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
 
         console.log("User found:", user.id);
 
+        // Updated query to use workspace_members table
         const { data: memberWorkspaces, error: workspacesError } = await supabase
           .from('workspace_members')
           .select(`
@@ -62,11 +63,16 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         }
 
         console.log('Fetched workspaces:', memberWorkspaces);
-        return memberWorkspaces?.map(item => ({
+        
+        // Map the nested workspace data to match the expected format
+        const formattedWorkspaces = memberWorkspaces?.map(item => ({
           id: item.workspace.id,
           name: item.workspace.name,
           slug: item.workspace.slug
         })) || [];
+
+        console.log('Formatted workspaces:', formattedWorkspaces);
+        return formattedWorkspaces;
       } catch (error) {
         console.error('Error in fetchWorkspaces:', error);
         toast({
