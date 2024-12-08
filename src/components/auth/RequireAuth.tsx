@@ -10,6 +10,8 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         navigate("/signin", { replace: true });
+      } else if (!session.user.email_confirmed_at) {
+        navigate("/verify-email", { replace: true });
       }
     });
 
@@ -17,6 +19,8 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         navigate("/signin", { replace: true });
+      } else if (!session.user.email_confirmed_at) {
+        navigate("/verify-email", { replace: true });
       }
     });
 

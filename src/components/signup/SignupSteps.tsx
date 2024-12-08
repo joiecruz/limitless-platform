@@ -50,7 +50,7 @@ export function SignupSteps() {
         description: "Please check your email to confirm your account.",
       });
       
-      navigate("/signin");
+      navigate("/verify-email");
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({
