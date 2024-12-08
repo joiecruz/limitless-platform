@@ -2,39 +2,24 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-
   // Query to get user profile data
-  const { data: profile, error: profileError } = useQuery({
+  const { data: profile } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('No user found');
-      }
+      if (!user) return null;
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("profiles")
         .select("first_name, last_name")
         .eq("id", user.id)
         .single();
 
-      if (error) throw error;
       return data;
     },
   });
-
-  // If there's an error fetching the profile, redirect to signin
-  useEffect(() => {
-    if (profileError) {
-      console.log("Profile error:", profileError);
-      navigate("/signin", { replace: true });
-    }
-  }, [profileError, navigate]);
 
   const getDisplayName = () => {
     if (profile?.first_name || profile?.last_name) {

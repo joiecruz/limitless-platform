@@ -20,34 +20,19 @@ interface AppRoutesProps {
 }
 
 export default function AppRoutes({ session }: AppRoutesProps) {
-  // Check if user is not logged in or email is not verified
-  const isUnauthorized = !session || !session.user.email_confirmed_at;
-
-  // If there's no session or email is not verified, only allow access to auth routes
-  if (isUnauthorized) {
-    return (
-      <Routes>
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="*" element={<Navigate to="/signin" replace />} />
-      </Routes>
-    );
-  }
-
-  // If there's a session and email is verified, allow access to protected routes
   return (
     <Routes>
       <Route
+        path="/"
+        element={<Navigate to={session ? "/dashboard" : "/signin"} replace />}
+      />
+      <Route
         path="/signin"
-        element={<Navigate to="/dashboard" replace />}
+        element={session ? <Navigate to="/dashboard" replace /> : <SignIn />}
       />
       <Route
         path="/signup"
-        element={<Navigate to="/dashboard" replace />}
-      />
-      <Route
-        path="/"
-        element={<Navigate to="/dashboard" replace />}
+        element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
       />
       <Route
         path="/courses"

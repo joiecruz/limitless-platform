@@ -7,7 +7,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session || !session.user.email_confirmed_at) {
+      if (!session) {
         navigate("/signin", { replace: true });
       }
     });
