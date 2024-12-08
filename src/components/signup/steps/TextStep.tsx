@@ -13,6 +13,7 @@ interface TextStepProps {
     placeholder?: string;
     required?: boolean;
     containerClassName?: string;
+    error?: string;
   }[];
   values: SignupData;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -47,8 +48,11 @@ export function TextStep({
               value={values[field.name]}
               onChange={onChange}
               placeholder={field.placeholder}
-              className="mt-1"
+              className={`mt-1 ${field.error ? 'border-red-500' : ''}`}
             />
+            {field.error && (
+              <p className="text-sm text-red-500 mt-1">{field.error}</p>
+            )}
             {field.type === "password" && (
               <PasswordRequirements password={values[field.name] as string} />
             )}

@@ -108,6 +108,19 @@ export function SignupSteps() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const nextStep = () => {
     if (step === 1) {
       handleInitialSignup();
@@ -127,6 +140,7 @@ export function SignupSteps() {
     setVerificationCode,
     handleVerification,
     handleResendCode,
+    handleLogout,
   };
 
   return (
