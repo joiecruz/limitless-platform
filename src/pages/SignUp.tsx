@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { PasswordRequirements } from "@/components/signup/steps/PasswordRequirements";
+import { QuotesCarousel } from "@/components/signup/QuotesCarousel";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -126,17 +127,7 @@ export default function Register() {
 
       {/* Right Side - Quotes */}
       <div className="hidden lg:flex lg:flex-1 bg-primary-50">
-        <div className="w-full flex items-center justify-center p-12">
-          <div className="max-w-lg">
-            <blockquote className="text-xl font-medium text-gray-900">
-              "Innovation is not just about creating something new – it's about creating something that makes a positive impact on the world. Every small change we make today can lead to transformative solutions tomorrow."
-            </blockquote>
-            <div className="mt-4">
-              <p className="font-semibold">Dr. Emily Chen</p>
-              <p className="text-sm text-gray-600">Global Innovation Director, Impact Solutions</p>
-            </div>
-          </div>
-        </div>
+        <QuotesCarousel />
       </div>
     </div>
   );
