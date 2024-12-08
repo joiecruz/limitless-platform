@@ -128,6 +128,42 @@ export type Database = {
           },
         ]
       }
+      innovation_tools: {
+        Row: {
+          created_at: string
+          description: string
+          download_url: string | null
+          id: string
+          image_url: string | null
+          price: number | null
+          subtitle: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          download_url?: string | null
+          id?: string
+          image_url?: string | null
+          price?: number | null
+          subtitle: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          download_url?: string | null
+          id?: string
+          image_url?: string | null
+          price?: number | null
+          subtitle?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
           body_content: string | null

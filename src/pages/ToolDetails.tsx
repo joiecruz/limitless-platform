@@ -2,13 +2,42 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { tools } from "./Tools"; // We'll import the tools data from the Tools page
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Tool } from "./Tools";
+import { LoadingQuotes } from "@/components/common/LoadingQuotes";
+
+const fetchTool = async (toolId: string) => {
+  const { data, error } = await supabase
+    .from('innovation_tools')
+    .select('*')
+    .eq('id', toolId)
+    .single();
+
+  if (error) throw error;
+  
+  return {
+    id: data.id,
+    title: data.title,
+    subtitle: data.subtitle,
+    description: data.description,
+    imageUrl: data.image_url,
+    price: data.price,
+    downloadUrl: data.download_url
+  } as Tool;
+};
 
 export default function ToolDetails() {
   const { toolId } = useParams();
-  const tool = tools.find((t) => t.id === toolId);
+  const { data: tool, isLoading, error } = useQuery({
+    queryKey: ['tool', toolId],
+    queryFn: () => fetchTool(toolId!),
+    enabled: !!toolId,
+  });
 
-  if (!tool) {
+  if (isLoading) return <LoadingQuotes />;
+
+  if (error || !tool) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-semibold">Tool not found</h2>
@@ -58,7 +87,11 @@ export default function ToolDetails() {
 
           <div className="flex justify-end">
             {tool.price === null ? (
-              <Button size="lg" className="w-full sm:w-auto">
+              <Button 
+                size="lg" 
+                className="w-full sm:w-auto"
+                onClick={() => tool.downloadUrl && window.open(tool.downloadUrl, '_blank')}
+              >
                 <Download className="w-4 h-4 mr-2" />
                 Download Now
               </Button>
