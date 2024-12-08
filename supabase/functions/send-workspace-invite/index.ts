@@ -1,7 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +18,7 @@ interface InviteRequest {
   workspaceName: string;
   inviterName: string;
   role: string;
+  inviterId: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -23,10 +27,39 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, workspaceId, workspaceName, inviterName, role } = await req.json() as InviteRequest;
+    const { email, workspaceId, workspaceName, inviterName, role, inviterId } = await req.json() as InviteRequest;
 
     console.log(`Sending workspace invite to ${email} for workspace ${workspaceName} with role ${role}`);
 
+    // Initialize Supabase client with service role key
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    // Save the invitation in the database
+    const { error: inviteError } = await supabase
+      .from('workspace_invitations')
+      .insert({
+        workspace_id: workspaceId,
+        email: email,
+        role: role,
+        invited_by: inviterId,
+        status: 'pending'
+      });
+
+    if (inviteError) {
+      // If it's a unique constraint violation, it means there's already a pending invite
+      if (inviteError.code === '23505') {
+        return new Response(
+          JSON.stringify({ error: "An invitation has already been sent to this email" }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      throw inviteError;
+    }
+
+    // Send the email invitation
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -102,19 +135,16 @@ const handler = async (req: Request): Promise<Response> => {
           </head>
           <body>
             <div class="email-container">
-              <!-- Header Section with Logo -->
               <div class="email-header">
                 <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Logo" class="logo">
                 <h2>You've been invited!</h2>
               </div>
-              <!-- Body Section -->
               <div class="email-body">
                 <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on our platform as a ${role}.</p>
                 <p>Click the link below to accept the invitation:</p>
                 <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Accept Invitation</a>
                 <p style="margin-top: 16px; font-size: 14px; color: #666666;">If you didn't expect this invitation, you can safely ignore this email.</p>
               </div>
-              <!-- Footer Section -->
               <div class="email-footer">
                 <p>Limitless Lab</p>
                 <p>5F RFM Corporate Center, Pioneer Street, Mandaluyong City, Philippines</p>

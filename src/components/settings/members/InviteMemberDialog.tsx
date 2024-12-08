@@ -51,6 +51,7 @@ export function InviteMemberDialog({
           workspaceName,
           inviterName,
           role: selectedRole,
+          inviterId: userData.user.id, // Add the inviter's ID
         },
       });
 
@@ -73,7 +74,7 @@ export function InviteMemberDialog({
       console.error('Error sending invite:', error);
       toast({
         title: "Error",
-        description: "Failed to send invitation. Please try again.",
+        description: error.message || "Failed to send invitation. Please try again.",
         variant: "destructive",
       });
     } finally {
