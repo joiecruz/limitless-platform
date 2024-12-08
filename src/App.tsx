@@ -34,7 +34,7 @@ const App = () => {
           console.error("Error getting session:", error);
           // Clear session and storage on error
           setSession(null);
-          localStorage.removeItem('supabase.auth.token');
+          localStorage.clear(); // Clear all localStorage
           await supabase.auth.signOut();
           return;
         }
@@ -51,7 +51,7 @@ const App = () => {
         console.error("Error in getInitialSession:", error);
         // Clear session and storage on error
         setSession(null);
-        localStorage.removeItem('supabase.auth.token');
+        localStorage.clear(); // Clear all localStorage
         await supabase.auth.signOut();
       } finally {
         setLoading(false);
@@ -64,12 +64,12 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("Auth state changed:", event, currentSession);
       
-      if (event === 'SIGNED_OUT') {
-        console.log("User signed out - Clearing session and cache");
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        console.log("User signed out or deleted - Clearing session and cache");
         // Clear session and cached data
         setSession(null);
         queryClient.clear();
-        localStorage.removeItem('supabase.auth.token');
+        localStorage.clear(); // Clear all localStorage
         toast({
           title: "Signed out",
           description: "You have been signed out successfully.",
