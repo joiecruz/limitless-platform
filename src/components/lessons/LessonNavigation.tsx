@@ -36,13 +36,23 @@ const LessonNavigation = ({
       const currentLessonId = window.location.pathname.split('/').pop();
       if (!currentLessonId) return;
 
+      console.log('Current lesson ID:', currentLessonId);
+
       // First check if enrollment exists and get completed lessons
-      const { data: existingEnrollment } = await supabase
+      const { data: existingEnrollment, error: fetchError } = await supabase
         .from("enrollments")
         .select("id, completed_lessons")
         .eq("user_id", session.user.id)
         .eq("course_id", courseId)
         .single();
+
+      if (fetchError) {
+        console.error('Error fetching enrollment:', fetchError);
+        return;
+      }
+
+      console.log('Existing enrollment:', existingEnrollment);
+      console.log('Current completed lessons:', existingEnrollment?.completed_lessons);
 
       // Get all completed lessons or initialize empty array
       const completedLessons = existingEnrollment?.completed_lessons || [];
@@ -50,19 +60,29 @@ const LessonNavigation = ({
       // Add current lesson if not already completed
       if (!completedLessons.includes(currentLessonId)) {
         completedLessons.push(currentLessonId);
+        console.log('Updated completed lessons array:', completedLessons);
+      } else {
+        console.log('Lesson already completed:', currentLessonId);
       }
 
       // Update enrollment with new completed lesson
-      const { error: updateError } = await supabase
+      const { data: updatedEnrollment, error: updateError } = await supabase
         .from("enrollments")
         .upsert({
-          id: existingEnrollment?.id, // Include the existing enrollment ID
+          id: existingEnrollment?.id,
           user_id: session.user.id,
           course_id: courseId,
           completed_lessons: completedLessons,
-        });
+        })
+        .select()
+        .single();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating enrollment:', updateError);
+        throw updateError;
+      }
+
+      console.log('Successfully updated enrollment:', updatedEnrollment);
 
       // Call the original onComplete handler
       onComplete();
