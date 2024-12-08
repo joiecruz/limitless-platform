@@ -7,6 +7,7 @@ interface LessonNavigationProps {
   nextLesson: { id: string } | undefined;
   courseId: string;
   onComplete: () => void;
+  isCompleted?: boolean;
 }
 
 const LessonNavigation = ({
@@ -14,6 +15,7 @@ const LessonNavigation = ({
   nextLesson,
   courseId,
   onComplete,
+  isCompleted = false,
 }: LessonNavigationProps) => {
   const navigate = useNavigate();
 
@@ -34,7 +36,7 @@ const LessonNavigation = ({
       </div>
       <div className="flex items-center gap-4">
         <Button onClick={onComplete}>
-          Complete Lesson
+          {isCompleted && nextLesson ? "Next Lesson" : "Complete Lesson"}
           {nextLesson && <ArrowRight className="w-4 h-4 ml-2" />}
         </Button>
       </div>
