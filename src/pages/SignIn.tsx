@@ -1,105 +1,114 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { LogIn } from "lucide-react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error signing in",
-          description: error.message,
-        });
-      } else {
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
         navigate("/dashboard");
       }
-    } catch (error) {
-      console.error("Error:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 px-4">
-        <div className="flex flex-col items-center">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        {/* Logo Section */}
+        <div className="text-center mb-8">
           <img 
             src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
             alt="Limitless Lab"
-            className="h-16 w-auto mb-8"
+            className="h-12 w-auto mx-auto mb-6"
           />
-          <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account to continue
-          </p>
         </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-md space-y-6">
-          <form onSubmit={handleSignIn} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1"
-              />
-            </div>
+        {/* Sign In Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 animate-fade-in">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">Sign in</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Where innovation meets possibility – your journey to limitless learning begins here
+            </p>
+          </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mt-1"
-              />
-            </div>
+          <Auth
+            supabaseClient={supabase}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#393ca0',
+                    brandAccent: '#2d2f80',
+                    brandButtonText: 'white',
+                    defaultButtonBackground: 'white',
+                    defaultButtonBackgroundHover: '#f9fafb',
+                    inputBackground: 'white',
+                    inputBorder: '#e5e7eb',
+                    inputBorderHover: '#393ca0',
+                    inputBorderFocus: '#393ca0',
+                  },
+                  borderWidths: {
+                    buttonBorderWidth: '1px',
+                    inputBorderWidth: '1px',
+                  },
+                  radii: {
+                    borderRadiusButton: '0.5rem',
+                    buttonBorderRadius: '0.5rem',
+                    inputBorderRadius: '0.5rem',
+                  },
+                },
+              },
+              style: {
+                button: {
+                  height: '2.75rem',
+                  borderRadius: '0.5rem',
+                },
+                input: {
+                  height: '2.75rem',
+                  borderRadius: '0.5rem',
+                },
+                anchor: {
+                  color: '#393ca0',
+                  textDecoration: 'none',
+                },
+                message: {
+                  color: '#ef4444',
+                },
+                divider: {
+                  background: '#e5e7eb',
+                },
+              },
+            }}
+            theme="default"
+            providers={[]}
+            redirectTo={`${window.location.origin}/dashboard`}
+          />
 
-            <Button
-              type="submit"
-              className="w-full flex items-center justify-center gap-2"
-              disabled={loading}
-            >
-              <LogIn className="h-4 w-4" />
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
+          {/* Test Credentials Section */}
+          <div className="mt-8 p-4 bg-gray-50 rounded-lg text-sm space-y-3 md:block">
+            <p className="font-medium text-gray-700">Test credentials you can use:</p>
+            <div className="p-3 bg-white rounded-md shadow-sm">
+              <p className="text-gray-600">Email: test@example.com</p>
+              <p className="text-gray-600">Password: Test123456</p>
+            </div>
+            <div className="mt-3">
+              <p className="font-medium text-gray-700">Password requirements:</p>
+              <ul className="list-disc list-inside text-gray-600 mt-1 text-xs">
+                <li>Minimum 6 characters</li>
+                <li>At least one letter and one number</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>

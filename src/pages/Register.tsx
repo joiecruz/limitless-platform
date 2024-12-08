@@ -1,93 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { PasswordRequirements } from "@/components/signup/steps/PasswordRequirements";
 
 export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const validateEmail = (email: string) => {
-    return /\S+@\S+\.\S+/.test(email);
-  };
-
-  const validatePassword = (password: string) => {
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    const isLongEnough = password.length >= 8;
-
-    return hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar && isLongEnough;
-  };
-
-  const handleSignUp = async () => {
-    if (!validateEmail(email)) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!validatePassword(password)) {
-      toast({
-        title: "Invalid password",
-        description: "Please ensure your password meets all requirements",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      console.log("Attempting signup with email:", email);
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: "",
-            last_name: "",
-            role: "",
-            company_size: "",
-            referral_source: "",
-            goals: ""
-          }
-        }
-      });
-
-      console.log("Signup response:", { data, error });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Please check your email to verify your account.",
-      });
-
-      // Navigate to dashboard (Supabase will handle the email verification)
-      navigate("/dashboard");
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      toast({
-        title: "Error",
-        description: error.error_description || error.message || "An error occurred during signup",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Register Form */}
@@ -117,9 +32,6 @@ export default function Register() {
                 required
                 placeholder="you@company.com"
                 className="mt-1"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
               />
             </div>
             <div>
@@ -131,19 +43,10 @@ export default function Register() {
                 required
                 placeholder="••••••••"
                 className="mt-1"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
               />
-              <PasswordRequirements password={password} />
             </div>
-            <Button 
-              type="button" 
-              className="w-full" 
-              onClick={handleSignUp}
-              disabled={loading}
-            >
-              {loading ? "Creating account..." : "Continue"}
+            <Button type="button" className="w-full">
+              Continue
             </Button>
           </div>
         </div>
