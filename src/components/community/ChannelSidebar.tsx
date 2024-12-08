@@ -52,20 +52,8 @@ export function ChannelSidebar({
             <CreateChannelDialog 
               onCreateChannel={onCreatePrivateChannel} 
               workspaceId={workspaceId}
+              comingSoon
             />
-          </div>
-          <div className="space-y-1">
-            {privateChannels.map((channel) => (
-              <ChannelButton
-                key={channel.id}
-                channel={channel}
-                isPrivate
-                isActive={activeChannel?.id === channel.id}
-                unreadCount={unreadCounts[channel.id] || 0}
-                onClick={() => onChannelSelect(channel)}
-                className="flex-grow"
-              />
-            ))}
           </div>
         </div>
       </ScrollArea>
