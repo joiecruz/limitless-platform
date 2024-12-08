@@ -46,23 +46,11 @@ export function useWorkspaceUpdate(
     
     setIsLoading(true);
     try {
-      // First verify the workspace exists
-      const { data: existingWorkspace, error: checkError } = await supabase
-        .from('workspaces')
-        .select()
-        .eq('id', currentWorkspace.id)
-        .single();
-
-      if (checkError) {
-        console.error('Error checking workspace:', checkError);
-        throw new Error('Workspace not found');
-      }
-
       const newSlug = generateSlug(data.name);
       console.log('Updating workspace with ID:', currentWorkspace.id);
       console.log('Update data:', { name: data.name, slug: newSlug });
 
-      const { data: updatedData, error: updateError } = await supabase
+      const { data: updatedWorkspace, error: updateError } = await supabase
         .from('workspaces')
         .update({
           name: data.name,
@@ -71,21 +59,21 @@ export function useWorkspaceUpdate(
         })
         .eq('id', currentWorkspace.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         console.error('Error updating workspace:', updateError);
         throw updateError;
       }
 
-      if (!updatedData) {
+      if (!updatedWorkspace) {
         throw new Error('No data returned after update');
       }
 
-      console.log('Update successful:', updatedData);
+      console.log('Update successful:', updatedWorkspace);
 
       // Update local state with the returned data
-      setCurrentWorkspace(updatedData);
+      setCurrentWorkspace(updatedWorkspace);
 
       // Invalidate queries
       await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
