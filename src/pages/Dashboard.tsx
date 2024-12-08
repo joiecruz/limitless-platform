@@ -1,24 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { BookOpen, Users, FolderKanban, Download } from "lucide-react";
-import { WorkspaceSelector } from "@/components/layout/WorkspaceSelector";
-import { useState } from "react";
-
-interface Workspace {
-  id: string;
-  name: string;
-  slug: string;
-}
 
 export default function Dashboard() {
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
-
   return (
     <div className="flex-1 space-y-6 p-8">
-      <WorkspaceSelector 
-        currentWorkspace={currentWorkspace}
-        setCurrentWorkspace={setCurrentWorkspace}
-      />
-      
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
         <p className="text-muted-foreground">
