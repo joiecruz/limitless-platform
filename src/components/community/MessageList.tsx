@@ -9,6 +9,13 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages, onReaction }: MessageListProps) {
+  const getDisplayName = (profile: Message['profiles']) => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return profile?.username || "Anonymous";
+  };
+
   return (
     <div className="space-y-6">
       {messages.map((message) => (
@@ -16,14 +23,14 @@ export function MessageList({ messages, onReaction }: MessageListProps) {
           <Avatar className="h-8 w-8">
             <img
               src={message.profiles?.avatar_url || "/placeholder.svg"}
-              alt={message.profiles?.username || "User"}
+              alt={getDisplayName(message.profiles)}
               className="object-cover"
             />
           </Avatar>
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-sm">
-                {message.profiles?.username || "Anonymous"}
+                {getDisplayName(message.profiles)}
               </span>
               <span className="text-xs text-gray-500">
                 {format(new Date(message.created_at), "MMM d, h:mm a")}
