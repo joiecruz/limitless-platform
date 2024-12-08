@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
-import { RequireAuth } from "@/components/auth/RequireAuth";
+import { useToast } from "@/components/ui/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function AccountSettings() {
-  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
+  const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     fetchUserAndProfile();
@@ -22,6 +22,7 @@ export default function AccountSettings() {
       
       if (!user) {
         throw new Error('No user found');
+        return;
       }
 
       setUserEmail(user.email || '');
@@ -31,20 +32,18 @@ export default function AccountSettings() {
         .select('*')
         .eq('id', user.id)
         .single();
-
-      if (profileError) throw profileError;
-      
+    
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        return;
+      }
+    
       if (profileData) {
         setProfile(profileData);
         setAvatarUrl(profileData.avatar_url);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load profile data",
-        variant: "destructive",
-      });
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
@@ -55,7 +54,7 @@ export default function AccountSettings() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         throw new Error('No user found');
       }
@@ -74,14 +73,14 @@ export default function AccountSettings() {
 
       if (error) throw error;
 
+      // Invalidate the profile query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      
       toast({
         title: "Success",
         description: "Profile updated successfully",
       });
-      
-      await fetchUserAndProfile();
     } catch (error) {
-      console.error('Error updating profile:', error);
       toast({
         title: "Error",
         description: "Failed to update profile",
@@ -92,97 +91,17 @@ export default function AccountSettings() {
     }
   };
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      setLoading(true);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('No user found');
-      }
-
-      if (!e.target.files || e.target.files.length === 0) {
-        throw new Error('You must select an image to upload.');
-      }
-
-      const file = e.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}-${Math.random()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      setAvatarUrl(data.publicUrl);
-      
-      toast({
-        title: "Success",
-        description: "Avatar uploaded successfully",
-      });
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload avatar",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getInitials = () => {
-    if (profile?.first_name || profile?.last_name) {
-      return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
-    }
-    return userEmail?.[0]?.toUpperCase() || '?';
-  };
-
-  if (loading) {
-    return (
-      <RequireAuth>
-        <div className="max-w-2xl mx-auto p-6">
-          <div className="animate-pulse">
-            <div className="h-8 w-48 bg-gray-200 rounded mb-6"></div>
-            <div className="space-y-4">
-              <div className="h-32 w-32 bg-gray-200 rounded-full mx-auto"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        </div>
-      </RequireAuth>
-    );
-  }
-
   return (
-    <RequireAuth>
-      <div className="max-w-2xl mx-auto p-6">
-        <h1 className="text-2xl font-semibold mb-6">Account Settings</h1>
-        
-        <ProfileAvatar
-          avatarUrl={avatarUrl}
-          getInitials={getInitials}
-          onAvatarChange={handleAvatarChange}
+    <div className="max-w-xl mx-auto py-8 px-4">
+      <h1 className="text-2xl font-bold mb-8">Account Settings</h1>
+      <div className="bg-white p-6 rounded-lg border">
+        <ProfileForm
+          loading={loading}
+          profile={profile}
+          userEmail={userEmail}
+          onSubmit={handleSubmit}
         />
-        
-        <div className="mt-6">
-          <ProfileForm
-            loading={loading}
-            profile={profile}
-            userEmail={userEmail}
-            onSubmit={handleSubmit}
-          />
-        </div>
       </div>
-    </RequireAuth>
+    </div>
   );
 }

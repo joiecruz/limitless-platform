@@ -8,24 +8,20 @@ import {
 } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function UserProfile() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string>('');
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   
-  useEffect(() => {
-    fetchUserAndProfile();
-  }, []);
-
-  const fetchUserAndProfile = async () => {
-    try {
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         throw new Error('No user found');
-        return;
       }
 
       setUserEmail(user.email || '');
@@ -38,21 +34,16 @@ export function UserProfile() {
     
       if (error) {
         console.error('Error fetching profile:', error);
-        return;
+        throw error;
       }
     
-      if (data) {
-        setProfile(data);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
+      return data;
     }
-  };
+  });
   
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    queryClient.clear();
     navigate("/");
   };
 
@@ -74,7 +65,7 @@ export function UserProfile() {
     return `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="mt-auto px-3 py-4 border-t border-gray-200">
         <div className="flex items-center gap-3 px-2">
