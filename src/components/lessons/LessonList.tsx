@@ -91,7 +91,7 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
                 {locked ? (
                   <Lock className="w-5 h-5 text-muted-foreground" />
                 ) : completed ? (
-                  <CircleCheck className="w-5 h-5 text-primary fill-primary" />
+                  <CircleCheck className="w-5 h-5 text-primary fill-primary stroke-white" />
                 ) : (
                   <PlayCircle className="w-5 h-5 text-primary" />
                 )}
