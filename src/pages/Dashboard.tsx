@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -85,13 +86,23 @@ export default function Dashboard() {
     <RequireAuth>
       <div className="space-y-8 animate-fade-in">
         {/* Header Section */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back{getDisplayName() ? `, ${getDisplayName()}` : ''}!
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Here's an overview of your innovation journey
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Welcome back{getDisplayName() ? `, ${getDisplayName()}` : ''}!
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Here's an overview of your innovation journey
+            </p>
+          </div>
+          
+          {/* Temporary Toggle Button */}
+          <Button 
+            variant="outline"
+            onClick={() => setShowOnboarding(show => !show)}
+          >
+            {showOnboarding ? 'Hide' : 'Show'} Onboarding
+          </Button>
         </div>
 
         {/* Quick Links Grid */}
