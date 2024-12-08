@@ -20,8 +20,11 @@ interface AppRoutesProps {
 }
 
 export default function AppRoutes({ session }: AppRoutesProps) {
-  // If there's no session and user tries to access protected routes, redirect to signin
-  if (!session) {
+  // Check if user is not logged in or email is not verified
+  const isUnauthorized = !session || !session.user.email_confirmed_at;
+
+  // If there's no session or email is not verified, only allow access to auth routes
+  if (isUnauthorized) {
     return (
       <Routes>
         <Route path="/signin" element={<SignIn />} />
@@ -31,7 +34,7 @@ export default function AppRoutes({ session }: AppRoutesProps) {
     );
   }
 
-  // If there's a session and user tries to access auth pages, redirect to dashboard
+  // If there's a session and email is verified, allow access to protected routes
   return (
     <Routes>
       <Route
