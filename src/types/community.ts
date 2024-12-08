@@ -3,6 +3,9 @@ export interface Channel {
   name: string;
   description: string | null;
   workspace_id: string | null;
+  is_public: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface MessageReaction {
