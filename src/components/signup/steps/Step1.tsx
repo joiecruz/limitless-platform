@@ -42,18 +42,12 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
 
   const checkEmailExists = async (email: string) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password: 'temporary-check-password',
-      });
+      const { count } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('id', email);
       
-      // If we get a user_already_exists error, the email exists
-      if (error && error.message.includes("already registered")) {
-        return true;
-      }
-      
-      // If there's no error or a different error, the email doesn't exist
-      return false;
+      return count !== null && count > 0;
     } catch (error) {
       console.error("Error checking email:", error);
       return false;
