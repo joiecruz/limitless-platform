@@ -23,7 +23,11 @@ export function useWorkspaceUpdate(
   const queryClient = useQueryClient();
 
   const updateWorkspace = async (data: WorkspaceUpdateData) => {
+    console.log('Starting workspace update with data:', data);
+    console.log('Current workspace:', currentWorkspace);
+
     if (!currentWorkspace?.id) {
+      console.error('No workspace selected');
       toast({
         title: "Error",
         description: "No workspace selected",
@@ -34,16 +38,20 @@ export function useWorkspaceUpdate(
     
     setIsLoading(true);
     try {
-      // Check for existing workspace with the same slug
+      console.log('Checking for existing workspace with slug:', data.slug);
       const { data: existingWorkspaces, error: checkError } = await supabase
         .from('workspaces')
         .select('id')
         .eq('slug', data.slug)
         .neq('id', currentWorkspace.id);
 
-      if (checkError) throw checkError;
+      if (checkError) {
+        console.error('Error checking slug:', checkError);
+        throw checkError;
+      }
 
       if (existingWorkspaces && existingWorkspaces.length > 0) {
+        console.log('Slug already exists');
         toast({
           title: "Error",
           description: "This workspace URL is already taken. Please choose another one.",
@@ -52,36 +60,37 @@ export function useWorkspaceUpdate(
         return;
       }
 
-      // Update the workspace
-      const { error: updateError } = await supabase
+      console.log('Updating workspace with data:', data);
+      const { data: updatedData, error: updateError } = await supabase
         .from('workspaces')
         .update({
           name: data.name,
           slug: data.slug,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', currentWorkspace.id);
-
-      if (updateError) throw updateError;
-
-      // Fetch the updated workspace
-      const { data: updatedWorkspace, error: fetchError } = await supabase
-        .from('workspaces')
-        .select('*')
         .eq('id', currentWorkspace.id)
+        .select()
         .single();
 
-      if (fetchError) throw fetchError;
+      if (updateError) {
+        console.error('Error updating workspace:', updateError);
+        throw updateError;
+      }
 
-      if (updatedWorkspace) {
+      console.log('Update successful:', updatedData);
+
+      if (updatedData) {
         // Update local state
-        setCurrentWorkspace({
-          id: updatedWorkspace.id,
-          name: updatedWorkspace.name,
-          slug: updatedWorkspace.slug
-        });
+        const updatedWorkspace = {
+          id: updatedData.id,
+          name: updatedData.name,
+          slug: updatedData.slug
+        };
+        console.log('Setting current workspace to:', updatedWorkspace);
+        setCurrentWorkspace(updatedWorkspace);
 
         // Invalidate and refetch queries
+        console.log('Invalidating queries');
         await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
         toast({
@@ -90,7 +99,7 @@ export function useWorkspaceUpdate(
         });
       }
     } catch (error) {
-      console.error('Error updating workspace:', error);
+      console.error('Error in updateWorkspace:', error);
       toast({
         title: "Error",
         description: "Failed to update workspace settings. Please try again.",

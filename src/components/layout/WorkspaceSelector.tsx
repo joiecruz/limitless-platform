@@ -29,15 +29,21 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
   const { data: workspaces, isLoading } = useQuery({
     queryKey: ['workspaces'],
     queryFn: async () => {
+      console.log('Fetching workspaces...');
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
-        if (userError) throw userError;
+        if (userError) {
+          console.error('Error fetching user:', userError);
+          throw userError;
+        }
 
         if (!user) {
           console.log("No user found");
           return [];
         }
+
+        console.log("User found:", user.id);
 
         const { data: memberWorkspaces, error: workspacesError } = await supabase
           .from('workspace_members')
@@ -50,8 +56,12 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
           `)
           .eq('user_id', user.id);
 
-        if (workspacesError) throw workspacesError;
+        if (workspacesError) {
+          console.error('Error fetching workspaces:', workspacesError);
+          throw workspacesError;
+        }
 
+        console.log('Fetched workspaces:', memberWorkspaces);
         return memberWorkspaces?.map(item => ({
           id: item.workspace.id,
           name: item.workspace.name,
@@ -72,7 +82,10 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
   });
 
   useEffect(() => {
+    console.log('WorkspaceSelector useEffect - currentWorkspace:', currentWorkspace);
+    console.log('WorkspaceSelector useEffect - workspaces:', workspaces);
     if (!currentWorkspace && workspaces && workspaces.length > 0) {
+      console.log('Setting initial workspace:', workspaces[0]);
       setCurrentWorkspace(workspaces[0]);
     }
   }, [currentWorkspace, workspaces, setCurrentWorkspace]);
@@ -93,7 +106,10 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
           {workspaces?.map((workspace) => (
             <DropdownMenuItem
               key={workspace.id}
-              onClick={() => setCurrentWorkspace(workspace)}
+              onClick={() => {
+                console.log('Selecting workspace:', workspace);
+                setCurrentWorkspace(workspace);
+              }}
               className="cursor-pointer"
             >
               {workspace.name}

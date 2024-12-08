@@ -7,6 +7,8 @@ export function GeneralSettings() {
   const { currentWorkspace, setCurrentWorkspace } = useContext(WorkspaceContext);
   const { updateWorkspace, isLoading } = useWorkspaceUpdate(currentWorkspace, setCurrentWorkspace);
 
+  console.log('GeneralSettings - currentWorkspace:', currentWorkspace);
+
   return (
     <div className="space-y-6">
       <div>
