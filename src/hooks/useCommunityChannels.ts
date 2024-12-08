@@ -30,8 +30,9 @@ export function useCommunityChannels(workspaceId: string | null) {
 
       setPublicChannels(publicData || []);
 
-      // Fetch private channels for the current workspace
+      // Only fetch private channels if a workspace is selected
       if (workspaceId) {
+        console.log("Fetching private channels for workspace:", workspaceId);
         const { data: privateData, error: privateError } = await supabase
           .from("channels")
           .select("*")
@@ -49,12 +50,21 @@ export function useCommunityChannels(workspaceId: string | null) {
           return;
         }
 
+        console.log("Fetched private channels:", privateData);
         setPrivateChannels(privateData || []);
 
-        // If active channel was deleted, reset it
-        if (activeChannel && !privateData?.find(channel => channel.id === activeChannel.id)) {
-          setActiveChannel(null);
+        // If active channel was deleted or is a private channel from another workspace, reset it
+        if (activeChannel) {
+          const isActiveChannelValid = activeChannel.is_public || 
+            (privateData && privateData.some(channel => channel.id === activeChannel.id));
+          
+          if (!isActiveChannelValid) {
+            setActiveChannel(null);
+          }
         }
+      } else {
+        // Clear private channels when no workspace is selected
+        setPrivateChannels([]);
       }
 
       // Set active channel to first public channel if none is selected
