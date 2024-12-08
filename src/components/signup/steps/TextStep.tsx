@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SignupData } from "../types";
-import { PasswordRequirements } from "./PasswordRequirements";
 import { Loader2 } from "lucide-react";
 
 interface TextStepProps {
@@ -23,6 +22,7 @@ interface TextStepProps {
   loading?: boolean;
   fieldsContainerClassName?: string;
   isNextDisabled?: boolean;
+  customFields?: React.ReactNode[];
 }
 
 export function TextStep({ 
@@ -34,7 +34,8 @@ export function TextStep({
   onPrev,
   loading,
   fieldsContainerClassName,
-  isNextDisabled
+  isNextDisabled,
+  customFields
 }: TextStepProps) {
   return (
     <div className="space-y-4">
@@ -59,11 +60,9 @@ export function TextStep({
             {field.error && (
               <p className="text-sm text-red-500 mt-1">{field.error}</p>
             )}
-            {field.type === "password" && (
-              <PasswordRequirements password={values[field.name] as string} />
-            )}
           </div>
         ))}
+        {customFields}
       </div>
       <div className="flex gap-2">
         {onPrev && (
@@ -76,6 +75,7 @@ export function TextStep({
           onClick={onNext} 
           className="flex-1"
           disabled={loading || isNextDisabled}
+          variant={isNextDisabled ? "secondary" : "default"}
         >
           {loading ? (
             <>
