@@ -6,11 +6,27 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
-import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Query to get user profile data
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("first_name, last_name, role, company_size, goals, referral_source")
+        .eq("id", user.id)
+        .single();
+
+      return data;
+    },
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -27,22 +43,19 @@ export default function Dashboard() {
     checkAuth();
   }, [navigate]);
 
-  // Query to get user profile data
-  const { data: profile } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("first_name, last_name")
-        .eq("id", user.id)
-        .single();
-
-      return data;
-    },
-  });
+  // Check if onboarding is needed
+  useEffect(() => {
+    if (!profileLoading && profile) {
+      const needsOnboarding = !profile.first_name || 
+                            !profile.last_name || 
+                            !profile.role || 
+                            !profile.company_size || 
+                            !profile.goals || 
+                            !profile.referral_source;
+      
+      setShowOnboarding(needsOnboarding);
+    }
+  }, [profile, profileLoading]);
 
   const getDisplayName = () => {
     if (profile?.first_name || profile?.last_name) {
@@ -95,14 +108,6 @@ export default function Dashboard() {
               Here's an overview of your innovation journey
             </p>
           </div>
-          
-          {/* Temporary Toggle Button */}
-          <Button 
-            variant="outline"
-            onClick={() => setShowOnboarding(show => !show)}
-          >
-            {showOnboarding ? 'Hide' : 'Show'} Onboarding
-          </Button>
         </div>
 
         {/* Quick Links Grid */}

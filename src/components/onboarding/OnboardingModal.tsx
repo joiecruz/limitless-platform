@@ -11,6 +11,7 @@ import { Step3 } from "./steps/Step3";
 import { Step4 } from "./steps/Step4";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface OnboardingModalProps {
   open?: boolean;
@@ -42,6 +43,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const progress = (currentStep / TOTAL_STEPS) * 100;
 
@@ -72,7 +74,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
             last_name: updatedData.lastName,
             role: updatedData.role,
             company_size: updatedData.companySize,
-            goals: JSON.stringify(updatedData.goals),
+            goals: updatedData.goals,
             referral_source: updatedData.referralSource
           })
           .eq("id", user.id);
@@ -102,6 +104,9 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
           });
 
         if (memberError) throw memberError;
+
+        // Invalidate queries to refresh workspace data
+        await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
         toast({
           title: "Setup complete",
@@ -152,7 +157,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] h-[500px] p-0">
+      <DialogContent className="sm:max-w-[600px] h-[500px] p-0" hideClose>
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">
