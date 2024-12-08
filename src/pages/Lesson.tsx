@@ -175,11 +175,14 @@ const Lesson = () => {
 
             {lesson.video_url && <VideoPlayer videoUrl={lesson.video_url} />}
 
-            <div className="prose max-w-none mt-8">
-              <div className="text-gray-800 space-y-6">
-                {lesson.body_content || lesson.description || "No content available for this lesson."}
+            {lesson.body_content && (
+              <div className="prose max-w-none mt-8">
+                <div 
+                  dangerouslySetInnerHTML={{ __html: lesson.body_content }} 
+                  className="text-gray-800 space-y-6"
+                />
               </div>
-            </div>
+            )}
 
             <LessonNavigation
               previousLesson={previousLesson}
