@@ -34,9 +34,6 @@ export default function Register() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: window.location.origin + '/dashboard'
-        }
       });
 
       console.log("Signup response:", { data, error });
