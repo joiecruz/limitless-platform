@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { OnboardingData } from "../OnboardingModal";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { OnboardingData } from "../OnboardingModal";
 
 interface Step2Props {
   onNext: (data: Partial<OnboardingData>) => void;
@@ -22,7 +22,7 @@ export function Step2({ onNext, onBack, data, loading }: Step2Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const selectedGoals = GOALS.filter(goal => formData.get(goal) === "on");
+    const selectedGoals = [formData.get('goals')] as string[];
     onNext({ goals: selectedGoals });
   };
 
@@ -30,32 +30,33 @@ export function Step2({ onNext, onBack, data, loading }: Step2Props) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-1">
         <h2 className="text-2xl font-semibold leading-tight">What do you want to accomplish?</h2>
-        <p className="text-muted-foreground">Select all that apply</p>
+        <p className="text-muted-foreground">Select your primary goal</p>
       </div>
 
-      <div className="space-y-4">
+      <RadioGroup 
+        name="goals" 
+        defaultValue={data.goals[0]}
+        className="space-y-3"
+        required
+      >
         {GOALS.map((goal) => (
-          <div key={goal} className="flex items-start space-x-3">
-            <div className="flex h-6 items-center">
-              <input
-                type="checkbox"
-                id={goal}
-                name={goal}
-                defaultChecked={data.goals.includes(goal)}
-                className="h-5 w-5 rounded-full border-2 border-primary text-primary focus:ring-primary"
-              />
-            </div>
+          <div key={goal} className="flex items-center space-x-3 rounded-lg border border-muted p-4 hover:bg-muted/50 transition-colors [&:has(:checked)]:border-primary [&:has(:checked)]:bg-primary-50">
+            <RadioGroupItem 
+              value={goal} 
+              id={goal}
+              className="h-5 w-5"
+            />
             <Label 
               htmlFor={goal} 
-              className="leading-tight cursor-pointer text-base font-normal"
+              className="leading-tight cursor-pointer text-base font-normal flex-1"
             >
               {goal}
             </Label>
           </div>
         ))}
-      </div>
+      </RadioGroup>
 
-      <div className="flex gap-2 pt-2">
+      <div className="flex gap-2 pt-4">
         <Button 
           type="button" 
           variant="outline" 

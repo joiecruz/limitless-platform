@@ -40,19 +40,19 @@ export function Step3({ onNext, onBack, data, loading }: Step3Props) {
       <RadioGroup 
         name="referralSource" 
         defaultValue={data.referralSource}
-        className="space-y-4"
+        className="space-y-3"
         required
       >
         {REFERRAL_SOURCES.map((source) => (
-          <div key={source} className="flex items-start space-x-3">
+          <div key={source} className="flex items-center space-x-3 rounded-lg border border-muted p-4 hover:bg-muted/50 transition-colors [&:has(:checked)]:border-primary [&:has(:checked)]:bg-primary-50">
             <RadioGroupItem 
               value={source} 
               id={source}
-              className="h-5 w-5 mt-0.5"
+              className="h-5 w-5"
             />
             <Label 
               htmlFor={source} 
-              className="leading-tight cursor-pointer text-base font-normal"
+              className="leading-tight cursor-pointer text-base font-normal flex-1"
             >
               {source}
             </Label>
@@ -60,7 +60,7 @@ export function Step3({ onNext, onBack, data, loading }: Step3Props) {
         ))}
       </RadioGroup>
 
-      <div className="flex gap-2 pt-2">
+      <div className="flex gap-2 pt-4">
         <Button 
           type="button" 
           variant="outline" 
