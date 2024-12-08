@@ -2,6 +2,8 @@ import { TextStep } from "./steps/TextStep";
 import { ButtonGridStep } from "./steps/ButtonGridStep";
 import { TextareaStep } from "./steps/TextareaStep";
 import { SignupData } from "./types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface StepProps {
   formData: SignupData;
@@ -36,25 +38,52 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: StepProps) => (
   />
 );
 
-export const Step2 = ({ formData, handleInputChange, nextStep, prevStep }: StepProps) => (
-  <TextStep
-    fields={[
-      {
-        name: "firstName",
-        label: "First Name",
-        required: true
-      },
-      {
-        name: "lastName",
-        label: "Last Name",
-        required: true
-      }
-    ]}
-    values={formData}
-    onChange={handleInputChange}
-    onNext={nextStep}
-    onPrev={prevStep}
-  />
+export const Step2 = ({ formData, handleInputChange, handleSelectChange, nextStep, prevStep }: StepProps) => (
+  <div className="space-y-4">
+    <div className="space-y-2">
+      <Label>What best describes you?</Label>
+      <Select value={formData.role} onValueChange={(value) => handleSelectChange("role", value)}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select your role" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="founder">Founder / C-level</SelectItem>
+          <SelectItem value="developer">Developer</SelectItem>
+          <SelectItem value="product_manager">Product Manager</SelectItem>
+          <SelectItem value="qa">QA / Tester</SelectItem>
+          <SelectItem value="business_analyst">Business Analyst</SelectItem>
+          <SelectItem value="marketer">Marketer</SelectItem>
+          <SelectItem value="project_manager">Project Manager</SelectItem>
+          <SelectItem value="sales">Sales</SelectItem>
+          <SelectItem value="ux_researcher">UX Researcher</SelectItem>
+          <SelectItem value="customer_support">Customer Support</SelectItem>
+          <SelectItem value="ui_ux_designer">UI UX Designer</SelectItem>
+          <SelectItem value="other">Other...</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+    <TextStep
+      fields={[
+        {
+          name: "firstName",
+          label: "First Name",
+          required: true,
+          containerClassName: "flex-1"
+        },
+        {
+          name: "lastName",
+          label: "Last Name",
+          required: true,
+          containerClassName: "flex-1"
+        }
+      ]}
+      values={formData}
+      onChange={handleInputChange}
+      onNext={nextStep}
+      onPrev={prevStep}
+      fieldsContainerClassName="flex gap-4"
+    />
+  </div>
 );
 
 export const Step3 = ({ formData, handleInputChange, nextStep, prevStep }: StepProps) => (
@@ -76,30 +105,6 @@ export const Step3 = ({ formData, handleInputChange, nextStep, prevStep }: StepP
 
 export const Step4 = ({ formData, handleSelectChange, nextStep, prevStep }: StepProps) => (
   <ButtonGridStep
-    title="What's your role?"
-    options={[
-      { value: "founder", label: "Founder / C-level" },
-      { value: "developer", label: "Developer" },
-      { value: "product_manager", label: "Product Manager" },
-      { value: "qa", label: "QA / Tester" },
-      { value: "business_analyst", label: "Business Analyst" },
-      { value: "marketer", label: "Marketer" },
-      { value: "project_manager", label: "Project Manager" },
-      { value: "sales", label: "Sales" },
-      { value: "ux_researcher", label: "UX Researcher" },
-      { value: "customer_support", label: "Customer Support" },
-      { value: "ui_ux_designer", label: "UI UX Designer" },
-      { value: "other", label: "Other..." }
-    ]}
-    value={formData.role}
-    onChange={(value) => handleSelectChange("role", value)}
-    onNext={nextStep}
-    onPrev={prevStep}
-  />
-);
-
-export const Step5 = ({ formData, handleSelectChange, nextStep, prevStep }: StepProps) => (
-  <ButtonGridStep
     title="How many employees does your company have?"
     options={[
       { value: "1-10", label: "1-10" },
@@ -116,7 +121,7 @@ export const Step5 = ({ formData, handleSelectChange, nextStep, prevStep }: Step
   />
 );
 
-export const Step6 = ({ formData, handleSelectChange, nextStep, prevStep }: StepProps) => (
+export const Step5 = ({ formData, handleSelectChange, nextStep, prevStep }: StepProps) => (
   <ButtonGridStep
     title="How did you hear about us?"
     options={[
@@ -138,7 +143,7 @@ export const Step6 = ({ formData, handleSelectChange, nextStep, prevStep }: Step
   />
 );
 
-export const Step7 = ({ formData, handleInputChange, prevStep, loading }: StepProps) => (
+export const Step6 = ({ formData, handleInputChange, prevStep, loading }: StepProps) => (
   <TextareaStep
     title="What do you want to accomplish?"
     label="Tell us about your goals"

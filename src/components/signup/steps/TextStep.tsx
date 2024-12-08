@@ -12,11 +12,13 @@ interface TextStepProps {
     type?: string;
     placeholder?: string;
     required?: boolean;
+    containerClassName?: string;
   }[];
   values: SignupData;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onNext: () => void;
   onPrev?: () => void;
+  fieldsContainerClassName?: string;
 }
 
 export function TextStep({ 
@@ -25,31 +27,34 @@ export function TextStep({
   values, 
   onChange, 
   onNext, 
-  onPrev 
+  onPrev,
+  fieldsContainerClassName
 }: TextStepProps) {
   return (
     <div className="space-y-4">
       {title && (
         <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
       )}
-      {fields.map((field) => (
-        <div key={field.name}>
-          <Label htmlFor={field.name}>{field.label}</Label>
-          <Input
-            id={field.name}
-            name={field.name}
-            type={field.type || "text"}
-            required={field.required}
-            value={values[field.name]}
-            onChange={onChange}
-            placeholder={field.placeholder}
-            className="mt-1"
-          />
-          {field.type === "password" && (
-            <PasswordRequirements password={values[field.name] as string} />
-          )}
-        </div>
-      ))}
+      <div className={fieldsContainerClassName}>
+        {fields.map((field) => (
+          <div key={field.name} className={field.containerClassName}>
+            <Label htmlFor={field.name}>{field.label}</Label>
+            <Input
+              id={field.name}
+              name={field.name}
+              type={field.type || "text"}
+              required={field.required}
+              value={values[field.name]}
+              onChange={onChange}
+              placeholder={field.placeholder}
+              className="mt-1"
+            />
+            {field.type === "password" && (
+              <PasswordRequirements password={values[field.name] as string} />
+            )}
+          </div>
+        ))}
+      </div>
       <div className="flex gap-2">
         {onPrev && (
           <Button type="button" onClick={onPrev} variant="outline">

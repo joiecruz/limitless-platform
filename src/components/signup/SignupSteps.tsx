@@ -10,7 +10,6 @@ import {
   Step4,
   Step5,
   Step6,
-  Step7,
 } from "./SignupFormSteps";
 
 export function SignupSteps() {
@@ -97,7 +96,6 @@ export function SignupSteps() {
       {step === 4 && <Step4 {...stepProps} />}
       {step === 5 && <Step5 {...stepProps} />}
       {step === 6 && <Step6 {...stepProps} />}
-      {step === 7 && <Step7 {...stepProps} />}
     </form>
   );
 }
