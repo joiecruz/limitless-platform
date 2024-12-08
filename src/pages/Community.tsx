@@ -15,7 +15,6 @@ export default function Community() {
   useEffect(() => {
     const fetchUserWorkspace = async () => {
       try {
-        // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError) throw userError;
         
@@ -25,7 +24,6 @@ export default function Community() {
         }
         console.log("User found:", user.id);
 
-        // Get user's workspace memberships
         const { data: workspaceMembers, error: memberError } = await supabase
           .from("workspace_members")
           .select(`
@@ -48,7 +46,6 @@ export default function Community() {
           return;
         }
 
-        // Use the first workspace if available
         if (workspaceMembers && workspaceMembers.length > 0) {
           console.log("Workspace members found:", workspaceMembers);
           setWorkspaceId(workspaceMembers[0].workspace_id);
@@ -89,16 +86,32 @@ export default function Community() {
       return;
     }
 
+    // First check if a channel with this name already exists in the workspace
+    const { data: existingChannel } = await supabase
+      .from("channels")
+      .select()
+      .eq("workspace_id", workspaceId)
+      .eq("name", name)
+      .single();
+
+    if (existingChannel) {
+      toast({
+        title: "Error",
+        description: "A channel with this name already exists in this workspace",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create the new private channel
     const { data: channel, error } = await supabase
       .from("channels")
-      .insert([
-        {
-          name,
-          workspace_id: workspaceId,
-          is_public: false,
-          description: `Private channel created by ${user.email}`,
-        },
-      ])
+      .insert({
+        name,
+        workspace_id: workspaceId,
+        is_public: false,
+        description: `Private channel created by ${user.email}`,
+      })
       .select()
       .single();
 
@@ -112,6 +125,7 @@ export default function Community() {
       return;
     }
 
+    console.log("Created private channel:", channel);
     toast({
       title: "Success",
       description: `Channel "${name}" created successfully`,
