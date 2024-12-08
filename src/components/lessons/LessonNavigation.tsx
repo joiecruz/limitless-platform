@@ -18,7 +18,7 @@ const LessonNavigation = ({
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center justify-between pt-16 border-t">
+    <div className="flex items-center justify-between pt-8 border-t">
       <div className="flex items-center">
         {previousLesson && (
           <Button
@@ -32,7 +32,7 @@ const LessonNavigation = ({
           </Button>
         )}
       </div>
-      <div className="flex items-center gap-4 mt-4">
+      <div className="flex items-center gap-4">
         <Button onClick={onComplete}>
           Complete Lesson
           {nextLesson && <ArrowRight className="w-4 h-4 ml-2" />}
