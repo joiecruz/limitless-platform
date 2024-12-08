@@ -10,13 +10,46 @@ export default function SignIn() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Check initial session
+    const checkSession = async () => {
+      try {
+        console.log("SignIn - Checking initial session...");
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("SignIn - Session error:", error);
+          localStorage.clear(); // Clear all local storage on error
+          await supabase.auth.signOut();
+          return;
+        }
+
+        if (session) {
+          console.log("SignIn - Active session found, redirecting to dashboard");
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        console.error("SignIn - Error checking session:", error);
+        localStorage.clear(); // Clear all local storage on error
+        await supabase.auth.signOut();
+      }
+    };
+
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("SignIn - Auth state changed:", event, session);
+
       if (event === 'SIGNED_IN' && session) {
+        console.log("SignIn - User signed in, redirecting to dashboard");
         navigate("/dashboard");
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log("SignIn - Cleaning up auth listener");
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   return (
