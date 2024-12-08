@@ -66,10 +66,10 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
           throw workspacesError;
         }
 
-        console.log('Fetched workspaces:', memberWorkspaces);
+        console.log('Raw workspace data:', memberWorkspaces);
         
         // Map the nested workspace data to match the expected format
-        const formattedWorkspaces = (memberWorkspaces as WorkspaceMemberResponse[] || []).map((item) => ({
+        const formattedWorkspaces = (memberWorkspaces as WorkspaceMemberResponse[]).map(item => ({
           id: item.workspace.id,
           name: item.workspace.name || 'Unnamed Workspace',
           slug: item.workspace.slug || 'unnamed'
