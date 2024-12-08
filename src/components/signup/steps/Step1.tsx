@@ -42,17 +42,18 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
 
   const checkEmailExists = async (email: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithOtp({
+      const { data, error } = await supabase.auth.signUp({
         email,
-        options: {
-          shouldCreateUser: false,
-        },
+        password: 'temporary-check-password',
       });
       
-      if (error && error.message.includes("User not found")) {
-        return false; // Email doesn't exist
+      // If we get a user_already_exists error, the email exists
+      if (error && error.message.includes("already registered")) {
+        return true;
       }
-      return true; // Email exists
+      
+      // If there's no error or a different error, the email doesn't exist
+      return false;
     } catch (error) {
       console.error("Error checking email:", error);
       return false;
