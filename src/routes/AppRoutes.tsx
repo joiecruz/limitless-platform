@@ -20,19 +20,31 @@ interface AppRoutesProps {
 }
 
 export default function AppRoutes({ session }: AppRoutesProps) {
+  // If there's no session and user tries to access protected routes, redirect to signin
+  if (!session) {
+    return (
+      <Routes>
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="*" element={<Navigate to="/signin" replace />} />
+      </Routes>
+    );
+  }
+
+  // If there's a session and user tries to access auth pages, redirect to dashboard
   return (
     <Routes>
       <Route
-        path="/"
-        element={<Navigate to={session ? "/dashboard" : "/signin"} replace />}
-      />
-      <Route
         path="/signin"
-        element={session ? <Navigate to="/dashboard" replace /> : <SignIn />}
+        element={<Navigate to="/dashboard" replace />}
       />
       <Route
         path="/signup"
-        element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
+        element={<Navigate to="/dashboard" replace />}
+      />
+      <Route
+        path="/"
+        element={<Navigate to="/dashboard" replace />}
       />
       <Route
         path="/courses"
