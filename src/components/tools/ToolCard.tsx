@@ -1,14 +1,15 @@
-import { Link } from "react-router-dom";
-import { Download, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tool } from "@/pages/Tools";
+import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ToolCardProps {
@@ -16,77 +17,79 @@ interface ToolCardProps {
 }
 
 export function ToolCard({ tool }: ToolCardProps) {
+  const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
 
-  const handleDownload = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation to detail page when clicking download
-    
-    if (tool.type === 'premium' || !tool.downloadUrl) {
+  const handleDownload = async () => {
+    if (!tool.downloadUrl) {
       toast({
         title: "Download not available",
-        description: tool.type === 'premium' ? 
-          "This tool needs to be purchased before downloading." :
-          "Download link is not available.",
+        description: "This tool is not available for download yet.",
         variant: "destructive",
       });
       return;
     }
 
-    // Open download in new tab
-    window.open(tool.downloadUrl, '_blank');
+    setIsDownloading(true);
+    try {
+      const response = await fetch(tool.downloadUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = tool.title;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Download started",
+        description: "Your download should begin shortly.",
+      });
+    } catch (error) {
+      toast({
+        title: "Download failed",
+        description: "There was an error downloading the file. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
-    <Link to={`/tools/${tool.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
-        <div className="aspect-video relative">
+    <Card className="flex flex-col h-full">
+      <div className="relative pt-[56.25%]">
+        <div className="absolute inset-0">
           <img
-            src={tool.imageUrl}
+            src={tool.imageUrl || "/placeholder.svg"}
             alt={tool.title}
-            className="object-cover w-full h-full"
+            className="w-full h-full object-cover rounded-t-lg"
           />
-          <div className="absolute top-3 right-3 flex gap-2">
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-              tool.type === 'premium' ? 'bg-primary text-white' : 'bg-white text-gray-700'
-            }`}>
-              {tool.type === 'premium' ? 'Premium' : 'Free'}
-            </span>
-            {tool.price && (
-              <span className="px-2 py-1 text-xs font-medium bg-white rounded-full">
-                ${tool.price.toFixed(2)}
-              </span>
-            )}
-          </div>
         </div>
-        <CardHeader>
-          <CardDescription className="text-primary-600 mb-1">
-            {tool.category}
-          </CardDescription>
-          <CardTitle className="leading-tight">{tool.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-gray-500">{tool.description}</p>
-          <div>
-            <Button
-              className="w-full"
-              variant={tool.type === 'premium' ? "secondary" : "default"}
-              onClick={handleDownload}
-            >
-              {tool.type === 'free' ? (
-                <>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </>
-              ) : (
-                <>
-                  <Lock className="w-4 h-4 mr-2" />
-                  Unlock for ${tool.price?.toFixed(2)}
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
+      </div>
+      <CardHeader>
+        <CardTitle className="leading-tight">{tool.title}</CardTitle>
+        <CardDescription className="text-primary-600">
+          {tool.category}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-gray-500">{tool.description}</p>
+      </CardContent>
+      <CardFooter className="mt-auto">
+        <Button
+          className="w-full"
+          onClick={handleDownload}
+          disabled={isDownloading || !tool.downloadUrl}
+        >
+          <Download className="w-4 h-4 mr-2" />
+          {tool.type === "premium"
+            ? `Download ($${tool.price})`
+            : "Download Free"}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
