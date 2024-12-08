@@ -17,13 +17,29 @@ interface Step1Props {
 }
 
 const ROLES = [
-  "Product Manager",
+  "Founder/CEO",
+  "C-Level Executive",
   "Innovation Lead",
-  "Business Analyst",
-  "Project Manager",
+  "Manager",
+  "Team Lead",
+  "Employee",
+  "Contributor",
+  "Developer",
+  "Analyst",
   "Consultant",
-  "Executive",
-  "Other"
+  "Project Manager",
+  "Marketing Manager",
+  "Sales Representative",
+  "Customer Support",
+  "Finance/Accountant",
+  "IT Specialist",
+  "Product Owner",
+  "Designer",
+  "Editor",
+  "Reviewer",
+  "Viewer",
+  "Student",
+  "Others"
 ];
 
 const COMPANY_SIZES = [
