@@ -4,9 +4,15 @@ import { ProfileForm } from "@/components/profile/ProfileForm";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function AccountSettings() {
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -78,6 +84,37 @@ export default function AccountSettings() {
     }
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Password updated successfully",
+      });
+
+      // Clear the password fields
+      setCurrentPassword('');
+      setNewPassword('');
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update password",
+        variant: "destructive",
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   if (profileLoading) {
     return (
       <div className="max-w-xl mx-auto py-8 px-4">
@@ -96,13 +133,46 @@ export default function AccountSettings() {
   return (
     <div className="max-w-xl mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-8">Account Settings</h1>
-      <div className="bg-white p-6 rounded-lg border">
+      
+      <div className="bg-white p-6 rounded-lg border mb-8">
+        <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
         <ProfileForm
           loading={loading}
           profile={profile}
           userEmail={session?.email || ''}
           onSubmit={handleSubmit}
         />
+      </div>
+
+      <div className="bg-white p-6 rounded-lg border">
+        <h2 className="text-xl font-semibold mb-6">Change Password</h2>
+        <form onSubmit={handlePasswordChange} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword">Current Password</Label>
+            <Input
+              id="currentPassword"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">New Password</Label>
+            <Input
+              id="newPassword"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <Button type="submit" disabled={passwordLoading}>
+            {passwordLoading ? "Updating Password..." : "Update Password"}
+          </Button>
+        </form>
       </div>
     </div>
   );
