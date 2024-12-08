@@ -39,7 +39,7 @@ export function SignupSteps() {
         password: formData.password,
         options: {
           data: {
-            full_name: formData.fullName,
+            display_name: formData.fullName,
             role: formData.role,
             company_size: formData.companySize,
             referral_source: formData.referralSource,
