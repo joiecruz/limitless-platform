@@ -1,15 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import CourseProgress from "./CourseProgress";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface CourseEnrollmentProps {
   courseId: string;
@@ -28,27 +20,32 @@ const CourseEnrollment = ({
   onEnroll, 
   isEnrolling 
 }: CourseEnrollmentProps) => {
-  const [showDialog, setShowDialog] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleEnroll = async () => {
     console.log('Starting enrollment process');
     try {
-      // First, create enrollment in database
+      // Create enrollment in database
       await onEnroll();
-      console.log('Enrollment successful, showing dialog');
-      // Then show the success dialog
-      setShowDialog(true);
+      console.log('Enrollment successful');
+      
+      // Show success toast
+      toast({
+        title: "Successfully enrolled!",
+        description: `You are now enrolled in ${courseTitle || "this course"}`,
+      });
+
+      // Navigate to lessons page
+      navigate(`/courses/${courseId}/lessons`);
     } catch (error) {
       console.error('Error enrolling:', error);
+      toast({
+        title: "Error",
+        description: "Failed to enroll in the course. Please try again.",
+        variant: "destructive",
+      });
     }
-  };
-
-  const handleDialogAction = () => {
-    console.log('Dialog action clicked, navigating to lessons');
-    setShowDialog(false);
-    // Navigate to lessons page after dialog is closed
-    navigate(`/courses/${courseId}/lessons`);
   };
 
   if (isEnrolled) {
@@ -63,37 +60,13 @@ const CourseEnrollment = ({
   }
 
   return (
-    <>
-      <Button 
-        className="w-full"
-        onClick={handleEnroll}
-        disabled={isEnrolling}
-      >
-        {isEnrolling ? "Enrolling..." : "Enroll Now"}
-      </Button>
-
-      <Dialog 
-        open={showDialog} 
-        onOpenChange={setShowDialog}
-      >
-        <DialogContent className="max-w-md aspect-square flex flex-col">
-          <DialogHeader className="flex-grow flex flex-col items-center justify-center text-center px-6">
-            <DialogTitle className="text-2xl mb-2">Congratulations! 🎉</DialogTitle>
-            <DialogDescription className="text-lg">
-              You are now enrolled in {courseTitle || "this course"}. Ready to start learning?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button 
-              className="w-full"
-              onClick={handleDialogAction}
-            >
-              Let's Begin!
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Button 
+      className="w-full"
+      onClick={handleEnroll}
+      disabled={isEnrolling}
+    >
+      {isEnrolling ? "Enrolling..." : "Enroll Now"}
+    </Button>
   );
 };
 
