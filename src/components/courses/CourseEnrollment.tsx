@@ -31,9 +31,13 @@ const CourseEnrollment = ({
   const [showDialog, setShowDialog] = useState(false);
   const navigate = useNavigate();
 
+  console.log('Dialog state:', { showDialog, isEnrolling });
+
   const handleEnroll = async () => {
+    console.log('Starting enrollment process');
     try {
       await onEnroll();
+      console.log('Enrollment successful, showing dialog');
       setShowDialog(true);
     } catch (error) {
       console.error('Error enrolling:', error);
@@ -41,6 +45,7 @@ const CourseEnrollment = ({
   };
 
   const handleDialogAction = () => {
+    console.log('Dialog action clicked, navigating to lessons');
     setShowDialog(false);
     navigate(`/courses/${courseId}/lessons`);
   };
