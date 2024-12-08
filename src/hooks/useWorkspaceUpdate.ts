@@ -22,15 +22,13 @@ export function useWorkspaceUpdate(
   const queryClient = useQueryClient();
 
   const generateSlug = (name: string): string => {
-    // Convert to lowercase, replace spaces and special characters with hyphens
     const baseSlug = name
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, '') // Remove special characters
-      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
     
-    // Add a random suffix to make it unique
     const randomSuffix = Math.floor(Math.random() * 1000);
     return `${baseSlug}-${randomSuffix}`;
   };
@@ -52,36 +50,30 @@ export function useWorkspaceUpdate(
       console.log('Updating workspace with ID:', currentWorkspace.id);
       console.log('Update data:', { name: data.name, slug: newSlug });
 
-      const { error: updateError } = await supabase
+      const { data: updatedData, error: updateError } = await supabase
         .from('workspaces')
         .update({
           name: data.name,
           slug: newSlug,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', currentWorkspace.id);
+        .eq('id', currentWorkspace.id)
+        .select()
+        .single();
 
       if (updateError) {
         console.error('Error updating workspace:', updateError);
         throw updateError;
       }
 
-      // Fetch the updated workspace
-      const { data: updatedWorkspace, error: fetchError } = await supabase
-        .from('workspaces')
-        .select('*')
-        .eq('id', currentWorkspace.id)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching updated workspace:', fetchError);
-        throw fetchError;
+      if (!updatedData) {
+        throw new Error('No data returned after update');
       }
 
-      console.log('Update successful:', updatedWorkspace);
+      console.log('Update successful:', updatedData);
 
-      // Update local state
-      setCurrentWorkspace(updatedWorkspace);
+      // Update local state with the returned data
+      setCurrentWorkspace(updatedData);
 
       // Invalidate queries
       await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
