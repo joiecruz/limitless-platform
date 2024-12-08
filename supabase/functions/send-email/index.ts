@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL");
+const FROM_EMAIL = "notification@limitlesslab.org";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +12,7 @@ const corsHeaders = {
 interface EmailRequest {
   to: string[];
   subject: string;
-  verificationCode: string;
+  html: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -22,10 +22,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { to, subject, verificationCode } = await req.json() as EmailRequest;
-
-    console.log("Sending verification email to:", to);
-
+    const emailRequest: EmailRequest = await req.json();
+    console.log("Sending email to:", emailRequest.to);
+    
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -34,40 +33,32 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: FROM_EMAIL,
-        to,
-        subject,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Verify your email</h2>
-            <p>Your verification code is:</p>
-            <div style="background-color: #f4f4f4; padding: 20px; text-align: center; font-size: 24px; letter-spacing: 5px; margin: 20px 0;">
-              ${verificationCode}
-            </div>
-            <p>Enter this code to complete your signup.</p>
-            <p>If you didn't request this code, you can safely ignore this email.</p>
-          </div>
-        `,
+        to: emailRequest.to,
+        subject: emailRequest.subject,
+        html: emailRequest.html,
       }),
     });
 
-    if (!res.ok) {
+    if (res.ok) {
+      const data = await res.json();
+      console.log("Email sent successfully:", data);
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } else {
       const error = await res.text();
-      console.error("Resend API error:", error);
-      throw new Error(error);
+      console.error("Error sending email:", error);
+      return new Response(JSON.stringify({ error }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-
-    const data = await res.json();
-    console.log("Email sent successfully:", data);
-
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
   } catch (error: any) {
-    console.error("Error in send-email function:", error);
+    console.error("Error in sendemail function:", error);
     return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 };
