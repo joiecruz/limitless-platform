@@ -83,7 +83,6 @@ const handler = async (req: Request): Promise<Response> => {
               .email-button {
                 display: inline-block;
                 background-color: #393ca0;
-                color: #ffffff;
                 text-decoration: none;
                 padding: 12px 24px;
                 border-radius: 4px;
@@ -105,14 +104,14 @@ const handler = async (req: Request): Promise<Response> => {
             <div class="email-container">
               <!-- Header Section with Logo -->
               <div class="email-header">
-                <img src="${req.headers.get("origin")}/lovable-uploads/c3f37922-28e6-4abc-9884-28e703e28a9d.png" alt="Logo" class="logo">
+                <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Logo" class="logo">
                 <h2>You've been invited!</h2>
               </div>
               <!-- Body Section -->
               <div class="email-body">
                 <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on our platform as a ${role}.</p>
                 <p>Click the link below to accept the invitation:</p>
-                <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" class="email-button">Accept Invitation</a>
+                <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Accept Invitation</a>
                 <p style="margin-top: 16px; font-size: 14px; color: #666666;">If you didn't expect this invitation, you can safely ignore this email.</p>
               </div>
               <!-- Footer Section -->
