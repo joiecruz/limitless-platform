@@ -1,5 +1,5 @@
 import { Message } from "@/types/community";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageReactions } from "./MessageReactions";
 import { format } from "date-fns";
 
@@ -16,16 +16,26 @@ export function MessageList({ messages, onReaction }: MessageListProps) {
     return profile?.username || "Anonymous";
   };
 
+  const getInitials = (profile: Message['profiles']) => {
+    if (!profile) return '??';
+    if (profile.first_name || profile.last_name) {
+      return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
+    }
+    return profile.username?.[0]?.toUpperCase() || '?';
+  };
+
   return (
     <div className="space-y-6">
       {messages.map((message) => (
         <div key={message.id} className="group flex items-start gap-3">
           <Avatar className="h-8 w-8">
-            <img
-              src={message.profiles?.avatar_url || "/placeholder.svg"}
+            <AvatarImage
+              src={message.profiles?.avatar_url}
               alt={getDisplayName(message.profiles)}
-              className="object-cover"
             />
+            <AvatarFallback>
+              {getInitials(message.profiles)}
+            </AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2">
