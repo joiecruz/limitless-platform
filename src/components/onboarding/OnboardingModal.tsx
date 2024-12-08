@@ -3,24 +3,26 @@ import {
   DialogContent,
   DialogHeader,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Step1 } from "./steps/Step1";
 import { Step2 } from "./steps/Step2";
 import { Step3 } from "./steps/Step3";
-import { Step4 } from "./steps/Step4";
-import { OnboardingProgress } from "./components/OnboardingProgress";
 import { useOnboardingSubmit } from "./hooks/useOnboardingSubmit";
+import { OnboardingProgress } from "./components/OnboardingProgress";
 import { OnboardingData } from "./types";
+import { useLocation } from "react-router-dom";
 
 interface OnboardingModalProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-const TOTAL_STEPS = 4;
-
 export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const location = useLocation();
+  const isInvitedUser = location.state?.isInvited;
+  const TOTAL_STEPS = isInvitedUser ? 3 : 4;
+
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
     lastName: "",
@@ -29,6 +31,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
     goals: [],
     referralSource: "",
     workspaceName: "",
+    password: "",
   });
 
   const { handleSubmit, loading } = useOnboardingSubmit({ onOpenChange });
@@ -54,6 +57,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
       onBack: handleBack,
       loading,
       data: formData,
+      isInvitedUser,
     };
 
     switch (currentStep) {
@@ -64,7 +68,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
       case 3:
         return <Step3 {...commonProps} />;
       case 4:
-        return <Step4 {...commonProps} />;
+        return !isInvitedUser ? <Step4 {...commonProps} /> : null;
       default:
         return null;
     }

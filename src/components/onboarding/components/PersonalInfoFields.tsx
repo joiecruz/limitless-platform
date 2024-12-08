@@ -8,11 +8,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OnboardingData } from "../types";
+import { PasswordInput } from "@/components/signup/components/PasswordInput";
 
 interface PersonalInfoFieldsProps {
-  formData: Pick<OnboardingData, "firstName" | "lastName" | "role" | "companySize">;
+  formData: Pick<OnboardingData, "firstName" | "lastName" | "role" | "companySize" | "password">;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
+  isInvitedUser?: boolean;
 }
 
 const ROLES = [
@@ -50,7 +52,12 @@ const COMPANY_SIZES = [
   "1000+"
 ];
 
-export function PersonalInfoFields({ formData, handleInputChange, handleSelectChange }: PersonalInfoFieldsProps) {
+export function PersonalInfoFields({ 
+  formData, 
+  handleInputChange, 
+  handleSelectChange,
+  isInvitedUser 
+}: PersonalInfoFieldsProps) {
   return (
     <div className="grid gap-4">
       <div className="grid grid-cols-2 gap-4">
@@ -119,6 +126,18 @@ export function PersonalInfoFields({ formData, handleInputChange, handleSelectCh
           </SelectContent>
         </Select>
       </div>
+
+      {isInvitedUser && (
+        <div className="space-y-2">
+          <Label htmlFor="password">Set Your Password</Label>
+          <PasswordInput
+            value={formData.password || ""}
+            onChange={handleInputChange}
+            error=""
+            disabled={false}
+          />
+        </div>
+      )}
     </div>
   );
 }

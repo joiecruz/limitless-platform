@@ -8,14 +8,16 @@ interface Step1Props {
   onNext: (data: Partial<OnboardingData>) => void;
   data: OnboardingData;
   loading?: boolean;
+  isInvitedUser?: boolean;
 }
 
-export function Step1({ onNext, data, loading }: Step1Props) {
+export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
   const [formData, setFormData] = useState({
     firstName: data.firstName,
     lastName: data.lastName,
     role: data.role,
     companySize: data.companySize,
+    password: data.password || "",
   });
   
   const [isValid, setIsValid] = useState(false);
@@ -25,9 +27,10 @@ export function Step1({ onNext, data, loading }: Step1Props) {
       formData.firstName,
       formData.lastName,
       formData.role,
-      formData.companySize
+      formData.companySize,
+      isInvitedUser ? formData.password : undefined
     ));
-  }, [formData]);
+  }, [formData, isInvitedUser]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -54,13 +57,16 @@ export function Step1({ onNext, data, loading }: Step1Props) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-1">
         <h2 className="text-2xl font-semibold leading-tight">Tell us about yourself</h2>
-        <p className="text-muted-foreground">This helps us personalize your experience</p>
+        <p className="text-muted-foreground mt-1">
+          This helps us personalize your experience
+        </p>
       </div>
 
       <PersonalInfoFields
         formData={formData}
         handleInputChange={handleInputChange}
         handleSelectChange={handleSelectChange}
+        isInvitedUser={isInvitedUser}
       />
 
       <Button 
