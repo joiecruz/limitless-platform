@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CreateWorkspaceDialog } from "@/components/workspace/CreateWorkspaceDialog";
 import { Separator } from "@/components/ui/separator";
+import { useQuery } from "@tanstack/react-query";
 
 interface Workspace {
   id: string;
@@ -23,93 +24,68 @@ interface WorkspaceSelectorProps {
 }
 
 export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: WorkspaceSelectorProps) {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchWorkspaces = useCallback(async () => {
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        console.error('Error fetching user:', userError);
-        throw userError;
-      }
-
-      if (!user) {
-        console.log("No user found");
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("User found:", user.id);
-
-      const { data: memberWorkspaces, error: workspacesError } = await supabase
-        .from('workspace_members')
-        .select(`
-          workspace:workspaces (
-            id,
-            name,
-            slug
-          )
-        `)
-        .eq('user_id', user.id)
-        .abortSignal(new AbortController().signal);
-
-      if (workspacesError) {
-        console.error('Error fetching workspaces:', workspacesError);
-        throw workspacesError;
-      }
-
-      if (memberWorkspaces && memberWorkspaces.length > 0) {
-        const transformedWorkspaces = memberWorkspaces.map(item => ({
-          id: item.workspace.id,
-          name: item.workspace.name,
-          slug: item.workspace.slug
-        }));
+  const { data: workspaces, isLoading } = useQuery({
+    queryKey: ['workspaces'],
+    queryFn: async () => {
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
         
-        setWorkspaces(transformedWorkspaces);
-        if (!currentWorkspace && transformedWorkspaces.length > 0) {
-          setCurrentWorkspace(transformedWorkspaces[0]);
+        if (userError) {
+          console.error('Error fetching user:', userError);
+          throw userError;
         }
+
+        if (!user) {
+          console.log("No user found");
+          return [];
+        }
+
+        console.log("User found:", user.id);
+
+        const { data: memberWorkspaces, error: workspacesError } = await supabase
+          .from('workspace_members')
+          .select(`
+            workspace:workspaces (
+              id,
+              name,
+              slug
+            )
+          `)
+          .eq('user_id', user.id);
+
+        if (workspacesError) {
+          console.error('Error fetching workspaces:', workspacesError);
+          throw workspacesError;
+        }
+
+        if (memberWorkspaces && memberWorkspaces.length > 0) {
+          return memberWorkspaces.map(item => ({
+            id: item.workspace.id,
+            name: item.workspace.name,
+            slug: item.workspace.slug
+          }));
+        }
+
+        return [];
+      } catch (error) {
+        console.error('Error in fetchWorkspaces:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load workspaces. Please try again.",
+          variant: "destructive",
+        });
+        return [];
       }
-    } catch (error) {
-      console.error('Error in fetchWorkspaces:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load workspaces. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
     }
-  }, [currentWorkspace, setCurrentWorkspace, toast]);
+  });
 
   useEffect(() => {
-    let isSubscribed = true;
-    
-    if (isSubscribed) {
-      fetchWorkspaces();
+    if (!currentWorkspace && workspaces && workspaces.length > 0) {
+      setCurrentWorkspace(workspaces[0]);
     }
-
-    const workspaceSubscription = supabase
-      .channel('public:workspaces')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'workspace_members' },
-        () => {
-          if (isSubscribed) {
-            console.log('Workspace changes detected, refreshing...');
-            fetchWorkspaces();
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      isSubscribed = false;
-      workspaceSubscription.unsubscribe();
-    };
-  }, [fetchWorkspaces]);
+  }, [currentWorkspace, workspaces, setCurrentWorkspace]);
 
   return (
     <div className="px-4 pb-4">
@@ -124,7 +100,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
           <ChevronDown className="h-4 w-4 opacity-50" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          {workspaces.map((workspace) => (
+          {workspaces?.map((workspace) => (
             <DropdownMenuItem
               key={workspace.id}
               onClick={() => setCurrentWorkspace(workspace)}

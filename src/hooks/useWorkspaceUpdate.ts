@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface WorkspaceUpdateData {
   name: string;
@@ -19,6 +20,7 @@ export function useWorkspaceUpdate(
 ) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const updateWorkspace = async (data: WorkspaceUpdateData) => {
     if (!currentWorkspace?.id) return;
@@ -79,6 +81,9 @@ export function useWorkspaceUpdate(
           name: updatedWorkspace.name,
           slug: updatedWorkspace.slug
         });
+
+        // Invalidate the workspaces query to trigger a refetch
+        await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
         toast({
           title: "Success",
