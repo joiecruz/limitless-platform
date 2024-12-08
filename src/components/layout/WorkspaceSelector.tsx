@@ -14,8 +14,16 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Workspace {
   id: string;
-  name: string;
-  slug: string;
+  name: string | null;
+  slug: string | null;
+}
+
+interface WorkspaceMember {
+  workspace: {
+    id: string;
+    name: string | null;
+    slug: string | null;
+  };
 }
 
 interface WorkspaceSelectorProps {
@@ -65,11 +73,11 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         console.log('Fetched workspaces:', memberWorkspaces);
         
         // Map the nested workspace data to match the expected format
-        const formattedWorkspaces: Workspace[] = memberWorkspaces?.map(item => ({
+        const formattedWorkspaces: Workspace[] = (memberWorkspaces || []).map((item: WorkspaceMember) => ({
           id: item.workspace.id,
-          name: item.workspace.name,
-          slug: item.workspace.slug
-        })) || [];
+          name: item.workspace.name || 'Unnamed Workspace',
+          slug: item.workspace.slug || 'unnamed'
+        }));
 
         console.log('Formatted workspaces:', formattedWorkspaces);
         return formattedWorkspaces;
@@ -124,7 +132,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
               onClick={() => handleWorkspaceSelect(workspace)}
               className="cursor-pointer"
             >
-              {workspace.name}
+              {workspace.name || 'Unnamed Workspace'}
             </DropdownMenuItem>
           ))}
           <Separator className="my-2" />
