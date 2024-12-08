@@ -9,7 +9,6 @@ export function SignupSteps() {
   const [formData, setFormData] = useState<SignupData>({
     email: "",
     password: "",
-    workspaceName: "",
     role: "",
     companySize: "",
     referralSource: "",
