@@ -13,13 +13,20 @@ export default function Dashboard() {
 
       const { data } = await supabase
         .from("profiles")
-        .select("first_name")
+        .select("first_name, last_name")
         .eq("id", user.id)
         .single();
 
       return data;
     },
   });
+
+  const getDisplayName = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return '';
+  };
 
   const quickLinks = [
     {
@@ -57,7 +64,7 @@ export default function Dashboard() {
       {/* Header Section */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
+          Welcome back{getDisplayName() ? `, ${getDisplayName()}` : ''}!
         </h1>
         <p className="text-muted-foreground mt-1">
           Here's an overview of your innovation journey
