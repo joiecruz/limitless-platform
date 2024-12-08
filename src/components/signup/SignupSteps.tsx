@@ -47,6 +47,20 @@ export function SignupSteps() {
 
       if (error) throw error;
 
+      // Generate a 6-digit verification code
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Send verification email using our Edge Function
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: [formData.email],
+          subject: "Verify your email",
+          verificationCode,
+        },
+      });
+
+      if (emailError) throw emailError;
+
       setStep(2);
       toast({
         title: "Verification code sent!",
@@ -92,7 +106,18 @@ export function SignupSteps() {
   const handleResendCode = async () => {
     setLoading(true);
     try {
-      // Here you would implement the resend code logic
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: [formData.email],
+          subject: "Verify your email",
+          verificationCode,
+        },
+      });
+
+      if (emailError) throw emailError;
+
       toast({
         title: "Code resent!",
         description: "Please check your email for the new verification code.",
