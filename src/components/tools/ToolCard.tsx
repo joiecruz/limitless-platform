@@ -59,10 +59,10 @@ export function ToolCard({ tool }: ToolCardProps) {
           </div>
         </div>
         <CardHeader>
-          <CardTitle className="leading-tight">{tool.title}</CardTitle>
-          <CardDescription className="text-primary-600">
+          <CardDescription className="text-primary-600 mb-1">
             {tool.category}
           </CardDescription>
+          <CardTitle className="leading-tight">{tool.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-gray-500">{tool.description}</p>
