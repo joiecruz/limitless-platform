@@ -11,6 +11,7 @@ interface ChannelSidebarProps {
   activeChannel: Channel | null;
   onChannelSelect: (channel: Channel) => void;
   onCreatePrivateChannel: (name: string, workspaceId: string) => void;
+  workspaceId: string;
 }
 
 export function ChannelSidebar({
@@ -19,6 +20,7 @@ export function ChannelSidebar({
   activeChannel,
   onChannelSelect,
   onCreatePrivateChannel,
+  workspaceId,
 }: ChannelSidebarProps) {
   const { unreadCounts } = useChannelNotifications(activeChannel);
 
@@ -47,7 +49,10 @@ export function ChannelSidebar({
             <h2 className="text-gray-500 uppercase text-xs font-semibold">
               Private Channels
             </h2>
-            <CreateChannelDialog onCreateChannel={onCreatePrivateChannel} />
+            <CreateChannelDialog 
+              onCreateChannel={onCreatePrivateChannel} 
+              workspaceId={workspaceId}
+            />
           </div>
           <div className="space-y-1">
             {privateChannels.map((channel) => (
