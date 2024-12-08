@@ -5,15 +5,37 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   PopoverContent,
 } from "@/components/ui/popover";
+import { useToast } from "@/hooks/use-toast";
 
 export function ProfileMenu() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    queryClient.clear();
-    navigate("/");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear all cached queries
+      queryClient.clear();
+      
+      // Show success toast
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account",
+      });
+
+      // Navigate to signin page
+      navigate("/signin", { replace: true });
+    } catch (error: any) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error signing out",
+        description: error.message || "An error occurred while signing out",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
