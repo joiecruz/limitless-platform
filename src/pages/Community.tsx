@@ -65,8 +65,8 @@ export default function Community() {
     fetchUserWorkspace();
   }, []);
 
-  const handleCreatePrivateChannel = async (name: string) => {
-    if (!workspaceId) {
+  const handleCreatePrivateChannel = async (name: string, wsId: string) => {
+    if (!wsId) {
       toast({
         title: "Error",
         description: "Workspace not loaded",
@@ -90,7 +90,7 @@ export default function Community() {
     const { data: existingChannel } = await supabase
       .from("channels")
       .select()
-      .eq("workspace_id", workspaceId)
+      .eq("workspace_id", wsId)
       .eq("name", name)
       .single();
 
@@ -108,7 +108,7 @@ export default function Community() {
       .from("channels")
       .insert({
         name,
-        workspace_id: workspaceId,
+        workspace_id: wsId,
         is_public: false,
         description: `Private channel created by ${user.email}`,
       })
@@ -140,6 +140,7 @@ export default function Community() {
         activeChannel={activeChannel}
         onChannelSelect={setActiveChannel}
         onCreatePrivateChannel={handleCreatePrivateChannel}
+        workspaceId={workspaceId || ""}
       />
       <ChatArea 
         activeChannel={activeChannel}

@@ -12,16 +12,16 @@ import {
 
 interface CreateChannelDialogProps {
   onCreateChannel: (name: string, workspaceId: string) => void;
+  workspaceId: string;
 }
 
-export function CreateChannelDialog({ onCreateChannel }: CreateChannelDialogProps) {
+export function CreateChannelDialog({ onCreateChannel, workspaceId }: CreateChannelDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [newChannelName, setNewChannelName] = useState("");
 
   const handleCreateChannel = () => {
-    if (newChannelName.trim()) {
-      // For demo purposes, using a fixed workspace ID
-      onCreateChannel(newChannelName, "your-workspace-id");
+    if (newChannelName.trim() && workspaceId) {
+      onCreateChannel(newChannelName, workspaceId);
       setNewChannelName("");
       setIsOpen(false);
     }
@@ -49,7 +49,7 @@ export function CreateChannelDialog({ onCreateChannel }: CreateChannelDialogProp
             value={newChannelName}
             onChange={(e) => setNewChannelName(e.target.value)}
           />
-          <Button onClick={handleCreateChannel} disabled={!newChannelName.trim()}>
+          <Button onClick={handleCreateChannel} disabled={!newChannelName.trim() || !workspaceId}>
             Create Channel
           </Button>
         </div>
