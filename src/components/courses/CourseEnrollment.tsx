@@ -69,15 +69,13 @@ const CourseEnrollment = ({
 
       <AlertDialog 
         open={showDialog} 
-        onOpenChange={(open) => {
-          // Prevent dialog from closing except through the action button
-          if (!open) {
-            return;
-          }
-          setShowDialog(open);
-        }}
+        onOpenChange={setShowDialog}
       >
-        <AlertDialogContent onPointerDownOutside={(e) => e.preventDefault()}>
+        <AlertDialogContent 
+          onInteractOutside={(e) => {
+            e.preventDefault();
+          }}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle>Congratulations! 🎉</AlertDialogTitle>
             <AlertDialogDescription>
