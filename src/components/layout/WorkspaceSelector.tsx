@@ -45,7 +45,6 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
 
         console.log("User found:", user.id);
 
-        // Updated query to use workspace_members table
         const { data: memberWorkspaces, error: workspacesError } = await supabase
           .from('workspace_members')
           .select(`
