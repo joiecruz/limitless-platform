@@ -85,6 +85,7 @@ export type Database = {
       }
       enrollments: {
         Row: {
+          completed_lessons: string[] | null
           course_id: string
           created_at: string
           id: string
@@ -93,6 +94,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          completed_lessons?: string[] | null
           course_id: string
           created_at?: string
           id?: string
@@ -101,6 +103,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          completed_lessons?: string[] | null
           course_id?: string
           created_at?: string
           id?: string
