@@ -27,7 +27,7 @@ export function Step2({ onNext, onBack, data, loading }: Step2Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1">
         <h2 className="text-2xl font-semibold leading-tight">What do you want to accomplish?</h2>
         <p className="text-muted-foreground">Select your primary goal</p>
@@ -36,19 +36,19 @@ export function Step2({ onNext, onBack, data, loading }: Step2Props) {
       <RadioGroup 
         name="goals" 
         defaultValue={data.goals[0]}
-        className="space-y-3"
+        className="space-y-2"
         required
       >
         {GOALS.map((goal) => (
-          <div key={goal} className="flex items-center space-x-3 rounded-lg border border-muted p-4 hover:bg-muted/50 transition-colors [&:has(:checked)]:border-primary [&:has(:checked)]:bg-primary-50">
+          <div key={goal} className="rounded-[5px] border border-muted p-3 hover:bg-muted/50 transition-colors [&:has(:checked)]:border-primary [&:has(:checked)]:bg-primary-50">
             <RadioGroupItem 
               value={goal} 
               id={goal}
-              className="h-5 w-5"
+              className="hidden"
             />
             <Label 
               htmlFor={goal} 
-              className="leading-tight cursor-pointer text-base font-normal flex-1"
+              className="leading-tight cursor-pointer text-base font-normal w-full block"
             >
               {goal}
             </Label>
@@ -61,13 +61,13 @@ export function Step2({ onNext, onBack, data, loading }: Step2Props) {
           type="button" 
           variant="outline" 
           onClick={onBack}
-          className="px-8"
+          className="px-8 rounded-[5px]"
         >
           Back
         </Button>
         <Button 
           type="submit" 
-          className="flex-1" 
+          className="flex-1 rounded-[5px]" 
           disabled={loading}
         >
           Continue
