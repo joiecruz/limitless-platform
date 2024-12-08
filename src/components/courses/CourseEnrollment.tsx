@@ -69,10 +69,7 @@ const CourseEnrollment = ({
 
       <AlertDialog 
         open={showDialog} 
-        onOpenChange={(open) => {
-          // Only allow opening the dialog, prevent closing
-          if (open) setShowDialog(true);
-        }}
+        onOpenChange={setShowDialog}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
