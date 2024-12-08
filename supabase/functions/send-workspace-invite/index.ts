@@ -63,6 +63,10 @@ const handler = async (req: Request): Promise<Response> => {
                 text-align: center;
                 margin-bottom: 20px;
               }
+              .logo {
+                max-width: 200px;
+                margin-bottom: 20px;
+              }
               .email-body {
                 text-align: center;
                 color: #333333;
@@ -78,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
               }
               .email-button {
                 display: inline-block;
-                background-color: #0066cc;
+                background-color: #393ca0;
                 color: #ffffff;
                 text-decoration: none;
                 padding: 12px 24px;
@@ -99,8 +103,9 @@ const handler = async (req: Request): Promise<Response> => {
           </head>
           <body>
             <div class="email-container">
-              <!-- Header Section -->
+              <!-- Header Section with Logo -->
               <div class="email-header">
+                <img src="${req.headers.get("origin")}/lovable-uploads/c3f37922-28e6-4abc-9884-28e703e28a9d.png" alt="Logo" class="logo">
                 <h2>You've been invited!</h2>
               </div>
               <!-- Body Section -->
