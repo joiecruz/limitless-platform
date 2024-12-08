@@ -17,7 +17,7 @@ export function BillingSettings() {
           </p>
         </div>
         
-        <Button>Upgrade Plan</Button>
+        <Button disabled>Upgrade Plan</Button>
       </div>
     </div>
   );
