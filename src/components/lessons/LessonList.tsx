@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, PlayCircle, CircleCheck } from "lucide-react";
+import { Lock, Circle, CircleCheck } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -93,7 +93,7 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
                 ) : completed ? (
                   <CircleCheck className="w-5 h-5 text-primary fill-primary stroke-white" />
                 ) : (
-                  <PlayCircle className="w-5 h-5 text-primary" />
+                  <Circle className="w-5 h-5 text-primary" />
                 )}
               </div>
               <div className="flex-1 text-left">
