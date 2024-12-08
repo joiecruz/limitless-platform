@@ -71,8 +71,12 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] h-[500px] p-0">
+    <Dialog open={open} onOpenChange={(value) => {
+      // Prevent closing the modal
+      if (!value) return;
+      if (onOpenChange) onOpenChange(value);
+    }}>
+      <DialogContent className="sm:max-w-[600px] h-[500px] p-0" hideCloseButton>
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">

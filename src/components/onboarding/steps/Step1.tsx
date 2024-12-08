@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OnboardingData } from "../types";
+import { useState, useEffect } from "react";
 
 interface Step1Props {
   onNext: (data: Partial<OnboardingData>) => void;
@@ -52,15 +53,39 @@ const COMPANY_SIZES = [
 ];
 
 export function Step1({ onNext, data, loading }: Step1Props) {
+  const [formData, setFormData] = useState({
+    firstName: data.firstName,
+    lastName: data.lastName,
+    role: data.role,
+    companySize: data.companySize,
+  });
+  
+  const [isValid, setIsValid] = useState(false);
+
+  useEffect(() => {
+    const allFieldsFilled = Object.values(formData).every(value => value !== "");
+    setIsValid(allFieldsFilled);
+  }, [formData]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    onNext({
-      firstName: formData.get("firstName") as string,
-      lastName: formData.get("lastName") as string,
-      role: formData.get("role") as string,
-      companySize: formData.get("companySize") as string,
-    });
+    if (isValid) {
+      onNext(formData);
+    }
   };
 
   return (
@@ -77,7 +102,8 @@ export function Step1({ onNext, data, loading }: Step1Props) {
             <Input
               id="firstName"
               name="firstName"
-              defaultValue={data.firstName}
+              value={formData.firstName}
+              onChange={handleInputChange}
               required
               className="rounded-[5px]"
             />
@@ -87,7 +113,8 @@ export function Step1({ onNext, data, loading }: Step1Props) {
             <Input
               id="lastName"
               name="lastName"
-              defaultValue={data.lastName}
+              value={formData.lastName}
+              onChange={handleInputChange}
               required
               className="rounded-[5px]"
             />
@@ -96,7 +123,12 @@ export function Step1({ onNext, data, loading }: Step1Props) {
 
         <div className="space-y-2">
           <Label htmlFor="role">What best describes you?</Label>
-          <Select name="role" defaultValue={data.role} required>
+          <Select 
+            name="role" 
+            value={formData.role} 
+            onValueChange={(value) => handleSelectChange("role", value)}
+            required
+          >
             <SelectTrigger className="rounded-[5px]">
               <SelectValue placeholder="Select your role" />
             </SelectTrigger>
@@ -112,7 +144,12 @@ export function Step1({ onNext, data, loading }: Step1Props) {
 
         <div className="space-y-2">
           <Label htmlFor="companySize">How many employees does your company have?</Label>
-          <Select name="companySize" defaultValue={data.companySize} required>
+          <Select 
+            name="companySize" 
+            value={formData.companySize}
+            onValueChange={(value) => handleSelectChange("companySize", value)}
+            required
+          >
             <SelectTrigger className="rounded-[5px]">
               <SelectValue placeholder="Select company size" />
             </SelectTrigger>
@@ -127,7 +164,12 @@ export function Step1({ onNext, data, loading }: Step1Props) {
         </div>
       </div>
 
-      <Button type="submit" className="w-full rounded-[5px]" disabled={loading}>
+      <Button 
+        type="submit" 
+        className="w-full rounded-[5px]" 
+        disabled={loading || !isValid}
+        variant={isValid ? "default" : "secondary"}
+      >
         Continue
       </Button>
     </form>
