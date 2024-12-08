@@ -8,6 +8,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const { toast } = useToast();
   const [isChecking, setIsChecking] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
     // Skip auth check for verify-email and signup pages
@@ -30,6 +31,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         
         if (!session) {
           console.log("RequireAuth: No session found, redirecting to signin");
+          setIsAuthenticated(false);
           await supabase.auth.signOut(); // Force clean session state
           navigate("/signin", { replace: true });
           return;
@@ -37,10 +39,12 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
         if (!session.user.email_confirmed_at) {
           console.log("RequireAuth: Email not confirmed, redirecting to verify-email");
+          setIsAuthenticated(false);
           navigate("/verify-email", { replace: true });
           return;
         }
 
+        setIsAuthenticated(true);
         setIsChecking(false);
       } catch (error: any) {
         console.error("RequireAuth: Auth error:", error);
@@ -50,6 +54,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
           variant: "destructive",
         });
         
+        setIsAuthenticated(false);
         // Force clean session state and redirect
         await supabase.auth.signOut();
         navigate("/signin", { replace: true });
@@ -69,10 +74,14 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
       if (!session) {
         console.log("RequireAuth: Session lost, redirecting to signin");
+        setIsAuthenticated(false);
         navigate("/signin", { replace: true });
       } else if (!session.user.email_confirmed_at) {
         console.log("RequireAuth: Email not confirmed, redirecting to verify-email");
+        setIsAuthenticated(false);
         navigate("/verify-email", { replace: true });
+      } else {
+        setIsAuthenticated(true);
       }
     });
 
@@ -83,6 +92,11 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (isChecking) {
     return null; // Or a loading spinner
+  }
+
+  if (!isAuthenticated) {
+    // Redirect to signin while preserving the attempted URL
+    return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;
