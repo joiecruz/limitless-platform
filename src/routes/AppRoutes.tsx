@@ -13,6 +13,7 @@ import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
 import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -36,107 +37,99 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route
         path="/courses"
         element={
-          <DashboardLayout>
-            <Courses />
-          </DashboardLayout>
+          <RequireAuth>
+            <DashboardLayout>
+              <Courses />
+            </DashboardLayout>
+          </RequireAuth>
         }
       />
       <Route
         path="/courses/:courseId/lessons"
         element={
-          <DashboardLayout>
-            <Lessons />
-          </DashboardLayout>
+          <RequireAuth>
+            <DashboardLayout>
+              <Lessons />
+            </DashboardLayout>
+          </RequireAuth>
         }
       />
       <Route
         path="/courses/:courseId/lessons/:lessonId"
-        element={<Lesson />}
-        handle={{ crumb: () => "Individual Lesson" }}
+        element={
+          <RequireAuth>
+            <Lesson />
+          </RequireAuth>
+        }
       />
       <Route
         path="/dashboard/*"
         element={
-          session ? (
+          <RequireAuth>
             <DashboardLayout>
               <Dashboard />
             </DashboardLayout>
-          ) : (
-            <Navigate to="/signin" replace />
-          )
+          </RequireAuth>
         }
       />
       <Route
         path="/projects"
         element={
-          session ? (
+          <RequireAuth>
             <DashboardLayout>
               <Projects />
             </DashboardLayout>
-          ) : (
-            <Navigate to="/signin" replace />
-          )
+          </RequireAuth>
         }
       />
       <Route
         path="/tools"
         element={
-          session ? (
+          <RequireAuth>
             <DashboardLayout>
               <Tools />
             </DashboardLayout>
-          ) : (
-            <Navigate to="/signin" replace />
-          )
+          </RequireAuth>
         }
       />
       <Route
         path="/tools/:toolId"
         element={
-          session ? (
+          <RequireAuth>
             <DashboardLayout>
               <ToolDetails />
             </DashboardLayout>
-          ) : (
-            <Navigate to="/signin" replace />
-          )
+          </RequireAuth>
         }
-        handle={{ crumb: () => "Individual Tool" }}
       />
       <Route
         path="/community"
         element={
-          session ? (
+          <RequireAuth>
             <DashboardLayout>
               <Community />
             </DashboardLayout>
-          ) : (
-            <Navigate to="/signin" replace />
-          )
+          </RequireAuth>
         }
       />
       <Route
         path="/dashboard/settings"
         element={
-          session ? (
+          <RequireAuth>
             <DashboardLayout>
               <Settings />
             </DashboardLayout>
-          ) : (
-            <Navigate to="/signin" replace />
-          )
+          </RequireAuth>
         }
       />
       <Route
         path="/account-settings"
         element={
-          session ? (
+          <RequireAuth>
             <DashboardLayout>
               <AccountSettings />
             </DashboardLayout>
-          ) : (
-            <Navigate to="/signin" replace />
-          )
+          </RequireAuth>
         }
       />
     </Routes>
