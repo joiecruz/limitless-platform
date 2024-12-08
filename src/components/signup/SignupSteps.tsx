@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SignupData } from "./types";
-import { Step1, Step2 } from "./SignupFormSteps";
+import { Step1 } from "./steps/Step1";
 
 export function SignupSteps() {
-  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<SignupData>({
     email: "",
     password: "",
@@ -16,7 +15,6 @@ export function SignupSteps() {
     referralSource: "",
     goals: "",
   });
-  const [verificationCode, setVerificationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -29,7 +27,7 @@ export function SignupSteps() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleInitialSignup = async () => {
+  const handleSignup = async () => {
     setLoading(true);
     try {
       const { error: signUpError } = await supabase.auth.signUp({
@@ -47,24 +45,12 @@ export function SignupSteps() {
 
       if (signUpError) throw signUpError;
 
-      // Generate verification code and send email
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: [formData.email],
-          subject: "Verify your email",
-          verificationCode,
-        },
-      });
-
-      if (emailError) throw emailError;
-
-      setStep(2);
       toast({
-        title: "Verification code sent!",
-        description: "Please check your email for the verification code.",
+        title: "Success!",
+        description: "Please check your email to confirm your account.",
       });
+      
+      navigate("/signin");
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({
@@ -77,101 +63,17 @@ export function SignupSteps() {
     }
   };
 
-  const handleVerification = async () => {
-    if (verificationCode.length !== 6) {
-      toast({
-        title: "Invalid code",
-        description: "Please enter a valid 6-digit code.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Here you would verify the code with your backend
-      // For now, we'll just navigate to dashboard
-      navigate("/dashboard");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendCode = async () => {
-    setLoading(true);
-    try {
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: [formData.email],
-          subject: "Verify your email",
-          verificationCode,
-        },
-      });
-
-      if (emailError) throw emailError;
-
-      toast({
-        title: "Code resent!",
-        description: "Please check your email for the new verification code.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate("/");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const nextStep = () => {
-    if (step === 1) {
-      handleInitialSignup();
-    }
-  };
-  
-  const prevStep = () => setStep(step - 1);
-
   const stepProps = {
     formData,
     handleInputChange,
     handleSelectChange,
-    nextStep,
-    prevStep,
+    nextStep: handleSignup,
     loading,
-    verificationCode,
-    setVerificationCode,
-    handleVerification,
-    handleResendCode,
-    handleLogout,
   };
 
   return (
     <form className="space-y-6 w-full max-w-md animate-fade-in">
-      {step === 1 && <Step1 {...stepProps} />}
-      {step === 2 && <Step2 {...stepProps} />}
+      <Step1 {...stepProps} />
     </form>
   );
 }
