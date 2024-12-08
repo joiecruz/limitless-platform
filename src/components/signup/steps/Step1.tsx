@@ -28,6 +28,18 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
     return failedRequirements.length === 0 ? "" : `Password must contain ${failedRequirements.map(r => r.message).join(", ")}`;
   };
 
+  const validateEmail = (email: string) => {
+    if (!email) return "Email is required";
+    if (!/\S+@\S+\.\S+/.test(email)) return "Please enter a valid email address";
+    return "";
+  };
+
+  const isFormValid = () => {
+    const emailError = validateEmail(formData.email);
+    const passwordError = validatePassword(formData.password);
+    return !emailError && !passwordError && !isChecking;
+  };
+
   const checkEmailExists = async (email: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithOtp({
@@ -53,10 +65,9 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
     
     try {
       // Email format validation
-      if (!formData.email) {
-        newErrors.email = "Email is required";
-      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        newErrors.email = "Please enter a valid email address";
+      const emailError = validateEmail(formData.email);
+      if (emailError) {
+        newErrors.email = emailError;
       } else {
         // Check if email already exists
         const emailExists = await checkEmailExists(formData.email);
@@ -118,6 +129,7 @@ export const Step1 = ({ formData, handleInputChange, nextStep }: Step1Props) => 
       onNext={handleNext}
       loading={isChecking}
       fieldsContainerClassName="flex gap-4 flex-wrap"
+      isNextDisabled={!isFormValid()}
     />
   );
 };

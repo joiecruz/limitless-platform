@@ -22,6 +22,7 @@ interface TextStepProps {
   onPrev?: () => void;
   loading?: boolean;
   fieldsContainerClassName?: string;
+  isNextDisabled?: boolean;
 }
 
 export function TextStep({ 
@@ -32,7 +33,8 @@ export function TextStep({
   onNext, 
   onPrev,
   loading,
-  fieldsContainerClassName
+  fieldsContainerClassName,
+  isNextDisabled
 }: TextStepProps) {
   return (
     <div className="space-y-4">
@@ -73,7 +75,7 @@ export function TextStep({
           type="button" 
           onClick={onNext} 
           className="flex-1"
-          disabled={loading}
+          disabled={loading || isNextDisabled}
         >
           {loading ? (
             <>
