@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useUser } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
@@ -7,31 +6,39 @@ import { ProfileForm } from "@/components/profile/ProfileForm";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 
 export default function AccountSettings() {
-  const user = useUser();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
 
   useEffect(() => {
-    if (user?.id) {
-      fetchProfile();
-    }
-  }, [user]);
+    fetchUserAndProfile();
+  }, []);
 
-  const fetchProfile = async () => {
+  const fetchUserAndProfile = async () => {
     try {
-      const { data, error } = await supabase
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('No user found');
+      }
+
+      setUserEmail(user.email || '');
+
+      // Fetch profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (profileError) throw profileError;
       
-      if (data) {
-        setProfile(data);
-        setAvatarUrl(data.avatar_url);
+      if (profileData) {
+        setProfile(profileData);
+        setAvatarUrl(profileData.avatar_url);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -40,6 +47,8 @@ export default function AccountSettings() {
         description: "Failed to load profile data",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,6 +57,12 @@ export default function AccountSettings() {
     setLoading(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('No user found');
+      }
+
       const formData = new FormData(e.currentTarget);
       const updates = {
         first_name: String(formData.get('firstName')),
@@ -59,7 +74,7 @@ export default function AccountSettings() {
       const { error } = await supabase
         .from('profiles')
         .update(updates)
-        .eq('id', user?.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 
@@ -68,7 +83,7 @@ export default function AccountSettings() {
         description: "Profile updated successfully",
       });
       
-      await fetchProfile();
+      await fetchUserAndProfile();
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -84,13 +99,20 @@ export default function AccountSettings() {
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setLoading(true);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('No user found');
+      }
+
       if (!e.target.files || e.target.files.length === 0) {
         throw new Error('You must select an image to upload.');
       }
 
       const file = e.target.files[0];
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user?.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${user.id}-${Math.random()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -124,8 +146,26 @@ export default function AccountSettings() {
     if (profile?.first_name || profile?.last_name) {
       return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
     }
-    return user?.email?.[0].toUpperCase() || '?';
+    return userEmail?.[0]?.toUpperCase() || '?';
   };
+
+  if (loading) {
+    return (
+      <RequireAuth>
+        <div className="max-w-2xl mx-auto p-6">
+          <div className="animate-pulse">
+            <div className="h-8 w-48 bg-gray-200 rounded mb-6"></div>
+            <div className="space-y-4">
+              <div className="h-32 w-32 bg-gray-200 rounded-full mx-auto"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </RequireAuth>
+    );
+  }
 
   return (
     <RequireAuth>
@@ -142,7 +182,7 @@ export default function AccountSettings() {
           <ProfileForm
             loading={loading}
             profile={profile}
-            userEmail={user?.email || ''}
+            userEmail={userEmail}
             onSubmit={handleSubmit}
           />
         </div>
