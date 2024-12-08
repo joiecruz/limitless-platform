@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -124,6 +125,9 @@ export default function Dashboard() {
             </Card>
           ))}
         </div>
+
+        {/* Onboarding Modal */}
+        <OnboardingModal />
       </div>
     </RequireAuth>
   );
