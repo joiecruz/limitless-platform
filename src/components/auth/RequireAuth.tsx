@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
+    // Skip auth check for verify-email page
+    if (location.pathname === '/verify-email') {
+      setIsChecking(false);
+      return;
+    }
+
     const checkSession = async () => {
       try {
         console.log("RequireAuth: Checking session...");
@@ -55,6 +62,11 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("RequireAuth: Auth state changed:", event, session);
       
+      // Skip auth redirects for verify-email page
+      if (location.pathname === '/verify-email') {
+        return;
+      }
+
       if (!session) {
         console.log("RequireAuth: Session lost, redirecting to signin");
         navigate("/signin", { replace: true });
@@ -67,7 +79,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, toast, location.pathname]);
 
   if (isChecking) {
     return null; // Or a loading spinner
