@@ -36,9 +36,9 @@ export function useWorkspaceUpdate(
     setIsLoading(true);
     try {
       // First check if slug exists
-      const { data: existingWorkspaces, error: checkError } = await supabase
+      const { count, error: checkError } = await supabase
         .from('workspaces')
-        .select('id')
+        .select('id', { count: 'exact', head: true })
         .eq('slug', data.slug)
         .neq('id', currentWorkspace.id);
 
@@ -47,7 +47,7 @@ export function useWorkspaceUpdate(
         throw checkError;
       }
 
-      if (existingWorkspaces && existingWorkspaces.length > 0) {
+      if (count && count > 0) {
         toast({
           title: "Error",
           description: "This workspace URL is already taken. Please choose another one.",
@@ -65,7 +65,7 @@ export function useWorkspaceUpdate(
           updated_at: new Date().toISOString(),
         })
         .eq('id', currentWorkspace.id)
-        .select('id, name, slug')
+        .select()
         .single();
 
       if (updateError) {
