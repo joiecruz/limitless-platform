@@ -30,10 +30,16 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Attempting signup with email:", email);
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: window.location.origin + '/dashboard'
+        }
       });
+
+      console.log("Signup response:", { data, error });
 
       if (error) throw error;
 
@@ -45,9 +51,10 @@ export default function Register() {
       // Navigate to dashboard (Supabase will handle the email verification)
       navigate("/dashboard");
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast({
         title: "Error",
-        description: error.message || "An error occurred during signup",
+        description: error.error_description || error.message || "An error occurred during signup",
         variant: "destructive",
       });
     } finally {
