@@ -1,8 +1,9 @@
-import { useState, createContext } from "react";
+import { useState, createContext, useEffect } from "react";
 import { X } from "lucide-react";
 import { WorkspaceSelector } from "./WorkspaceSelector";
 import { Navigation } from "./Navigation";
 import { MobileHeader } from "./MobileHeader";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface Workspace {
   id: string;
@@ -24,15 +25,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const handleWorkspaceChange = (workspace: Workspace) => {
+    console.log('Changing workspace to:', workspace);
     setIsLoading(true);
     setCurrentWorkspace(workspace);
+    
+    // Redirect to the same route but with the new workspace context
+    const currentPath = location.pathname;
+    navigate(currentPath, { replace: true });
+    
     // Add a small delay to ensure loading state is visible
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
   };
+
+  // Log workspace changes
+  useEffect(() => {
+    console.log('Current workspace in DashboardLayout:', currentWorkspace);
+  }, [currentWorkspace]);
 
   return (
     <WorkspaceContext.Provider value={{ currentWorkspace, setCurrentWorkspace: handleWorkspaceChange }}>

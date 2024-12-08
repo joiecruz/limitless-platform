@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CreateWorkspaceDialog } from "@/components/workspace/CreateWorkspaceDialog";
 import { Separator } from "@/components/ui/separator";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Workspace {
   id: string;
@@ -25,6 +25,7 @@ interface WorkspaceSelectorProps {
 
 export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: WorkspaceSelectorProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: workspaces, isLoading } = useQuery({
     queryKey: ['workspaces'],
@@ -86,6 +87,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
     staleTime: 1000,
   });
 
+  // Set initial workspace
   useEffect(() => {
     console.log('WorkspaceSelector useEffect - currentWorkspace:', currentWorkspace);
     console.log('WorkspaceSelector useEffect - workspaces:', workspaces);
@@ -94,6 +96,14 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
       setCurrentWorkspace(workspaces[0]);
     }
   }, [currentWorkspace, workspaces, setCurrentWorkspace]);
+
+  const handleWorkspaceSelect = (workspace: Workspace) => {
+    console.log('Selecting workspace:', workspace);
+    setCurrentWorkspace(workspace);
+    // Invalidate relevant queries when workspace changes
+    queryClient.invalidateQueries({ queryKey: ['channels'] });
+    queryClient.invalidateQueries({ queryKey: ['messages'] });
+  };
 
   return (
     <div>
@@ -111,10 +121,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
           {workspaces?.map((workspace) => (
             <DropdownMenuItem
               key={workspace.id}
-              onClick={() => {
-                console.log('Selecting workspace:', workspace);
-                setCurrentWorkspace(workspace);
-              }}
+              onClick={() => handleWorkspaceSelect(workspace)}
               className="cursor-pointer"
             >
               {workspace.name}
