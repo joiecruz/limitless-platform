@@ -1,5 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "@/components/tools/ToolCard";
-import { ToolsHeader } from "@/components/tools/ToolsHeader";
 import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 
 export interface Tool {
@@ -12,39 +13,42 @@ export interface Tool {
   downloadUrl?: string;
 }
 
-export const tools: Tool[] = [
-  {
-    id: "persona-worksheet",
-    title: "Persona Development Worksheet",
-    subtitle: "Stakeholder and Persona Mapping",
-    description:
-      "Create detailed personas by outlining users' goals, challenges, behaviors, and preferences, enabling you to tailor solutions to their specific needs",
-    imageUrl: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7",
-    price: null,
-    downloadUrl: "#",
-  },
-  {
-    id: "smart-goals",
-    title: "SMART Goals Worksheet",
-    subtitle: "Evaluation and Feedback",
-    description:
-      "Set specific, measurable, achievable, relevant, and time-bound goals with our comprehensive SMART goals worksheet",
-    imageUrl: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-    price: null,
-    downloadUrl: "#",
-  },
-  {
-    id: "user-testing",
-    title: "User Testing Checklist",
-    subtitle: "Evaluation and Feedback",
-    description:
-      "Ensure thorough user testing with our comprehensive checklist covering all aspects of the testing process",
-    imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475",
-    price: 45.0,
-  },
-];
+const fetchTools = async () => {
+  const { data, error } = await supabase
+    .from('innovation_tools')
+    .select('*');
+
+  if (error) throw error;
+
+  return data.map(tool => ({
+    id: tool.id,
+    title: tool.title,
+    subtitle: tool.subtitle,
+    description: tool.description,
+    imageUrl: tool.image_url,
+    price: tool.price,
+    downloadUrl: tool.download_url
+  }));
+};
 
 export default function Tools() {
+  const { data: tools, isLoading, error } = useQuery({
+    queryKey: ['tools'],
+    queryFn: fetchTools,
+  });
+
+  if (isLoading) return <LoadingQuotes />;
+
+  if (error) {
+    console.error('Error loading tools:', error);
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-semibold text-gray-900">Error loading tools</h2>
+        <p className="mt-2 text-gray-600">Please try again later</p>
+      </div>
+    );
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="mb-8">
@@ -56,7 +60,7 @@ export default function Tools() {
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tools.map((tool) => (
+        {tools?.map((tool) => (
           <ToolCard key={tool.id} tool={tool} />
         ))}
       </div>

@@ -9,12 +9,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tool } from "@/pages/Tools";
+import { useToast } from "@/hooks/use-toast";
 
 interface ToolCardProps {
   tool: Tool;
 }
 
 export function ToolCard({ tool }: ToolCardProps) {
+  const { toast } = useToast();
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to detail page when clicking download
+    
+    if (!tool.downloadUrl) {
+      toast({
+        title: "Download not available",
+        description: "This tool needs to be purchased before downloading.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Open download in new tab
+    window.open(tool.downloadUrl, '_blank');
+  };
+
   return (
     <Link to={`/tools/${tool.id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
@@ -41,6 +60,7 @@ export function ToolCard({ tool }: ToolCardProps) {
           <Button
             className="w-full"
             variant={tool.price === null ? "default" : "secondary"}
+            onClick={handleDownload}
           >
             {tool.price === null ? (
               <>
