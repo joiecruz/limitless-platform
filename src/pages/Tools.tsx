@@ -1,5 +1,6 @@
 import { ToolCard } from "@/components/tools/ToolCard";
 import { ToolsHeader } from "@/components/tools/ToolsHeader";
+import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 
 export interface Tool {
   id: string;
@@ -46,10 +47,14 @@ export const tools: Tool[] = [
 export default function Tools() {
   return (
     <div className="animate-fade-in">
-      <ToolsHeader
-        title="Tools & Resources"
-        description="Download free worksheets and resources to supercharge your innovation process"
-      />
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Tools & Resources
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Download free worksheets and resources to supercharge your innovation process
+        </p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tools.map((tool) => (
           <ToolCard key={tool.id} tool={tool} />

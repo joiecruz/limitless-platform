@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import CourseCard from "@/components/courses/CourseCard";
+import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 
 interface Course {
   id: string;
@@ -111,14 +112,16 @@ const Courses = () => {
   });
 
   if (coursesLoading) {
-    return <div>Loading...</div>;
+    return <LoadingQuotes />;
   }
 
   return (
     <div className="animate-fade-in">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Courses</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Courses
+        </h1>
+        <p className="text-muted-foreground mt-1">
           Explore our available courses and track your progress
         </p>
       </div>
