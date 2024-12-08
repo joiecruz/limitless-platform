@@ -65,10 +65,7 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
   // Calculate if a lesson is completed based on progress
   const isLessonCompleted = (lessonOrder: number) => {
     if (!enrollment?.progress) return false;
-    // Calculate the progress threshold for this lesson
-    // We subtract 1 from lessonOrder since order starts at 1 but we want to mark the current lesson as complete
-    const lessonProgress = ((lessonOrder) / lessons.length) * 100;
-    console.log(`Checking completion for lesson ${lessonOrder}: Progress needed: ${lessonProgress}, Current progress: ${enrollment.progress}`);
+    const lessonProgress = (lessonOrder / lessons.length) * 100;
     return enrollment.progress >= lessonProgress;
   };
 
@@ -79,7 +76,6 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
         {lessons.map((lesson) => {
           const locked = isLessonLocked(lesson.release_date);
           const completed = isLessonCompleted(lesson.order);
-          console.log(`Lesson ${lesson.title} (order ${lesson.order}): completed = ${completed}`);
           return (
             <button
               key={lesson.id}
@@ -95,7 +91,7 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
                 {locked ? (
                   <Lock className="w-5 h-5 text-muted-foreground" />
                 ) : completed ? (
-                  <CircleCheck className="w-5 h-5 text-primary fill-primary stroke-white" />
+                  <CircleCheck className="w-5 h-5 text-primary" />
                 ) : (
                   <PlayCircle className="w-5 h-5 text-primary" />
                 )}
