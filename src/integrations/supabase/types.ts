@@ -138,6 +138,7 @@ export type Database = {
           price: number | null
           subtitle: string
           title: string
+          type: string
           updated_at: string
         }
         Insert: {
@@ -149,6 +150,7 @@ export type Database = {
           price?: number | null
           subtitle: string
           title: string
+          type?: string
           updated_at?: string
         }
         Update: {
@@ -160,6 +162,7 @@ export type Database = {
           price?: number | null
           subtitle?: string
           title?: string
+          type?: string
           updated_at?: string
         }
         Relationships: []

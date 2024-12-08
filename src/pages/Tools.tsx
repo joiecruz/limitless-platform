@@ -11,6 +11,7 @@ export interface Tool {
   imageUrl: string;
   price: number | null;
   downloadUrl?: string;
+  type: 'free' | 'premium';
 }
 
 const fetchTools = async () => {
@@ -27,7 +28,8 @@ const fetchTools = async () => {
     description: tool.description,
     imageUrl: tool.image_url,
     price: tool.price,
-    downloadUrl: tool.download_url
+    downloadUrl: tool.download_url,
+    type: tool.type
   }));
 };
 

@@ -21,10 +21,12 @@ export function ToolCard({ tool }: ToolCardProps) {
   const handleDownload = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to detail page when clicking download
     
-    if (!tool.downloadUrl) {
+    if (tool.type === 'premium' || !tool.downloadUrl) {
       toast({
         title: "Download not available",
-        description: "This tool needs to be purchased before downloading.",
+        description: tool.type === 'premium' ? 
+          "This tool needs to be purchased before downloading." :
+          "Download link is not available.",
         variant: "destructive",
       });
       return;
@@ -43,10 +45,17 @@ export function ToolCard({ tool }: ToolCardProps) {
             alt={tool.title}
             className="object-cover w-full h-full"
           />
-          <div className="absolute top-3 right-3">
-            <span className="px-2 py-1 text-xs font-medium bg-white rounded-full">
-              {tool.price === null ? "Free" : `$${tool.price.toFixed(2)}`}
+          <div className="absolute top-3 right-3 flex gap-2">
+            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+              tool.type === 'premium' ? 'bg-primary text-white' : 'bg-white text-gray-700'
+            }`}>
+              {tool.type === 'premium' ? 'Premium' : 'Free'}
             </span>
+            {tool.price && (
+              <span className="px-2 py-1 text-xs font-medium bg-white rounded-full">
+                ${tool.price.toFixed(2)}
+              </span>
+            )}
           </div>
         </div>
         <CardHeader>
@@ -59,10 +68,10 @@ export function ToolCard({ tool }: ToolCardProps) {
           <p className="text-sm text-gray-500">{tool.description}</p>
           <Button
             className="w-full"
-            variant={tool.price === null ? "default" : "secondary"}
+            variant={tool.type === 'premium' ? "secondary" : "default"}
             onClick={handleDownload}
           >
-            {tool.price === null ? (
+            {tool.type === 'free' ? (
               <>
                 <Download className="w-4 h-4 mr-2" />
                 Download
@@ -70,7 +79,7 @@ export function ToolCard({ tool }: ToolCardProps) {
             ) : (
               <>
                 <Lock className="w-4 h-4 mr-2" />
-                Unlock for ${tool.price.toFixed(2)}
+                Unlock for ${tool.price?.toFixed(2)}
               </>
             )}
           </Button>
