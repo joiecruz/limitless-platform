@@ -1,8 +1,18 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
 export default function VerifyEmail() {
+  const [email, setEmail] = useState<string>("");
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('verificationEmail');
+    if (storedEmail) {
+      setEmail(storedEmail);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
@@ -35,7 +45,7 @@ export default function VerifyEmail() {
               <h2 className="text-2xl font-semibold mb-2">Verify your email address</h2>
               <p className="text-gray-600 mb-1">
                 A verification email has been sent to{" "}
-                <span className="font-medium text-gray-900">example@email.com</span>
+                <span className="font-medium text-gray-900">{email || "your email address"}</span>
               </p>
               <p className="text-gray-600">
                 Please check your email and click the link provided to complete your account registration.
@@ -46,7 +56,7 @@ export default function VerifyEmail() {
               <p className="text-sm text-gray-500">
                 If you don't receive the email within 5 minutes, please check your spam folder or click below to resend.
               </p>
-              <Button className="w-full">
+              <Button className="w-full" disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Resend Verification Email
               </Button>

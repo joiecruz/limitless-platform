@@ -45,10 +45,8 @@ export function SignupSteps() {
 
       if (signUpError) throw signUpError;
 
-      toast({
-        title: "Success!",
-        description: "Please check your email to confirm your account.",
-      });
+      // Store email in localStorage for verify-email page
+      localStorage.setItem('verificationEmail', formData.email);
       
       navigate("/verify-email");
     } catch (error: any) {
