@@ -25,9 +25,10 @@ const LessonContent = ({
         </div>
       )}
       {bodyContent && (
-        <div className="prose max-w-none mt-8">
-          <div>{bodyContent}</div>
-        </div>
+        <div 
+          className="prose max-w-none mt-8 text-gray-800 space-y-6"
+          dangerouslySetInnerHTML={{ __html: bodyContent }}
+        />
       )}
     </div>
   );
