@@ -23,10 +23,28 @@ export const WorkspaceContext = createContext<WorkspaceContextType>({
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleWorkspaceChange = (workspace: Workspace) => {
+    setIsLoading(true);
+    setCurrentWorkspace(workspace);
+    // Add a small delay to ensure loading state is visible
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  };
 
   return (
-    <WorkspaceContext.Provider value={{ currentWorkspace, setCurrentWorkspace }}>
+    <WorkspaceContext.Provider value={{ currentWorkspace, setCurrentWorkspace: handleWorkspaceChange }}>
       <div className="min-h-screen bg-gray-50">
+        {isLoading && (
+          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="animate-pulse text-primary-600 text-lg font-medium">
+              Loading workspace data...
+            </div>
+          </div>
+        )}
+
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div
@@ -53,10 +71,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
             </div>
             <div className="px-4">
-              <WorkspaceSelector
-                currentWorkspace={currentWorkspace}
-                setCurrentWorkspace={setCurrentWorkspace}
-              />
+              <div className="mb-6">
+                <WorkspaceSelector
+                  currentWorkspace={currentWorkspace}
+                  setCurrentWorkspace={handleWorkspaceChange}
+                />
+              </div>
               <Navigation />
             </div>
           </div>
@@ -74,10 +94,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <div>
               <div className="px-4">
-                <WorkspaceSelector
-                  currentWorkspace={currentWorkspace}
-                  setCurrentWorkspace={setCurrentWorkspace}
-                />
+                <div className="mb-6">
+                  <WorkspaceSelector
+                    currentWorkspace={currentWorkspace}
+                    setCurrentWorkspace={handleWorkspaceChange}
+                  />
+                </div>
                 <Navigation />
               </div>
             </div>
