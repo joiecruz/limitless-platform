@@ -63,7 +63,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
     if (currentStep === TOTAL_STEPS) {
       setLoading(true);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (!user) throw new Error("No user found");
 
         // Update profile
@@ -157,7 +157,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] h-[500px] p-0" showClose={false}>
+      <DialogContent className="sm:max-w-[600px] h-[500px] p-0">
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">
