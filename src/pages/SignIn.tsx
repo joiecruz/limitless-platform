@@ -75,20 +75,6 @@ export default function SignIn() {
     };
   }, [navigate, toast]);
 
-  const handleAuthError = (error: any) => {
-    console.error("Auth error:", error);
-    if (error.message.includes("Email not confirmed")) {
-      const email = localStorage.getItem('verificationEmail');
-      if (email) {
-        navigate("/verify-email", { replace: true });
-        toast({
-          title: "Email verification required",
-          description: "Please check your email to verify your account.",
-        });
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
@@ -163,7 +149,6 @@ export default function SignIn() {
             providers={[]}
             redirectTo={`${window.location.origin}/dashboard`}
             showLinks={false}
-            onError={handleAuthError}
           />
           
           {/* Sign Up Link */}
