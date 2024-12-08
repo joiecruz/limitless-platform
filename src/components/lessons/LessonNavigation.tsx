@@ -18,7 +18,7 @@ const LessonNavigation = ({
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center justify-between pt-12 border-t">
+    <div className="flex items-center justify-between pt-16 border-t">
       <div className="flex items-center">
         {previousLesson && (
           <Button
