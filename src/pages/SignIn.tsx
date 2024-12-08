@@ -52,6 +52,10 @@ export default function SignIn() {
           console.log("SignIn - Email not confirmed, redirecting to verify-email");
           localStorage.setItem('verificationEmail', session.user.email || '');
           navigate("/verify-email", { replace: true });
+          toast({
+            title: "Email verification required",
+            description: "Please confirm your email to log in. Check your inbox, and if you don't see it, look in your spam or junk folder for the confirmation link.",
+          });
           return;
         }
         console.log("SignIn - User signed in, redirecting to dashboard");
@@ -64,7 +68,7 @@ export default function SignIn() {
         navigate("/verify-email", { replace: true });
         toast({
           title: "Email verification required",
-          description: "Please check your email to verify your account.",
+          description: "Please confirm your email to log in. Check your inbox, and if you don't see it, look in your spam or junk folder for the confirmation link.",
         });
       }
     });
