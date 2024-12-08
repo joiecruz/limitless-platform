@@ -18,7 +18,6 @@ export default function AccountSettings() {
 
   const fetchUserAndProfile = async () => {
     try {
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -27,7 +26,6 @@ export default function AccountSettings() {
 
       setUserEmail(user.email || '');
 
-      // Fetch profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -52,8 +50,7 @@ export default function AccountSettings() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (formData: { firstName: string; lastName: string }) => {
     setLoading(true);
 
     try {
@@ -63,10 +60,9 @@ export default function AccountSettings() {
         throw new Error('No user found');
       }
 
-      const formData = new FormData(e.currentTarget);
       const updates = {
-        first_name: String(formData.get('firstName')),
-        last_name: String(formData.get('lastName')),
+        first_name: formData.firstName,
+        last_name: formData.lastName,
         avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       };

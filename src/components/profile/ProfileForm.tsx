@@ -1,23 +1,36 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 interface ProfileFormProps {
   loading: boolean;
   profile: any;
   userEmail: string;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit: (data: { firstName: string; lastName: string }) => void;
 }
 
 export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFormProps) {
+  const [firstName, setFirstName] = useState(profile?.first_name || '');
+  const [lastName, setLastName] = useState(profile?.last_name || '');
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSubmit({
+      firstName,
+      lastName
+    });
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="firstName">First Name</Label>
         <Input
           id="firstName"
           name="firstName"
-          defaultValue={profile?.first_name || ''}
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
           placeholder="Enter your first name"
         />
       </div>
@@ -27,7 +40,8 @@ export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFo
         <Input
           id="lastName"
           name="lastName"
-          defaultValue={profile?.last_name || ''}
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
           placeholder="Enter your last name"
         />
       </div>
