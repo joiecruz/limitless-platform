@@ -35,7 +35,7 @@ export function QuotesCarousel() {
   }, []);
 
   return (
-    <div className="h-full flex items-center justify-center p-8">
+    <div className="h-full w-full flex items-center justify-center">
       <div className="max-w-md text-center animate-fade-in">
         <p className="text-2xl font-medium text-gray-800 mb-4">
           {quotes[currentQuote].text}
