@@ -11,6 +11,7 @@ interface Course {
   image_url: string;
   lesson_count: number;
   enrollee_count: number;
+  locked: boolean;
 }
 
 interface Enrollment {
