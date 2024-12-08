@@ -74,7 +74,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
             last_name: updatedData.lastName,
             role: updatedData.role,
             company_size: updatedData.companySize,
-            goals: updatedData.goals,
+            goals: JSON.stringify(updatedData.goals), // Convert array to string
             referral_source: updatedData.referralSource
           })
           .eq("id", user.id);
@@ -157,7 +157,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] h-[500px] p-0" hideClose>
+      <DialogContent className="sm:max-w-[600px] h-[500px] p-0" showClose={false}>
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">
