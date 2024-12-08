@@ -40,28 +40,20 @@ export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: bo
       if (profileError) throw profileError;
 
       // Create workspace with unique slug
-      const slug = generateSlug(formData.workspaceName);
+      const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
+      
+      // Use RPC to create workspace and add member in a single transaction
       const { data: workspace, error: workspaceError } = await supabase
-        .from("workspaces")
-        .insert({
-          name: formData.workspaceName,
-          slug: `${slug}-${Date.now()}`
-        })
-        .select()
-        .single();
-
-      if (workspaceError) throw workspaceError;
-
-      // Add user as workspace owner
-      const { error: memberError } = await supabase
-        .from("workspace_members")
-        .insert({
-          workspace_id: workspace.id,
-          user_id: user.id,
-          role: 'owner'
+        .rpc('create_workspace_with_owner', {
+          workspace_name: formData.workspaceName,
+          workspace_slug: slug,
+          owner_id: user.id
         });
 
-      if (memberError) throw memberError;
+      if (workspaceError) {
+        console.error('Error creating workspace:', workspaceError);
+        throw workspaceError;
+      }
 
       // Invalidate queries to refresh workspace data
       await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
