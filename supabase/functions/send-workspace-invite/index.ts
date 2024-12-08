@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL");
@@ -37,18 +36,72 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [email],
-        subject: `Invitation to join ${workspaceName}`,
+        subject: `Join ${workspaceName} on our platform`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>You've been invited!</h2>
-            <p>${inviterName} has invited you to join ${workspaceName} on our platform as a ${role}.</p>
-            <p>Click the link below to accept the invitation:</p>
-            <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" 
-               style="display: inline-block; background-color: #0070f3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
-              Accept Invitation
-            </a>
-            <p>If you didn't expect this invitation, you can safely ignore this email.</p>
-          </div>
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                body { 
+                  font-family: Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #333;
+                }
+                .container {
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 20px;
+                }
+                .header {
+                  background-color: #f8f9fa;
+                  padding: 20px;
+                  border-radius: 8px;
+                  margin-bottom: 20px;
+                }
+                .button {
+                  display: inline-block;
+                  padding: 12px 24px;
+                  background-color: #0070f3;
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 5px;
+                  margin: 20px 0;
+                }
+                .footer {
+                  font-size: 14px;
+                  color: #666;
+                  margin-top: 30px;
+                  padding-top: 20px;
+                  border-top: 1px solid #eee;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h2>You're Invited! 🎉</h2>
+                </div>
+                
+                <p>Hello,</p>
+                
+                <p>${inviterName} has invited you to join <strong>${workspaceName}</strong> as a <strong>${role}</strong>.</p>
+                
+                <p>As a ${role}, you'll be able to collaborate with the team and contribute to the workspace.</p>
+                
+                <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" 
+                   class="button">
+                  Accept Invitation
+                </a>
+                
+                <p>This invitation link will expire in 7 days. If you don't have an account yet, you'll be able to create one when accepting the invitation.</p>
+                
+                <div class="footer">
+                  <p>If you didn't expect this invitation, you can safely ignore this email.</p>
+                  <p>This is an automated message, please do not reply to this email.</p>
+                </div>
+              </div>
+            </body>
+          </html>
         `,
       }),
     });
