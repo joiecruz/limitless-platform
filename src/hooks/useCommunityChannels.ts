@@ -34,6 +34,7 @@ export function useCommunityChannels(workspaceId: string | null) {
   const fetchPrivateChannels = useCallback(async () => {
     if (!workspaceId) {
       console.log("No workspace ID provided, skipping private channels fetch");
+      setPrivateChannels([]); // Clear private channels when no workspace is selected
       return [];
     }
 
@@ -94,6 +95,7 @@ export function useCommunityChannels(workspaceId: string | null) {
   useEffect(() => {
     console.log("Setting up channel subscription for workspace:", workspaceId);
     
+    // Set up the channel subscription with workspace filter
     const channelSubscription = supabase
       .channel('channels')
       .on(
@@ -104,7 +106,7 @@ export function useCommunityChannels(workspaceId: string | null) {
           table: 'channels',
           filter: workspaceId ? `workspace_id=eq.${workspaceId}` : undefined
         },
-        (payload) => {
+        async (payload) => {
           console.log('Channel change received:', payload);
           
           // Handle different types of changes
@@ -119,9 +121,16 @@ export function useCommunityChannels(workspaceId: string | null) {
                 setActiveChannel(null);
               }
             }
+          } else if (payload.eventType === 'INSERT' && payload.new) {
+            const newChannel = payload.new as Channel;
+            if (newChannel.is_public) {
+              setPublicChannels(prev => [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name)));
+            } else if (newChannel.workspace_id === workspaceId) {
+              setPrivateChannels(prev => [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name)));
+            }
           } else {
-            // For INSERT and UPDATE, refresh all channels
-            handleWorkspaceChange();
+            // For UPDATE, refresh the channels
+            await handleWorkspaceChange();
           }
         }
       )
