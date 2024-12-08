@@ -3,7 +3,6 @@ import { Session } from "@supabase/supabase-js";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
 import SignIn from "@/pages/SignIn";
-import SignUp from "@/pages/SignUp";
 import Register from "@/pages/Register";
 import Courses from "@/pages/Courses";
 import Lessons from "@/pages/Lessons";
@@ -30,10 +29,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route
         path="/signin"
         element={session ? <Navigate to="/dashboard" replace /> : <SignIn />}
-      />
-      <Route
-        path="/signup"
-        element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
       />
       <Route
         path="/register"
