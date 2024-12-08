@@ -25,6 +25,11 @@ export default function SignIn() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 animate-fade-in">
         <div className="text-center">
+          <img 
+            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+            alt="Limitless Lab"
+            className="h-16 w-auto mx-auto mb-6"
+          />
           <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
           <p className="mt-2 text-sm text-gray-600">
             Sign in to your Limitless Lab account
