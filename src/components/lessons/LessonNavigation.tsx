@@ -39,7 +39,7 @@ const LessonNavigation = ({
       // First check if enrollment exists and get completed lessons
       const { data: existingEnrollment } = await supabase
         .from("enrollments")
-        .select("completed_lessons")
+        .select("id, completed_lessons")
         .eq("user_id", session.user.id)
         .eq("course_id", courseId)
         .single();
@@ -56,6 +56,7 @@ const LessonNavigation = ({
       const { error: updateError } = await supabase
         .from("enrollments")
         .upsert({
+          id: existingEnrollment?.id, // Include the existing enrollment ID
           user_id: session.user.id,
           course_id: courseId,
           completed_lessons: completedLessons,
