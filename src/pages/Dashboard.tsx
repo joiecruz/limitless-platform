@@ -1,76 +1,98 @@
 import { Card } from "@/components/ui/card";
-import { BookOpen, Users, FolderKanban, Download, ArrowRight, Clock, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
+  // Query to get user profile data
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("first_name")
+        .eq("id", user.id)
+        .single();
+
+      return data;
+    },
+  });
+
+  const quickLinks = [
+    {
+      title: "Explore online courses",
+      description: "Upgrade your knowledge and skills on innovation with our transformative online programs",
+      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3",
+      action: "Start learning",
+      link: "/courses"
+    },
+    {
+      title: "Access innovation templates",
+      description: "Download free resources and tools to help jumpstart your innovation projects",
+      image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173",
+      action: "Browse tools",
+      link: "/tools"
+    },
+    {
+      title: "Engage with fellow innovators",
+      description: "Join the Limitless Lab community and find potential collaborators",
+      image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c",
+      action: "Join community",
+      link: "/community"
+    },
+    {
+      title: "Create your innovation project",
+      description: "Be guided step-by-step on creating and implementing your idea",
+      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40",
+      action: "Create project",
+      link: "/projects"
+    }
+  ];
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Section */}
-      <div className="flex justify-between items-center">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-          <p className="text-muted-foreground">
-            Here's an overview of your innovation journey
-          </p>
-        </div>
-        <Button className="hidden sm:flex items-center gap-2">
-          View All Projects <ArrowRight className="h-4 w-4" />
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Here's an overview of your innovation journey
+        </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-6 space-y-2 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div className="p-2 bg-primary-50 rounded-lg">
-              <FolderKanban className="h-5 w-5 text-primary-600" />
+      {/* Quick Links Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {quickLinks.map((link, index) => (
+          <Card 
+            key={index} 
+            className="overflow-hidden hover:shadow-lg transition-all duration-200 group"
+          >
+            <div className="aspect-[4/3] relative overflow-hidden">
+              <img
+                src={link.image}
+                alt={link.title}
+                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
+              />
             </div>
-            <span className="text-2xl font-bold">12</span>
-          </div>
-          <h3 className="font-semibold">Active Projects</h3>
-          <p className="text-sm text-muted-foreground">
-            Track your innovation projects
-          </p>
-        </Card>
-
-        <Card className="p-6 space-y-2 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div className="p-2 bg-purple-50 rounded-lg">
-              <BookOpen className="h-5 w-5 text-purple-600" />
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <h3 className="font-semibold text-lg leading-tight">{link.title}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {link.description}
+                </p>
+              </div>
+              <a
+                href={link.link}
+                className="inline-flex px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+              >
+                {link.action}
+              </a>
             </div>
-            <span className="text-2xl font-bold">5</span>
-          </div>
-          <h3 className="font-semibold">Courses</h3>
-          <p className="text-sm text-muted-foreground">
-            Access learning materials
-          </p>
-        </Card>
-
-        <Card className="p-6 space-y-2 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div className="p-2 bg-orange-50 rounded-lg">
-              <Download className="h-5 w-5 text-orange-600" />
-            </div>
-            <span className="text-2xl font-bold">24</span>
-          </div>
-          <h3 className="font-semibold">Tools</h3>
-          <p className="text-sm text-muted-foreground">
-            Download innovation resources
-          </p>
-        </Card>
-
-        <Card className="p-6 space-y-2 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <Users className="h-5 w-5 text-blue-600" />
-            </div>
-            <span className="text-2xl font-bold">156</span>
-          </div>
-          <h3 className="font-semibold">Community</h3>
-          <p className="text-sm text-muted-foreground">
-            Connect with innovators
-          </p>
-        </Card>
+          </Card>
+        ))}
       </div>
 
       {/* Featured Sections */}
@@ -79,9 +101,12 @@ export default function Dashboard() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold">Recent Courses</h2>
-            <Button variant="ghost" className="text-sm" size="sm">
+            <a
+              href="/courses"
+              className="text-sm text-primary hover:text-primary/90 transition-colors"
+            >
               View all
-            </Button>
+            </a>
           </div>
           <div className="space-y-4">
             {[1, 2].map((_, i) => (
@@ -93,25 +118,25 @@ export default function Dashboard() {
                 />
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium truncate">Innovation Fundamentals {i + 1}</h3>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>2h 30m</span>
-                    <Star className="h-4 w-4 ml-2" />
-                    <span>4.8</span>
-                  </div>
+                  <p className="text-sm text-muted-foreground truncate">
+                    Essential concepts for innovation success
+                  </p>
                 </div>
               </div>
             ))}
           </div>
         </Card>
 
-        {/* Recent Tools */}
+        {/* Popular Tools */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold">Popular Tools</h2>
-            <Button variant="ghost" className="text-sm" size="sm">
+            <a
+              href="/tools"
+              className="text-sm text-primary hover:text-primary/90 transition-colors"
+            >
               View all
-            </Button>
+            </a>
           </div>
           <div className="space-y-4">
             {[1, 2].map((_, i) => (
@@ -127,7 +152,6 @@ export default function Dashboard() {
                     Essential tools for your innovation process
                   </p>
                 </div>
-                <Download className="h-5 w-5 text-gray-400" />
               </div>
             ))}
           </div>
