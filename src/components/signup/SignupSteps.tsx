@@ -34,7 +34,7 @@ export function SignupSteps() {
   const handleInitialSignup = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -45,27 +45,34 @@ export function SignupSteps() {
         },
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
 
       // Generate a 6-digit verification code
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       
-      // Send verification email using our Edge Function
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: [formData.email],
-          subject: "Verify your email",
-          verificationCode,
-        },
-      });
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-email', {
+          body: {
+            to: [formData.email],
+            subject: "Verify your email",
+            verificationCode,
+          },
+        });
 
-      if (emailError) throw emailError;
+        if (emailError) throw emailError;
 
-      setStep(2);
-      toast({
-        title: "Verification code sent!",
-        description: "Please check your email for the verification code.",
-      });
+        setStep(2);
+        toast({
+          title: "Verification code sent!",
+          description: "Please check your email for the verification code.",
+        });
+      } catch (emailError: any) {
+        toast({
+          title: "Error sending verification email",
+          description: emailError.message || "Failed to send verification email",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error",
