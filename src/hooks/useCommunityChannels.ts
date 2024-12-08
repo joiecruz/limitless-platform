@@ -11,6 +11,12 @@ export function useCommunityChannels(workspaceId: string | null) {
 
   useEffect(() => {
     const fetchChannels = async () => {
+      // Reset states when workspace changes
+      setPrivateChannels([]);
+      if (activeChannel && !activeChannel.is_public) {
+        setActiveChannel(null);
+      }
+
       // Fetch public channels (is_public = true)
       const { data: publicData, error: publicError } = await supabase
         .from("channels")
@@ -28,10 +34,8 @@ export function useCommunityChannels(workspaceId: string | null) {
         return;
       }
 
+      console.log("Fetched public channels:", publicData);
       setPublicChannels(publicData || []);
-
-      // Reset private channels when workspace changes
-      setPrivateChannels([]);
 
       // Only fetch private channels if a workspace is selected
       if (workspaceId) {
@@ -65,13 +69,6 @@ export function useCommunityChannels(workspaceId: string | null) {
             setActiveChannel(null);
           }
         }
-      } else {
-        // Clear private channels when no workspace is selected
-        setPrivateChannels([]);
-        // If active channel was private, reset it
-        if (activeChannel && !activeChannel.is_public) {
-          setActiveChannel(null);
-        }
       }
 
       // Set active channel to first public channel if none is selected
@@ -90,7 +87,8 @@ export function useCommunityChannels(workspaceId: string | null) {
         {
           event: '*',
           schema: 'public',
-          table: 'channels'
+          table: 'channels',
+          filter: workspaceId ? `workspace_id=eq.${workspaceId}` : undefined
         },
         (payload) => {
           console.log('Channel change received:', payload);
