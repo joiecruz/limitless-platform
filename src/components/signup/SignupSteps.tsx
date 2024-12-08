@@ -34,66 +34,47 @@ export function SignupSteps() {
   const handleInitialSignup = async () => {
     setLoading(true);
     try {
-      console.log("Signing up with data:", {
-        email: formData.email,
-        metadata: {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: formData.role,
-          company_size: formData.companySize,
-          referral_source: formData.referralSource,
-          goals: formData.goals,
-        }
-      });
-
+      // Create the user with Supabase Auth
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            role: formData.role,
-            company_size: formData.companySize,
-            referral_source: formData.referralSource,
-            goals: formData.goals,
+            first_name: formData.firstName || null,
+            last_name: formData.lastName || null,
+            role: formData.role || null,
+            company_size: formData.companySize || null,
+            referral_source: formData.referralSource || null,
+            goals: formData.goals || null,
           },
         },
       });
 
       if (signUpError) throw signUpError;
 
-      // Generate a 6-digit verification code
+      // Generate verification code and send email
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-email', {
-          body: {
-            to: [formData.email],
-            subject: "Verify your email",
-            verificationCode,
-          },
-        });
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: [formData.email],
+          subject: "Verify your email",
+          verificationCode,
+        },
+      });
 
-        if (emailError) throw emailError;
+      if (emailError) throw emailError;
 
-        setStep(2);
-        toast({
-          title: "Verification code sent!",
-          description: "Please check your email for the verification code.",
-        });
-      } catch (emailError: any) {
-        toast({
-          title: "Error sending verification email",
-          description: emailError.message || "Failed to send verification email",
-          variant: "destructive",
-        });
-      }
+      setStep(2);
+      toast({
+        title: "Verification code sent!",
+        description: "Please check your email for the verification code.",
+      });
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "An error occurred during signup",
         variant: "destructive",
       });
     } finally {
