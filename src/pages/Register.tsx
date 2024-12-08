@@ -1,8 +1,49 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { PasswordRequirements } from "@/components/signup/steps/PasswordRequirements";
 
 export default function Register() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Registration successful!",
+        description: "Please check your email to verify your account.",
+      });
+
+      // Redirect to sign in page after successful registration
+      navigate("/signin");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An error occurred during registration",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Register Form */}
@@ -22,7 +63,7 @@ export default function Register() {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label htmlFor="email">Work Email</Label>
               <Input
@@ -30,6 +71,8 @@ export default function Register() {
                 name="email"
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
                 className="mt-1"
               />
@@ -41,14 +84,27 @@ export default function Register() {
                 name="password"
                 type="password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="mt-1"
               />
+              <PasswordRequirements password={password} />
             </div>
-            <Button type="button" className="w-full">
-              Continue
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
-          </div>
+            <p className="text-center text-sm text-gray-600">
+              Already have an account?{" "}
+              <Button
+                variant="link"
+                className="p-0 h-auto font-semibold text-primary hover:text-primary/80"
+                onClick={() => navigate("/signin")}
+              >
+                Sign in
+              </Button>
+            </p>
+          </form>
         </div>
       </div>
 
