@@ -72,9 +72,8 @@ const CourseEnrollment = ({
         onOpenChange={setShowDialog}
       >
         <AlertDialogContent 
-          onInteractOutside={(e) => {
-            e.preventDefault();
-          }}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
         >
           <AlertDialogHeader>
             <AlertDialogTitle>Congratulations! 🎉</AlertDialogTitle>
