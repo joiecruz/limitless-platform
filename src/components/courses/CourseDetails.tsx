@@ -25,7 +25,7 @@ const CourseDetails = ({
         <CardDescription className="line-clamp-2">{description}</CardDescription>
       </CardHeader>
       {!isEnrolled && !isLocked && (
-        <div className="px-6 flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="px-6 pb-4 flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <BookOpen className="h-4 w-4" />
             <span>{lessonCount || 0} lessons</span>
