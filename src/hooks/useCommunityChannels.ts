@@ -126,10 +126,12 @@ export function useCommunityChannels(workspaceId: string | null) {
             if (newChannel.is_public) {
               setPublicChannels(prev => [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name)));
             } else if (newChannel.workspace_id === workspaceId) {
+              console.log("Adding new private channel to workspace:", workspaceId);
               setPrivateChannels(prev => [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name)));
             }
           } else {
-            // For UPDATE, refresh the channels
+            // For UPDATE, refresh all channels
+            console.log("Refreshing channels after update");
             await handleWorkspaceChange();
           }
         }
