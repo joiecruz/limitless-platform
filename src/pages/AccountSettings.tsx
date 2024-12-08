@@ -22,6 +22,7 @@ export default function AccountSettings() {
 
   const fetchProfile = async () => {
     try {
+      console.log('Fetching profile for user:', user?.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -29,12 +30,19 @@ export default function AccountSettings() {
         .single();
 
       if (error) throw error;
+      
+      console.log('Profile data:', data);
       if (data) {
         setProfile(data);
         setAvatarUrl(data.avatar_url);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load profile data",
+        variant: "destructive",
+      });
     }
   };
 
@@ -62,6 +70,9 @@ export default function AccountSettings() {
         title: "Success",
         description: "Profile updated successfully",
       });
+      
+      // Refresh profile data after update
+      await fetchProfile();
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
