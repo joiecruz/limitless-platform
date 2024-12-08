@@ -30,8 +30,8 @@ export function WorkspaceForm({ defaultValues, onSubmit, isLoading }: WorkspaceF
         )}
       </div>
       
-      <Button type="submit" disabled={isLoading}>
-        {isLoading ? "Saving..." : "Save Changes"}
+      <Button type="submit" disabled={true}>
+        Temporarily Disabled
       </Button>
     </form>
   );
