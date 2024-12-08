@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, Upload } from "lucide-react";
+import { Users, BookOpen, Upload, Lock } from "lucide-react";
 import CourseEnrollment from "./CourseEnrollment";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,7 @@ interface Course {
   image_url: string;
   lesson_count: number;
   enrollee_count: number;
+  locked: boolean;
 }
 
 interface CourseCardProps {
@@ -119,7 +120,7 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
         )}
       </div>
       <CardHeader>
-        <CardTitle className="leading-[1.4]">{course.title}</CardTitle>
+        <CardTitle className="leading-[1.2] tracking-[1px]">{course.title}</CardTitle>
         <CardDescription>{course.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -136,14 +137,24 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
           </div>
         )}
         
-        <CourseEnrollment
-          courseId={course.id}
-          courseTitle={course.title}
-          isEnrolled={!!enrollment}
-          progress={enrollment?.progress}
-          onEnroll={onEnroll}
-          isEnrolling={isEnrolling}
-        />
+        {course.locked ? (
+          <button 
+            className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+            disabled
+          >
+            <Lock className="h-4 w-4" />
+            Coming Soon
+          </button>
+        ) : (
+          <CourseEnrollment
+            courseId={course.id}
+            courseTitle={course.title}
+            isEnrolled={!!enrollment}
+            progress={enrollment?.progress}
+            onEnroll={onEnroll}
+            isEnrolling={isEnrolling}
+          />
+        )}
       </CardContent>
     </Card>
   );

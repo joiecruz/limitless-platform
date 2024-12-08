@@ -55,6 +55,7 @@ export type Database = {
           id: string
           image_url: string | null
           lesson_count: number | null
+          locked: boolean | null
           title: string
           updated_at: string
         }
@@ -65,6 +66,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           lesson_count?: number | null
+          locked?: boolean | null
           title: string
           updated_at?: string
         }
@@ -75,6 +77,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           lesson_count?: number | null
+          locked?: boolean | null
           title?: string
           updated_at?: string
         }
