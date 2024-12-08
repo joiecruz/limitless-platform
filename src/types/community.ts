@@ -25,6 +25,8 @@ export interface Message {
   profiles?: {
     username: string | null;
     avatar_url: string | null;
+    first_name: string | null;
+    last_name: string | null;
   } | null;
   message_reactions?: MessageReaction[];
 }
