@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function VerifyEmail() {
   const [email, setEmail] = useState<string>("");
+  const [isResending, setIsResending] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('verificationEmail');
@@ -12,6 +16,37 @@ export default function VerifyEmail() {
       setEmail(storedEmail);
     }
   }, []);
+
+  const handleResendEmail = async () => {
+    if (!email) return;
+    
+    setIsResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Verification email sent",
+        description: "Please check your inbox for the verification link",
+      });
+    } catch (error: any) {
+      console.error("Error resending verification email:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resend verification email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
@@ -56,9 +91,13 @@ export default function VerifyEmail() {
               <p className="text-sm text-gray-500">
                 If you don't receive the email within 5 minutes, please check your spam folder or click below to resend.
               </p>
-              <Button className="w-full" disabled>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Resend Verification Email
+              <Button 
+                className="w-full" 
+                onClick={handleResendEmail}
+                disabled={isResending || !email}
+              >
+                {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isResending ? "Sending..." : "Resend Verification Email"}
               </Button>
             </div>
           </CardContent>

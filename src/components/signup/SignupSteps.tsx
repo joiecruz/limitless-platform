@@ -39,7 +39,8 @@ export function SignupSteps() {
             company_size: formData.companySize,
             referral_source: formData.referralSource,
             goals: formData.goals
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
 
@@ -48,7 +49,8 @@ export function SignupSteps() {
       // Store email in localStorage for verify-email page
       localStorage.setItem('verificationEmail', formData.email);
       
-      navigate("/verify-email");
+      // Navigate to verify-email page
+      navigate("/verify-email", { replace: true });
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({
