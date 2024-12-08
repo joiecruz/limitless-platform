@@ -32,7 +32,7 @@ const LessonNavigation = ({
           </Button>
         )}
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mt-4">
         <Button onClick={onComplete}>
           Complete Lesson
           {nextLesson && <ArrowRight className="w-4 h-4 ml-2" />}
