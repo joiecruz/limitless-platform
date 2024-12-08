@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface WorkspaceUpdateData {
   name: string;
-  slug: string;
 }
 
 interface Workspace {
@@ -22,6 +21,20 @@ export function useWorkspaceUpdate(
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const generateSlug = (name: string): string => {
+    // Convert to lowercase, replace spaces and special characters with hyphens
+    const baseSlug = name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+    
+    // Add a random suffix to make it unique
+    const randomSuffix = Math.floor(Math.random() * 1000);
+    return `${baseSlug}-${randomSuffix}`;
+  };
+
   const updateWorkspace = async (data: WorkspaceUpdateData) => {
     if (!currentWorkspace?.id) {
       console.error('No workspace selected');
@@ -35,38 +48,15 @@ export function useWorkspaceUpdate(
     
     setIsLoading(true);
     try {
-      // First check if slug exists for other workspaces
-      if (data.slug !== currentWorkspace.slug) {
-        const { data: existingWorkspaces, error: checkError } = await supabase
-          .from('workspaces')
-          .select('id')
-          .eq('slug', data.slug)
-          .neq('id', currentWorkspace.id);
-
-        if (checkError) {
-          console.error('Error checking slug:', checkError);
-          throw checkError;
-        }
-
-        if (existingWorkspaces && existingWorkspaces.length > 0) {
-          toast({
-            title: "Error",
-            description: "This workspace URL is already taken. Please choose another one.",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-
+      const newSlug = generateSlug(data.name);
       console.log('Updating workspace with ID:', currentWorkspace.id);
-      console.log('Update data:', data);
+      console.log('Update data:', { name: data.name, slug: newSlug });
 
-      // Then update the workspace
       const { data: updatedWorkspace, error: updateError } = await supabase
         .from('workspaces')
         .update({
           name: data.name,
-          slug: data.slug,
+          slug: newSlug,
           updated_at: new Date().toISOString(),
         })
         .eq('id', currentWorkspace.id)

@@ -32,10 +32,9 @@ export function GeneralSettings() {
       </div>
       
       <WorkspaceForm 
-        key={currentWorkspace.id} // Force form reset when workspace changes
+        key={currentWorkspace.id}
         defaultValues={{
           name: currentWorkspace.name,
-          slug: currentWorkspace.slug,
         }}
         onSubmit={updateWorkspace}
         isLoading={isLoading}
