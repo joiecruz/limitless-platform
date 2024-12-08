@@ -32,17 +32,12 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
-        if (userError) {
-          console.error('Error fetching user:', userError);
-          throw userError;
-        }
+        if (userError) throw userError;
 
         if (!user) {
           console.log("No user found");
           return [];
         }
-
-        console.log("User found:", user.id);
 
         const { data: memberWorkspaces, error: workspacesError } = await supabase
           .from('workspace_members')
@@ -55,20 +50,13 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
           `)
           .eq('user_id', user.id);
 
-        if (workspacesError) {
-          console.error('Error fetching workspaces:', workspacesError);
-          throw workspacesError;
-        }
+        if (workspacesError) throw workspacesError;
 
-        if (memberWorkspaces && memberWorkspaces.length > 0) {
-          return memberWorkspaces.map(item => ({
-            id: item.workspace.id,
-            name: item.workspace.name,
-            slug: item.workspace.slug
-          }));
-        }
-
-        return [];
+        return memberWorkspaces?.map(item => ({
+          id: item.workspace.id,
+          name: item.workspace.name,
+          slug: item.workspace.slug
+        })) || [];
       } catch (error) {
         console.error('Error in fetchWorkspaces:', error);
         toast({
@@ -78,7 +66,9 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
         });
         return [];
       }
-    }
+    },
+    refetchOnWindowFocus: true,
+    staleTime: 1000,
   });
 
   useEffect(() => {

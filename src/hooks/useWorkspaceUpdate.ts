@@ -23,21 +23,25 @@ export function useWorkspaceUpdate(
   const queryClient = useQueryClient();
 
   const updateWorkspace = async (data: WorkspaceUpdateData) => {
-    if (!currentWorkspace?.id) return;
+    if (!currentWorkspace?.id) {
+      toast({
+        title: "Error",
+        description: "No workspace selected",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsLoading(true);
     try {
-      console.log('Checking for existing workspace with slug:', data.slug);
+      // Check for existing workspace with the same slug
       const { data: existingWorkspaces, error: checkError } = await supabase
         .from('workspaces')
         .select('id')
         .eq('slug', data.slug)
         .neq('id', currentWorkspace.id);
 
-      if (checkError) {
-        console.error('Error checking slug:', checkError);
-        throw checkError;
-      }
+      if (checkError) throw checkError;
 
       if (existingWorkspaces && existingWorkspaces.length > 0) {
         toast({
@@ -48,7 +52,7 @@ export function useWorkspaceUpdate(
         return;
       }
 
-      console.log('Updating workspace with data:', data);
+      // Update the workspace
       const { error: updateError } = await supabase
         .from('workspaces')
         .update({
@@ -58,31 +62,26 @@ export function useWorkspaceUpdate(
         })
         .eq('id', currentWorkspace.id);
 
-      if (updateError) {
-        console.error('Error updating workspace:', updateError);
-        throw updateError;
-      }
+      if (updateError) throw updateError;
 
+      // Fetch the updated workspace
       const { data: updatedWorkspace, error: fetchError } = await supabase
         .from('workspaces')
         .select('*')
         .eq('id', currentWorkspace.id)
         .single();
 
-      if (fetchError) {
-        console.error('Error fetching updated workspace:', fetchError);
-        throw fetchError;
-      }
+      if (fetchError) throw fetchError;
 
-      console.log('Successfully fetched updated workspace:', updatedWorkspace);
       if (updatedWorkspace) {
+        // Update local state
         setCurrentWorkspace({
           id: updatedWorkspace.id,
           name: updatedWorkspace.name,
           slug: updatedWorkspace.slug
         });
 
-        // Invalidate the workspaces query to trigger a refetch
+        // Invalidate and refetch queries
         await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
         toast({
