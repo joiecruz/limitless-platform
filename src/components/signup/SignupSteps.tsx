@@ -49,8 +49,13 @@ export function SignupSteps() {
       // Store email in localStorage for verify-email page
       localStorage.setItem('verificationEmail', formData.email);
       
-      // Navigate to verify-email page
+      // Navigate to verify-email page instead of signin
       navigate("/verify-email", { replace: true });
+
+      toast({
+        title: "Check your email",
+        description: "We've sent you a verification link to complete your registration.",
+      });
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({
