@@ -30,6 +30,9 @@ export function useCommunityChannels(workspaceId: string | null) {
 
       setPublicChannels(publicData || []);
 
+      // Reset private channels when workspace changes
+      setPrivateChannels([]);
+
       // Only fetch private channels if a workspace is selected
       if (workspaceId) {
         console.log("Fetching private channels for workspace:", workspaceId);
@@ -53,18 +56,22 @@ export function useCommunityChannels(workspaceId: string | null) {
         console.log("Fetched private channels:", privateData);
         setPrivateChannels(privateData || []);
 
-        // If active channel was deleted or is a private channel from another workspace, reset it
-        if (activeChannel) {
-          const isActiveChannelValid = activeChannel.is_public || 
-            (privateData && privateData.some(channel => channel.id === activeChannel.id));
-          
-          if (!isActiveChannelValid) {
+        // If active channel was a private channel from another workspace, reset it
+        if (activeChannel && !activeChannel.is_public) {
+          const isActiveChannelInWorkspace = privateData?.some(
+            (channel) => channel.id === activeChannel.id
+          );
+          if (!isActiveChannelInWorkspace) {
             setActiveChannel(null);
           }
         }
       } else {
         // Clear private channels when no workspace is selected
         setPrivateChannels([]);
+        // If active channel was private, reset it
+        if (activeChannel && !activeChannel.is_public) {
+          setActiveChannel(null);
+        }
       }
 
       // Set active channel to first public channel if none is selected
