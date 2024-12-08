@@ -3,14 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SignupData } from "./types";
-import {
-  Step1,
-  Step2,
-  Step3,
-  Step4,
-  Step5,
-  Step6,
-} from "./SignupFormSteps";
+import { Step1, Step2 } from "./SignupFormSteps";
 
 export function SignupSteps() {
   const [step, setStep] = useState(1);
@@ -83,8 +76,8 @@ export function SignupSteps() {
     setLoading(true);
     try {
       // Here you would verify the code with your backend
-      // For now, we'll just move to the next step
-      setStep(3);
+      // For now, we'll just navigate to dashboard
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -118,45 +111,10 @@ export function SignupSteps() {
   const nextStep = () => {
     if (step === 1) {
       handleInitialSignup();
-    } else {
-      setStep(step + 1);
     }
   };
   
   const prevStep = () => setStep(step - 1);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: {
-          role: formData.role,
-          company_size: formData.companySize,
-          referral_source: formData.referralSource,
-          goals: formData.goals,
-        },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Your account has been set up successfully.",
-      });
-      
-      navigate("/dashboard");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const stepProps = {
     formData,
@@ -172,13 +130,9 @@ export function SignupSteps() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md animate-fade-in">
+    <form className="space-y-6 w-full max-w-md animate-fade-in">
       {step === 1 && <Step1 {...stepProps} />}
       {step === 2 && <Step2 {...stepProps} />}
-      {step === 3 && <Step3 {...stepProps} />}
-      {step === 4 && <Step4 {...stepProps} />}
-      {step === 5 && <Step5 {...stepProps} />}
-      {step === 6 && <Step6 {...stepProps} />}
     </form>
   );
 }
