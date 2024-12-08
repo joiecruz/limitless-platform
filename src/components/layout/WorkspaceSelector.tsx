@@ -18,13 +18,10 @@ interface Workspace {
   slug: string | null;
 }
 
-// This interface matches the exact structure returned by Supabase
-interface WorkspaceMemberResponse {
-  workspace: {
-    id: string;
-    name: string | null;
-    slug: string | null;
-  };
+// This type represents the exact structure returned by Supabase
+// when querying workspace_members with a nested workspaces select
+type WorkspaceMemberResponse = {
+  workspace: Workspace;
 }
 
 interface WorkspaceSelectorProps {
@@ -73,7 +70,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
 
         console.log('Raw workspace data:', memberWorkspaces);
         
-        // Properly type and map the nested workspace data
+        // Transform the response to match our Workspace type
         const formattedWorkspaces = (memberWorkspaces as WorkspaceMemberResponse[]).map(item => ({
           id: item.workspace.id,
           name: item.workspace.name || 'Unnamed Workspace',
