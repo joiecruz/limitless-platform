@@ -28,11 +28,17 @@ export function SignupSteps() {
   };
 
   const handleSignup = async () => {
-    console.log("Starting signup process...");
+    console.log("Starting signup process with data:", {
+      email: formData.email,
+      role: formData.role,
+      company_size: formData.companySize,
+      referral_source: formData.referralSource,
+      goals: formData.goals
+    });
+    
     setLoading(true);
     try {
-      console.log("Attempting to sign up user with email:", formData.email);
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -51,12 +57,12 @@ export function SignupSteps() {
         throw signUpError;
       }
 
-      console.log("Signup successful, storing email in localStorage");
+      console.log("Signup response:", data);
+
       // Store email in localStorage for verify-email page
       localStorage.setItem('verificationEmail', formData.email);
       
       console.log("Navigating to verify-email page");
-      // Navigate to verify-email page instead of signin
       navigate("/verify-email", { replace: true });
 
       toast({

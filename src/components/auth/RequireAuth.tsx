@@ -10,8 +10,8 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
-    // Skip auth check for verify-email page
-    if (location.pathname === '/verify-email') {
+    // Skip auth check for verify-email and signup pages
+    if (location.pathname === '/verify-email' || location.pathname === '/signup') {
       setIsChecking(false);
       return;
     }
@@ -62,8 +62,8 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("RequireAuth: Auth state changed:", event, session);
       
-      // Skip auth redirects for verify-email page
-      if (location.pathname === '/verify-email') {
+      // Skip auth redirects for verify-email and signup pages
+      if (location.pathname === '/verify-email' || location.pathname === '/signup') {
         return;
       }
 
