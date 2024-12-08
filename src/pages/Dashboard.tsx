@@ -25,28 +25,28 @@ export default function Dashboard() {
     {
       title: "Explore online courses",
       description: "Upgrade your knowledge and skills on innovation with our transformative online programs",
-      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3",
+      image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Website_Assets__1_.png",
       action: "Start learning",
       link: "/courses"
     },
     {
       title: "Access innovation templates",
       description: "Download free resources and tools to help jumpstart your innovation projects",
-      image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173",
+      image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Tools_QuickLinks.png",
       action: "Browse tools",
       link: "/tools"
     },
     {
       title: "Engage with fellow innovators",
       description: "Join the Limitless Lab community and find potential collaborators",
-      image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c",
+      image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Community_QuickLinks.png",
       action: "Join community",
       link: "/community"
     },
     {
       title: "Create your innovation project",
       description: "Be guided step-by-step on creating and implementing your idea",
-      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40",
+      image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Projects_QuickLinks.png",
       action: "Create project",
       link: "/projects"
     }
