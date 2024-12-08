@@ -18,7 +18,9 @@ export function useCommunityMessages(activeChannel: Channel | null) {
           *,
           profiles (
             username,
-            avatar_url
+            avatar_url,
+            first_name,
+            last_name
           ),
           message_reactions (
             id,
@@ -66,7 +68,9 @@ export function useCommunityMessages(activeChannel: Channel | null) {
               *,
               profiles (
                 username,
-                avatar_url
+                avatar_url,
+                first_name,
+                last_name
               ),
               message_reactions (
                 id,
