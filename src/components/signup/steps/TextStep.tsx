@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SignupData } from "../types";
+import { PasswordRequirements } from "./PasswordRequirements";
 
 interface TextStepProps {
   title?: string;
@@ -44,6 +45,9 @@ export function TextStep({
             placeholder={field.placeholder}
             className="mt-1"
           />
+          {field.type === "password" && (
+            <PasswordRequirements password={values[field.name] as string} />
+          )}
         </div>
       ))}
       <div className="flex gap-2">
