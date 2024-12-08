@@ -86,15 +86,24 @@ export default function Community() {
       return;
     }
 
-    // First check if a channel with this name already exists in the workspace
-    const { data: existingChannel } = await supabase
+    // Check if a channel with this name already exists in the workspace
+    const { data: existingChannels, error: checkError } = await supabase
       .from("channels")
       .select()
       .eq("workspace_id", wsId)
-      .eq("name", name)
-      .single();
+      .eq("name", name);
 
-    if (existingChannel) {
+    if (checkError) {
+      console.error("Error checking existing channels:", checkError);
+      toast({
+        title: "Error",
+        description: "Failed to check existing channels",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (existingChannels && existingChannels.length > 0) {
       toast({
         title: "Error",
         description: "A channel with this name already exists in this workspace",
