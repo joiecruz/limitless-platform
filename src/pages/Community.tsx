@@ -68,6 +68,56 @@ export default function Community() {
     fetchUserWorkspace();
   }, []);
 
+  const handleCreatePrivateChannel = async (name: string) => {
+    if (!workspaceId) {
+      toast({
+        title: "Error",
+        description: "Workspace not loaded",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a channel",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { data: channel, error } = await supabase
+      .from("channels")
+      .insert([
+        {
+          name,
+          workspace_id: workspaceId,
+          is_public: false,
+          description: `Private channel created by ${user.email}`,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating channel:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create channel",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: `Channel "${name}" created successfully`,
+    });
+  };
+
   return (
     <div className="fixed inset-0 lg:left-64 pt-0 flex">
       <ChannelSidebar
