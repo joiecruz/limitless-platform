@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import CourseProgress from "./CourseProgress";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRight } from "lucide-react";
@@ -21,7 +21,6 @@ const CourseEnrollment = ({
   onEnroll, 
   isEnrolling 
 }: CourseEnrollmentProps) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleEnroll = async () => {
@@ -36,9 +35,6 @@ const CourseEnrollment = ({
         title: "Successfully enrolled!",
         description: `You are now enrolled in ${courseTitle || "this course"}`,
       });
-
-      // Navigate to lessons page
-      navigate(`/courses/${courseId}/lessons`);
     } catch (error) {
       console.error('Error enrolling:', error);
       toast({
