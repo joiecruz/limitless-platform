@@ -55,13 +55,14 @@ export function useMembers(workspaceId?: string) {
       // Transform active members data
       const members: Member[] = activeMembers.map(member => ({
         id: member.user_id,
-        email: null, // Email is not available from profiles
+        user_id: member.user_id,
+        email: null,
         role: member.role,
         last_active: member.last_active,
         status: 'Active' as const,
         profiles: {
-          first_name: member.profiles?.first_name,
-          last_name: member.profiles?.last_name,
+          first_name: member.profiles?.first_name || null,
+          last_name: member.profiles?.last_name || null,
         }
       }));
 
