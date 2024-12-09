@@ -13,7 +13,7 @@ export function DashboardHeader() {
       >
         <div className="aspect-[2/1]">
           <img 
-            src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
+            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Website_Assets__1_.png"
             alt="Courses"
             className="w-full h-full object-cover"
           />
@@ -35,7 +35,7 @@ export function DashboardHeader() {
       >
         <div className="aspect-[2/1]">
           <img 
-            src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e"
+            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Tools_QuickLinks.png"
             alt="Innovation Tools"
             className="w-full h-full object-cover"
           />
@@ -57,7 +57,7 @@ export function DashboardHeader() {
       >
         <div className="aspect-[2/1]">
           <img 
-            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Community_QuickLinks.png"
             alt="Community"
             className="w-full h-full object-cover"
           />
@@ -79,7 +79,7 @@ export function DashboardHeader() {
       >
         <div className="aspect-[2/1]">
           <img 
-            src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b"
+            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Projects_QuickLinks.png"
             alt="Projects"
             className="w-full h-full object-cover"
           />
