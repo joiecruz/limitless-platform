@@ -12,13 +12,9 @@ interface Step1Props {
 }
 
 export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
-  console.log('Step1 - isInvitedUser:', isInvitedUser);
-  
   const [formData, setFormData] = useState({
     firstName: data.firstName,
     lastName: data.lastName,
-    role: data.role,
-    companySize: data.companySize,
     password: data.password || "",
   });
   
@@ -28,8 +24,8 @@ export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
     setIsValid(validateFormData(
       formData.firstName,
       formData.lastName,
-      formData.role,
-      formData.companySize,
+      undefined,
+      undefined,
       isInvitedUser ? formData.password : undefined
     ));
   }, [formData, isInvitedUser]);
@@ -41,13 +37,6 @@ export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
     }));
   };
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isValid) {
@@ -56,26 +45,31 @@ export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-2xl font-semibold leading-tight">Tell us about yourself</h2>
-        <p className="text-muted-foreground mt-1">
-          This helps us personalize your experience
-        </p>
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="flex flex-col items-center mb-8">
+        <img 
+          src="/lovable-uploads/c3f37922-28e6-4abc-9884-28e703e28a9d.png" 
+          alt="Limitless Lab Logo" 
+          className="h-12 mb-8"
+        />
+        <div className="text-center space-y-2">
+          <h2 className="text-[32px] font-semibold tracking-tight">Welcome to Limitless Lab!</h2>
+          <p className="text-[#667085] text-lg">
+            Let's finish setting up your account
+          </p>
+        </div>
       </div>
 
       <PersonalInfoFields
         formData={formData}
         handleInputChange={handleInputChange}
-        handleSelectChange={handleSelectChange}
         isInvitedUser={isInvitedUser}
       />
 
       <Button 
         type="submit" 
-        className="w-full rounded-[5px]" 
+        className="w-full h-11 text-base font-medium" 
         disabled={loading || !isValid}
-        variant={isValid ? "default" : "secondary"}
       >
         Continue
       </Button>

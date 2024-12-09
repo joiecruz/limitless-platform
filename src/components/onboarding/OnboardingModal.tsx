@@ -26,8 +26,6 @@ export function OnboardingModal({
   const [currentStep, setCurrentStep] = useState(1);
   const TOTAL_STEPS = isInvitedUser ? 3 : 4;
 
-  console.log('OnboardingModal - isInvitedUser:', isInvitedUser);
-
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
     lastName: "",
@@ -71,7 +69,7 @@ export function OnboardingModal({
       case 2:
         return <Step2 {...commonProps} />;
       case 3:
-        return <Step3 {...commonProps} />;
+        return isInvitedUser ? <Step3 {...commonProps} /> : <Step4 {...commonProps} />;
       case 4:
         return !isInvitedUser ? <Step4 {...commonProps} /> : null;
       default:
@@ -81,12 +79,11 @@ export function OnboardingModal({
 
   return (
     <Dialog open={open} onOpenChange={(value) => {
-      // Prevent closing the modal for invited users
       if (!value && isInvitedUser) return;
       if (onOpenChange) onOpenChange(value);
     }}>
-      <DialogContent className="sm:max-w-[600px] h-[500px] p-0 [&>button]:hidden">
-        <div className="p-6 h-full flex flex-col">
+      <DialogContent className="sm:max-w-[600px] h-[600px] p-0 [&>button]:hidden bg-white">
+        <div className="p-8 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">
               <OnboardingProgress currentStep={currentStep} totalSteps={TOTAL_STEPS} />
