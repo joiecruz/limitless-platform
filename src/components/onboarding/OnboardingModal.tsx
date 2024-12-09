@@ -7,6 +7,8 @@ import { Step4 } from "./steps/Step4";
 import { useOnboardingSubmit } from "./hooks/useOnboardingSubmit";
 import { OnboardingProgress } from "./components/OnboardingProgress";
 import { OnboardingData } from "./types";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface OnboardingModalProps {
   isInvitedUser?: boolean;
