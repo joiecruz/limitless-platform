@@ -72,7 +72,7 @@ export function useMembers(workspaceId?: string) {
       console.log('Pending invites data:', pendingInvites);
 
       // Transform active members data
-      const members: Member[] = (activeMembers as WorkspaceMember[]).map(member => ({
+      const members: Member[] = (activeMembers as unknown as WorkspaceMember[]).map(member => ({
         id: member.user_id,
         user_id: member.user_id,
         email: null,
