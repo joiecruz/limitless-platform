@@ -1,36 +1,26 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { TableMember } from "./types";
-
-type MemberResponse = {
-  role: string;
-  last_active: string;
-  user_id: string;
-  profiles: {
-    first_name: string | null;
-    last_name: string | null;
-    id: string;
-  };
-}
+import { useToast } from "@/hooks/use-toast";
 
 export function useMembers(workspaceId: string | undefined) {
-  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
+  // Query for active members and pending invitations
   const { data: tableData, isLoading } = useQuery({
     queryKey: ['workspace-members', workspaceId],
     queryFn: async () => {
       if (!workspaceId) return [];
-      
-      // Fetch active members with profiles
+
+      // Fetch active members
       const { data: members, error: membersError } = await supabase
         .from('workspace_members')
         .select(`
           role,
           last_active,
           user_id,
-          profiles!inner (
+          profiles!inner(
             first_name,
             last_name,
             id
@@ -38,52 +28,48 @@ export function useMembers(workspaceId: string | undefined) {
         `)
         .eq('workspace_id', workspaceId);
 
-      if (membersError) {
-        console.error('Error fetching members:', membersError);
-        throw membersError;
-      }
+      if (membersError) throw membersError;
 
       // Fetch pending invitations
       const { data: invitations, error: invitationsError } = await supabase
         .from('workspace_invitations')
-        .select('email, role, created_at')
+        .select('*')
         .eq('workspace_id', workspaceId)
         .eq('status', 'pending');
 
-      if (invitationsError) {
-        console.error('Error fetching invitations:', invitationsError);
-        throw invitationsError;
-      }
+      if (invitationsError) throw invitationsError;
 
-      console.log('Active members:', members);
-      console.log('Pending invitations:', invitations);
-
-      // Transform members data
-      const activeMembers = (members as unknown as MemberResponse[])?.map((member) => ({
-        ...member,
+      // Transform active members data
+      const activeMembers: TableMember[] = members.map(member => ({
+        user_id: member.user_id,
+        role: member.role,
+        last_active: member.last_active,
         status: 'Active' as const,
-        user_id: member.profiles.id,
-        // We don't have email in profiles table, it will be handled in the UI
-        email: undefined
-      })) || [];
+        profiles: {
+          first_name: member.profiles.first_name,
+          last_name: member.profiles.last_name,
+        }
+      }));
 
-      // Transform invitations data
-      const pendingInvites = invitations?.map((invite) => ({
-        email: invite.email,
-        role: invite.role,
+      // Transform pending invitations data
+      const pendingMembers: TableMember[] = invitations.map(invitation => ({
+        role: invitation.role,
+        last_active: invitation.created_at,
         status: 'Invited' as const,
-        last_active: invite.created_at
-      })) || [];
+        email: invitation.email
+      }));
 
-      return [...activeMembers, ...pendingInvites] as TableMember[];
+      // Combine and return all members
+      return [...activeMembers, ...pendingMembers];
     },
-    enabled: !!workspaceId,
+    enabled: !!workspaceId
   });
 
-  const handleDeleteMember = async (member: TableMember) => {
-    if (!workspaceId) return;
+  // Mutation for deleting members
+  const deleteMutation = useMutation({
+    mutationFn: async (member: TableMember) => {
+      if (!workspaceId) throw new Error('No workspace selected');
 
-    try {
       if (member.status === 'Active') {
         const { error } = await supabase
           .from('workspace_members')
@@ -92,12 +78,8 @@ export function useMembers(workspaceId: string | undefined) {
           .eq('user_id', member.user_id);
 
         if (error) throw error;
-        
-        toast({
-          title: "Member removed",
-          description: "The member has been removed from the workspace.",
-        });
       } else {
+        // Delete invitation
         const { error } = await supabase
           .from('workspace_invitations')
           .delete()
@@ -105,18 +87,18 @@ export function useMembers(workspaceId: string | undefined) {
           .eq('email', member.email);
 
         if (error) throw error;
-        
-        toast({
-          title: "Invitation cancelled",
-          description: "The invitation has been cancelled successfully.",
-        });
       }
-
-      // Refresh the members list
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['workspace-members', workspaceId],
+        queryKey: ['workspace-members', workspaceId]
       });
-    } catch (error) {
+      toast({
+        title: "Success",
+        description: "Member removed successfully",
+      });
+    },
+    onError: (error) => {
       console.error('Error deleting member:', error);
       toast({
         title: "Error",
@@ -124,11 +106,15 @@ export function useMembers(workspaceId: string | undefined) {
         variant: "destructive",
       });
     }
+  });
+
+  const handleDeleteMember = (member: TableMember) => {
+    deleteMutation.mutate(member);
   };
 
   return {
     tableData,
     isLoading,
-    handleDeleteMember,
+    handleDeleteMember
   };
 }
