@@ -56,10 +56,21 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
                 first_name: updatedData.firstName,
                 last_name: updatedData.lastName,
               },
+              emailRedirectTo: `${window.location.origin}/dashboard`,
             },
           });
 
           if (signUpError) throw signUpError;
+
+          // For invited users, automatically confirm their email using admin API
+          const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user-email', {
+            body: { 
+              email,
+              user_id: signUpData.user?.id
+            }
+          });
+
+          if (confirmError) throw confirmError;
 
           // Sign in the user immediately after signup
           const { error: signInError } = await supabase.auth.signInWithPassword({
