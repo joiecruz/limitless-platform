@@ -1,8 +1,3 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-} from "@/components/ui/dialog";
 import { useState } from "react";
 import { Step1 } from "./steps/Step1";
 import { Step2 } from "./steps/Step2";
@@ -13,16 +8,10 @@ import { OnboardingProgress } from "./components/OnboardingProgress";
 import { OnboardingData } from "./types";
 
 interface OnboardingModalProps {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
   isInvitedUser?: boolean;
 }
 
-export function OnboardingModal({ 
-  open = false, 
-  onOpenChange,
-  isInvitedUser = false 
-}: OnboardingModalProps) {
+export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const TOTAL_STEPS = isInvitedUser ? 3 : 4;
 
@@ -37,7 +26,7 @@ export function OnboardingModal({
     password: "",
   });
 
-  const { handleSubmit, loading } = useOnboardingSubmit({ onOpenChange });
+  const { handleSubmit, loading } = useOnboardingSubmit({});
 
   const handleNext = async (stepData: Partial<OnboardingData>) => {
     const updatedData = { ...formData, ...stepData };
@@ -78,20 +67,18 @@ export function OnboardingModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(value) => {
-      if (!value && isInvitedUser) return;
-      if (onOpenChange) onOpenChange(value);
-    }}>
-      <DialogContent className="sm:max-w-[600px] h-[600px] p-0 [&>button]:hidden bg-white">
-        <div className="p-8 h-full flex flex-col">
-          <DialogHeader>
-            <div className="space-y-4">
-              <OnboardingProgress currentStep={currentStep} totalSteps={TOTAL_STEPS} />
-              {renderStep()}
-            </div>
-          </DialogHeader>
+    <div className="min-h-screen bg-[#FCFCFD] flex flex-col items-center justify-center p-4">
+      <img 
+        src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+        alt="Limitless Lab Logo"
+        className="h-12 mb-8"
+      />
+      <div className="w-full max-w-[600px] bg-white rounded-lg border border-gray-100 shadow-sm p-8">
+        <div className="space-y-4">
+          <OnboardingProgress currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+          {renderStep()}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

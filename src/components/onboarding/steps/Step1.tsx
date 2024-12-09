@@ -46,18 +46,11 @@ export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="flex flex-col items-center mb-8">
-        <img 
-          src="/lovable-uploads/c3f37922-28e6-4abc-9884-28e703e28a9d.png" 
-          alt="Limitless Lab Logo" 
-          className="h-12 mb-8"
-        />
-        <div className="text-center space-y-2">
-          <h2 className="text-[32px] font-semibold tracking-tight">Welcome to Limitless Lab!</h2>
-          <p className="text-[#667085] text-lg">
-            Let's finish setting up your account
-          </p>
-        </div>
+      <div className="text-center space-y-2">
+        <h2 className="text-[32px] font-semibold tracking-tight">Welcome to Limitless Lab!</h2>
+        <p className="text-[#667085] text-lg">
+          Let's finish setting up your account
+        </p>
       </div>
 
       <PersonalInfoFields
@@ -68,7 +61,7 @@ export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
 
       <Button 
         type="submit" 
-        className="w-full h-11 text-base font-medium" 
+        className="w-full h-11 text-base font-medium bg-primary hover:bg-primary-600" 
         disabled={loading || !isValid}
       >
         Continue

@@ -84,15 +84,5 @@ export default function InvitePage() {
     return null;
   }
 
-  return (
-    <div>
-      {showOnboarding && (
-        <OnboardingModal
-          open={true}
-          onOpenChange={() => {}}
-          isInvitedUser={true}
-        />
-      )}
-    </div>
-  );
+  return showOnboarding ? <OnboardingModal isInvitedUser={true} /> : null;
 }
