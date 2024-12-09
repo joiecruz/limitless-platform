@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { Input } from "@/components/ui/input";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -80,39 +81,58 @@ export default function SignIn() {
 
   return (
     <>
-      <div className="flex min-h-screen">
-        <form onSubmit={handleSignIn} className="w-full max-w-md mx-auto">
-          <h1 className="text-2xl font-bold">Sign In</h1>
-          <div className="mt-4">
-            <label htmlFor="email" className="block text-sm">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 block w-full border rounded-md p-2"
-            />
+      <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background">
+        <div className="w-full max-w-md space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
+              Sign in to your account
+            </h2>
           </div>
-          <div className="mt-4">
-            <label htmlFor="password" className="block text-sm">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 block w-full border rounded-md p-2"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
+          <form className="mt-8 space-y-6" onSubmit={handleSignIn}>
+            <div className="space-y-4 rounded-md shadow-sm">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-foreground">
+                  Email address
+                </label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-foreground">
+                  Password
+                </label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative flex w-full justify-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Signing in..." : "Sign in"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
       
       {showOnboarding && (
