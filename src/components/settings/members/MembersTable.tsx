@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { TableMember } from "./types";
-import { useAuth } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MembersTableProps {
   members: TableMember[];
@@ -32,7 +32,16 @@ interface MembersTableProps {
 
 export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
   const [memberToDelete, setMemberToDelete] = useState<TableMember | null>(null);
-  const { user } = useAuth();
+  const [currentUser, setCurrentUser] = useState<string | undefined>(undefined);
+
+  // Get current user on component mount
+  useState(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user?.id);
+    };
+    getCurrentUser();
+  }, []);
 
   const handleDelete = () => {
     if (memberToDelete) {
@@ -42,8 +51,8 @@ export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
   };
 
   const isCurrentUser = (member: TableMember) => {
-    if (member.status === 'Active' && user) {
-      return member.user_id === user.id;
+    if (member.status === 'Active' && currentUser) {
+      return member.user_id === currentUser;
     }
     return false;
   };
