@@ -22,17 +22,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
-
-interface TableMember {
-  profiles?: {
-    first_name: string | null;
-    last_name: string | null;
-  };
-  email?: string;
-  role: string;
-  last_active: string;
-  status: 'Active' | 'Invited';
-}
+import { TableMember } from "./types";
 
 interface MembersTableProps {
   members: TableMember[];
@@ -66,7 +56,7 @@ export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
           {members.map((member, index) => (
             <TableRow key={index}>
               <TableCell>
-                {member.status === 'Active' && member.profiles
+                {member.status === 'Active' && 'profiles' in member
                   ? `${member.profiles.first_name || ''} ${member.profiles.last_name || ''}`.trim() || 'Unnamed Member'
                   : 'Pending Member'}
               </TableCell>
