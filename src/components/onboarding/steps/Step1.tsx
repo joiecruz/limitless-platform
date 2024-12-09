@@ -12,6 +12,8 @@ interface Step1Props {
 }
 
 export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
+  console.log('Step1 - isInvitedUser:', isInvitedUser);
+  
   const [formData, setFormData] = useState({
     firstName: data.firstName,
     lastName: data.lastName,

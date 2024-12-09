@@ -24,6 +24,8 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
   const isInvitedUser = location.state?.isInvited;
   const TOTAL_STEPS = isInvitedUser ? 3 : 4;
 
+  console.log('OnboardingModal - isInvitedUser:', isInvitedUser);
+
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
     lastName: "",
@@ -78,7 +80,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
   return (
     <Dialog open={open} onOpenChange={(value) => {
       // Prevent closing the modal
-      if (!value) return;
+      if (!value && isInvitedUser) return;
       if (onOpenChange) onOpenChange(value);
     }}>
       <DialogContent className="sm:max-w-[600px] h-[500px] p-0 [&>button]:hidden">

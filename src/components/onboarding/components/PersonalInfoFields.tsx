@@ -17,6 +17,8 @@ export function PersonalInfoFields({
   handleSelectChange,
   isInvitedUser 
 }: PersonalInfoFieldsProps) {
+  console.log('PersonalInfoFields - isInvitedUser:', isInvitedUser);
+  
   return (
     <div className="grid gap-4">
       <NameFields
