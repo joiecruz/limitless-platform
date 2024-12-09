@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
@@ -7,7 +7,6 @@ import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 export default function InvitePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -18,6 +17,8 @@ export default function InvitePage() {
         const workspaceId = searchParams.get("workspace");
         const email = searchParams.get("email");
         const role = searchParams.get("role");
+
+        console.log("Handling invitation with params:", { workspaceId, email, role });
 
         if (!workspaceId || !email || !role) {
           throw new Error("Invalid invitation link");

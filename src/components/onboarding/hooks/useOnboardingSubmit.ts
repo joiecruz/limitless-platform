@@ -3,14 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { OnboardingData } from "../types";
-import { useLocation } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const location = useLocation();
-  const isInvitedUser = location.state?.isInvited;
+  const [searchParams] = useSearchParams();
+  const isInvitedUser = Boolean(searchParams.get("workspace"));
 
   const handleSubmit = async (formData: OnboardingData) => {
     console.log('Starting onboarding submission with data:', formData);
@@ -74,6 +74,27 @@ export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: bo
 
         // Invalidate queries to refresh workspace data
         await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      }
+
+      // If invited user, add them to the workspace
+      if (isInvitedUser) {
+        const workspaceId = searchParams.get("workspace");
+        const role = searchParams.get("role");
+        
+        if (workspaceId && role) {
+          const { error: memberError } = await supabase
+            .from("workspace_members")
+            .insert({
+              workspace_id: workspaceId,
+              user_id: user.id,
+              role: role
+            });
+
+          if (memberError && memberError.code !== '23505') { // Ignore if already a member
+            console.error('Error adding to workspace:', memberError);
+            throw memberError;
+          }
+        }
       }
 
       toast({
