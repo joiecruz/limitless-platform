@@ -1,18 +1,18 @@
-export interface WorkspaceMember {
-  profiles: {
-    first_name: string | null;
-    last_name: string | null;
-  };
+export type TableMember = {
   role: string;
   last_active: string;
-  status: 'Active';
-}
-
-export interface WorkspaceInvitation {
-  email: string;
-  role: string;
-  status: 'Invited';
-  last_active: string;
-}
-
-export type TableMember = WorkspaceMember | WorkspaceInvitation;
+  status: 'Active' | 'Invited';
+  user_id?: string;
+} & (
+  | {
+      status: 'Active';
+      profiles: {
+        first_name: string | null;
+        last_name: string | null;
+      };
+    }
+  | {
+      status: 'Invited';
+      email: string;
+    }
+);

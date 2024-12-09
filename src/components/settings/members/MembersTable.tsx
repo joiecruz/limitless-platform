@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { TableMember } from "./types";
+import { useAuth } from "@supabase/auth-helpers-react";
 
 interface MembersTableProps {
   members: TableMember[];
@@ -31,12 +32,20 @@ interface MembersTableProps {
 
 export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
   const [memberToDelete, setMemberToDelete] = useState<TableMember | null>(null);
+  const { user } = useAuth();
 
   const handleDelete = () => {
     if (memberToDelete) {
       onDeleteMember(memberToDelete);
       setMemberToDelete(null);
     }
+  };
+
+  const isCurrentUser = (member: TableMember) => {
+    if (member.status === 'Active' && user) {
+      return member.user_id === user.id;
+    }
+    return false;
   };
 
   return (
@@ -81,6 +90,8 @@ export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => setMemberToDelete(member)}
+                      disabled={isCurrentUser(member)}
+                      title={isCurrentUser(member) ? "You cannot remove yourself" : "Remove member"}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
