@@ -39,10 +39,17 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
     if (currentStep === TOTAL_STEPS) {
       if (isInvitedUser) {
         try {
-          // Sign up the user with the provided email and password
           const email = new URLSearchParams(window.location.search).get("email");
-          const { error: signUpError } = await supabase.auth.signUp({
-            email: email!,
+          const workspaceId = new URLSearchParams(window.location.search).get("workspace");
+          const role = new URLSearchParams(window.location.search).get("role");
+
+          if (!email || !workspaceId || !role) {
+            throw new Error("Invalid invitation link");
+          }
+
+          // Sign up the user with the provided email and password
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: email,
             password: updatedData.password!,
             options: {
               data: {
@@ -54,9 +61,18 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
 
           if (signUpError) throw signUpError;
 
-          // After successful signup, submit the rest of the onboarding data
+          // Sign in the user immediately after signup
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: updatedData.password!,
+          });
+
+          if (signInError) throw signInError;
+
+          // After successful signup and signin, submit the rest of the onboarding data
           await handleSubmit(updatedData);
           
+          // Redirect to dashboard
           navigate("/dashboard");
         } catch (error: any) {
           console.error("Error in signup process:", error);
@@ -103,11 +119,6 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
 
   return (
     <div className="min-h-screen bg-[#FCFCFD] flex flex-col items-center justify-center p-4">
-      <img 
-        src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
-        alt="Limitless Lab Logo"
-        className="h-12 mb-8"
-      />
       <div className="w-full max-w-[800px] bg-white rounded-lg border border-gray-100 shadow-sm p-8">
         <div className="space-y-4">
           <OnboardingProgress currentStep={currentStep} totalSteps={TOTAL_STEPS} />
