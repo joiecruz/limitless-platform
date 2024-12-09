@@ -11,7 +11,6 @@ type MemberResponse = {
     first_name: string | null;
     last_name: string | null;
     id: string;
-    email: string;
   };
 }
 
@@ -24,7 +23,7 @@ export function useMembers(workspaceId: string | undefined) {
     queryFn: async () => {
       if (!workspaceId) return [];
       
-      // Fetch active members with profiles and emails
+      // Fetch active members with profiles
       const { data: members, error: membersError } = await supabase
         .from('workspace_members')
         .select(`
@@ -34,8 +33,7 @@ export function useMembers(workspaceId: string | undefined) {
           profiles!inner (
             first_name,
             last_name,
-            id,
-            email
+            id
           )
         `)
         .eq('workspace_id', workspaceId);
@@ -65,7 +63,8 @@ export function useMembers(workspaceId: string | undefined) {
         ...member,
         status: 'Active' as const,
         user_id: member.profiles.id,
-        email: member.profiles.email
+        // We don't have email in profiles table, it will be handled in the UI
+        email: undefined
       })) || [];
 
       // Transform invitations data
