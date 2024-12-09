@@ -14,35 +14,73 @@ interface WorkspaceMember {
   };
   role: string;
   last_active: string;
+  status: 'Active';
 }
+
+interface WorkspaceInvitation {
+  email: string;
+  role: string;
+  status: 'Invited';
+  created_at: string;
+}
+
+type TableMember = WorkspaceMember | WorkspaceInvitation;
 
 export function MembersSettings() {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
-  const { data: members, isLoading } = useQuery({
+  const { data: tableData, isLoading } = useQuery({
     queryKey: ['workspace-members', currentWorkspace?.id],
     queryFn: async () => {
       if (!currentWorkspace?.id) return [];
       
-      const { data, error } = await supabase
+      // Fetch active members
+      const { data: members, error: membersError } = await supabase
         .from('workspace_members')
         .select(`
           role,
           last_active,
           profiles!inner (
             first_name,
-            last_name
+            last_name,
+            email
           )
         `)
         .eq('workspace_id', currentWorkspace.id);
 
-      if (error) {
-        console.error('Error fetching members:', error);
-        throw error;
+      if (membersError) {
+        console.error('Error fetching members:', membersError);
+        throw membersError;
       }
 
-      return (data as unknown as WorkspaceMember[]) || [];
+      // Fetch pending invitations
+      const { data: invitations, error: invitationsError } = await supabase
+        .from('workspace_invitations')
+        .select('email, role, created_at')
+        .eq('workspace_id', currentWorkspace.id)
+        .eq('status', 'pending');
+
+      if (invitationsError) {
+        console.error('Error fetching invitations:', invitationsError);
+        throw invitationsError;
+      }
+
+      // Transform members data
+      const activeMembers = (members || []).map((member: WorkspaceMember) => ({
+        ...member,
+        status: 'Active' as const
+      }));
+
+      // Transform invitations data
+      const pendingInvites = (invitations || []).map((invite) => ({
+        email: invite.email,
+        role: invite.role,
+        status: 'Invited' as const,
+        last_active: invite.created_at
+      }));
+
+      return [...activeMembers, ...pendingInvites];
     },
     enabled: !!currentWorkspace?.id,
   });
@@ -81,12 +119,12 @@ export function MembersSettings() {
             <div className="p-4">
               <p className="text-sm text-muted-foreground">Loading members...</p>
             </div>
-          ) : !members?.length ? (
+          ) : !tableData?.length ? (
             <div className="p-4">
               <p className="text-sm text-muted-foreground">No members found</p>
             </div>
           ) : (
-            <MembersTable members={members} />
+            <MembersTable members={tableData} />
           )}
         </div>
       </div>
