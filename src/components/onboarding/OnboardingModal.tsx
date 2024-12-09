@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Step1 } from "./steps/Step1";
 import { Step2 } from "./steps/Step2";
 import { Step3 } from "./steps/Step3";
@@ -14,6 +15,7 @@ interface OnboardingModalProps {
 export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const TOTAL_STEPS = isInvitedUser ? 3 : 4;
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
@@ -33,7 +35,38 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
     setFormData(updatedData);
 
     if (currentStep === TOTAL_STEPS) {
-      await handleSubmit(updatedData);
+      if (isInvitedUser) {
+        try {
+          // Sign up the user with the provided email and password
+          const email = new URLSearchParams(window.location.search).get("email");
+          const { error: signUpError } = await supabase.auth.signUp({
+            email: email!,
+            password: updatedData.password!,
+            options: {
+              data: {
+                first_name: updatedData.firstName,
+                last_name: updatedData.lastName,
+              },
+            },
+          });
+
+          if (signUpError) throw signUpError;
+
+          // After successful signup, submit the rest of the onboarding data
+          await handleSubmit(updatedData);
+          
+          navigate("/dashboard");
+        } catch (error: any) {
+          console.error("Error in signup process:", error);
+          toast({
+            title: "Error",
+            description: error.message || "Failed to complete setup",
+            variant: "destructive",
+          });
+        }
+      } else {
+        await handleSubmit(updatedData);
+      }
     } else {
       setCurrentStep(prev => prev + 1);
     }
@@ -58,7 +91,7 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
       case 2:
         return <Step2 {...commonProps} />;
       case 3:
-        return isInvitedUser ? <Step3 {...commonProps} /> : <Step4 {...commonProps} />;
+        return <Step3 {...commonProps} />;
       case 4:
         return !isInvitedUser ? <Step4 {...commonProps} /> : null;
       default:
@@ -73,7 +106,7 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
         alt="Limitless Lab Logo"
         className="h-12 mb-8"
       />
-      <div className="w-full max-w-[600px] bg-white rounded-lg border border-gray-100 shadow-sm p-8">
+      <div className="w-full max-w-[800px] bg-white rounded-lg border border-gray-100 shadow-sm p-8">
         <div className="space-y-4">
           <OnboardingProgress currentStep={currentStep} totalSteps={TOTAL_STEPS} />
           {renderStep()}

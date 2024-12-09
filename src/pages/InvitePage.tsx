@@ -86,12 +86,7 @@ export default function InvitePage() {
 
   return showOnboarding ? (
     <div className="min-h-screen bg-white flex flex-col items-center pt-16 px-4">
-      <img
-        src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
-        alt="Limitless Lab Logo"
-        className="h-8 mb-8"
-      />
-      <div className="w-full max-w-[440px] bg-white p-8 rounded-lg">
+      <div className="w-full max-w-[600px] bg-white">
         <OnboardingModal isInvitedUser={true} />
       </div>
     </div>
