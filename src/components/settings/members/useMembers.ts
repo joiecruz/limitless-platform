@@ -35,7 +35,7 @@ export function useMembers(workspaceId: string | undefined) {
             first_name,
             last_name,
             id,
-            email:username
+            email
           )
         `)
         .eq('workspace_id', workspaceId);
