@@ -46,8 +46,8 @@ export function useMembers(workspaceId: string | undefined) {
         last_active: member.last_active,
         status: 'Active' as const,
         profiles: {
-          first_name: member.profiles.first_name,
-          last_name: member.profiles.last_name,
+          first_name: member.profiles[0]?.first_name,
+          last_name: member.profiles[0]?.last_name,
         }
       }));
 
