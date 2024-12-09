@@ -11,3 +11,5 @@ export interface Member {
     last_name: string | null;
   };
 }
+
+export type TableMember = Member;

@@ -1,16 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { WorkspaceContext } from "@/components/layout/DashboardLayout";
-import { useContext } from "react";
 import { Member } from "./types";
+import { useToast } from "@/hooks/use-toast";
 
-export function useMembers() {
-  const { currentWorkspace } = useContext(WorkspaceContext);
+export function useMembers(workspaceId?: string) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  return useQuery({
-    queryKey: ['workspace-members', currentWorkspace?.id],
+  const query = useQuery({
+    queryKey: ['workspace-members', workspaceId],
     queryFn: async () => {
-      if (!currentWorkspace?.id) {
+      if (!workspaceId) {
         throw new Error('No workspace selected');
       }
 
@@ -27,7 +27,7 @@ export function useMembers() {
             id
           )
         `)
-        .eq('workspace_id', currentWorkspace.id);
+        .eq('workspace_id', workspaceId);
 
       if (activeMembersError) {
         console.error('Error fetching active members:', activeMembersError);
@@ -44,7 +44,7 @@ export function useMembers() {
           status,
           created_at
         `)
-        .eq('workspace_id', currentWorkspace.id)
+        .eq('workspace_id', workspaceId)
         .eq('status', 'pending');
 
       if (pendingInvitesError) {
@@ -60,8 +60,8 @@ export function useMembers() {
         last_active: member.last_active,
         status: 'Active' as const,
         profiles: {
-          first_name: member.profiles[0]?.first_name,
-          last_name: member.profiles[0]?.last_name,
+          first_name: member.profiles?.first_name,
+          last_name: member.profiles?.last_name,
         }
       }));
 
@@ -81,6 +81,52 @@ export function useMembers() {
       // Combine and return all members
       return [...members, ...pendingMembers];
     },
-    enabled: !!currentWorkspace?.id,
+    enabled: !!workspaceId,
   });
+
+  const handleDeleteMember = async (member: Member) => {
+    try {
+      if (member.status === 'Active') {
+        const { error } = await supabase
+          .from('workspace_members')
+          .delete()
+          .eq('workspace_id', workspaceId)
+          .eq('user_id', member.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('workspace_invitations')
+          .delete()
+          .eq('id', member.id);
+
+        if (error) throw error;
+      }
+
+      // Invalidate and refetch
+      queryClient.invalidateQueries({
+        queryKey: ['workspace-members', workspaceId]
+      });
+
+      toast({
+        title: "Success",
+        description: member.status === 'Active' 
+          ? "Member has been removed from the workspace"
+          : "Invitation has been cancelled",
+      });
+    } catch (error: any) {
+      console.error('Error deleting member:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove member",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return {
+    tableData: query.data || [],
+    isLoading: query.isLoading,
+    handleDeleteMember
+  };
 }
