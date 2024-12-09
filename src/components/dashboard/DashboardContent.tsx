@@ -47,7 +47,14 @@ export function DashboardContent() {
 
   return (
     <div className="container mx-auto p-4 space-y-8">
-      <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Welcome, {profile?.first_name} {profile?.last_name}!
+        </h1>
+        <p className="text-gray-500">
+          What would you like to explore today?
+        </p>
+      </div>
       <DashboardHeader />
       {showOnboarding && <OnboardingModal />}
     </div>
