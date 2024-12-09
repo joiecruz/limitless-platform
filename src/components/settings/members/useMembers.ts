@@ -27,6 +27,8 @@ export function useMembers(workspaceId?: string) {
         throw new Error('No workspace selected');
       }
 
+      console.log('Fetching members for workspace:', workspaceId);
+
       // Fetch active members
       const { data: activeMembers, error: activeMembersError } = await supabase
         .from('workspace_members')
@@ -47,6 +49,8 @@ export function useMembers(workspaceId?: string) {
         throw activeMembersError;
       }
 
+      console.log('Active members data:', activeMembers);
+
       // Fetch pending invitations
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
         .from('workspace_invitations')
@@ -64,6 +68,8 @@ export function useMembers(workspaceId?: string) {
         console.error('Error fetching pending invites:', pendingInvitesError);
         throw pendingInvitesError;
       }
+
+      console.log('Pending invites data:', pendingInvites);
 
       // Transform active members data
       const members: Member[] = (activeMembers as WorkspaceMember[]).map(member => ({
@@ -100,6 +106,8 @@ export function useMembers(workspaceId?: string) {
 
   const handleDeleteMember = async (member: Member) => {
     try {
+      console.log('Deleting member:', member);
+
       if (member.status === 'Active') {
         const { error } = await supabase
           .from('workspace_members')
@@ -107,18 +115,24 @@ export function useMembers(workspaceId?: string) {
           .eq('workspace_id', workspaceId)
           .eq('user_id', member.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error deleting workspace member:', error);
+          throw error;
+        }
       } else {
         const { error } = await supabase
           .from('workspace_invitations')
           .delete()
           .eq('id', member.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error deleting invitation:', error);
+          throw error;
+        }
       }
 
       // Invalidate and refetch
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: ['workspace-members', workspaceId]
       });
 
@@ -129,7 +143,7 @@ export function useMembers(workspaceId?: string) {
           : "Invitation has been cancelled",
       });
     } catch (error: any) {
-      console.error('Error deleting member:', error);
+      console.error('Error in handleDeleteMember:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to remove member",
