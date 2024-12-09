@@ -10,7 +10,6 @@ interface WorkspaceMember {
   profiles: {
     first_name: string | null;
     last_name: string | null;
-    email?: string;
   };
   role: string;
   last_active: string;
@@ -21,7 +20,7 @@ interface WorkspaceInvitation {
   email: string;
   role: string;
   status: 'Invited';
-  created_at: string;
+  last_active: string;
 }
 
 type TableMember = WorkspaceMember | WorkspaceInvitation;
@@ -41,10 +40,9 @@ export function MembersSettings() {
         .select(`
           role,
           last_active,
-          profiles!inner (
+          profiles (
             first_name,
-            last_name,
-            email
+            last_name
           )
         `)
         .eq('workspace_id', currentWorkspace.id);
@@ -67,18 +65,18 @@ export function MembersSettings() {
       }
 
       // Transform members data
-      const activeMembers = (members || []).map((member: WorkspaceMember) => ({
+      const activeMembers = members?.map((member) => ({
         ...member,
         status: 'Active' as const
-      }));
+      })) || [];
 
       // Transform invitations data
-      const pendingInvites = (invitations || []).map((invite) => ({
+      const pendingInvites = invitations?.map((invite) => ({
         email: invite.email,
         role: invite.role,
         status: 'Invited' as const,
         last_active: invite.created_at
-      }));
+      })) || [];
 
       return [...activeMembers, ...pendingInvites];
     },

@@ -13,7 +13,6 @@ interface TableMember {
   profiles?: {
     first_name: string | null;
     last_name: string | null;
-    email?: string;
   };
   email?: string;
   role: string;
@@ -46,7 +45,9 @@ export function MembersTable({ members }: MembersTableProps) {
                 : 'Pending Member'}
             </TableCell>
             <TableCell>
-              {member.status === 'Active' ? member.profiles?.email : member.email}
+              {member.status === 'Active' 
+                ? 'Email not available' // Since we don't have email in profiles
+                : member.email}
             </TableCell>
             <TableCell className="capitalize">{member.role}</TableCell>
             <TableCell>
