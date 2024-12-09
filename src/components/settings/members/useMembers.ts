@@ -12,15 +12,18 @@ export function useMembers(workspaceId: string | undefined) {
     queryFn: async () => {
       if (!workspaceId) return [];
       
-      // Fetch active members
+      // Fetch active members with profiles and emails
       const { data: members, error: membersError } = await supabase
         .from('workspace_members')
         .select(`
           role,
           last_active,
+          user_id,
           profiles (
             first_name,
-            last_name
+            last_name,
+            id,
+            email:username
           )
         `)
         .eq('workspace_id', workspaceId);
@@ -42,10 +45,15 @@ export function useMembers(workspaceId: string | undefined) {
         throw invitationsError;
       }
 
+      console.log('Active members:', members);
+      console.log('Pending invitations:', invitations);
+
       // Transform members data
       const activeMembers = members?.map((member) => ({
         ...member,
-        status: 'Active' as const
+        status: 'Active' as const,
+        user_id: member.profiles.id,
+        email: member.profiles.email
       })) || [];
 
       // Transform invitations data
@@ -70,7 +78,7 @@ export function useMembers(workspaceId: string | undefined) {
           .from('workspace_members')
           .delete()
           .eq('workspace_id', workspaceId)
-          .eq('role', member.role);
+          .eq('user_id', member.user_id);
 
         if (error) throw error;
         

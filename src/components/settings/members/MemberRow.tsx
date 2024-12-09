@@ -19,9 +19,7 @@ export function MemberRow({ member, isCurrentUser, onDelete }: MemberRowProps) {
           : 'Pending Member'}
       </TableCell>
       <TableCell>
-        {member.status === 'Active' 
-          ? 'Email not available'
-          : member.email}
+        {member.email || 'Email not available'}
       </TableCell>
       <TableCell className="capitalize">{member.role}</TableCell>
       <TableCell>
