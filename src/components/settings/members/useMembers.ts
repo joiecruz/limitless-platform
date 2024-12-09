@@ -3,6 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TableMember } from "./types";
 
+type MemberResponse = {
+  role: string;
+  last_active: string;
+  user_id: string;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+    id: string;
+    email: string;
+  };
+}
+
 export function useMembers(workspaceId: string | undefined) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -49,7 +61,7 @@ export function useMembers(workspaceId: string | undefined) {
       console.log('Pending invitations:', invitations);
 
       // Transform members data
-      const activeMembers = members?.map((member) => ({
+      const activeMembers = (members as MemberResponse[] | null)?.map((member) => ({
         ...member,
         status: 'Active' as const,
         user_id: member.profiles.id,
