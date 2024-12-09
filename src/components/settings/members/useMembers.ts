@@ -61,7 +61,7 @@ export function useMembers(workspaceId: string | undefined) {
       console.log('Pending invitations:', invitations);
 
       // Transform members data
-      const activeMembers = (members as MemberResponse[] | null)?.map((member) => ({
+      const activeMembers = (members as unknown as MemberResponse[])?.map((member) => ({
         ...member,
         status: 'Active' as const,
         user_id: member.profiles.id,

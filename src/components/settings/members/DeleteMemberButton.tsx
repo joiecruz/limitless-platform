@@ -20,14 +20,17 @@ interface DeleteMemberButtonProps {
 }
 
 export function DeleteMemberButton({ member, isCurrentUser, onDelete }: DeleteMemberButtonProps) {
+  if (isCurrentUser) {
+    return null; // Don't render anything for current user
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
-          disabled={isCurrentUser}
-          title={isCurrentUser ? "You cannot remove yourself" : "Remove member"}
+          title="Remove member"
         >
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
