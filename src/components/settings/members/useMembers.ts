@@ -31,7 +31,7 @@ export function useMembers(workspaceId: string | undefined) {
           role,
           last_active,
           user_id,
-          profiles (
+          profiles!inner (
             first_name,
             last_name,
             id,
