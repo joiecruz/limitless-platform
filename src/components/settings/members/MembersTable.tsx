@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TableMember } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,7 +35,7 @@ export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
   const [currentUser, setCurrentUser] = useState<string | undefined>(undefined);
 
   // Get current user on component mount
-  useState(() => {
+  useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user?.id);
