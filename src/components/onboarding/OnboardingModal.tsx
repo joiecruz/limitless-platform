@@ -11,17 +11,19 @@ import { Step4 } from "./steps/Step4";
 import { useOnboardingSubmit } from "./hooks/useOnboardingSubmit";
 import { OnboardingProgress } from "./components/OnboardingProgress";
 import { OnboardingData } from "./types";
-import { useLocation } from "react-router-dom";
 
 interface OnboardingModalProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  isInvitedUser?: boolean;
 }
 
-export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalProps) {
+export function OnboardingModal({ 
+  open = false, 
+  onOpenChange,
+  isInvitedUser = false 
+}: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const location = useLocation();
-  const isInvitedUser = location.state?.isInvited;
   const TOTAL_STEPS = isInvitedUser ? 3 : 4;
 
   console.log('OnboardingModal - isInvitedUser:', isInvitedUser);
@@ -79,7 +81,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
 
   return (
     <Dialog open={open} onOpenChange={(value) => {
-      // Prevent closing the modal
+      // Prevent closing the modal for invited users
       if (!value && isInvitedUser) return;
       if (onOpenChange) onOpenChange(value);
     }}>
