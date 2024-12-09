@@ -144,10 +144,7 @@ export default function Dashboard() {
         </div>
 
         {/* Onboarding Modal */}
-        <OnboardingModal 
-          open={showOnboarding} 
-          onOpenChange={setShowOnboarding}
-        />
+        {showOnboarding && <OnboardingModal />}
       </div>
     </RequireAuth>
   );
