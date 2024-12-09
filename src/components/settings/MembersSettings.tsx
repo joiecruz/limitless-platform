@@ -1,10 +1,11 @@
 import { useContext, useState } from "react";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { InviteMemberDialog } from "./members/InviteMemberDialog";
 import { MembersTable } from "./members/MembersTable";
+import { useToast } from "@/hooks/use-toast";
 
 interface WorkspaceMember {
   profiles: {
@@ -28,6 +29,8 @@ type TableMember = WorkspaceMember | WorkspaceInvitation;
 export function MembersSettings() {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: tableData, isLoading } = useQuery({
     queryKey: ['workspace-members', currentWorkspace?.id],
@@ -78,10 +81,56 @@ export function MembersSettings() {
         last_active: invite.created_at
       })) || [];
 
-      return [...activeMembers, ...pendingInvites];
+      return [...activeMembers, ...pendingInvites] as TableMember[];
     },
     enabled: !!currentWorkspace?.id,
   });
+
+  const handleDeleteMember = async (member: TableMember) => {
+    if (!currentWorkspace?.id) return;
+
+    try {
+      if (member.status === 'Active') {
+        const { error } = await supabase
+          .from('workspace_members')
+          .delete()
+          .eq('workspace_id', currentWorkspace.id)
+          .eq('role', member.role);
+
+        if (error) throw error;
+        
+        toast({
+          title: "Member removed",
+          description: "The member has been removed from the workspace.",
+        });
+      } else {
+        const { error } = await supabase
+          .from('workspace_invitations')
+          .delete()
+          .eq('workspace_id', currentWorkspace.id)
+          .eq('email', member.email);
+
+        if (error) throw error;
+        
+        toast({
+          title: "Invitation cancelled",
+          description: "The invitation has been cancelled successfully.",
+        });
+      }
+
+      // Refresh the members list
+      queryClient.invalidateQueries({
+        queryKey: ['workspace-members', currentWorkspace.id],
+      });
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove member. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!currentWorkspace) {
     return (
@@ -122,7 +171,10 @@ export function MembersSettings() {
               <p className="text-sm text-muted-foreground">No members found</p>
             </div>
           ) : (
-            <MembersTable members={tableData} />
+            <MembersTable 
+              members={tableData} 
+              onDeleteMember={handleDeleteMember}
+            />
           )}
         </div>
       </div>
