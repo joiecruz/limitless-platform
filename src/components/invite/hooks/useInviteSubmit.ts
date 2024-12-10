@@ -33,6 +33,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     try {
       console.log("Starting invitation process...");
       const decodedEmail = decodeURIComponent(email);
+      console.log("Decoded email:", decodedEmail);
 
       // Step 1: Verify the invitation is valid
       const { data: invitation, error: inviteError } = await supabase
@@ -42,6 +43,8 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
         .eq("email", decodedEmail)
         .eq("status", "pending")
         .single();
+
+      console.log("Invitation query result:", { invitation, inviteError });
 
       if (inviteError || !invitation) {
         console.error("Invitation verification failed:", inviteError);
