@@ -65,8 +65,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
             company_size: data.companySize,
             referral_source: data.referralSource,
             goals: data.goals
-          },
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          }
         }
       });
 
@@ -82,15 +81,24 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
 
       console.log("Auth account created:", authData.user.id);
 
+      // Wait a moment for the account to be fully created
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Step 3: Sign in with the new credentials
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: decodedEmail,
         password: data.password,
       });
 
+      console.log("Sign in attempt result:", { signInData, signInError });
+
       if (signInError) {
         console.error("Error signing in:", signInError);
         throw signInError;
+      }
+
+      if (!signInData.user) {
+        throw new Error("Failed to sign in after account creation");
       }
 
       console.log("Signed in successfully");
