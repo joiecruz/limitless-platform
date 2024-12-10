@@ -29,6 +29,26 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
       const decodedEmail = decodeURIComponent(email);
       console.log("Checking invitation for:", { decodedEmail, workspaceId, role });
 
+      // First verify the invitation exists and is valid
+      const { data: invitation, error: inviteError } = await supabase
+        .from('workspace_invitations')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .eq('email', decodedEmail)
+        .eq('status', 'pending')
+        .single();
+
+      console.log("Invitation check result:", { invitation, inviteError });
+
+      if (inviteError) {
+        console.error("Error checking invitation:", inviteError);
+        throw new Error("Failed to verify invitation");
+      }
+
+      if (!invitation) {
+        throw new Error("No valid invitation found. Please request a new invitation.");
+      }
+
       // Create the auth account
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
@@ -57,26 +77,6 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         .eq('id', authData.user.id);
 
       if (profileError) throw profileError;
-
-      // First verify the invitation exists and is valid
-      const { data: invitation, error: inviteError } = await supabase
-        .from('workspace_invitations')
-        .select('*')
-        .eq('workspace_id', workspaceId)
-        .eq('email', decodedEmail)
-        .eq('status', 'pending')
-        .single();
-
-      console.log("Invitation check result:", { invitation, inviteError });
-
-      if (inviteError) {
-        console.error("Error checking invitation:", inviteError);
-        throw new Error("Failed to verify invitation");
-      }
-
-      if (!invitation) {
-        throw new Error("No valid invitation found. Please request a new invitation.");
-      }
 
       // Add user to workspace
       const { error: memberError } = await supabase
