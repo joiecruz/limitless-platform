@@ -62,7 +62,8 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
             company_size: data.companySize,
             referral_source: data.referralSource,
             goals: data.goals
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/dashboard`
         }
       });
 
@@ -78,7 +79,20 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
 
       console.log("Auth account created:", authData.user.id);
 
-      // Step 3: Add user to workspace
+      // Step 3: Sign in with the new credentials
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: decodedEmail,
+        password: data.password,
+      });
+
+      if (signInError) {
+        console.error("Error signing in:", signInError);
+        throw signInError;
+      }
+
+      console.log("Signed in successfully");
+
+      // Step 4: Add user to workspace
       const { error: memberError } = await supabase
         .from("workspace_members")
         .insert({
@@ -94,7 +108,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
 
       console.log("Added to workspace successfully");
 
-      // Step 4: Update invitation status
+      // Step 5: Update invitation status
       const { error: updateInviteError } = await supabase
         .from("workspace_invitations")
         .update({ status: "accepted" })
@@ -106,19 +120,6 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       }
 
       console.log("Invitation status updated");
-
-      // Step 5: Sign in with the new credentials
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: decodedEmail,
-        password: data.password,
-      });
-
-      if (signInError) {
-        console.error("Error signing in:", signInError);
-        throw signInError;
-      }
-
-      console.log("Signed in successfully");
 
       toast({
         title: "Success",

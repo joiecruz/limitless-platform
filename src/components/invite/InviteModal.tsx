@@ -4,6 +4,7 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { InviteStep1 } from "./steps/InviteStep1";
 import { InviteStep2 } from "./steps/InviteStep2";
 import { InviteStep3 } from "./steps/InviteStep3";
@@ -17,6 +18,9 @@ interface InviteModalProps {
 }
 
 export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
+  const [searchParams] = useSearchParams();
+  const workspaceId = searchParams.get("workspace");
+  const email = searchParams.get("email");
   const [currentStep, setCurrentStep] = useState(1);
   const TOTAL_STEPS = 3;
 
@@ -31,14 +35,22 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
     password: "",
   });
 
-  const { handleSubmit, loading } = useInviteSubmit({ onOpenChange });
+  const { handleSubmit, isLoading } = useInviteSubmit(workspaceId, email);
 
   const handleNext = async (stepData: Partial<OnboardingData>) => {
     const updatedData = { ...formData, ...stepData };
     setFormData(updatedData);
 
     if (currentStep === TOTAL_STEPS) {
-      await handleSubmit(updatedData);
+      await handleSubmit({
+        firstName: updatedData.firstName,
+        lastName: updatedData.lastName,
+        password: updatedData.password,
+        role: updatedData.role,
+        companySize: updatedData.companySize,
+        referralSource: updatedData.referralSource,
+        goals: updatedData.goals?.join(", ") || "",
+      });
     } else {
       setCurrentStep(prev => prev + 1);
     }
@@ -52,7 +64,7 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
     const commonProps = {
       onNext: handleNext,
       onBack: handleBack,
-      loading,
+      loading: isLoading,
       data: formData,
     };
 
