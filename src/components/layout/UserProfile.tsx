@@ -12,23 +12,23 @@ export function UserProfile() {
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-      return user;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session found');
+      return session;
     }
   });
   
   const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ['profile', session?.id],
+    queryKey: ['profile', session?.user?.id],
     queryFn: async () => {
-      if (!session?.id) {
+      if (!session?.user?.id) {
         throw new Error('No user found');
       }
 
       const { data, error } = await supabase
         .from('profiles')
         .select('first_name, last_name, avatar_url')
-        .eq('id', session.id)
+        .eq('id', session.user.id)
         .single();
     
       if (error) {
@@ -43,21 +43,21 @@ export function UserProfile() {
     
       return data;
     },
-    enabled: !!session?.id // Only run this query when we have a session
+    enabled: !!session?.user?.id // Only run this query when we have a session
   });
 
   const getInitials = () => {
     if (profile?.first_name || profile?.last_name) {
       return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
     }
-    return session?.email?.[0]?.toUpperCase() || '?';
+    return session?.user?.email?.[0]?.toUpperCase() || '?';
   };
 
   const getDisplayName = () => {
     if (profile?.first_name || profile?.last_name) {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     }
-    return session?.email || '';
+    return session?.user?.email || '';
   };
 
   const getDefaultAvatar = () => {
@@ -87,7 +87,7 @@ export function UserProfile() {
               avatarUrl={profile?.avatar_url || getDefaultAvatar()}
               initials={getInitials()}
               displayName={getDisplayName()}
-              email={session?.email || ''}
+              email={session?.user?.email || 'No email provided'}
             />
           </button>
         </PopoverTrigger>
