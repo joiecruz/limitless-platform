@@ -49,7 +49,7 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         throw new Error("No valid invitation found. Please request a new invitation.");
       }
 
-      // Create the auth account
+      // Step 1: Create the auth account
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
         password: data.password,
@@ -64,7 +64,18 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
       if (signUpError) throw signUpError;
       if (!authData.user) throw new Error("Failed to create user account");
 
-      // Create the user profile
+      console.log("Auth account created:", authData.user.id);
+
+      // Step 2: Mark email as confirmed (since they came through invitation)
+      const { error: updateAuthError } = await supabase.auth.updateUser({
+        email: decodedEmail,
+        data: { email_confirmed_at: new Date().toISOString() }
+      });
+
+      if (updateAuthError) throw updateAuthError;
+      console.log("Email marked as confirmed");
+
+      // Step 3: Create the user profile
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -76,9 +87,14 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
           referral_source: data.referralSource,
         });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Error creating profile:", profileError);
+        throw profileError;
+      }
 
-      // Add user to workspace
+      console.log("Profile created successfully");
+
+      // Step 4: Add user to workspace
       const { error: memberError } = await supabase
         .from('workspace_members')
         .insert({
@@ -92,7 +108,9 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         throw memberError;
       }
 
-      // Update invitation status
+      console.log("Added to workspace successfully");
+
+      // Step 5: Update invitation status
       const { error: updateInviteError } = await supabase
         .from('workspace_invitations')
         .update({ status: 'accepted' })
@@ -103,15 +121,18 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         throw updateInviteError;
       }
 
+      console.log("Invitation marked as accepted");
+
       if (onOpenChange) {
         onOpenChange(false);
       }
 
       toast({
         title: "Welcome!",
-        description: "Your account has been set up successfully. Please check your email to verify your account.",
+        description: "Your account has been set up successfully.",
       });
 
+      // Step 6: Redirect to dashboard
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Error in invite submit:", error);
