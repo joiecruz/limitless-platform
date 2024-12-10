@@ -34,7 +34,7 @@ export function useMembers(workspaceId?: string) {
           user_id,
           role,
           last_active,
-          profiles:user_id (
+          profiles!inner (
             first_name,
             last_name,
             id
@@ -74,8 +74,8 @@ export function useMembers(workspaceId?: string) {
         last_active: member.last_active,
         status: 'Active' as const,
         profiles: {
-          first_name: member.profiles?.first_name || null,
-          last_name: member.profiles?.last_name || null,
+          first_name: member.profiles.first_name || null,
+          last_name: member.profiles.last_name || null,
         }
       }));
 
