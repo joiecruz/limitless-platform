@@ -18,8 +18,6 @@ export default function InvitePage() {
         const email = searchParams.get("email");
         const role = searchParams.get("role");
 
-        console.log("Handling invitation with params:", { workspaceId, email, role });
-
         if (!workspaceId || !email || !role) {
           throw new Error("Invalid invitation link");
         }
@@ -81,14 +79,17 @@ export default function InvitePage() {
   }, [searchParams, navigate, toast]);
 
   if (loading) {
-    return null;
+    return null; // Or a loading spinner
   }
 
-  return showOnboarding ? (
-    <div className="min-h-screen bg-white flex flex-col items-center pt-16 px-4">
-      <div className="w-full max-w-[600px] bg-white">
-        <OnboardingModal isInvitedUser={true} />
-      </div>
+  return (
+    <div>
+      {showOnboarding && (
+        <OnboardingModal
+          open={true}
+          onOpenChange={() => {}}
+        />
+      )}
     </div>
-  ) : null;
+  );
 }

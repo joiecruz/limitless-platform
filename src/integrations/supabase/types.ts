@@ -508,10 +508,6 @@ export type Database = {
         }
         Returns: Json
       }
-      delete_user_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       is_workspace_admin: {
         Args: {
           workspace_id: string

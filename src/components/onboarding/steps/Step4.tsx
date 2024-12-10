@@ -42,7 +42,7 @@ export function Step4({ onNext, onBack, data, loading }: Step4Props) {
           Back
         </Button>
         <Button type="submit" className="flex-1" disabled={loading}>
-          Complete
+          Complete Setup
         </Button>
       </div>
     </form>

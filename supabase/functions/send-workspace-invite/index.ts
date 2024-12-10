@@ -142,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="email-body">
                 <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on our platform as a ${role}.</p>
                 <p>Click the link below to accept the invitation:</p>
-                <a href="${new URL('/invite', req.headers.get("origin") || "").href}?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Accept Invitation</a>
+                <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}&role=${role}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Accept Invitation</a>
                 <p style="margin-top: 16px; font-size: 14px; color: #666666;">If you didn't expect this invitation, you can safely ignore this email.</p>
               </div>
               <div class="email-footer">

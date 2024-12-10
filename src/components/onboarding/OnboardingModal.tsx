@@ -1,5 +1,9 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+} from "@/components/ui/dialog";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Step1 } from "./steps/Step1";
 import { Step2 } from "./steps/Step2";
 import { Step3 } from "./steps/Step3";
@@ -7,17 +11,18 @@ import { Step4 } from "./steps/Step4";
 import { useOnboardingSubmit } from "./hooks/useOnboardingSubmit";
 import { OnboardingProgress } from "./components/OnboardingProgress";
 import { OnboardingData } from "./types";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { useLocation } from "react-router-dom";
 
 interface OnboardingModalProps {
-  isInvitedUser?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps) {
+export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const location = useLocation();
+  const isInvitedUser = location.state?.isInvited;
   const TOTAL_STEPS = isInvitedUser ? 3 : 4;
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
@@ -30,72 +35,14 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
     password: "",
   });
 
-  const { handleSubmit, loading } = useOnboardingSubmit({});
+  const { handleSubmit, loading } = useOnboardingSubmit({ onOpenChange });
 
   const handleNext = async (stepData: Partial<OnboardingData>) => {
     const updatedData = { ...formData, ...stepData };
     setFormData(updatedData);
 
     if (currentStep === TOTAL_STEPS) {
-      if (isInvitedUser) {
-        try {
-          const email = new URLSearchParams(window.location.search).get("email");
-          const workspaceId = new URLSearchParams(window.location.search).get("workspace");
-          const role = new URLSearchParams(window.location.search).get("role");
-
-          if (!email || !workspaceId || !role) {
-            throw new Error("Invalid invitation link");
-          }
-
-          // Sign up the user with the provided email and password
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: email,
-            password: updatedData.password!,
-            options: {
-              data: {
-                first_name: updatedData.firstName,
-                last_name: updatedData.lastName,
-              },
-              emailRedirectTo: `${window.location.origin}/dashboard`,
-            },
-          });
-
-          if (signUpError) throw signUpError;
-
-          // For invited users, automatically confirm their email using admin API
-          const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user-email', {
-            body: { 
-              email,
-              user_id: signUpData.user?.id
-            }
-          });
-
-          if (confirmError) throw confirmError;
-
-          // Sign in the user immediately after signup
-          const { error: signInError } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: updatedData.password!,
-          });
-
-          if (signInError) throw signInError;
-
-          // After successful signup and signin, submit the rest of the onboarding data
-          await handleSubmit(updatedData);
-          
-          // Redirect to dashboard
-          navigate("/dashboard");
-        } catch (error: any) {
-          console.error("Error in signup process:", error);
-          toast({
-            title: "Error",
-            description: error.message || "Failed to complete setup",
-            variant: "destructive",
-          });
-        }
-      } else {
-        await handleSubmit(updatedData);
-      }
+      await handleSubmit(updatedData);
     } else {
       setCurrentStep(prev => prev + 1);
     }
@@ -129,20 +76,21 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="w-full max-w-[800px] bg-white rounded-lg border border-gray-100 shadow-sm p-8 mx-4">
-        <div className="mb-8 text-center">
-          <img 
-            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
-            alt="Limitless Lab"
-            className="h-12 w-auto mx-auto"
-          />
+    <Dialog open={open} onOpenChange={(value) => {
+      // Prevent closing the modal
+      if (!value) return;
+      if (onOpenChange) onOpenChange(value);
+    }}>
+      <DialogContent className="sm:max-w-[600px] h-[500px] p-0 [&>button]:hidden">
+        <div className="p-6 h-full flex flex-col">
+          <DialogHeader>
+            <div className="space-y-4">
+              <OnboardingProgress currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+              {renderStep()}
+            </div>
+          </DialogHeader>
         </div>
-        <div className="space-y-4">
-          <OnboardingProgress currentStep={currentStep} totalSteps={TOTAL_STEPS} />
-          {renderStep()}
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

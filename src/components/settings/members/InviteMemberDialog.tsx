@@ -29,16 +29,10 @@ export function InviteMemberDialog({
   const handleInvite = async () => {
     if (!inviteEmail || !workspaceId) return;
 
-    console.log('Starting invite process for:', { inviteEmail, workspaceId, role: selectedRole });
     setIsInviting(true);
-    
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        console.error('Error getting user:', userError);
-        throw userError;
-      }
-      console.log('Current user data:', userData);
+      if (userError) throw userError;
 
       const { data: profileData } = await supabase
         .from('profiles')
@@ -46,20 +40,9 @@ export function InviteMemberDialog({
         .eq('id', userData.user.id)
         .single();
 
-      console.log('Profile data:', profileData);
-
       const inviterName = profileData?.first_name && profileData?.last_name
         ? `${profileData.first_name} ${profileData.last_name}`
         : 'A team member';
-
-      console.log('Calling send-workspace-invite function with:', {
-        email: inviteEmail,
-        workspaceId,
-        workspaceName,
-        inviterName,
-        role: selectedRole,
-        inviterId: userData.user.id,
-      });
 
       const { error } = await supabase.functions.invoke('send-workspace-invite', {
         body: {
@@ -68,16 +51,12 @@ export function InviteMemberDialog({
           workspaceName,
           inviterName,
           role: selectedRole,
-          inviterId: userData.user.id,
+          inviterId: userData.user.id, // Add the inviter's ID
         },
       });
 
-      if (error) {
-        console.error('Error from send-workspace-invite:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Invitation sent successfully');
       toast({
         title: "Invitation Sent",
         description: `An invitation has been sent to ${inviteEmail}`,

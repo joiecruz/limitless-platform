@@ -23,15 +23,6 @@ export default function VerifyEmail() {
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user.id);
         try {
-          // Check if user has completed onboarding by checking required profile fields
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, role, company_size, goals, referral_source')
-            .eq('id', session?.user.id)
-            .single();
-
-          if (profileError) throw profileError;
-
           // Call our edge function to handle workspace creation
           const { error } = await supabase.functions.invoke('handle-email-verification', {
             body: { user_id: session?.user.id }
@@ -39,25 +30,14 @@ export default function VerifyEmail() {
 
           if (error) throw error;
 
-          // If profile is incomplete (missing any required field), redirect to onboarding
-          if (!profile.first_name || !profile.last_name || !profile.role || 
-              !profile.company_size || !profile.goals || !profile.referral_source) {
-            console.log('Profile incomplete, redirecting to onboarding');
-            navigate('/onboarding');
-          } else {
-            // Navigate to dashboard after successful verification and workspace creation
-            console.log('Profile complete, redirecting to dashboard');
-            navigate('/dashboard');
-          }
+          // Navigate to dashboard after successful verification and workspace creation
+          navigate('/dashboard');
         } catch (error: any) {
           console.error('Error handling email verification:', error);
-          // If there's an error, default to sending to onboarding
-          console.log('Error occurred, defaulting to onboarding redirect');
-          navigate('/onboarding');
           toast({
-            title: "Notice",
-            description: "Please complete your profile setup",
-            variant: "default",
+            title: "Error",
+            description: "There was an error setting up your workspace. Please try again.",
+            variant: "destructive",
           });
         }
       }
