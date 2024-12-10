@@ -26,9 +26,12 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         throw new Error("Missing required information");
       }
 
+      const decodedEmail = decodeURIComponent(email);
+      console.log("Checking invitation for:", { decodedEmail, workspaceId, role });
+
       // Create the auth account
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: decodeURIComponent(email),
+        email: decodedEmail,
         password: data.password,
         options: {
           data: {
@@ -60,12 +63,19 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         .from('workspace_invitations')
         .select('*')
         .eq('workspace_id', workspaceId)
-        .eq('email', decodeURIComponent(email))
+        .eq('email', decodedEmail)
         .eq('status', 'pending')
         .single();
 
-      if (inviteError || !invitation) {
-        throw new Error("Invalid or expired invitation");
+      console.log("Invitation check result:", { invitation, inviteError });
+
+      if (inviteError) {
+        console.error("Error checking invitation:", inviteError);
+        throw new Error("Failed to verify invitation");
+      }
+
+      if (!invitation) {
+        throw new Error("No valid invitation found. Please request a new invitation.");
       }
 
       // Add user to workspace
@@ -77,7 +87,10 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
           role: role
         });
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error("Error adding member:", memberError);
+        throw memberError;
+      }
 
       // Update invitation status
       const { error: updateInviteError } = await supabase
@@ -85,7 +98,10 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         .update({ status: 'accepted' })
         .eq('id', invitation.id);
 
-      if (updateInviteError) throw updateInviteError;
+      if (updateInviteError) {
+        console.error("Error updating invitation status:", updateInviteError);
+        throw updateInviteError;
+      }
 
       if (onOpenChange) {
         onOpenChange(false);
