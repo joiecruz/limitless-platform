@@ -1,13 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardHeader } from "./DashboardHeader";
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
-import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function DashboardContent() {
-  const [showOnboarding, setShowOnboarding] = useState(false);
-
   // First query to get the current session
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ["session"],
@@ -26,7 +22,7 @@ export function DashboardContent() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("first_name, last_name, role, company_size, goals, referral_source")
+        .select("first_name, last_name")
         .eq("id", session.user.id)
         .single();
 
@@ -35,23 +31,6 @@ export function DashboardContent() {
     },
     enabled: !!session?.user?.id, // Only run this query if we have a user ID
   });
-
-  useEffect(() => {
-    if (!profileLoading && profile) {
-      // Show onboarding if any required field is missing
-      const requiredFields = [
-        'first_name',
-        'last_name',
-        'role',
-        'company_size',
-        'goals',
-        'referral_source'
-      ];
-      
-      const missingFields = requiredFields.some(field => !profile[field]);
-      setShowOnboarding(missingFields);
-    }
-  }, [profile, profileLoading]);
 
   // Show loading state while checking session and profile
   if (sessionLoading || (session && profileLoading)) {
@@ -82,7 +61,6 @@ export function DashboardContent() {
         </p>
       </div>
       <DashboardHeader />
-      {showOnboarding && <OnboardingModal />}
     </div>
   );
 }
