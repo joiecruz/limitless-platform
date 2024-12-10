@@ -74,10 +74,14 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
       if (!value) return;
       if (onOpenChange) onOpenChange(value);
     }}>
-      <DialogContent className="sm:max-w-[600px] h-[500px] p-0 [&>button]:hidden">
+      <DialogContent className="sm:max-w-[600px] h-[600px] p-0 [&>button]:hidden">
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">
+              <div className="space-y-2 text-center mb-6">
+                <h1 className="text-2xl font-semibold tracking-tight">Welcome to Limitless Lab!</h1>
+                <p className="text-muted-foreground">Complete your account setup to get started</p>
+              </div>
               <OnboardingProgress currentStep={currentStep} totalSteps={TOTAL_STEPS} />
               {renderStep()}
             </div>

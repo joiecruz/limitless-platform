@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordRequirements } from "@/components/signup/steps/PasswordRequirements";
 
 interface InviteStep1Props {
   onNext: (data: Partial<OnboardingData>) => void;
@@ -24,7 +25,15 @@ export function InviteStep1({ onNext, data, loading }: InviteStep1Props) {
     });
   };
 
-  const isValid = firstName && lastName && password;
+  const isPasswordValid = () => {
+    return password.length >= 8 &&
+           /[a-z]/.test(password) &&
+           /[A-Z]/.test(password) &&
+           /\d/.test(password) &&
+           /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  };
+
+  const isValid = firstName && lastName && isPasswordValid();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -58,6 +67,7 @@ export function InviteStep1({ onNext, data, loading }: InviteStep1Props) {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        <PasswordRequirements password={password} />
       </div>
 
       <div className="flex justify-end">

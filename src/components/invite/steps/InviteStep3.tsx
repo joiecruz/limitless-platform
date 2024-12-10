@@ -1,7 +1,6 @@
 import { OnboardingData } from "../../onboarding/types";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -44,30 +43,30 @@ const ROLES = [
   "Others"
 ];
 
-const COMPANY_SIZES = [
-  "1-10",
-  "11-50",
-  "51-200",
-  "201-500",
-  "501-1000",
-  "1000+"
+const REFERRAL_SOURCES = [
+  "Google Search",
+  "Social Media",
+  "Friend or Colleague",
+  "Professional Network",
+  "Online Advertisement",
+  "Blog or Article",
+  "Conference or Event",
+  "Other"
 ];
 
 export function InviteStep3({ onNext, onBack, data, loading }: InviteStep3Props) {
   const [role, setRole] = useState(data.role || "");
-  const [companySize, setCompanySize] = useState(data.companySize || "");
   const [referralSource, setReferralSource] = useState(data.referralSource || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onNext({
       role,
-      companySize,
       referralSource,
     });
   };
 
-  const isValid = role && companySize && referralSource;
+  const isValid = role && referralSource;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -92,35 +91,26 @@ export function InviteStep3({ onNext, onBack, data, loading }: InviteStep3Props)
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="companySize">How many employees does your company have?</Label>
-          <Select
-            value={companySize}
-            onValueChange={setCompanySize}
-            required
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select company size" />
-            </SelectTrigger>
-            <SelectContent>
-              {COMPANY_SIZES.map((size) => (
-                <SelectItem key={size} value={size}>
-                  {size} employees
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="referralSource">How did you hear about us?</Label>
-          <Input
-            id="referralSource"
-            value={referralSource}
-            onChange={(e) => setReferralSource(e.target.value)}
-            placeholder="e.g. Google, Friend, Social Media"
-            required
-          />
+        <div>
+          <h2 className="text-lg font-semibold mb-4">How did you hear about us?</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Help us understand how you found Limitless Lab
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {REFERRAL_SOURCES.map((source) => (
+              <div
+                key={source}
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  referralSource === source
+                    ? "border-primary bg-primary/5"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                }`}
+                onClick={() => setReferralSource(source)}
+              >
+                <span className="text-sm font-medium">{source}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

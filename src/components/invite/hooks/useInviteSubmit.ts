@@ -16,6 +16,24 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
   const handleSubmit = async (data: OnboardingData) => {
     setLoading(true);
     try {
+      // Get the invite details from URL params
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get('email');
+      const workspaceId = params.get('workspace');
+      const role = params.get('role');
+
+      if (!email || !workspaceId || !role) {
+        throw new Error("Invalid invitation link");
+      }
+
+      // Create the auth account
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: decodeURIComponent(email),
+        password: data.password,
+      });
+
+      if (signUpError) throw signUpError;
+
       // Create the user profile
       const { error: profileError } = await supabase
         .from('profiles')
@@ -23,7 +41,6 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
           first_name: data.firstName,
           last_name: data.lastName,
           role: data.role,
-          company_size: data.companySize,
           goals: data.goals,
           referral_source: data.referralSource,
         })
@@ -31,13 +48,24 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
 
       if (profileError) throw profileError;
 
+      // Add user to workspace
+      const { error: memberError } = await supabase
+        .from('workspace_members')
+        .insert({
+          workspace_id: workspaceId,
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+          role: role
+        });
+
+      if (memberError) throw memberError;
+
       if (onOpenChange) {
         onOpenChange(false);
       }
 
       toast({
         title: "Welcome!",
-        description: "Your account has been set up successfully.",
+        description: "Your account has been set up successfully. Please check your email to verify your account.",
       });
 
       navigate("/dashboard");
