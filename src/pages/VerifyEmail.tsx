@@ -23,6 +23,15 @@ export default function VerifyEmail() {
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user.id);
         try {
+          // Check if user has completed onboarding
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, role, company_size, goals, referral_source')
+            .eq('id', session?.user.id)
+            .single();
+
+          if (profileError) throw profileError;
+
           // Call our edge function to handle workspace creation
           const { error } = await supabase.functions.invoke('handle-email-verification', {
             body: { user_id: session?.user.id }
@@ -30,8 +39,13 @@ export default function VerifyEmail() {
 
           if (error) throw error;
 
-          // Navigate to dashboard after successful verification and workspace creation
-          navigate('/dashboard');
+          // If profile is incomplete, redirect to onboarding
+          if (!profile.first_name || !profile.last_name || !profile.role || !profile.company_size || !profile.goals || !profile.referral_source) {
+            navigate('/onboarding');
+          } else {
+            // Navigate to dashboard after successful verification and workspace creation
+            navigate('/dashboard');
+          }
         } catch (error: any) {
           console.error('Error handling email verification:', error);
           toast({
