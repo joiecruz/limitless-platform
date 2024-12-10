@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { OnboardingModal } from "../onboarding/OnboardingModal";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   useEffect(() => {
     let mounted = true;
@@ -47,6 +49,29 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
           if (mounted) {
             setIsAuthenticated(false);
             navigate("/verify-email", { replace: true });
+          }
+          return;
+        }
+
+        // Check if user has completed onboarding
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, role, company_size, goals, referral_source')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error("RequireAuth: Profile error:", profileError);
+          throw profileError;
+        }
+
+        // Check if any required profile fields are missing
+        if (!profile.first_name || !profile.last_name || !profile.role || 
+            !profile.company_size || !profile.goals || !profile.referral_source) {
+          console.log("RequireAuth: Profile incomplete, showing onboarding modal");
+          if (mounted) {
+            setIsAuthenticated(true);
+            setShowOnboarding(true);
           }
           return;
         }
@@ -94,7 +119,29 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(false);
         navigate("/verify-email", { replace: true });
       } else {
+        // Check if user has completed onboarding
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, role, company_size, goals, referral_source')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error("RequireAuth: Profile error:", profileError);
+          return;
+        }
+
+        // Check if any required profile fields are missing
+        if (!profile.first_name || !profile.last_name || !profile.role || 
+            !profile.company_size || !profile.goals || !profile.referral_source) {
+          console.log("RequireAuth: Profile incomplete, showing onboarding modal");
+          setIsAuthenticated(true);
+          setShowOnboarding(true);
+          return;
+        }
+
         setIsAuthenticated(true);
+        setIsChecking(false);
       }
     });
 
@@ -111,6 +158,10 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated) {
     // Redirect to signin while preserving the attempted URL
     return <Navigate to="/signin" state={{ from: location }} replace />;
+  }
+
+  if (showOnboarding) {
+    return <OnboardingModal />;
   }
 
   return <>{children}</>;
