@@ -5,28 +5,42 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function DashboardContent() {
   // First query to get the current session
-  const { data: session, isLoading: sessionLoading } = useQuery({
+  const { data: session, isLoading: sessionLoading, error: sessionError } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
+      console.log("Fetching session...");
       const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
+      if (error) {
+        console.error("Session error:", error);
+        throw error;
+      }
+      console.log("Session data:", session);
       return session;
     },
   });
 
   // Only query profile data if we have a session
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: ["profile", session?.user?.id],
     queryFn: async () => {
-      if (!session?.user?.id) throw new Error("No session");
+      if (!session?.user?.id) {
+        console.error("No session user ID available");
+        throw new Error("No session");
+      }
 
+      console.log("Fetching profile for user:", session.user.id);
       const { data, error } = await supabase
         .from("profiles")
         .select("first_name, last_name")
         .eq("id", session.user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Profile fetch error:", error);
+        throw error;
+      }
+      
+      console.log("Profile data:", data);
       return data;
     },
     enabled: !!session?.user?.id, // Only run this query if we have a user ID
@@ -45,8 +59,20 @@ export function DashboardContent() {
     );
   }
 
+  // If there are any errors, show them
+  if (sessionError) {
+    console.error("Session error in render:", sessionError);
+    return <div>Error loading session. Please try refreshing the page.</div>;
+  }
+
+  if (profileError) {
+    console.error("Profile error in render:", profileError);
+    return <div>Error loading profile. Please try refreshing the page.</div>;
+  }
+
   // If no session, the RequireAuth component will handle the redirect
   if (!session) {
+    console.log("No session found, returning null");
     return null;
   }
 
