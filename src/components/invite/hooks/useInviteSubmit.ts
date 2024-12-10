@@ -32,6 +32,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     
     try {
       console.log("Starting invitation process...");
+      // The email is already encoded in the URL, so we need to decode it
       const decodedEmail = decodeURIComponent(email);
       console.log("Decoded email:", decodedEmail);
 
