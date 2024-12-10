@@ -1,0 +1,89 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { InviteStep1 } from "./steps/InviteStep1";
+import { InviteStep2 } from "./steps/InviteStep2";
+import { InviteStep3 } from "./steps/InviteStep3";
+import { useInviteSubmit } from "./hooks/useInviteSubmit";
+import { OnboardingProgress } from "../onboarding/components/OnboardingProgress";
+import { OnboardingData } from "../onboarding/types";
+
+interface InviteModalProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
+  const [currentStep, setCurrentStep] = useState(1);
+  const TOTAL_STEPS = 3;
+
+  const [formData, setFormData] = useState<OnboardingData>({
+    firstName: "",
+    lastName: "",
+    role: "",
+    companySize: "",
+    goals: [],
+    referralSource: "",
+    workspaceName: "",
+    password: "",
+  });
+
+  const { handleSubmit, loading } = useInviteSubmit({ onOpenChange });
+
+  const handleNext = async (stepData: Partial<OnboardingData>) => {
+    const updatedData = { ...formData, ...stepData };
+    setFormData(updatedData);
+
+    if (currentStep === TOTAL_STEPS) {
+      await handleSubmit(updatedData);
+    } else {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const renderStep = () => {
+    const commonProps = {
+      onNext: handleNext,
+      onBack: handleBack,
+      loading,
+      data: formData,
+    };
+
+    switch (currentStep) {
+      case 1:
+        return <InviteStep1 {...commonProps} />;
+      case 2:
+        return <InviteStep2 {...commonProps} />;
+      case 3:
+        return <InviteStep3 {...commonProps} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(value) => {
+      // Prevent closing the modal
+      if (!value) return;
+      if (onOpenChange) onOpenChange(value);
+    }}>
+      <DialogContent className="sm:max-w-[600px] h-[500px] p-0 [&>button]:hidden">
+        <div className="p-6 h-full flex flex-col">
+          <DialogHeader>
+            <div className="space-y-4">
+              <OnboardingProgress currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+              {renderStep()}
+            </div>
+          </DialogHeader>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

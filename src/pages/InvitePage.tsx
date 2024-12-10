@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { InviteModal } from "@/components/invite/InviteModal";
 
 export default function InvitePage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,10 +57,10 @@ export default function InvitePage() {
           } else {
             // If emails don't match, sign out current user
             await supabase.auth.signOut();
-            setShowOnboarding(true);
+            setShowInviteModal(true);
           }
         } else {
-          setShowOnboarding(true);
+          setShowInviteModal(true);
         }
       } catch (error: any) {
         console.error("Error handling invitation:", error);
@@ -84,8 +84,8 @@ export default function InvitePage() {
 
   return (
     <div>
-      {showOnboarding && (
-        <OnboardingModal
+      {showInviteModal && (
+        <InviteModal
           open={true}
           onOpenChange={() => {}}
         />
