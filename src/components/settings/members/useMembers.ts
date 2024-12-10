@@ -1,20 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Member } from "./types";
+import { Member, WorkspaceMember } from "./types";
 import { useToast } from "@/hooks/use-toast";
-
-interface ProfileData {
-  first_name: string | null;
-  last_name: string | null;
-  id: string;
-}
-
-interface WorkspaceMember {
-  user_id: string;
-  role: string;
-  last_active: string;
-  profiles: ProfileData;
-}
 
 export function useMembers(workspaceId?: string) {
   const { toast } = useToast();
@@ -40,7 +27,8 @@ export function useMembers(workspaceId?: string) {
             id
           )
         `)
-        .eq('workspace_id', workspaceId);
+        .eq('workspace_id', workspaceId)
+        .returns<WorkspaceMember[]>();
 
       if (activeMembersError) {
         console.error('Error fetching active members:', activeMembersError);
@@ -66,7 +54,7 @@ export function useMembers(workspaceId?: string) {
       }
 
       // Transform active members data
-      const members: Member[] = (activeMembers as WorkspaceMember[]).map(member => ({
+      const members: Member[] = activeMembers.map(member => ({
         id: member.user_id,
         user_id: member.user_id,
         email: null,
