@@ -4,6 +4,11 @@ import { ProfileForm } from "@/components/profile/ProfileForm";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
+import { Separator } from "@/components/ui/separator";
+import { DataExport } from "@/components/gdpr/DataExport";
+import { AccountDeletion } from "@/components/gdpr/AccountDeletion";
+import { PrivacyPolicy } from "@/components/gdpr/PrivacyPolicy";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AccountSettings() {
   const [loading, setLoading] = useState(false);
@@ -94,16 +99,47 @@ export default function AccountSettings() {
   }
 
   return (
-    <div className="max-w-xl mx-auto py-8 px-4">
+    <div className="max-w-4xl mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-8">Account Settings</h1>
-      <div className="bg-white p-6 rounded-lg border">
-        <ProfileForm
-          loading={loading}
-          profile={profile}
-          userEmail={session?.email || ''}
-          onSubmit={handleSubmit}
-        />
-      </div>
+      
+      <Tabs defaultValue="profile" className="space-y-8">
+        <TabsList>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="privacy">Privacy & Data</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-8">
+          <div className="bg-white p-6 rounded-lg border">
+            <ProfileForm
+              loading={loading}
+              profile={profile}
+              userEmail={session?.email || ''}
+              onSubmit={handleSubmit}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="privacy" className="space-y-8">
+          <div className="bg-white p-6 rounded-lg border">
+            <h2 className="text-xl font-semibold mb-6">Privacy & Data Settings</h2>
+            
+            <div className="space-y-8">
+              <DataExport />
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Privacy Policy</h3>
+                <PrivacyPolicy />
+              </div>
+              
+              <Separator />
+              
+              <AccountDeletion />
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
