@@ -67,14 +67,14 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
       // Create the user profile
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
+        .insert({
+          id: authData.user.id,
           first_name: data.firstName,
           last_name: data.lastName,
           role: data.role,
           goals: data.goals,
           referral_source: data.referralSource,
-        })
-        .eq('id', authData.user.id);
+        });
 
       if (profileError) throw profileError;
 
