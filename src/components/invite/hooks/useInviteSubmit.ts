@@ -49,7 +49,7 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         throw new Error("No valid invitation found. Please request a new invitation.");
       }
 
-      // Step 1: Create the auth account
+      // Step 1: Create the auth account with auto-confirm disabled
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
         password: data.password,
@@ -58,22 +58,34 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
             first_name: data.firstName,
             last_name: data.lastName,
           },
-        },
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
       });
 
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error("Failed to create user account");
+      if (signUpError) {
+        console.error("Error creating auth account:", signUpError);
+        throw signUpError;
+      }
+
+      if (!authData.user) {
+        console.error("No user data returned");
+        throw new Error("Failed to create user account");
+      }
 
       console.log("Auth account created:", authData.user.id);
 
-      // Step 2: Mark email as confirmed (since they came through invitation)
-      const { error: updateAuthError } = await supabase.auth.updateUser({
+      // Step 2: Sign in with the new credentials
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: decodedEmail,
-        data: { email_confirmed_at: new Date().toISOString() }
+        password: data.password,
       });
 
-      if (updateAuthError) throw updateAuthError;
-      console.log("Email marked as confirmed");
+      if (signInError) {
+        console.error("Error signing in:", signInError);
+        throw signInError;
+      }
+
+      console.log("Signed in successfully");
 
       // Step 3: Create the user profile
       const { error: profileError } = await supabase
