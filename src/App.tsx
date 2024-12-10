@@ -1,5 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
-import { AppRoutes } from "./routes/AppRoutes";
+import AppRoutes from "./routes/AppRoutes";
 import { Toaster } from "@/components/ui/toaster";
 import { CookieConsent } from "@/components/gdpr/CookieConsent";
 import "./App.css";
