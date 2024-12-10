@@ -129,8 +129,8 @@ export function OnboardingModal({ isInvitedUser = false }: OnboardingModalProps)
   };
 
   return (
-    <div className="min-h-screen bg-[#FCFCFD] flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-[800px] bg-white rounded-lg border border-gray-100 shadow-sm p-8">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="w-full max-w-[800px] bg-white rounded-lg border border-gray-100 shadow-sm p-8 mx-4">
         <div className="mb-8 text-center">
           <img 
             src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
