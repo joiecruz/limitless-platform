@@ -22,17 +22,24 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
       const workspaceId = params.get('workspace');
       const role = params.get('role');
 
-      if (!email || !workspaceId || !role) {
-        throw new Error("Invalid invitation link");
+      if (!email || !workspaceId || !role || !data.password) {
+        throw new Error("Missing required information");
       }
 
       // Create the auth account
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: decodeURIComponent(email),
         password: data.password,
+        options: {
+          data: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+          },
+        },
       });
 
       if (signUpError) throw signUpError;
+      if (!authData.user) throw new Error("Failed to create user account");
 
       // Create the user profile
       const { error: profileError } = await supabase
@@ -44,7 +51,7 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
           goals: data.goals,
           referral_source: data.referralSource,
         })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('id', authData.user.id);
 
       if (profileError) throw profileError;
 
@@ -53,7 +60,7 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         .from('workspace_members')
         .insert({
           workspace_id: workspaceId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: authData.user.id,
           role: role
         });
 
