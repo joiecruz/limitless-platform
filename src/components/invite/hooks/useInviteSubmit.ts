@@ -55,6 +55,19 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
 
       if (profileError) throw profileError;
 
+      // First verify the invitation exists and is valid
+      const { data: invitation, error: inviteError } = await supabase
+        .from('workspace_invitations')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .eq('email', decodeURIComponent(email))
+        .eq('status', 'pending')
+        .single();
+
+      if (inviteError || !invitation) {
+        throw new Error("Invalid or expired invitation");
+      }
+
       // Add user to workspace
       const { error: memberError } = await supabase
         .from('workspace_members')
@@ -65,6 +78,14 @@ export function useInviteSubmit({ onOpenChange }: UseInviteSubmitProps) {
         });
 
       if (memberError) throw memberError;
+
+      // Update invitation status
+      const { error: updateInviteError } = await supabase
+        .from('workspace_invitations')
+        .update({ status: 'accepted' })
+        .eq('id', invitation.id);
+
+      if (updateInviteError) throw updateInviteError;
 
       if (onOpenChange) {
         onOpenChange(false);
