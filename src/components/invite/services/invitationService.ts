@@ -3,12 +3,27 @@ import { supabase } from "@/integrations/supabase/client";
 export async function verifyInvitation(workspaceId: string, email: string) {
   const decodedEmail = decodeURIComponent(email).toLowerCase();
 
-  console.log("Querying workspace_invitations with:", {
-    workspace_id: workspaceId,
-    email: decodedEmail,
+  console.log("Verifying invitation with parameters:", {
+    raw_email: email,
+    decodedEmail,
+    workspaceId,
     currentTime: new Date().toISOString()
   });
 
+  // First, let's check if the invitation exists without any conditions
+  const { data: allInvitations, error: searchError } = await supabase
+    .from("workspace_invitations")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .eq("email", decodedEmail);
+
+  console.log("All matching invitations:", allInvitations);
+
+  if (searchError) {
+    console.error("Error searching for invitations:", searchError);
+  }
+
+  // Now try the actual verification query
   const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
     .select("*")
@@ -18,7 +33,13 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     .gt("expires_at", new Date().toISOString())
     .single();
 
-  console.log("Raw invitation query result:", { invitation, inviteError });
+  console.log("Invitation verification result:", {
+    invitation,
+    error: inviteError,
+    errorCode: inviteError?.code,
+    errorMessage: inviteError?.message,
+    details: inviteError?.details
+  });
 
   if (inviteError) {
     console.error("Invitation verification failed:", {
