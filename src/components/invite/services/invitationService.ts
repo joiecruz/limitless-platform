@@ -8,7 +8,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     workspaceId
   });
 
-  // First, just check if an invitation exists for this email and workspace
+  // Check if an invitation exists for this email and workspace
   const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
     .select("*")
@@ -27,23 +27,13 @@ export async function verifyInvitation(workspaceId: string, email: string) {
 
   console.log("Found invitation:", invitation);
 
-  // Now check if the invitation is still valid
-  const currentTime = new Date().toISOString();
-  if (invitation.status !== "pending") {
-    console.error("Invitation is not pending:", {
+  // Only check if the invitation has been used
+  if (invitation.status === 'accepted') {
+    console.error("Invitation has already been used:", {
       status: invitation.status,
       email: decodedEmail
     });
     throw new Error("This invitation has already been used. Please request a new invitation.");
-  }
-
-  if (new Date(invitation.expires_at) < new Date()) {
-    console.error("Invitation has expired:", {
-      expiresAt: invitation.expires_at,
-      currentTime,
-      email: decodedEmail
-    });
-    throw new Error("This invitation has expired. Please request a new invitation.");
   }
 
   return { invitation, decodedEmail };
