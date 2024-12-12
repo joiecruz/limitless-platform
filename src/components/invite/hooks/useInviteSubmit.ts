@@ -20,6 +20,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
 
   const handleSubmit = async (data: InviteFormData) => {
     if (!workspaceId || !email) {
+      console.error("Missing required parameters:", { workspaceId, email });
       toast({
         title: "Error",
         description: "Invalid invitation parameters",
@@ -31,10 +32,20 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     setIsLoading(true);
     
     try {
-      console.log("Starting invitation process...");
-      // Make sure to decode the email if it hasn't been decoded yet
+      console.log("Starting invitation process with parameters:", {
+        workspaceId,
+        email,
+        decodedEmail: decodeURIComponent(email).toLowerCase()
+      });
+
       const decodedEmail = decodeURIComponent(email).toLowerCase();
-      console.log("Processing invitation for email:", decodedEmail);
+
+      // Log the exact query we're about to make
+      console.log("Querying workspace_invitations with:", {
+        workspace_id: workspaceId,
+        email: decodedEmail,
+        currentTime: new Date().toISOString()
+      });
 
       // Step 1: Verify the invitation is valid and not expired
       const { data: invitation, error: inviteError } = await supabase
@@ -46,15 +57,24 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
         .gt("expires_at", new Date().toISOString())
         .single();
 
-      console.log("Invitation query result:", { invitation, inviteError });
+      console.log("Raw invitation query result:", { invitation, inviteError });
 
       if (inviteError) {
-        console.error("Invitation verification failed:", inviteError);
+        console.error("Invitation verification failed:", {
+          error: inviteError,
+          errorCode: inviteError.code,
+          errorMessage: inviteError.message,
+          details: inviteError.details
+        });
         throw new Error("No valid invitation found. Please request a new invitation.");
       }
 
       if (!invitation) {
-        console.error("No invitation found or invitation expired");
+        console.error("No invitation found or invitation expired for:", {
+          workspaceId,
+          email: decodedEmail,
+          currentTime: new Date().toISOString()
+        });
         throw new Error("No valid invitation found or invitation has expired. Please request a new invitation.");
       }
 
@@ -67,6 +87,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       });
 
       if (existingUser?.user) {
+        console.log("Existing user found:", existingUser.user.id);
         // User exists, add them to workspace directly
         const { error: memberError } = await supabase
           .from("workspace_members")
@@ -81,14 +102,19 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
             console.log("User is already a member of this workspace");
             throw new Error("You are already a member of this workspace.");
           }
+          console.error("Error adding member:", memberError);
           throw memberError;
         }
 
         // Update invitation status
-        await supabase
+        const { error: updateError } = await supabase
           .from("workspace_invitations")
           .update({ status: "accepted" })
           .eq("id", invitation.id);
+
+        if (updateError) {
+          console.error("Error updating invitation status:", updateError);
+        }
 
         toast({
           title: "Success",
