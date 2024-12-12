@@ -10,7 +10,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     currentTime: new Date().toISOString()
   });
 
-  // First, let's check if the invitation exists without any conditions
+  // First, let's check if the invitation exists and log its details
   const { data: allInvitations, error: searchError } = await supabase
     .from("workspace_invitations")
     .select("*")
@@ -23,14 +23,22 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     console.error("Error searching for invitations:", searchError);
   }
 
-  // Now try the actual verification query
+  // Now let's check the specific conditions (pending status and not expired)
+  const currentTime = new Date().toISOString();
+  console.log("Checking for valid invitation with conditions:", {
+    workspaceId,
+    email: decodedEmail,
+    status: "pending",
+    currentTime,
+  });
+
   const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
     .select("*")
     .eq("workspace_id", workspaceId)
     .eq("email", decodedEmail)
     .eq("status", "pending")
-    .gt("expires_at", new Date().toISOString())
+    .gt("expires_at", currentTime)
     .single();
 
   console.log("Invitation verification result:", {
@@ -38,7 +46,8 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     error: inviteError,
     errorCode: inviteError?.code,
     errorMessage: inviteError?.message,
-    details: inviteError?.details
+    details: inviteError?.details,
+    currentTime
   });
 
   if (inviteError) {
@@ -46,7 +55,13 @@ export async function verifyInvitation(workspaceId: string, email: string) {
       error: inviteError,
       errorCode: inviteError.code,
       errorMessage: inviteError.message,
-      details: inviteError.details
+      details: inviteError.details,
+      conditions: {
+        workspaceId,
+        email: decodedEmail,
+        status: "pending",
+        currentTime
+      }
     });
     throw new Error("No valid invitation found. Please request a new invitation.");
   }
@@ -55,7 +70,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     console.error("No invitation found or invitation expired for:", {
       workspaceId,
       email: decodedEmail,
-      currentTime: new Date().toISOString()
+      currentTime
     });
     throw new Error("No valid invitation found or invitation has expired. Please request a new invitation.");
   }
