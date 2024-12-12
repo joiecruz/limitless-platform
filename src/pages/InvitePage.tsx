@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { InviteModal } from "@/components/invite/InviteModal";
+import { verifyInvitation } from "@/components/invite/services/invitationService";
 
 export default function InvitePage() {
   const [searchParams] = useSearchParams();
@@ -28,10 +29,20 @@ export default function InvitePage() {
           role
         });
 
-        // Check if user is already signed in
+        // First verify if the invitation is valid
+        const { invitation } = await verifyInvitation(workspaceId, email);
+        
+        if (!invitation) {
+          throw new Error("Invalid or expired invitation");
+        }
+
+        console.log("Valid invitation found:", invitation);
+
+        // After verifying invitation, check if user has a session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
+          console.log("User has existing session:", session.user.email);
           // If the signed-in user's email matches the invitation email
           if (session.user.email === decodeURIComponent(email)) {
             // Add user to workspace
