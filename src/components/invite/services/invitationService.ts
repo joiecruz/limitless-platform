@@ -4,7 +4,8 @@ export async function verifyInvitation(workspaceId: string, email: string) {
   const decodedEmail = decodeURIComponent(email).toLowerCase();
 
   console.log("🔍 INVITATION VERIFICATION START", {
-    email: decodedEmail,
+    rawEmail: email,
+    decodedEmail,
     workspaceId,
     timestamp: new Date().toISOString()
   });
@@ -15,18 +16,19 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     .select("*")
     .eq("workspace_id", workspaceId)
     .eq("email", decodedEmail)
-    .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors
+    .maybeSingle();
 
   console.log("📬 INVITATION QUERY RESULT:", {
     invitation,
     error: inviteError,
+    emailUsedInQuery: decodedEmail,
     timestamp: new Date().toISOString()
   });
 
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
       error: inviteError,
-      email: decodedEmail,
+      decodedEmail,
       workspaceId,
       timestamp: new Date().toISOString()
     });
@@ -34,9 +36,16 @@ export async function verifyInvitation(workspaceId: string, email: string) {
   }
 
   if (!invitation) {
+    // Query the table directly to see what invitations exist
+    const { data: allInvites } = await supabase
+      .from("workspace_invitations")
+      .select("*")
+      .eq("workspace_id", workspaceId);
+    
     console.error("❌ NO INVITATION FOUND:", {
-      email: decodedEmail,
+      decodedEmail,
       workspaceId,
+      existingInvites: allInvites,
       timestamp: new Date().toISOString()
     });
     throw new Error("No invitation found for this email address. Please request a new invitation.");
@@ -46,7 +55,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
   if (invitation.status === 'accepted') {
     console.error("❌ INVITATION ALREADY USED:", {
       status: invitation.status,
-      email: decodedEmail,
+      decodedEmail,
       timestamp: new Date().toISOString()
     });
     throw new Error("This invitation has already been used. Please request a new invitation.");
