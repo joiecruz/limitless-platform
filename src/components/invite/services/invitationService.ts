@@ -37,8 +37,6 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     .select("*")
     .eq("workspace_id", workspaceId)
     .eq("email", decodedEmail)
-    .eq("status", "pending")
-    .gt("expires_at", currentTime)
     .single();
 
   console.log("Invitation verification result:", {
@@ -67,12 +65,22 @@ export async function verifyInvitation(workspaceId: string, email: string) {
   }
 
   if (!invitation) {
-    console.error("No invitation found or invitation expired for:", {
+    console.error("No invitation found for:", {
       workspaceId,
       email: decodedEmail,
       currentTime
     });
-    throw new Error("No valid invitation found or invitation has expired. Please request a new invitation.");
+    throw new Error("No valid invitation found. Please request a new invitation.");
+  }
+
+  // After finding the invitation, then check if it's valid
+  if (invitation.status !== "pending" || new Date(invitation.expires_at) < new Date()) {
+    console.error("Invitation is not valid:", {
+      status: invitation.status,
+      expiresAt: invitation.expires_at,
+      currentTime
+    });
+    throw new Error("This invitation has expired or is no longer valid. Please request a new invitation.");
   }
 
   return { invitation, decodedEmail };
