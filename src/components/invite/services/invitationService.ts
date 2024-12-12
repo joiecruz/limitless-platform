@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export async function verifyInvitation(workspaceId: string, email: string) {
   const decodedEmail = decodeURIComponent(email).toLowerCase();
 
-  console.log("Starting invitation verification for:", {
+  console.log("🔍 INVITATION VERIFICATION START", {
     email: decodedEmail,
     workspaceId,
     timestamp: new Date().toISOString()
@@ -17,14 +17,14 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     .eq("email", decodedEmail)
     .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors
 
-  console.log("Invitation query result:", {
+  console.log("📬 INVITATION QUERY RESULT:", {
     invitation,
     error: inviteError,
     timestamp: new Date().toISOString()
   });
 
   if (inviteError) {
-    console.error("Error querying invitation:", {
+    console.error("❌ INVITATION ERROR:", {
       error: inviteError,
       email: decodedEmail,
       workspaceId,
@@ -34,7 +34,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
   }
 
   if (!invitation) {
-    console.error("No invitation found:", {
+    console.error("❌ NO INVITATION FOUND:", {
       email: decodedEmail,
       workspaceId,
       timestamp: new Date().toISOString()
@@ -44,7 +44,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
 
   // Only check if the invitation has been used
   if (invitation.status === 'accepted') {
-    console.error("Invitation already used:", {
+    console.error("❌ INVITATION ALREADY USED:", {
       status: invitation.status,
       email: decodedEmail,
       timestamp: new Date().toISOString()
@@ -52,7 +52,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     throw new Error("This invitation has already been used. Please request a new invitation.");
   }
 
-  console.log("Valid invitation found:", {
+  console.log("✅ VALID INVITATION FOUND:", {
     invitation,
     timestamp: new Date().toISOString()
   });
@@ -61,7 +61,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
 }
 
 export async function updateInvitationStatus(invitationId: string, status: 'accepted' | 'rejected') {
-  console.log("Updating invitation status:", {
+  console.log("📝 UPDATING INVITATION STATUS:", {
     invitationId,
     status,
     timestamp: new Date().toISOString()
@@ -73,7 +73,7 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
     .eq("id", invitationId);
 
   if (updateError) {
-    console.error("Error updating invitation status:", {
+    console.error("❌ INVITATION UPDATE ERROR:", {
       error: updateError,
       invitationId,
       status,
@@ -82,7 +82,7 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
     throw updateError;
   }
 
-  console.log("Invitation status updated successfully:", {
+  console.log("✅ INVITATION STATUS UPDATED:", {
     invitationId,
     status,
     timestamp: new Date().toISOString()
