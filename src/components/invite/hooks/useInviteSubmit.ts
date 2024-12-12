@@ -33,28 +33,73 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     try {
       console.log("Starting invitation process...");
       // Make sure to decode the email if it hasn't been decoded yet
-      const decodedEmail = decodeURIComponent(email);
+      const decodedEmail = decodeURIComponent(email).toLowerCase();
       console.log("Processing invitation for email:", decodedEmail);
 
-      // Step 1: Verify the invitation is valid
+      // Step 1: Verify the invitation is valid and not expired
       const { data: invitation, error: inviteError } = await supabase
         .from("workspace_invitations")
         .select("*")
         .eq("workspace_id", workspaceId)
         .eq("email", decodedEmail)
         .eq("status", "pending")
+        .gt("expires_at", new Date().toISOString())
         .single();
 
       console.log("Invitation query result:", { invitation, inviteError });
 
-      if (inviteError || !invitation) {
+      if (inviteError) {
         console.error("Invitation verification failed:", inviteError);
         throw new Error("No valid invitation found. Please request a new invitation.");
       }
 
+      if (!invitation) {
+        console.error("No invitation found or invitation expired");
+        throw new Error("No valid invitation found or invitation has expired. Please request a new invitation.");
+      }
+
       console.log("Valid invitation found:", invitation);
 
-      // Step 2: Create the auth account
+      // Check if user already exists with this email
+      const { data: existingUser, error: existingUserError } = await supabase.auth.signInWithPassword({
+        email: decodedEmail,
+        password: data.password,
+      });
+
+      if (existingUser?.user) {
+        // User exists, add them to workspace directly
+        const { error: memberError } = await supabase
+          .from("workspace_members")
+          .insert({
+            workspace_id: workspaceId,
+            user_id: existingUser.user.id,
+            role: invitation.role
+          });
+
+        if (memberError) {
+          if (memberError.code === '23505') { // Unique violation
+            console.log("User is already a member of this workspace");
+            throw new Error("You are already a member of this workspace.");
+          }
+          throw memberError;
+        }
+
+        // Update invitation status
+        await supabase
+          .from("workspace_invitations")
+          .update({ status: "accepted" })
+          .eq("id", invitation.id);
+
+        toast({
+          title: "Success",
+          description: "You have successfully joined the workspace.",
+        });
+
+        navigate("/dashboard");
+        return;
+      }
+
+      // Create new user account
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
         password: data.password,
@@ -82,29 +127,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
 
       console.log("Auth account created:", authData.user.id);
 
-      // Wait a moment for the account to be fully created
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Step 3: Sign in with the new credentials
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: decodedEmail,
-        password: data.password,
-      });
-
-      console.log("Sign in attempt result:", { signInData, signInError });
-
-      if (signInError) {
-        console.error("Error signing in:", signInError);
-        throw signInError;
-      }
-
-      if (!signInData.user) {
-        throw new Error("Failed to sign in after account creation");
-      }
-
-      console.log("Signed in successfully");
-
-      // Step 4: Add user to workspace
+      // Add user to workspace
       const { error: memberError } = await supabase
         .from("workspace_members")
         .insert({
@@ -120,7 +143,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
 
       console.log("Added to workspace successfully");
 
-      // Step 5: Update invitation status
+      // Update invitation status
       const { error: updateInviteError } = await supabase
         .from("workspace_invitations")
         .update({ status: "accepted" })
