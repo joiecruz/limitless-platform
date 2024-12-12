@@ -32,9 +32,9 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     
     try {
       console.log("Starting invitation process...");
-      // The email is already encoded in the URL, so we need to decode it
+      // Make sure to decode the email if it hasn't been decoded yet
       const decodedEmail = decodeURIComponent(email);
-      console.log("Decoded email:", decodedEmail);
+      console.log("Processing invitation for email:", decodedEmail);
 
       // Step 1: Verify the invitation is valid
       const { data: invitation, error: inviteError } = await supabase

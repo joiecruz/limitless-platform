@@ -22,6 +22,12 @@ export default function InvitePage() {
           throw new Error("Invalid invitation link");
         }
 
+        console.log("Handling invitation for:", {
+          workspaceId,
+          email: decodeURIComponent(email),
+          role
+        });
+
         // Check if user is already signed in
         const { data: { session } } = await supabase.auth.getSession();
         
