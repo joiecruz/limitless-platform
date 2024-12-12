@@ -53,5 +53,5 @@ export async function createNewUser(email: string, password: string, userData: U
     throw new Error("Failed to create user account");
   }
 
-  return authData;
+  return { data: authData, error: null };
 }

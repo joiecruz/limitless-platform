@@ -35,13 +35,13 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       console.log("Valid invitation found:", invitation);
 
       // Step 2: Check if user exists
-      const existingUser = await checkExistingUser(decodedEmail, data.password);
+      const { data: authData, error: signInError } = await checkExistingUser(decodedEmail, data.password);
 
-      if (existingUser?.user) {
-        console.log("Existing user found:", existingUser.user.id);
+      if (authData?.session) {
+        console.log("Existing user found:", authData.user.id);
         
         // Add existing user to workspace
-        await addUserToWorkspace(existingUser.user.id, workspaceId, invitation.role);
+        await addUserToWorkspace(authData.user.id, workspaceId, invitation.role);
         
         // Update invitation status
         await updateInvitationStatus(invitation.id, "accepted");
@@ -56,11 +56,16 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       }
 
       // Step 3: Create new user
-      const authData = await createNewUser(decodedEmail, data.password, data);
-      console.log("Auth account created:", authData.user.id);
+      const { data: newAuthData, error: signUpError } = await createNewUser(decodedEmail, data.password, data);
+      
+      if (signUpError || !newAuthData.user) {
+        throw new Error(signUpError?.message || "Failed to create user account");
+      }
+      
+      console.log("Auth account created:", newAuthData.user.id);
 
       // Step 4: Add new user to workspace
-      await addUserToWorkspace(authData.user.id, workspaceId, invitation.role);
+      await addUserToWorkspace(newAuthData.user.id, workspaceId, invitation.role);
       console.log("Added to workspace successfully");
 
       // Step 5: Update invitation status
