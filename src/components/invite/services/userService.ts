@@ -28,19 +28,10 @@ export async function addUserToWorkspace(userId: string, workspaceId: string, ro
 }
 
 export async function createNewUser(email: string, password: string, userData: UserData) {
+  // First create the auth account
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
-    options: {
-      data: {
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-        role: userData.role,
-        company_size: userData.companySize,
-        referral_source: userData.referralSource,
-        goals: userData.goals
-      }
-    }
   });
 
   if (signUpError) {
@@ -51,6 +42,24 @@ export async function createNewUser(email: string, password: string, userData: U
   if (!authData.user) {
     console.error("No user data returned from signup");
     throw new Error("Failed to create user account");
+  }
+
+  // Then update the profile with the user data
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update({
+      first_name: userData.firstName,
+      last_name: userData.lastName,
+      role: userData.role,
+      company_size: userData.companySize,
+      referral_source: userData.referralSource,
+      goals: userData.goals
+    })
+    .eq('id', authData.user.id);
+
+  if (profileError) {
+    console.error("Error updating profile:", profileError);
+    throw profileError;
   }
 
   return { data: authData, error: null };
