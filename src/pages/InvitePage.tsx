@@ -17,16 +17,14 @@ export default function InvitePage() {
       try {
         const workspaceId = searchParams.get("workspace");
         const email = searchParams.get("email");
-        const role = searchParams.get("role");
 
-        if (!workspaceId || !email || !role) {
+        if (!workspaceId || !email) {
           throw new Error("Invalid invitation link");
         }
 
         console.log("Handling invitation for:", {
           workspaceId,
           email: decodeURIComponent(email),
-          role
         });
 
         // First verify if the invitation is valid
@@ -38,11 +36,12 @@ export default function InvitePage() {
 
         console.log("Valid invitation found:", invitation);
 
-        // After verifying invitation, check if user has a session
+        // Check if user has a session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
           console.log("User has existing session:", session.user.email);
+          
           // If the signed-in user's email matches the invitation email
           if (session.user.email === decodeURIComponent(email)) {
             // Add user to workspace
@@ -51,7 +50,7 @@ export default function InvitePage() {
               .insert({
                 workspace_id: workspaceId,
                 user_id: session.user.id,
-                role: role
+                role: invitation.role
               });
 
             if (memberError) {
@@ -65,6 +64,12 @@ export default function InvitePage() {
               }
               throw memberError;
             }
+
+            // Update invitation status
+            await supabase
+              .from("workspace_invitations")
+              .update({ status: "accepted" })
+              .eq("id", invitation.id);
 
             toast({
               title: "Welcome!",
