@@ -1,42 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export async function verifyInvitation(workspaceId: string, email: string) {
-  const decodedEmail = decodeURIComponent(email).toLowerCase();
-
-  console.log("🔍 INVITATION VERIFICATION START", {
-    rawEmail: email,
-    decodedEmail,
-    workspaceId,
-    timestamp: new Date().toISOString()
-  });
-
-  // Get current session to verify email
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+export async function verifyInvitation(workspaceId: string) {
+  const { data: { session } } = await supabase.auth.getSession();
   
-  if (sessionError) {
-    console.error("❌ SESSION ERROR:", {
-      error: sessionError,
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("Authentication error. Please try again.");
-  }
-
   if (!session?.user?.email) {
-    console.error("❌ NO SESSION EMAIL:", {
-      timestamp: new Date().toISOString()
-    });
     throw new Error("No authenticated user found. Please sign in again.");
   }
 
-  // Verify that the invitation email matches the authenticated user's email
-  if (session.user.email.toLowerCase() !== decodedEmail) {
-    console.error("❌ EMAIL MISMATCH:", {
-      invitationEmail: decodedEmail,
-      userEmail: session.user.email.toLowerCase(),
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("This invitation was sent to a different email address.");
-  }
+  const decodedEmail = session.user.email.toLowerCase();
 
   // Check if an invitation exists for this email and workspace
   const { data: invitation, error: inviteError } = await supabase
@@ -46,82 +17,27 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     .eq("email", decodedEmail)
     .maybeSingle();
 
-  console.log("📬 INVITATION QUERY RESULT:", {
-    invitation,
-    error: inviteError,
-    emailUsedInQuery: decodedEmail,
-    timestamp: new Date().toISOString()
-  });
-
   if (inviteError) {
-    console.error("❌ INVITATION ERROR:", {
-      error: inviteError,
-      decodedEmail,
-      workspaceId,
-      timestamp: new Date().toISOString()
-    });
+    console.error("Error verifying invitation:", inviteError);
     throw new Error("Failed to verify invitation. Please try again.");
   }
 
   if (!invitation) {
-    // Query the table directly to see what invitations exist
-    const { data: allInvites } = await supabase
-      .from("workspace_invitations")
-      .select("*")
-      .eq("workspace_id", workspaceId);
-    
-    console.error("❌ NO INVITATION FOUND:", {
-      decodedEmail,
-      workspaceId,
-      existingInvites: allInvites,
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("No invitation found for this email address. Please request a new invitation.");
+    throw new Error("No invitation found for this email address.");
   }
 
-  // Only check if the invitation has been used
   if (invitation.status === 'accepted') {
-    console.error("❌ INVITATION ALREADY USED:", {
-      status: invitation.status,
-      decodedEmail,
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("This invitation has already been used. Please request a new invitation.");
+    throw new Error("This invitation has already been used.");
   }
-
-  console.log("✅ VALID INVITATION FOUND:", {
-    invitation,
-    timestamp: new Date().toISOString()
-  });
 
   return { invitation, decodedEmail };
 }
 
 export async function updateInvitationStatus(invitationId: string, status: 'accepted' | 'rejected') {
-  console.log("📝 UPDATING INVITATION STATUS:", {
-    invitationId,
-    status,
-    timestamp: new Date().toISOString()
-  });
-
-  const { error: updateError } = await supabase
+  const { error } = await supabase
     .from("workspace_invitations")
     .update({ status })
     .eq("id", invitationId);
 
-  if (updateError) {
-    console.error("❌ INVITATION UPDATE ERROR:", {
-      error: updateError,
-      invitationId,
-      status,
-      timestamp: new Date().toISOString()
-    });
-    throw updateError;
-  }
-
-  console.log("✅ INVITATION STATUS UPDATED:", {
-    invitationId,
-    status,
-    timestamp: new Date().toISOString()
-  });
+  if (error) throw error;
 }

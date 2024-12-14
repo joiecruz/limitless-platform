@@ -1,7 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import { UserData } from "../types";
 
-export async function checkExistingUser(email: string, password: string) {
+interface AuthResponse {
+  data: {
+    user: any;
+    session: any;
+  } | null;
+  error: any;
+}
+
+export async function checkExistingUser(email: string, password: string): Promise<AuthResponse> {
   return await supabase.auth.signInWithPassword({
     email,
     password,
@@ -18,17 +26,15 @@ export async function addUserToWorkspace(userId: string, workspaceId: string, ro
     });
 
   if (memberError) {
-    if (memberError.code === '23505') { // Unique violation
-      console.log("User is already a member of this workspace");
+    if (memberError.code === '23505') {
       throw new Error("You are already a member of this workspace.");
     }
-    console.error("Error adding member:", memberError);
     throw memberError;
   }
 }
 
-export async function createNewUser(email: string, password: string, userData: UserData) {
-  const { data: authData, error: signUpError } = await supabase.auth.signUp({
+export async function createNewUser(email: string, password: string, userData: UserData): Promise<AuthResponse> {
+  return await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -42,16 +48,4 @@ export async function createNewUser(email: string, password: string, userData: U
       }
     }
   });
-
-  if (signUpError) {
-    console.error("Error creating auth account:", signUpError);
-    throw signUpError;
-  }
-
-  if (!authData.user) {
-    console.error("No user data returned from signup");
-    throw new Error("Failed to create user account");
-  }
-
-  return { data: authData, error: null };
 }

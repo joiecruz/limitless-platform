@@ -16,34 +16,24 @@ export default function InvitePage() {
     const handleInvitation = async () => {
       try {
         const workspaceId = searchParams.get("workspace");
-        const email = searchParams.get("email");
 
-        if (!workspaceId || !email) {
+        if (!workspaceId) {
           throw new Error("Invalid invitation link");
         }
 
-        console.log("Handling invitation for:", {
-          workspaceId,
-          email: decodeURIComponent(email),
-        });
-
         // First verify if the invitation is valid
-        const { invitation } = await verifyInvitation(workspaceId, email);
+        const { invitation } = await verifyInvitation(workspaceId);
         
         if (!invitation) {
           throw new Error("Invalid or expired invitation");
         }
 
-        console.log("Valid invitation found:", invitation);
-
         // Check if user has a session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          console.log("User has existing session:", session.user.email);
-          
           // If the signed-in user's email matches the invitation email
-          if (session.user.email === decodeURIComponent(email)) {
+          if (session.user.email?.toLowerCase() === invitation.email.toLowerCase()) {
             // Add user to workspace
             const { error: memberError } = await supabase
               .from("workspace_members")
@@ -54,7 +44,7 @@ export default function InvitePage() {
               });
 
             if (memberError) {
-              if (memberError.code === '23505') { // Unique violation
+              if (memberError.code === '23505') {
                 toast({
                   title: "Already a member",
                   description: "You are already a member of this workspace.",
@@ -101,7 +91,7 @@ export default function InvitePage() {
   }, [searchParams, navigate, toast]);
 
   if (loading) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   return (
