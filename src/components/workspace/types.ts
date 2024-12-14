@@ -1,7 +1,7 @@
 export interface Workspace {
   id: string;
-  name: string | null;
-  slug: string | null;
+  name: string;
+  slug: string;
 }
 
 export interface WorkspaceMemberWithWorkspace {
