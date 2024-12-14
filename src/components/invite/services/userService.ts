@@ -28,10 +28,16 @@ export async function addUserToWorkspace(userId: string, workspaceId: string, ro
 }
 
 export async function createNewUser(email: string, password: string, userData: UserData) {
-  // First create the auth account
+  // Create the auth account with email confirmation required
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/dashboard`,
+      data: {
+        email_confirmed: false
+      }
+    }
   });
 
   if (signUpError) {
@@ -44,7 +50,7 @@ export async function createNewUser(email: string, password: string, userData: U
     throw new Error("Failed to create user account");
   }
 
-  // Then update the profile with the user data
+  // Update the profile with the user data
   const { error: profileError } = await supabase
     .from('profiles')
     .update({
