@@ -10,34 +10,6 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     timestamp: new Date().toISOString()
   });
 
-  // Get current session to verify email
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  
-  if (sessionError) {
-    console.error("❌ SESSION ERROR:", {
-      error: sessionError,
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("Authentication error. Please try again.");
-  }
-
-  if (!session?.user?.email) {
-    console.error("❌ NO SESSION EMAIL:", {
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("No authenticated user found. Please sign in again.");
-  }
-
-  // Verify that the invitation email matches the authenticated user's email
-  if (session.user.email.toLowerCase() !== decodedEmail) {
-    console.error("❌ EMAIL MISMATCH:", {
-      invitationEmail: decodedEmail,
-      userEmail: session.user.email.toLowerCase(),
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("This invitation was sent to a different email address.");
-  }
-
   // Check if an invitation exists for this email and workspace
   const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
