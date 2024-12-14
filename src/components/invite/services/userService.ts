@@ -4,6 +4,8 @@ import { UserData } from "../types";
 interface CreateUserResponse {
   success: boolean;
   error?: string;
+  user?: any;
+  session?: any;
 }
 
 export async function createNewUser(email: string, password: string, userData: UserData): Promise<CreateUserResponse> {
@@ -59,7 +61,9 @@ export async function createNewUser(email: string, password: string, userData: U
     }
 
     return {
-      success: true
+      success: true,
+      user: authData.user,
+      session: authData.session
     };
   } catch (error: any) {
     console.error('Unexpected error during user creation:', error);
@@ -67,5 +71,27 @@ export async function createNewUser(email: string, password: string, userData: U
       success: false,
       error: error.message || 'An unexpected error occurred'
     };
+  }
+}
+
+export async function checkExistingUser(email: string, password: string) {
+  return await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+}
+
+export async function addUserToWorkspace(userId: string, workspaceId: string, role: string) {
+  const { error } = await supabase
+    .from('workspace_members')
+    .insert({
+      user_id: userId,
+      workspace_id: workspaceId,
+      role: role
+    });
+
+  if (error) {
+    console.error('Error adding user to workspace:', error);
+    throw new Error(error.message);
   }
 }
