@@ -1,99 +1,69 @@
 import { supabase } from "@/integrations/supabase/client";
+import { InviteFormData } from "../types";
+import { createNewUser } from "./userService";
 
-export async function verifyInvitation(workspaceId: string, email: string) {
-  const decodedEmail = decodeURIComponent(email).toLowerCase();
+export async function verifyInvitation(invitationId: string) {
+  const { data: invitation, error } = await supabase
+    .from('workspace_invitations')
+    .select('*')
+    .eq('id', invitationId)
+    .eq('status', 'pending')
+    .single();
 
-  console.log("🔍 INVITATION VERIFICATION START", {
-    rawEmail: email,
-    decodedEmail,
-    workspaceId,
-    timestamp: new Date().toISOString()
-  });
-
-  // Check if an invitation exists for this email and workspace
-  const { data: invitation, error: inviteError } = await supabase
-    .from("workspace_invitations")
-    .select("*")
-    .eq("workspace_id", workspaceId)
-    .eq("email", decodedEmail)
-    .maybeSingle();
-
-  console.log("📬 INVITATION QUERY RESULT:", {
-    invitation,
-    error: inviteError,
-    emailUsedInQuery: decodedEmail,
-    timestamp: new Date().toISOString()
-  });
-
-  if (inviteError) {
-    console.error("❌ INVITATION ERROR:", {
-      error: inviteError,
-      decodedEmail,
-      workspaceId,
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("Failed to verify invitation. Please try again.");
+  if (error) {
+    console.error('Error verifying invitation:', error);
+    throw new Error('Invalid or expired invitation');
   }
 
   if (!invitation) {
-    // Query the table directly to see what invitations exist
-    const { data: allInvites } = await supabase
-      .from("workspace_invitations")
-      .select("*")
-      .eq("workspace_id", workspaceId);
-    
-    console.error("❌ NO INVITATION FOUND:", {
-      decodedEmail,
-      workspaceId,
-      existingInvites: allInvites,
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("No invitation found for this email address. Please request a new invitation.");
+    throw new Error('Invitation not found or already used');
   }
 
-  // Only check if the invitation has been used
-  if (invitation.status === 'accepted') {
-    console.error("❌ INVITATION ALREADY USED:", {
-      status: invitation.status,
-      decodedEmail,
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("This invitation has already been used. Please request a new invitation.");
-  }
-
-  console.log("✅ VALID INVITATION FOUND:", {
-    invitation,
-    timestamp: new Date().toISOString()
-  });
-
-  return { invitation, decodedEmail };
+  return invitation;
 }
 
-export async function updateInvitationStatus(invitationId: string, status: 'accepted' | 'rejected') {
-  console.log("📝 UPDATING INVITATION STATUS:", {
-    invitationId,
-    status,
-    timestamp: new Date().toISOString()
-  });
+export async function acceptInvitation(
+  invitationId: string,
+  formData: InviteFormData
+) {
+  try {
+    const invitation = await verifyInvitation(invitationId);
 
-  const { error: updateError } = await supabase
-    .from("workspace_invitations")
-    .update({ status })
-    .eq("id", invitationId);
+    // Create the user account
+    const createUserResult = await createNewUser(
+      invitation.email,
+      formData.password,
+      {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        role: formData.role,
+        companySize: formData.companySize,
+        referralSource: formData.referralSource,
+        goals: formData.goals
+      }
+    );
 
-  if (updateError) {
-    console.error("❌ INVITATION UPDATE ERROR:", {
-      error: updateError,
-      invitationId,
-      status,
-      timestamp: new Date().toISOString()
-    });
-    throw updateError;
+    if (!createUserResult.success) {
+      throw new Error(createUserResult.error || 'Failed to create user account');
+    }
+
+    // Update invitation status
+    const { error: updateError } = await supabase
+      .from('workspace_invitations')
+      .update({ status: 'accepted' })
+      .eq('id', invitationId);
+
+    if (updateError) {
+      console.error('Error updating invitation status:', updateError);
+      throw new Error('Failed to update invitation status');
+    }
+
+    return {
+      success: true,
+      message: 'Please check your email to confirm your account before signing in.'
+    };
+  } catch (error: any) {
+    console.error('Error accepting invitation:', error);
+    throw error;
   }
-
-  console.log("✅ INVITATION STATUS UPDATED:", {
-    invitationId,
-    status,
-    timestamp: new Date().toISOString()
-  });
 }
