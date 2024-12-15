@@ -20,15 +20,22 @@ export default function VerifyEmail() {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN') {
-        console.log('User signed in:', session?.user.id);
+      console.log('Auth state changed:', { event, session });
+      
+      if (event === 'SIGNED_IN' && session?.user) {
         try {
           // Check if there's a pending workspace join
           const pendingJoinStr = localStorage.getItem('pendingWorkspaceJoin');
           if (pendingJoinStr) {
             const pendingJoin = JSON.parse(pendingJoinStr);
             console.log('Processing pending workspace join:', pendingJoin);
-            
+
+            // First, verify the session is active
+            const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError || !currentSession) {
+              throw new Error('Invalid session. Please try signing in again.');
+            }
+
             // Add user to workspace with the correct role
             const { error: memberError } = await supabase
               .from("workspace_members")
@@ -47,28 +54,32 @@ export default function VerifyEmail() {
               }
             } else {
               console.log('Successfully added user to workspace');
-            }
 
-            // Update invitation status to accepted
-            if (pendingJoin.invitationId) {
-              const { error: inviteError } = await supabase
-                .from("workspace_invitations")
-                .update({ status: "accepted" })
-                .eq("id", pendingJoin.invitationId);
+              // Only update invitation status if workspace member was created successfully
+              if (pendingJoin.invitationId) {
+                const { error: inviteError } = await supabase
+                  .from("workspace_invitations")
+                  .update({ status: "accepted" })
+                  .eq("id", pendingJoin.invitationId);
 
-              if (inviteError) {
-                console.error('Error updating invitation status:', inviteError);
-                throw inviteError;
+                if (inviteError) {
+                  console.error('Error updating invitation status:', inviteError);
+                  throw inviteError;
+                }
+                console.log('Successfully updated invitation status');
               }
-              console.log('Successfully updated invitation status');
-            }
 
-            // Clear the pending join data
-            localStorage.removeItem('pendingWorkspaceJoin');
-            
-            // Navigate to the workspace dashboard
-            navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
-            return;
+              // Clear the pending join data
+              localStorage.removeItem('pendingWorkspaceJoin');
+              
+              // Navigate to the workspace dashboard
+              toast({
+                title: "Welcome!",
+                description: "You have successfully joined the workspace.",
+              });
+              navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
+              return;
+            }
           }
 
           // If no pending workspace join, navigate to onboarding
@@ -77,9 +88,10 @@ export default function VerifyEmail() {
           console.error('Error handling email verification:', error);
           toast({
             title: "Error",
-            description: "There was an error setting up your workspace. Please try again.",
+            description: error.message || "There was an error setting up your workspace. Please try again.",
             variant: "destructive",
           });
+          navigate('/signin');
         }
       }
     });
@@ -177,4 +189,4 @@ export default function VerifyEmail() {
       </div>
     </div>
   );
-}
+};
