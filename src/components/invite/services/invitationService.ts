@@ -6,15 +6,25 @@ export async function verifyInvitation(token: string) {
     timestamp: new Date().toISOString()
   });
 
-  const { data: invitation, error: inviteError } = await supabase
+  const query = supabase
     .from("workspace_invitations")
     .select("*")
     .eq('magic_link_token', token)
     .single();
 
+  // Log the generated SQL query
+  console.log("🔍 GENERATED QUERY:", {
+    query: query.toSQL(), // This will show the actual SQL being executed
+    timestamp: new Date().toISOString()
+  });
+
+  const { data: invitation, error: inviteError } = await query;
+
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
       error: inviteError,
+      errorCode: inviteError.code,
+      errorMessage: inviteError.message,
       token,
       timestamp: new Date().toISOString()
     });
@@ -55,6 +65,8 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
   if (updateError) {
     console.error("❌ INVITATION UPDATE ERROR:", {
       error: updateError,
+      errorCode: updateError.code,
+      errorMessage: updateError.message,
       invitationId,
       status,
       timestamp: new Date().toISOString()
