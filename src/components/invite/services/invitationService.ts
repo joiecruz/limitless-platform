@@ -10,13 +10,20 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     timestamp: new Date().toISOString()
   });
 
+  // Extract token from URL if present
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+
   // Check if an invitation exists for this email and workspace
   const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
     .select("*")
     .eq("workspace_id", workspaceId)
     .eq("email", decodedEmail)
-    .maybeSingle();
+    .maybeSingle()
+    .headers(token ? {
+      'x-invite-token': token
+    } : {});
 
   console.log("📬 INVITATION QUERY RESULT:", {
     invitation,
