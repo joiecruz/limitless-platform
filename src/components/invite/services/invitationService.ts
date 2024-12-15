@@ -9,12 +9,12 @@ export async function verifyInvitation(token: string) {
   const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
     .select("*")
-    .eq('magic_link_token', token)
-    .limit(1)
-    .maybeSingle()
     .headers({
       'x-invite-token': token
-    });
+    })
+    .eq('magic_link_token', token)
+    .limit(1)
+    .maybeSingle();
 
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
