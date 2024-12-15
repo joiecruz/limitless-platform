@@ -43,8 +43,8 @@ export function useWorkspaces() {
 
         console.log('Raw workspace data:', memberWorkspaces);
         
-        // Transform the response with proper typing
-        const formattedWorkspaces: Workspace[] = (memberWorkspaces || []).map((item: any) => ({
+        // Safely type and transform the response
+        const formattedWorkspaces = (memberWorkspaces as unknown as WorkspaceMemberWithWorkspace[]).map(item => ({
           id: item.workspace.id,
           name: item.workspace.name || 'Unnamed Workspace',
           slug: item.workspace.slug || 'unnamed'
