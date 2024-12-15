@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { verifyInvitation } from "../services/invitationService";
+import { verifyInvitation, updateInvitationStatus } from "../services/invitationService";
 import { InviteFormData } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,7 +28,11 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       const { invitation, decodedEmail } = await verifyInvitation(workspaceId, email);
       console.log("Valid invitation found:", invitation);
 
-      // Step 2: Sign up user with workspace context in redirectTo
+      // Step 2: Update invitation status to accepted
+      await updateInvitationStatus(invitation.id, 'accepted');
+      console.log("Invitation status updated to accepted");
+
+      // Step 3: Sign up user with workspace context in redirectTo
       const redirectUrl = new URL("/auth/callback", window.location.origin);
       redirectUrl.searchParams.append("workspace", workspaceId);
       redirectUrl.searchParams.append("invitation", invitation.id);
