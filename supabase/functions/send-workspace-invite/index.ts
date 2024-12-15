@@ -22,8 +22,11 @@ interface InviteRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("📨 Starting invite request handler");
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight request");
     return new Response(null, {
       headers: corsHeaders,
     });
@@ -36,19 +39,26 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Validate required environment variables
     if (!RESEND_API_KEY || !FROM_EMAIL || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      console.error("Missing required environment variables");
+      console.error("Missing required environment variables:", {
+        hasResendKey: !!RESEND_API_KEY,
+        hasFromEmail: !!FROM_EMAIL,
+        hasSupabaseUrl: !!SUPABASE_URL,
+        hasServiceKey: !!SUPABASE_SERVICE_ROLE_KEY,
+      });
       throw new Error("Server configuration error");
     }
 
-    const { email, workspaceId, workspaceName, inviterName, role, inviterId } = await req.json() as InviteRequest;
+    const requestData = await req.json();
+    console.log("Request payload:", requestData);
 
-    console.log(`📨 Processing invite request:`, {
-      email,
-      workspaceId,
-      workspaceName,
-      role,
-      timestamp: new Date().toISOString(),
-    });
+    const { email, workspaceId, workspaceName, inviterName, role, inviterId } = requestData as InviteRequest;
+
+    if (!email || !workspaceId || !workspaceName || !inviterName || !role || !inviterId) {
+      console.error("Missing required fields in request:", { email, workspaceId, workspaceName, inviterName, role, inviterId });
+      throw new Error("Missing required fields in invitation request");
+    }
+
+    console.log(`📨 Processing invite request for email: ${email}`);
 
     // Initialize Supabase client with service role key
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -87,7 +97,7 @@ const handler = async (req: Request): Promise<Response> => {
     const magicLinkToken = invitation.magic_link_token;
 
     // Send the email invitation with the magic link token
-    const res = await fetch("https://api.resend.com/emails", {
+    const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -184,16 +194,16 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    if (!res.ok) {
-      const error = await res.text();
+    if (!emailRes.ok) {
+      const error = await emailRes.text();
       console.error("❌ Resend API error:", error);
       throw new Error(error);
     }
 
-    const data = await res.json();
-    console.log("✉️ Email sent successfully:", data);
+    const emailData = await emailRes.json();
+    console.log("✉️ Email sent successfully:", emailData);
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify(emailData), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
