@@ -45,13 +45,34 @@ const App = () => {
           return;
         }
 
-        console.log("Initial session found:", initialSession);
-        setSession(initialSession);
+        // Refresh token if it's close to expiring
+        const expiresAt = initialSession.expires_at;
+        const timeNow = Math.floor(Date.now() / 1000);
+        const timeUntilExpiry = expiresAt - timeNow;
+        
+        if (timeUntilExpiry < 60) { // If less than 1 minute until expiry
+          console.log("Session close to expiry, refreshing...");
+          const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+          
+          if (refreshError) {
+            console.error("Error refreshing session:", refreshError);
+            setSession(null);
+            localStorage.clear();
+            await supabase.auth.signOut();
+            return;
+          }
+          
+          console.log("Session refreshed successfully");
+          setSession(refreshedSession);
+        } else {
+          console.log("Initial session found and valid");
+          setSession(initialSession);
+        }
       } catch (error) {
         console.error("Error in getInitialSession:", error);
         // Clear session and storage on error
         setSession(null);
-        localStorage.clear(); // Clear all localStorage
+        localStorage.clear();
         await supabase.auth.signOut();
       } finally {
         setLoading(false);
@@ -66,10 +87,9 @@ const App = () => {
       
       if (event === 'SIGNED_OUT') {
         console.log("User signed out - Clearing session and cache");
-        // Clear session and cached data
         setSession(null);
         queryClient.clear();
-        localStorage.clear(); // Clear all localStorage
+        localStorage.clear();
         toast({
           title: "Signed out",
           description: "You have been signed out successfully.",
@@ -90,12 +110,37 @@ const App = () => {
         return;
       }
 
-      // Update session for other events
-      setSession(currentSession);
+      // Handle session expired
+      if (event === 'USER_DELETED' || event === 'USER_UPDATED') {
+        const { data: { session: newSession }, error } = await supabase.auth.getSession();
+        if (error || !newSession) {
+          console.log("Session invalid after user update - signing out");
+          setSession(null);
+          queryClient.clear();
+          localStorage.clear();
+          await supabase.auth.signOut();
+          return;
+        }
+        setSession(newSession);
+      }
     });
+
+    // Set up periodic token refresh
+    const refreshInterval = setInterval(async () => {
+      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+      if (currentSession) {
+        const { data, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          console.error("Error refreshing token:", refreshError);
+        } else {
+          console.log("Token refreshed successfully");
+        }
+      }
+    }, 4 * 60 * 1000); // Refresh every 4 minutes
 
     return () => {
       subscription.unsubscribe();
+      clearInterval(refreshInterval);
     };
   }, [toast]);
 
