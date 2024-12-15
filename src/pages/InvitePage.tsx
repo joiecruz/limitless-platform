@@ -15,20 +15,16 @@ export default function InvitePage() {
   useEffect(() => {
     const handleInvitation = async () => {
       try {
-        const workspaceId = searchParams.get("workspace");
-        const email = searchParams.get("email");
-
-        if (!workspaceId || !email) {
+        const token = searchParams.get("token");
+        
+        if (!token) {
           throw new Error("Invalid invitation link");
         }
 
-        console.log("Handling invitation for:", {
-          workspaceId,
-          email: decodeURIComponent(email),
-        });
+        console.log("Handling invitation with token:", token);
 
-        // First verify if the invitation is valid
-        const { invitation } = await verifyInvitation(workspaceId, email);
+        // First verify if the invitation is valid using the token
+        const { invitation } = await verifyInvitation(token);
         
         if (!invitation) {
           throw new Error("Invalid or expired invitation");
@@ -43,12 +39,12 @@ export default function InvitePage() {
           console.log("User has existing session:", session.user.email);
           
           // If the signed-in user's email matches the invitation email
-          if (session.user.email === decodeURIComponent(email)) {
+          if (session.user.email === invitation.email) {
             // Add user to workspace
             const { error: memberError } = await supabase
               .from("workspace_members")
               .insert({
-                workspace_id: workspaceId,
+                workspace_id: invitation.workspace_id,
                 user_id: session.user.id,
                 role: invitation.role
               });
