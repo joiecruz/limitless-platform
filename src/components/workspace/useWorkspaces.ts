@@ -29,6 +29,8 @@ export function useWorkspaces() {
           .from('workspace_members')
           .select(`
             workspace_id,
+            user_id,
+            role,
             workspaces (
               id,
               name,
@@ -44,8 +46,12 @@ export function useWorkspaces() {
 
         console.log('Raw workspace data:', workspaceMembers);
         
+        if (!workspaceMembers) {
+          return [];
+        }
+
         // Transform the data to match the Workspace type
-        const formattedWorkspaces: Workspace[] = (workspaceMembers as WorkspaceMember[]).map(member => ({
+        const formattedWorkspaces: Workspace[] = workspaceMembers.map(member => ({
           id: member.workspaces.id,
           name: member.workspaces.name || 'Unnamed Workspace',
           slug: member.workspaces.slug || 'unnamed'
