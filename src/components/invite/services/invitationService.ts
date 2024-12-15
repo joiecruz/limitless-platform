@@ -11,7 +11,10 @@ export async function verifyInvitation(token: string) {
     .select("*")
     .eq('magic_link_token', token)
     .limit(1)
-    .maybeSingle();
+    .maybeSingle()
+    .headers({
+      'x-invite-token': token
+    });
 
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
