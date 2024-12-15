@@ -18,6 +18,7 @@ export default function InvitePage() {
         const token = searchParams.get("token");
         
         if (!token) {
+          console.error("No token found in URL");
           throw new Error("Invalid invitation link");
         }
 
@@ -27,6 +28,7 @@ export default function InvitePage() {
         const { invitation } = await verifyInvitation(token);
         
         if (!invitation) {
+          console.error("No invitation found for token:", token);
           throw new Error("Invalid or expired invitation");
         }
 
@@ -39,7 +41,7 @@ export default function InvitePage() {
           console.log("User has existing session:", session.user.email);
           
           // If the signed-in user's email matches the invitation email
-          if (session.user.email === invitation.email) {
+          if (session.user.email?.toLowerCase() === invitation.email.toLowerCase()) {
             // Add user to workspace
             const { error: memberError } = await supabase
               .from("workspace_members")
