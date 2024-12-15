@@ -8,8 +8,8 @@ const environments = {
     key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1NDQ1MjksImV4cCI6MjA0OTEyMDUyOX0.-L1Kc059oqFdOacRh9wcbf5wBCOqqTHBzvmIFKqlWU8"
   },
   staging: {
-    url: "https://YOUR_STAGING_PROJECT.supabase.co",
-    key: "YOUR_STAGING_PROJECT_ANON_KEY"
+    url: "https://cvwyaogwdnzxrbdogdje.supabase.co",
+    key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2d3lhb2d3ZG56eHJiZG9nZGplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNTU4MDYsImV4cCI6MjA0OTgzMTgwNn0.ZOFop1-BCRQ2iVg2O9CbH1AXMVyMbYBKdJYhTJDXDqY"
   }
 };
 
