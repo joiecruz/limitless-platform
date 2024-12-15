@@ -8,7 +8,6 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
-import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,7 +34,7 @@ const App = () => {
           console.error("Error getting session:", error);
           // Clear session and storage on error
           setSession(null);
-          localStorage.clear();
+          localStorage.clear(); // Clear all localStorage
           await supabase.auth.signOut();
           return;
         }
@@ -50,8 +49,9 @@ const App = () => {
         setSession(initialSession);
       } catch (error) {
         console.error("Error in getInitialSession:", error);
+        // Clear session and storage on error
         setSession(null);
-        localStorage.clear();
+        localStorage.clear(); // Clear all localStorage
         await supabase.auth.signOut();
       } finally {
         setLoading(false);
@@ -66,9 +66,10 @@ const App = () => {
       
       if (event === 'SIGNED_OUT') {
         console.log("User signed out - Clearing session and cache");
+        // Clear session and cached data
         setSession(null);
         queryClient.clear();
-        localStorage.clear();
+        localStorage.clear(); // Clear all localStorage
         toast({
           title: "Signed out",
           description: "You have been signed out successfully.",
@@ -108,7 +109,6 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AuthProvider session={session} />
           <AppRoutes session={session} />
         </BrowserRouter>
       </TooltipProvider>

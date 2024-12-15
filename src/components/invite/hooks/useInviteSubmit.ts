@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { verifyInvitation } from "../services/invitationService";
+import { verifyInvitation, updateInvitationStatus } from "../services/invitationService";
+import { checkExistingUser, addUserToWorkspace, createNewUser } from "../services/userService";
 import { InviteFormData } from "../types";
-import { supabase } from "@/integrations/supabase/client";
 
 export function useInviteSubmit(workspaceId: string | null, email: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (data: Pick<InviteFormData, "password">) => {
+  const handleSubmit = async (data: InviteFormData) => {
     if (!workspaceId || !email) {
-      console.error("🚫 Missing required parameters:", { workspaceId, email });
+      console.error("Missing required parameters:", { workspaceId, email });
       toast({
         title: "Error",
         description: "Invalid invitation parameters",
@@ -22,54 +22,66 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     }
 
     setIsLoading(true);
-    console.log("🔄 Processing invitation:", { workspaceId, email });
     
     try {
-      // Step 1: Verify invitation
-      const { invitation, decodedEmail } = await verifyInvitation(workspaceId, email);
-      console.log("✅ Invitation verified:", invitation);
-
-      // Step 2: Sign up user
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: decodedEmail,
-        password: data.password,
-        options: {
-          data: {
-            workspace_id: workspaceId,
-            invitation_id: invitation.id,
-            is_invited: true
-          }
-        }
+      console.log("Starting invitation process with parameters:", {
+        workspaceId,
+        email,
+        decodedEmail: decodeURIComponent(email).toLowerCase()
       });
 
-      if (signUpError) {
-        console.error("❌ Signup error:", signUpError);
-        throw signUpError;
+      // Step 1: Verify the invitation
+      const { invitation, decodedEmail } = await verifyInvitation(workspaceId, email);
+      console.log("Valid invitation found:", invitation);
+
+      // Step 2: Check if user exists
+      const { data: authData, error: signInError } = await checkExistingUser(decodedEmail, data.password);
+
+      if (authData?.session) {
+        console.log("Existing user found:", authData.user.id);
+        
+        // Add existing user to workspace
+        await addUserToWorkspace(authData.user.id, workspaceId, invitation.role);
+        
+        // Update invitation status
+        await updateInvitationStatus(invitation.id, "accepted");
+
+        toast({
+          title: "Success",
+          description: "You have successfully joined the workspace.",
+        });
+
+        navigate("/dashboard");
+        return;
       }
 
-      console.log("✅ User signed up successfully:", { 
-        user: signUpData.user?.id,
-        email: signUpData.user?.email
+      // Step 3: Create new user
+      const { data: newAuthData, error: signUpError } = await createNewUser(decodedEmail, data.password, {
+        ...data
       });
+      
+      if (signUpError || !newAuthData.user) {
+        throw new Error(signUpError?.message || "Failed to create user account");
+      }
+      
+      console.log("Auth account created:", newAuthData.user.id);
 
-      // Store workspace context for post-verification
-      const pendingJoinData = {
-        workspaceId,
-        role: invitation.role,
-        invitationId: invitation.id
-      };
-      console.log("💾 Storing workspace context:", pendingJoinData);
-      localStorage.setItem('pendingWorkspaceJoin', JSON.stringify(pendingJoinData));
+      // Step 4: Add new user to workspace
+      await addUserToWorkspace(newAuthData.user.id, workspaceId, invitation.role);
+      console.log("Added to workspace successfully");
 
-      // Redirect to verify email page
-      navigate("/verify-email");
+      // Step 5: Update invitation status
+      await updateInvitationStatus(invitation.id, "accepted");
+      console.log("Invitation status updated");
+
       toast({
         title: "Success",
-        description: "Please check your email to verify your account",
+        description: "Your account has been created successfully.",
       });
 
+      navigate("/dashboard");
     } catch (error: any) {
-      console.error("❌ Invitation process failed:", error);
+      console.error("Invitation process failed:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to process invitation",

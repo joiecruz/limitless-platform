@@ -7,16 +7,22 @@ import { PasswordRequirements } from "@/components/signup/steps/PasswordRequirem
 
 interface InviteStep1Props {
   onNext: (data: Partial<OnboardingData>) => void;
-  data: Pick<OnboardingData, "password">;
+  data: OnboardingData;
   loading?: boolean;
 }
 
 export function InviteStep1({ onNext, data, loading }: InviteStep1Props) {
+  const [firstName, setFirstName] = useState(data.firstName || "");
+  const [lastName, setLastName] = useState(data.lastName || "");
   const [password, setPassword] = useState(data.password || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNext({ password });
+    onNext({
+      firstName,
+      lastName,
+      password,
+    });
   };
 
   const isPasswordValid = () => {
@@ -27,8 +33,31 @@ export function InviteStep1({ onNext, data, loading }: InviteStep1Props) {
            /[!@#$%^&*(),.?":{}|<>]/.test(password);
   };
 
+  const isValid = firstName && lastName && isPasswordValid();
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input
+            id="firstName"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input
+            id="lastName"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+          />
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="password">Set Your Password</Label>
         <Input
@@ -42,7 +71,7 @@ export function InviteStep1({ onNext, data, loading }: InviteStep1Props) {
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={loading || !isPasswordValid()}>
+        <Button type="submit" disabled={loading || !isValid}>
           {loading ? "Loading..." : "Continue"}
         </Button>
       </div>

@@ -47,15 +47,10 @@ serve(async (req) => {
     const { data: updateData, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
       { 
+        email_confirmed_at: new Date().toISOString(),
         user_metadata: {
           ...userData.user.user_metadata,
           email_confirmed: true
-        },
-        email_confirmed: true,
-        app_metadata: {
-          ...userData.user.app_metadata,
-          email_confirmed: true,
-          email_verified: true
         }
       }
     );
