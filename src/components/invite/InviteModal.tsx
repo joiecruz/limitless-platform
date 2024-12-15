@@ -8,6 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import { InviteStep1 } from "./steps/InviteStep1";
 import { useInviteSubmit } from "./hooks/useInviteSubmit";
 import { useToast } from "@/hooks/use-toast";
+import { CheckCircle2 } from "lucide-react";
 
 interface InviteModalProps {
   open?: boolean;
@@ -58,10 +59,13 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
                   />
                 </>
               ) : (
-                <div className="space-y-6 text-center">
+                <div className="flex flex-col items-center justify-center space-y-6 text-center h-[400px] animate-fade-in">
+                  <div className="rounded-full bg-primary-50 p-3">
+                    <CheckCircle2 className="w-12 h-12 text-primary" />
+                  </div>
                   <div className="space-y-2">
                     <h2 className="text-2xl font-semibold tracking-tight">Almost there!</h2>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground max-w-sm mx-auto">
                       Please check your email to confirm your account and access the workspace dashboard.
                     </p>
                   </div>
