@@ -34,6 +34,8 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       redirectUrl.searchParams.append("invitation", invitation.id);
       redirectUrl.searchParams.append("next", `/dashboard?workspace=${workspaceId}`);
 
+      console.log("Signup redirect URL:", redirectUrl.toString());
+
       const { error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
         password: data.password,

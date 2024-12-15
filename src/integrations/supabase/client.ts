@@ -1,18 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types/database';
 
-// Default to production values
-let supabaseUrl = "https://crllgygjuqpluvdpwayi.supabase.co";
-let supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1NDQ1MjksImV4cCI6MjA0OTEyMDUyOX0.-L1Kc059oqFdOacRh9wcbf5wBCOqqTHBzvmIFKqlWU8";
+const supabaseUrl = 'https://crllgygjuqpluvdpwayi.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI2NjQzNzAsImV4cCI6MjAxODI0MDM3MH0.qgkN_0vO8cupvAYkl7J-0I4UuPj0xfXbwKD0Ue1Rx-c';
 
-// Check if we're in staging
-if (window.location.hostname.includes('staging')) {
-  supabaseUrl = "YOUR_STAGING_SUPABASE_URL";
-  supabaseKey = "YOUR_STAGING_SUPABASE_ANON_KEY";
-  console.log('Using staging Supabase configuration');
-}
-
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -26,9 +17,10 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
 // Add session refresh on page load
 let refreshing = false;
 supabase.auth.onAuthStateChange(async (event, session) => {
-  console.log('Auth state changed:', event, session);
+  console.log('Auth state changed:', { event, session, timestamp: new Date().toISOString() });
   
   if (event === 'SIGNED_OUT') {
+    console.log('User signed out - Clearing session and cache');
     localStorage.removeItem('pendingWorkspaceJoin');
     localStorage.removeItem('supabase.auth.token');
   }
