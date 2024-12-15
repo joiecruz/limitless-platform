@@ -2,21 +2,28 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function verifyInvitation(workspaceId: string, email: string) {
   const decodedEmail = decodeURIComponent(email).toLowerCase();
+  const inviteToken = localStorage.getItem('inviteToken');
 
   console.log("🔍 INVITATION VERIFICATION START", {
     rawEmail: email,
     decodedEmail,
     workspaceId,
+    inviteToken,
     timestamp: new Date().toISOString()
   });
 
-  // Check if an invitation exists for this email and workspace
-  const { data: invitation, error: inviteError } = await supabase
+  const query = supabase
     .from("workspace_invitations")
     .select("*")
     .eq("workspace_id", workspaceId)
-    .eq("email", decodedEmail)
-    .maybeSingle();
+    .eq("email", decodedEmail);
+
+  // Add token check if available
+  if (inviteToken) {
+    query.eq("magic_link_token", inviteToken);
+  }
+
+  const { data: invitation, error: inviteError } = await query.maybeSingle();
 
   console.log("📬 INVITATION QUERY RESULT:", {
     invitation,
@@ -65,6 +72,9 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     invitation,
     timestamp: new Date().toISOString()
   });
+
+  // Clean up the token after successful verification
+  localStorage.removeItem('inviteToken');
 
   return { invitation, decodedEmail };
 }

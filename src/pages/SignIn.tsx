@@ -2,13 +2,15 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
 export default function SignIn() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get('token');
 
   useEffect(() => {
     // Enable verbose logging
@@ -58,6 +60,10 @@ export default function SignIn() {
           navigate("/dashboard");
         } else {
           console.log("SignIn - No active session found");
+          // If there's an invite token, store it in localStorage
+          if (inviteToken) {
+            localStorage.setItem('inviteToken', inviteToken);
+          }
         }
       } catch (error) {
         console.error("SignIn - Error checking session:", error);
@@ -110,7 +116,7 @@ export default function SignIn() {
       console.log = originalLog;
       console.error = originalError;
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, inviteToken]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

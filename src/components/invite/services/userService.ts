@@ -40,9 +40,7 @@ export async function createNewUser(email: string, password: string, userData: U
         referral_source: userData.referralSource,
         goals: userData.goals
       },
-      emailRedirectTo: `${window.location.origin}/dashboard`,
-      // Skip email confirmation for invited users
-      emailConfirm: userData.emailConfirm !== false
+      emailRedirectTo: `${window.location.origin}/dashboard`
     }
   });
 
