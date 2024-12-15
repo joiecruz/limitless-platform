@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { verifyInvitation, updateInvitationStatus } from "../services/invitationService";
-import { checkExistingUser, addUserToWorkspace, createNewUser } from "../services/userService";
+import { verifyInvitation } from "../services/invitationService";
+import { checkExistingUser, createNewUser } from "../services/userService";
 import { InviteFormData } from "../types";
 
 export function useInviteSubmit(token: string | null) {
@@ -34,26 +34,19 @@ export function useInviteSubmit(token: string | null) {
       if (authData?.session) {
         console.log("Existing user found:", authData.user.id);
         
-        // Add existing user to workspace
-        await addUserToWorkspace(authData.user.id, invitation.workspace_id, invitation.role);
-        
-        // Update invitation status
-        await updateInvitationStatus(invitation.id, "accepted");
-
+        // Don't add to workspace yet, wait for email confirmation
         toast({
           title: "Success",
-          description: "You have successfully joined the workspace.",
+          description: "Please check your email to confirm your account.",
         });
-
-        navigate("/dashboard");
         return;
       }
 
-      // Step 3: Create new user with email confirmation disabled for invited users
+      // Step 3: Create new user with email confirmation enabled
       const { data: newAuthData, error: signUpError } = await createNewUser(
         invitation.email, 
-        data.password, 
-        { ...data, emailConfirm: false }
+        data.password,
+        data
       );
       
       if (signUpError || !newAuthData.user) {
@@ -62,20 +55,9 @@ export function useInviteSubmit(token: string | null) {
       
       console.log("Auth account created:", newAuthData.user.id);
 
-      // Step 4: Add new user to workspace
-      await addUserToWorkspace(newAuthData.user.id, invitation.workspace_id, invitation.role);
-      console.log("Added to workspace successfully");
+      // Don't add to workspace or update invitation status yet
+      // This will happen after email confirmation in VerifyEmail.tsx
 
-      // Step 5: Update invitation status
-      await updateInvitationStatus(invitation.id, "accepted");
-      console.log("Invitation status updated");
-
-      toast({
-        title: "Success",
-        description: "Your account has been created successfully.",
-      });
-
-      navigate("/dashboard");
     } catch (error: any) {
       console.error("Invitation process failed:", error);
       toast({
