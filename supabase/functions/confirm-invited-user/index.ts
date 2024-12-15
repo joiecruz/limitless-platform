@@ -19,7 +19,7 @@ serve(async (req) => {
       throw new Error('User ID is required');
     }
 
-    console.log('Confirming user:', userId);
+    console.log('Starting email confirmation process for user:', userId);
 
     // Initialize Supabase admin client
     const supabaseAdmin = createClient(
@@ -33,10 +33,26 @@ serve(async (req) => {
       }
     );
 
+    // First, verify the user exists
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
+    
+    if (userError || !userData.user) {
+      console.error('Error fetching user:', userError);
+      throw new Error('User not found');
+    }
+
+    console.log('User found:', userData.user.email);
+
     // Update user's email confirmation status using the admin API
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+    const { data: updateData, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
-      { email_confirmed_at: new Date().toISOString() }
+      { 
+        email_confirmed_at: new Date().toISOString(),
+        user_metadata: {
+          ...userData.user.user_metadata,
+          email_confirmed: true
+        }
+      }
     );
 
     if (updateError) {
@@ -44,10 +60,10 @@ serve(async (req) => {
       throw updateError;
     }
 
-    console.log('Successfully confirmed user:', userId);
+    console.log('Successfully confirmed user:', userId, 'Update response:', updateData);
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, data: updateData }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200 
