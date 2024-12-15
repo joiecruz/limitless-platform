@@ -3,13 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { OnboardingData } from "../types";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const location = useLocation();
+  const navigate = useNavigate();
   const isInvitedUser = location.state?.isInvited;
 
   const handleSubmit = async (formData: OnboardingData) => {
@@ -20,18 +21,6 @@ export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: bo
       if (!user) throw new Error("No user found");
 
       console.log('Updating profile for user:', user.id);
-
-      // If invited user, update password
-      if (isInvitedUser && formData.password) {
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: formData.password
-        });
-
-        if (passwordError) {
-          console.error('Error updating password:', passwordError);
-          throw passwordError;
-        }
-      }
 
       // Update profile
       const { error: profileError } = await supabase
@@ -53,28 +42,64 @@ export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: bo
 
       console.log('Profile updated successfully');
 
-      // Create workspace only if not an invited user
-      if (!isInvitedUser && formData.workspaceName) {
-        console.log('Creating workspace:', formData.workspaceName);
-        const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
-        
-        const { data: workspace, error: workspaceError } = await supabase
-          .rpc('create_workspace_with_owner', {
-            workspace_name: formData.workspaceName,
-            workspace_slug: slug,
-            owner_id: user.id
-          });
+      // For invited users, get their pending workspace invitation
+      if (isInvitedUser) {
+        const pendingWorkspaceJoin = localStorage.getItem('pendingWorkspaceJoin');
+        if (pendingWorkspaceJoin) {
+          const { workspaceId, role, invitationId } = JSON.parse(pendingWorkspaceJoin);
+          
+          // Add user to workspace
+          const { error: memberError } = await supabase
+            .from("workspace_members")
+            .insert({
+              workspace_id: workspaceId,
+              user_id: user.id,
+              role: role
+            });
 
-        if (workspaceError) {
-          console.error('Error creating workspace:', workspaceError);
-          throw workspaceError;
+          if (memberError) {
+            console.error('Error adding user to workspace:', memberError);
+            throw memberError;
+          }
+
+          // Update invitation status
+          const { error: inviteError } = await supabase
+            .from("workspace_invitations")
+            .update({ status: "accepted" })
+            .eq("id", invitationId);
+
+          if (inviteError) {
+            console.error('Error updating invitation status:', inviteError);
+            throw inviteError;
+          }
+
+          localStorage.removeItem('pendingWorkspaceJoin');
+          navigate("/dashboard");
         }
+      } else {
+        // Create workspace only if not an invited user
+        if (formData.workspaceName) {
+          console.log('Creating workspace:', formData.workspaceName);
+          const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
+          
+          const { data: workspace, error: workspaceError } = await supabase
+            .rpc('create_workspace_with_owner', {
+              workspace_name: formData.workspaceName,
+              workspace_slug: slug,
+              owner_id: user.id
+            });
 
-        console.log('Workspace created successfully:', workspace);
+          if (workspaceError) {
+            console.error('Error creating workspace:', workspaceError);
+            throw workspaceError;
+          }
 
-        // Invalidate queries to refresh workspace data
-        await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+          console.log('Workspace created successfully:', workspace);
+        }
       }
+
+      // Invalidate queries to refresh workspace data
+      await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
 
       toast({
         title: "Setup complete",

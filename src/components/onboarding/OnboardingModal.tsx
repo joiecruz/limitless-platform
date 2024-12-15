@@ -68,6 +68,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
       case 3:
         return <Step3 {...commonProps} />;
       case 4:
+        // Only show Step4 (workspace creation) for non-invited users
         return !isInvitedUser ? <Step4 {...commonProps} /> : null;
       default:
         return null;
