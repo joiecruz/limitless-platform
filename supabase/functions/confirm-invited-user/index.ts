@@ -19,6 +19,8 @@ serve(async (req) => {
       throw new Error('User ID is required');
     }
 
+    console.log('Confirming user:', userId);
+
     // Initialize Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -31,13 +33,18 @@ serve(async (req) => {
       }
     );
 
-    // Update user's email confirmation status
+    // Update user's email confirmation status using the admin API
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
-      { email_confirmed: true }
+      { email_confirmed_at: new Date().toISOString() }
     );
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Error confirming user:', updateError);
+      throw updateError;
+    }
+
+    console.log('Successfully confirmed user:', userId);
 
     return new Response(
       JSON.stringify({ success: true }),
@@ -48,6 +55,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
+    console.error('Error in confirm-invited-user function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
