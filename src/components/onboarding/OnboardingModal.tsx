@@ -31,7 +31,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
     companySize: "",
     goals: [],
     referralSource: "",
-    workspaceName: "",
+    workspaceName: isInvitedUser ? undefined : "",
     password: "",
   });
 
