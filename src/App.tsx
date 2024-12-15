@@ -8,6 +8,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
+import { useWorkspaceJoin } from "@/components/verify-email/useWorkspaceJoin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +23,7 @@ const App = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { joinWorkspace } = useWorkspaceJoin();
 
   useEffect(() => {
     // Get initial session
@@ -47,6 +49,13 @@ const App = () => {
 
         console.log("Initial session found:", initialSession);
         setSession(initialSession);
+        
+        // Check if this is a post-verification session
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('type') === 'signup' && initialSession) {
+          console.log("Post-verification session detected, attempting to join workspace...");
+          await joinWorkspace(initialSession);
+        }
       } catch (error) {
         console.error("Error in getInitialSession:", error);
         // Clear session and storage on error
@@ -80,6 +89,13 @@ const App = () => {
       if (event === 'SIGNED_IN' && currentSession) {
         console.log("User signed in:", currentSession);
         setSession(currentSession);
+        
+        // Check if this is a post-verification session
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('type') === 'signup') {
+          console.log("Post-verification sign in detected, attempting to join workspace...");
+          await joinWorkspace(currentSession);
+        }
         return;
       }
 
@@ -97,7 +113,7 @@ const App = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [toast, joinWorkspace]);
 
   if (loading) {
     return null;
