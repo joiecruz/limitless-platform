@@ -1,13 +1,12 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Member, WorkspaceMember } from "./types";
 import { useToast } from "@/hooks/use-toast";
 
-export function useMembers(workspaceId?: string) {
+export function useMembers(workspaceId: string | null) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const query = useQuery({
+  return useQuery({
     queryKey: ['workspace-members', workspaceId],
     queryFn: async () => {
       if (!workspaceId) {
@@ -29,7 +28,7 @@ export function useMembers(workspaceId?: string) {
           )
         `)
         .eq('workspace_id', workspaceId)
-        .returns<WorkspaceMember[]>();
+        .order('last_active', { ascending: false });
 
       if (activeMembersError) {
         console.error('Error fetching active members:', activeMembersError);
@@ -39,13 +38,7 @@ export function useMembers(workspaceId?: string) {
       // Fetch pending invitations
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
         .from('workspace_invitations')
-        .select(`
-          id,
-          email,
-          role,
-          status,
-          created_at
-        `)
+        .select('*')
         .eq('workspace_id', workspaceId)
         .eq('status', 'pending');
 
@@ -54,7 +47,7 @@ export function useMembers(workspaceId?: string) {
         throw pendingInvitesError;
       }
 
-      // Transform active members data
+      // Map active members to the common format
       const members: Member[] = activeMembers.map(member => ({
         id: member.user_id,
         user_id: member.user_id,
@@ -62,74 +55,32 @@ export function useMembers(workspaceId?: string) {
         role: member.role,
         last_active: member.last_active,
         status: 'Active' as const,
-        profiles: {
-          first_name: member.profiles.first_name || null,
-          last_name: member.profiles.last_name || null,
-        }
+        first_name: member.profiles.first_name,
+        last_name: member.profiles.last_name
       }));
 
-      // Transform pending invites data
+      // Add pending invites to the list
       const pendingMembers: Member[] = pendingInvites.map(invite => ({
         id: invite.id,
+        user_id: null,
         email: invite.email,
         role: invite.role,
-        last_active: invite.created_at,
+        last_active: null,
         status: 'Pending' as const,
-        profiles: {
-          first_name: null,
-          last_name: null,
-        }
+        first_name: null,
+        last_name: null
       }));
 
-      // Combine and return all members
+      // Combine active members and pending invites
       return [...members, ...pendingMembers];
     },
-    enabled: !!workspaceId,
-  });
-
-  const handleDeleteMember = async (member: Member) => {
-    try {
-      if (member.status === 'Active') {
-        const { error } = await supabase
-          .from('workspace_members')
-          .delete()
-          .eq('workspace_id', workspaceId)
-          .eq('user_id', member.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('workspace_invitations')
-          .delete()
-          .eq('id', member.id);
-
-        if (error) throw error;
-      }
-
-      // Invalidate and refetch
-      queryClient.invalidateQueries({
-        queryKey: ['workspace-members', workspaceId]
-      });
-
-      toast({
-        title: "Success",
-        description: member.status === 'Active' 
-          ? "Member has been removed from the workspace"
-          : "Invitation has been cancelled",
-      });
-    } catch (error: any) {
-      console.error('Error deleting member:', error);
+    onError: (error: Error) => {
+      console.error('Error in useMembers:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to remove member",
+        description: "Failed to fetch workspace members",
         variant: "destructive",
       });
     }
-  };
-
-  return {
-    tableData: query.data || [],
-    isLoading: query.isLoading,
-    handleDeleteMember
-  };
+  });
 }
