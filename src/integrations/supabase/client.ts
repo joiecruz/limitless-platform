@@ -17,14 +17,38 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storage: window.localStorage
+    storage: localStorage,
+    storageKey: 'supabase.auth.token',
+    flowType: 'pkce'
   }
 });
 
 // Add session refresh on page load
-supabase.auth.onAuthStateChange((event, session) => {
+let refreshing = false;
+supabase.auth.onAuthStateChange(async (event, session) => {
   console.log('Auth state changed:', event, session);
+  
   if (event === 'SIGNED_OUT') {
     localStorage.removeItem('pendingWorkspaceJoin');
+    localStorage.removeItem('supabase.auth.token');
+  }
+  
+  // Attempt to refresh token if session exists but token might be expired
+  if (session && !refreshing) {
+    refreshing = true;
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('Error refreshing session:', error);
+        // Force sign out if refresh fails
+        await supabase.auth.signOut();
+      } else {
+        console.log('Session refreshed successfully:', data);
+      }
+    } catch (error) {
+      console.error('Error during session refresh:', error);
+    } finally {
+      refreshing = false;
+    }
   }
 });
