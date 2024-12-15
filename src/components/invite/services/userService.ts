@@ -42,12 +42,7 @@ export async function createNewUser(email: string, password: string, userData: U
         goals: userData.goals || null,
         is_invited: userData.emailConfirm === false // Mark invited users
       },
-      emailRedirectTo: `${window.location.origin}/dashboard`,
-      // Custom email template for invited users
-      emailOptions: userData.emailConfirm === false ? {
-        subject: "Access your Limitless Lab dashboard",
-        emailTemplate: "invite-confirmation"
-      } : undefined
+      emailRedirectTo: `${window.location.origin}/dashboard`
     }
   };
 
