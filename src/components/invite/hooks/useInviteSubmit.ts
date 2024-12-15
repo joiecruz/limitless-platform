@@ -41,7 +41,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       if (authData?.session) {
         console.log("Existing user found:", authData.user.id);
         
-        // Update profile data
+        // Update profile data for existing user
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
@@ -72,9 +72,14 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
         return;
       }
 
-      // Step 3: Create new user
+      // Step 3: Create new user with profile data
       const { data: newAuthData, error: signUpError } = await createNewUser(decodedEmail, data.password, {
-        ...data
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: data.role,
+        companySize: data.companySize,
+        referralSource: data.referralSource,
+        goals: data.goals
       });
       
       if (signUpError || !newAuthData.user) {
