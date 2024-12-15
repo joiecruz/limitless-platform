@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
         : 'window.__SUPABASE_URL__',
       __SUPABASE_ANON_KEY__: isDev
         ? JSON.stringify('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI2NjQzNzAsImV4cCI6MjAxODI0MDM3MH0.qgkN_0vO8cupvAYkl7J-0I4UuPj0xfXbwKD0Ue1Rx-c')
-        : 'window.__SUPABASE_URL__'
+        : 'window.__SUPABASE_ANON_KEY__'  // Fixed: was incorrectly using URL instead of ANON_KEY
     },
     server: {
       host: "::",
