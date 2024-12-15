@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { VerifyEmailHeader } from "@/components/verify-email/VerifyEmailHeader";
+import { VerifyEmailIcon } from "@/components/verify-email/VerifyEmailIcon";
+import { useWorkspaceJoin } from "@/components/verify-email/useWorkspaceJoin";
 
 export default function VerifyEmail() {
   const [email, setEmail] = useState<string>("");
   const [isResending, setIsResending] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const { joinWorkspace, isJoining } = useWorkspaceJoin();
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('verificationEmail');
@@ -23,103 +23,14 @@ export default function VerifyEmail() {
       console.log('Auth state changed:', { event, session });
       
       if (event === 'SIGNED_IN' && session?.user) {
-        try {
-          // Check if there's a pending workspace join
-          const pendingJoinStr = localStorage.getItem('pendingWorkspaceJoin');
-          if (!pendingJoinStr) {
-            console.log('No pending workspace join, redirecting to onboarding');
-            navigate('/onboarding');
-            return;
-          }
-
-          const pendingJoin = JSON.parse(pendingJoinStr);
-          console.log('Processing pending workspace join:', pendingJoin);
-
-          // Use the session from the auth state change event
-          if (!session.user.id) {
-            throw new Error('User ID not found in session');
-          }
-
-          // First attempt to get the workspace member to check if already exists
-          const { data: existingMember } = await supabase
-            .from("workspace_members")
-            .select()
-            .eq('workspace_id', pendingJoin.workspaceId)
-            .eq('user_id', session.user.id)
-            .single();
-
-          if (existingMember) {
-            console.log('User is already a member of this workspace');
-            localStorage.removeItem('pendingWorkspaceJoin');
-            toast({
-              title: "Welcome back!",
-              description: "You're already a member of this workspace.",
-            });
-            navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
-            return;
-          }
-
-          // Add user to workspace with the correct role
-          const { error: memberError } = await supabase
-            .from("workspace_members")
-            .insert({
-              workspace_id: pendingJoin.workspaceId,
-              user_id: session.user.id,
-              role: pendingJoin.role
-            });
-
-          if (memberError) {
-            console.error('Error adding member to workspace:', memberError);
-            throw memberError;
-          }
-
-          console.log('Successfully added user to workspace');
-
-          // Update invitation status
-          if (pendingJoin.invitationId) {
-            const { error: inviteError } = await supabase
-              .from("workspace_invitations")
-              .update({ status: "accepted" })
-              .eq("id", pendingJoin.invitationId);
-
-            if (inviteError) {
-              console.error('Error updating invitation status:', inviteError);
-              // Don't throw here, as the user is already added to workspace
-              toast({
-                title: "Note",
-                description: "You've joined the workspace, but there was an issue updating the invitation status.",
-              });
-            } else {
-              console.log('Successfully updated invitation status');
-            }
-          }
-
-          // Clear the pending join data
-          localStorage.removeItem('pendingWorkspaceJoin');
-          
-          // Navigate to the workspace dashboard
-          toast({
-            title: "Welcome!",
-            description: "You have successfully joined the workspace.",
-          });
-          navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
-
-        } catch (error: any) {
-          console.error('Error handling email verification:', error);
-          toast({
-            title: "Error",
-            description: error.message || "There was an error setting up your workspace. Please try again.",
-            variant: "destructive",
-          });
-          navigate('/signin');
-        }
+        await joinWorkspace(session);
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, []);
 
   const handleResendEmail = async () => {
     if (!email) return;
@@ -130,7 +41,7 @@ export default function VerifyEmail() {
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -155,32 +66,12 @@ export default function VerifyEmail() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <img 
-            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
-            alt="Logo"
-            className="h-12 mx-auto mb-6"
-          />
-        </div>
+        <VerifyEmailHeader />
 
         <Card className="w-full">
           <CardContent className="pt-6 text-center">
             <div className="mb-6">
-              <div className="w-24 h-24 mx-auto mb-6 bg-primary-50 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-12 h-12 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"
-                  />
-                </svg>
-              </div>
+              <VerifyEmailIcon />
               <h2 className="text-2xl font-semibold mb-2">Verify your email to continue</h2>
               <p className="text-gray-600 mb-1">
                 We've sent a verification email to{" "}
@@ -198,7 +89,7 @@ export default function VerifyEmail() {
               <Button 
                 className="w-full" 
                 onClick={handleResendEmail}
-                disabled={isResending || !email}
+                disabled={isResending || !email || isJoining}
               >
                 {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isResending ? "Sending..." : "Resend Verification Email"}
@@ -209,4 +100,4 @@ export default function VerifyEmail() {
       </div>
     </div>
   );
-};
+}

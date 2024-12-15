@@ -28,10 +28,17 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       const { invitation, decodedEmail } = await verifyInvitation(workspaceId, email);
       console.log("Valid invitation found:", invitation);
 
-      // Step 2: Sign up user
+      // Step 2: Sign up user with workspace context in redirectTo
+      const redirectUrl = new URL("/auth/callback", window.location.origin);
+      redirectUrl.searchParams.append("workspace", workspaceId);
+      redirectUrl.searchParams.append("invitation", invitation.id);
+
       const { error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
         password: data.password,
+        options: {
+          emailRedirectTo: redirectUrl.toString(),
+        }
       });
 
       if (signUpError) {
