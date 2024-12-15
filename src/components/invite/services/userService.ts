@@ -27,7 +27,7 @@ export async function addUserToWorkspace(userId: string, workspaceId: string, ro
   }
 }
 
-export async function createNewUser(email: string, password: string, userData: UserData) {
+export async function createNewUser(email: string, password: string, userData: UserData & { emailConfirm?: boolean }) {
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
@@ -39,7 +39,10 @@ export async function createNewUser(email: string, password: string, userData: U
         company_size: userData.companySize,
         referral_source: userData.referralSource,
         goals: userData.goals
-      }
+      },
+      emailRedirectTo: `${window.location.origin}/dashboard`,
+      // Skip email confirmation for invited users
+      emailConfirm: userData.emailConfirm !== false
     }
   });
 
