@@ -90,8 +90,10 @@ export async function verifyInvitation(workspaceIdOrToken: string, email?: strin
     const { data: invitation, error: inviteError } = await supabase
       .from("workspace_invitations")
       .select("*")
-      .eq("magic_link_token", workspaceIdOrToken)
-      .maybeSingle();
+      .single()
+      .headers({
+        'x-invite-token': workspaceIdOrToken
+      });
 
     if (inviteError) {
       console.error("❌ INVITATION ERROR:", {

@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { InviteModal } from "@/components/invite/InviteModal";
-import { verifyInvitation } from "@/components/invite/services/invitationService";
 
 export default function InvitePage() {
   const [searchParams] = useSearchParams();
@@ -24,14 +23,14 @@ export default function InvitePage() {
 
         console.log("Handling invitation with token:", token);
 
-        // First verify if the invitation is valid using the token
+        // Add the token to the request headers for RLS policy
         const { data: invitation, error } = await supabase
           .from("workspace_invitations")
           .select("*")
-          .eq("magic_link_token", token)
-          .eq("status", "pending")
-          .gt("expires_at", new Date().toISOString())
-          .single();
+          .single()
+          .headers({
+            'x-invite-token': token
+          });
 
         if (error || !invitation) {
           console.error("Error fetching invitation:", error);
@@ -73,7 +72,10 @@ export default function InvitePage() {
             await supabase
               .from("workspace_invitations")
               .update({ status: "accepted" })
-              .eq("id", invitation.id);
+              .eq("id", invitation.id)
+              .headers({
+                'x-invite-token': token
+              });
 
             toast({
               title: "Welcome!",
