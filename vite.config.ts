@@ -7,16 +7,22 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => {
   // In development, use the development project
   const isDev = mode === 'development';
+  const isStaging = mode === 'staging';
   
   return {
     define: {
-      // Development uses hardcoded values, production/staging use deployment platform env vars
+      // Development uses hardcoded values
+      // Production/staging use deployment platform env vars
       __SUPABASE_URL__: isDev 
         ? JSON.stringify('https://crllgygjuqpluvdpwayi.supabase.co')
-        : 'window.__SUPABASE_URL__',
+        : isStaging
+          ? JSON.stringify('https://limitlesslab-staging.supabase.co')
+          : 'window.__SUPABASE_URL__',
       __SUPABASE_ANON_KEY__: isDev
         ? JSON.stringify('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI2NjQzNzAsImV4cCI6MjAxODI0MDM3MH0.qgkN_0vO8cupvAYkl7J-0I4UuPj0xfXbwKD0Ue1Rx-c')
-        : 'window.__SUPABASE_ANON_KEY__'  // Fixed: was incorrectly using URL instead of ANON_KEY
+        : isStaging
+          ? JSON.stringify('YOUR_STAGING_ANON_KEY') // Replace this with your staging project's anon key
+          : 'window.__SUPABASE_ANON_KEY__'
     },
     server: {
       host: "::",
