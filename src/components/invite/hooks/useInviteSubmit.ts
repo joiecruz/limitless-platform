@@ -11,8 +11,8 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
   const { toast } = useToast();
 
   const handleSubmit = async (data: InviteFormData) => {
-    if (!workspaceId || !email) {
-      console.error("Missing required parameters:", { workspaceId, email });
+    if (!workspaceId) {
+      console.error("Missing required parameters:", { workspaceId });
       toast({
         title: "Error",
         description: "Invalid invitation parameters",
@@ -24,24 +24,18 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     setIsLoading(true);
     
     try {
-      console.log("Starting invitation process with parameters:", {
-        workspaceId,
-        email,
-        decodedEmail: decodeURIComponent(email).toLowerCase()
-      });
-
       // Step 1: Verify the invitation
-      const { invitation, decodedEmail } = await verifyInvitation(workspaceId, email);
+      const { invitation } = await verifyInvitation(workspaceId);
       console.log("Valid invitation found:", invitation);
 
       // Step 2: Check if user exists
-      const { data: authData, error: signInError } = await checkExistingUser(decodedEmail, data.password);
+      const { data: authData, error: signInError } = await checkExistingUser(invitation.email, data.password);
 
       if (authData?.session) {
         console.log("Existing user found:", authData.user.id);
         
         // Add existing user to workspace
-        await addUserToWorkspace(authData.user.id, workspaceId, invitation.role);
+        await addUserToWorkspace(authData.user.id, invitation.workspace_id, invitation.role);
         
         // Update invitation status
         await updateInvitationStatus(invitation.id, "accepted");
@@ -57,9 +51,9 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
 
       // Step 3: Create new user with email confirmation disabled for invited users
       const { data: newAuthData, error: signUpError } = await createNewUser(
-        decodedEmail, 
+        invitation.email, 
         data.password, 
-        { ...data, emailConfirm: false } // Add emailConfirm: false to skip email confirmation
+        { ...data, emailConfirm: false }
       );
       
       if (signUpError || !newAuthData.user) {
@@ -69,7 +63,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       console.log("Auth account created:", newAuthData.user.id);
 
       // Step 4: Add new user to workspace
-      await addUserToWorkspace(newAuthData.user.id, workspaceId, invitation.role);
+      await addUserToWorkspace(newAuthData.user.id, invitation.workspace_id, invitation.role);
       console.log("Added to workspace successfully");
 
       // Step 5: Update invitation status
