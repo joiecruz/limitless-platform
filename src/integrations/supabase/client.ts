@@ -8,8 +8,9 @@ const environments = {
     key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1NDQ1MjksImV4cCI6MjA0OTEyMDUyOX0.-L1Kc059oqFdOacRh9wcbf5wBCOqqTHBzvmIFKqlWU8"
   },
   staging: {
-    url: "YOUR_STAGING_SUPABASE_URL",
-    key: "YOUR_STAGING_SUPABASE_ANON_KEY"
+    // Replace these values with your staging project credentials
+    url: "https://YOUR_STAGING_PROJECT_ID.supabase.co",
+    key: "YOUR_STAGING_PROJECT_ANON_KEY"
   }
 };
 
