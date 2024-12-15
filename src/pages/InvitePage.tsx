@@ -25,10 +25,16 @@ export default function InvitePage() {
         console.log("Handling invitation with token:", token);
 
         // First verify if the invitation is valid using the token
-        const { invitation } = await verifyInvitation(token);
-        
-        if (!invitation) {
-          console.error("No invitation found for token:", token);
+        const { data: invitation, error } = await supabase
+          .from("workspace_invitations")
+          .select("*")
+          .eq("magic_link_token", token)
+          .eq("status", "pending")
+          .gt("expires_at", new Date().toISOString())
+          .single();
+
+        if (error || !invitation) {
+          console.error("Error fetching invitation:", error);
           throw new Error("Invalid or expired invitation");
         }
 
