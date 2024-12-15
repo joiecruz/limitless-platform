@@ -6,6 +6,7 @@ import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import VerifyEmail from "@/pages/VerifyEmail";
 import InvitePage from "@/pages/InvitePage";
+import InviteSuccess from "@/pages/InviteSuccess";
 import Courses from "@/pages/Courses";
 import Lessons from "@/pages/Lessons";
 import Lesson from "@/pages/Lesson";
@@ -43,6 +44,10 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route
         path="/invite"
         element={<InvitePage />}
+      />
+      <Route
+        path="/invite-success"
+        element={<InviteSuccess />}
       />
       <Route
         path="/courses"

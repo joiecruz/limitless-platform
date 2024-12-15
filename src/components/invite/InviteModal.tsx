@@ -4,7 +4,7 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { InviteStep1 } from "./steps/InviteStep1";
 import { InviteStep2 } from "./steps/InviteStep2";
 import { InviteStep3 } from "./steps/InviteStep3";
@@ -19,6 +19,7 @@ interface InviteModalProps {
 
 export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const workspaceId = searchParams.get("workspace");
   const email = searchParams.get("email");
   const [currentStep, setCurrentStep] = useState(1);
@@ -51,6 +52,7 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
         referralSource: updatedData.referralSource,
         goals: updatedData.goals?.join(", ") || "",
       });
+      navigate('/invite-success');
     } else {
       setCurrentStep(prev => prev + 1);
     }
