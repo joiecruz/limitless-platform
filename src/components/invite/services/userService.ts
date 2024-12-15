@@ -39,20 +39,12 @@ export async function createNewUser(email: string, password: string, userData: U
         role: userData.role || null,
         company_size: userData.companySize || null,
         referral_source: userData.referralSource || null,
-        goals: userData.goals || null
+        goals: userData.goals || null,
+        is_invited: userData.emailConfirm === false // Mark invited users
       },
       emailRedirectTo: `${window.location.origin}/dashboard`
     }
   };
-
-  // If this is an invited user (emailConfirm is explicitly set to false)
-  if (userData.emailConfirm === false) {
-    // Update user metadata to indicate they were invited
-    signUpOptions.options.data = {
-      ...signUpOptions.options.data,
-      invited_user: true
-    };
-  }
 
   const { data: authData, error: signUpError } = await supabase.auth.signUp(signUpOptions);
 
@@ -66,16 +58,15 @@ export async function createNewUser(email: string, password: string, userData: U
     throw new Error("Failed to create user account");
   }
 
-  // If this is an invited user, we'll immediately confirm their email using admin API
+  // If this is an invited user, confirm their email using the Edge Function
   if (userData.emailConfirm === false && authData.user.id) {
-    const { error: updateError } = await supabase.auth.admin.updateUserById(
-      authData.user.id,
-      { email_confirm: true }
-    );
+    const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user', {
+      body: { user_id: authData.user.id }
+    });
 
-    if (updateError) {
-      console.error("Error confirming email:", updateError);
-      throw updateError;
+    if (confirmError) {
+      console.error("Error confirming email:", confirmError);
+      throw confirmError;
     }
   }
 
