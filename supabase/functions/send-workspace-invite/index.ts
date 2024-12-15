@@ -9,7 +9,6 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 interface InviteRequest {
@@ -95,6 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Get the magic link token from the invitation
     const magicLinkToken = invitation.magic_link_token;
+    const inviteUrl = `${req.headers.get("origin")}/invite?token=${magicLinkToken}`;
 
     // Send the email invitation with the magic link token
     const emailRes = await fetch("https://api.resend.com/emails", {
@@ -158,6 +158,7 @@ const handler = async (req: Request): Promise<Response> => {
                 border-radius: 4px;
                 font-size: 16px;
                 margin-top: 20px;
+                color: white !important;
               }
               .email-footer {
                 margin-top: 30px;
@@ -179,7 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="email-body">
                 <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on our platform as a ${role}.</p>
                 <p>Click the link below to accept the invitation:</p>
-                <a href="${req.headers.get("origin")}/invite?token=${magicLinkToken}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Accept Invitation</a>
+                <a href="${inviteUrl}" class="email-button">Accept Invitation</a>
                 <p style="margin-top: 16px; font-size: 14px; color: #666666;">If you didn't expect this invitation, you can safely ignore this email.</p>
               </div>
               <div class="email-footer">
