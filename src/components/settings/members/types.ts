@@ -17,6 +17,7 @@ export interface ProfileData {
   first_name: string | null;
   last_name: string | null;
   id: string;
+  email: string | null;
 }
 
 export interface WorkspaceMember {

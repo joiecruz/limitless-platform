@@ -14,7 +14,7 @@ export function useMembers(workspaceId?: string) {
         throw new Error('No workspace selected');
       }
 
-      // Fetch active members
+      // Fetch active members with their email from auth.users
       const { data: activeMembers, error: activeMembersError } = await supabase
         .from('workspace_members')
         .select(`
@@ -24,7 +24,8 @@ export function useMembers(workspaceId?: string) {
           profiles!inner (
             first_name,
             last_name,
-            id
+            id,
+            email
           )
         `)
         .eq('workspace_id', workspaceId)
@@ -57,7 +58,7 @@ export function useMembers(workspaceId?: string) {
       const members: Member[] = activeMembers.map(member => ({
         id: member.user_id,
         user_id: member.user_id,
-        email: null,
+        email: member.profiles.email,
         role: member.role,
         last_active: member.last_active,
         status: 'Active' as const,
