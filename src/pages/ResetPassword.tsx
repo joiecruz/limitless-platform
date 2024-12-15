@@ -24,7 +24,7 @@ export default function ResetPassword() {
           <Auth
             supabaseClient={supabase}
             {...authUIConfig}
-            view="forgot_password"
+            view="forgotten_password"
             showLinks={false}
           />
 
