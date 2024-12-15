@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-// These values are replaced at build time by Vite
-declare const __SUPABASE_URL__: string;
-declare const __SUPABASE_ANON_KEY__: string;
+declare global {
+  interface Window {
+    __SUPABASE_URL__: string;
+    __SUPABASE_ANON_KEY__: string;
+  }
+}
 
-const supabaseUrl = __SUPABASE_URL__;
-const supabaseAnonKey = __SUPABASE_ANON_KEY__;
+const supabaseUrl = typeof __SUPABASE_URL__ !== 'undefined' ? __SUPABASE_URL__ : '';
+const supabaseAnonKey = typeof __SUPABASE_ANON_KEY__ !== 'undefined' ? __SUPABASE_ANON_KEY__ : '';
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase configuration. Make sure environment variables are set correctly.');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
