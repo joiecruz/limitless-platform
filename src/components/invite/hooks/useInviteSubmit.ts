@@ -68,7 +68,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
         description: "Please check your email to complete the verification process.",
       });
 
-      navigate("/invite-success");
+      navigate("/verify-email");
 
     } catch (error: any) {
       console.error("Invitation process failed:", error);

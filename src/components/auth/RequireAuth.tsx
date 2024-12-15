@@ -37,6 +37,56 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
           return;
         }
 
+        // Check for pending workspace join after email verification
+        const pendingWorkspaceJoin = localStorage.getItem('pendingWorkspaceJoin');
+        if (pendingWorkspaceJoin && session.user.email_confirmed_at) {
+          console.log("RequireAuth: Found pending workspace join:", pendingWorkspaceJoin);
+          const { workspaceId, role, invitationId } = JSON.parse(pendingWorkspaceJoin);
+          
+          try {
+            // Add user to workspace
+            const { error: memberError } = await supabase
+              .from("workspace_members")
+              .insert({
+                workspace_id: workspaceId,
+                user_id: session.user.id,
+                role: role
+              });
+
+            if (memberError) {
+              if (memberError.code === '23505') { // Unique violation
+                console.log("User is already a member of this workspace");
+              } else {
+                throw memberError;
+              }
+            }
+
+            // Update invitation status
+            const { error: inviteError } = await supabase
+              .from("workspace_invitations")
+              .update({ 
+                status: "accepted",
+                accepted_at: new Date().toISOString()
+              })
+              .eq("id", invitationId);
+
+            if (inviteError) {
+              throw inviteError;
+            }
+
+            localStorage.removeItem('pendingWorkspaceJoin');
+            navigate(`/dashboard?workspace=${workspaceId}`);
+            return;
+          } catch (error: any) {
+            console.error("Error joining workspace:", error);
+            toast({
+              title: "Error",
+              description: error.message || "Failed to join workspace",
+              variant: "destructive",
+            });
+          }
+        }
+
         if (!session.user.email_confirmed_at) {
           console.log("RequireAuth: Email not confirmed, redirecting to verify-email");
           setIsAuthenticated(false);
