@@ -28,7 +28,8 @@ export async function addUserToWorkspace(userId: string, workspaceId: string, ro
 }
 
 export async function createNewUser(email: string, password: string, userData: UserData & { emailConfirm?: boolean }) {
-  const { data: authData, error: signUpError } = await supabase.auth.signUp({
+  // For invited users, we'll use a different signup configuration
+  const signUpOptions = {
     email,
     password,
     options: {
@@ -42,7 +43,18 @@ export async function createNewUser(email: string, password: string, userData: U
       },
       emailRedirectTo: `${window.location.origin}/dashboard`
     }
-  });
+  };
+
+  // If this is an invited user (emailConfirm is explicitly set to false)
+  if (userData.emailConfirm === false) {
+    // Update user metadata to indicate they were invited
+    signUpOptions.options.data = {
+      ...signUpOptions.options.data,
+      invited_user: true
+    };
+  }
+
+  const { data: authData, error: signUpError } = await supabase.auth.signUp(signUpOptions);
 
   if (signUpError) {
     console.error("Error creating auth account:", signUpError);
@@ -52,6 +64,19 @@ export async function createNewUser(email: string, password: string, userData: U
   if (!authData.user) {
     console.error("No user data returned from signup");
     throw new Error("Failed to create user account");
+  }
+
+  // If this is an invited user, we'll immediately confirm their email using admin API
+  if (userData.emailConfirm === false && authData.user.id) {
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
+      authData.user.id,
+      { email_confirm: true }
+    );
+
+    if (updateError) {
+      console.error("Error confirming email:", updateError);
+      throw updateError;
+    }
   }
 
   return { data: authData, error: null };
