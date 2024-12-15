@@ -1,5 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Declare global types for our Supabase configuration
+declare global {
+  interface Window {
+    __SUPABASE_URL__: string;
+    __SUPABASE_ANON_KEY__: string;
+  }
+}
+
 // Get environment-specific Supabase URL and key
 const getSupabaseConfig = () => {
   // Development environment (local)
