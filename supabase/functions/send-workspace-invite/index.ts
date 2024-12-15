@@ -29,7 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, workspaceId, workspaceName, inviterName, role, inviterId } = await req.json() as InviteRequest;
 
-    console.log(`Sending workspace invite to ${email} for workspace ${workspaceName} with role ${role}`);
+    console.log(`📧 Sending workspace invite to ${email} for workspace ${workspaceName}`);
 
     // Initialize Supabase client with service role key
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
@@ -46,7 +46,6 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
     if (inviteError) {
-      // If it's a unique constraint violation, it means there's already a pending invite
       if (inviteError.code === '23505') {
         return new Response(
           JSON.stringify({ error: "An invitation has already been sent to this email" }),
@@ -72,83 +71,84 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [email],
-        subject: `Join ${workspaceName} on our platform`,
+        subject: `Confirm your ${workspaceName} account`,
         html: `
           <!DOCTYPE html>
           <html lang="en">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>You've Been Invited</title>
+            <title>Confirm your account</title>
             <style>
               body {
                 font-family: Arial, sans-serif;
-                background-color: #f9f9f9;
+                line-height: 1.6;
                 margin: 0;
                 padding: 0;
+                color: #333333;
               }
               .email-container {
                 max-width: 600px;
-                margin: 20px auto;
-                background-color: #ffffff;
+                margin: 0 auto;
                 padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
               }
               .email-header {
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 30px;
               }
               .logo {
                 max-width: 200px;
                 margin-bottom: 20px;
               }
-              .email-body {
-                text-align: center;
-                color: #333333;
+              .email-content {
+                background-color: #ffffff;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
               }
-              .email-body h2 {
-                font-size: 24px;
-                margin-bottom: 16px;
-              }
-              .email-body p {
-                font-size: 16px;
-                margin-bottom: 24px;
-                line-height: 1.5;
-              }
-              .email-button {
+              .button {
                 display: inline-block;
-                background-color: #393ca0;
+                background-color: #002B36;
+                color: white;
                 text-decoration: none;
                 padding: 12px 24px;
                 border-radius: 4px;
-                font-size: 16px;
-                margin-top: 20px;
+                margin: 20px 0;
+                font-weight: 500;
               }
-              .email-footer {
-                margin-top: 30px;
+              .footer {
                 text-align: center;
+                margin-top: 30px;
                 font-size: 12px;
-                color: #888888;
-              }
-              .email-footer p {
-                margin: 5px 0;
+                color: #666666;
               }
             </style>
           </head>
           <body>
             <div class="email-container">
-              <div class="email-header">
-                <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Logo" class="logo">
-                <h2>You've been invited!</h2>
+              <div class="email-content">
+                <div class="email-header">
+                  <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Logo" class="logo">
+                </div>
+                
+                <h2>You have been added to your team's ${workspaceName} account.</h2>
+                
+                <p>Hi ${email},</p>
+                
+                <p>You have been added to your team's ${workspaceName} account by ${inviterName}. Click the button below to set a password and login.</p>
+                
+                <div style="text-align: center;">
+                  <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodedEmail}&role=${role}" 
+                     class="button" 
+                     style="color: white !important;">
+                    Set your password
+                  </a>
+                </div>
+                
+                <p>Thanks,<br>Limitless Lab Team</p>
               </div>
-              <div class="email-body">
-                <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on our platform as a ${role}.</p>
-                <p>Click the link below to accept the invitation:</p>
-                <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodedEmail}&role=${role}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Accept Invitation</a>
-                <p style="margin-top: 16px; font-size: 14px; color: #666666;">If you didn't expect this invitation, you can safely ignore this email.</p>
-              </div>
-              <div class="email-footer">
+              
+              <div class="footer">
                 <p>Limitless Lab</p>
                 <p>5F RFM Corporate Center, Pioneer Street, Mandaluyong City, Philippines</p>
                 <p>#2 Venture Drive #19-21 Vision Exchange, Singapore, 608526</p>
@@ -162,19 +162,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!res.ok) {
       const error = await res.text();
-      console.error("Resend API error:", error);
+      console.error("❌ Resend API error:", error);
       throw new Error(error);
     }
 
     const data = await res.json();
-    console.log("Email sent successfully:", data);
+    console.log("✅ Email sent successfully:", data);
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error: any) {
-    console.error("Error in send-workspace-invite function:", error);
+    console.error("❌ Error in send-workspace-invite function:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
