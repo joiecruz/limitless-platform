@@ -3,7 +3,7 @@ import {
   DialogContent,
   DialogHeader,
 } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Step1 } from "./steps/Step1";
 import { Step2 } from "./steps/Step2";
 import { Step3 } from "./steps/Step3";
@@ -12,7 +12,6 @@ import { useOnboardingSubmit } from "./hooks/useOnboardingSubmit";
 import { OnboardingProgress } from "./components/OnboardingProgress";
 import { OnboardingData } from "./types";
 import { useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 
 interface OnboardingModalProps {
   open?: boolean;
@@ -23,7 +22,6 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   const isInvitedUser = location.state?.isInvited;
-  const [workspaceName, setWorkspaceName] = useState<string>("");
   const TOTAL_STEPS = isInvitedUser ? 3 : 4;
 
   const [formData, setFormData] = useState<OnboardingData>({
@@ -35,29 +33,6 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
     referralSource: "",
     workspaceName: "",
   });
-
-  useEffect(() => {
-    const fetchWorkspaceDetails = async () => {
-      if (isInvitedUser) {
-        const pendingJoin = localStorage.getItem('pendingWorkspaceJoin');
-        if (pendingJoin) {
-          const { workspaceId } = JSON.parse(pendingJoin);
-          const { data: workspace } = await supabase
-            .from('workspaces')
-            .select('name')
-            .eq('id', workspaceId)
-            .single();
-          
-          if (workspace) {
-            setWorkspaceName(workspace.name);
-            setFormData(prev => ({ ...prev, workspaceName: workspace.name }));
-          }
-        }
-      }
-    };
-
-    fetchWorkspaceDetails();
-  }, [isInvitedUser]);
 
   const { handleSubmit, loading } = useOnboardingSubmit({ onOpenChange });
 
@@ -83,7 +58,6 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
       loading,
       data: formData,
       isInvitedUser,
-      workspaceName
     };
 
     switch (currentStep) {
