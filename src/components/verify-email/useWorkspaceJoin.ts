@@ -79,10 +79,18 @@ export function useWorkspaceJoin() {
         }
 
         // Update invitation status
-        await supabase
+        const { error: inviteError } = await supabase
           .from("workspace_invitations")
-          .update({ status: "accepted" })
+          .update({ 
+            status: "accepted",
+            accepted_at: new Date().toISOString()
+          })
           .eq("id", pendingJoin.invitationId);
+
+        if (inviteError) {
+          console.error('Error updating invitation status:', inviteError);
+          throw inviteError;
+        }
 
         localStorage.removeItem('pendingWorkspaceJoin');
       }
