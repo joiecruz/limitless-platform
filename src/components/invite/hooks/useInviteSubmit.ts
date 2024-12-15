@@ -10,7 +10,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (data: InviteFormData) => {
+  const handleSubmit = async (data: Pick<InviteFormData, "password">) => {
     if (!workspaceId || !email) {
       console.error("Missing required parameters:", { workspaceId, email });
       toast({
@@ -24,59 +24,18 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     setIsLoading(true);
     
     try {
-      console.log("Starting invitation process with parameters:", {
-        workspaceId,
-        email,
-        decodedEmail: decodeURIComponent(email).toLowerCase()
-      });
-
       // Step 1: Verify the invitation
       const { invitation, decodedEmail } = await verifyInvitation(workspaceId, email);
       console.log("Valid invitation found:", invitation);
 
-      // Step 2: Sign up or sign in user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Step 2: Sign up user
+      const { error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
         password: data.password,
-        options: {
-          data: {
-            first_name: data.firstName,
-            last_name: data.lastName,
-            role: data.role,
-            company_size: data.companySize,
-            referral_source: data.referralSource,
-            goals: data.goals
-          }
-        }
       });
 
-      if (authError) {
-        // If user already exists, try to sign in
-        if (authError.message.includes('already registered')) {
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: decodedEmail,
-            password: data.password,
-          });
-
-          if (signInError) throw signInError;
-          
-          // Update profile data for existing user
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-              first_name: data.firstName,
-              last_name: data.lastName,
-              role: data.role,
-              company_size: data.companySize,
-              referral_source: data.referralSource,
-              goals: data.goals
-            })
-            .eq('id', signInData.user.id);
-
-          if (profileError) throw profileError;
-        } else {
-          throw authError;
-        }
+      if (signUpError) {
+        throw signUpError;
       }
 
       // Store workspace and role info in localStorage for use after email verification
@@ -91,8 +50,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
         description: "Please check your email to complete the verification process.",
       });
 
-      // Redirect to dashboard - user will be redirected to verify email if needed
-      navigate("/dashboard");
+      navigate("/invite-success");
 
     } catch (error: any) {
       console.error("Invitation process failed:", error);

@@ -32,7 +32,6 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
     goals: [],
     referralSource: "",
     workspaceName: "",
-    password: "",
   });
 
   const { handleSubmit, loading } = useOnboardingSubmit({ onOpenChange });
