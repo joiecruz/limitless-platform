@@ -5,17 +5,17 @@ import { verifyInvitation, updateInvitationStatus } from "../services/invitation
 import { checkExistingUser, addUserToWorkspace, createNewUser } from "../services/userService";
 import { InviteFormData } from "../types";
 
-export function useInviteSubmit(workspaceId: string | null, email: string | null) {
+export function useInviteSubmit(token: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (data: InviteFormData) => {
-    if (!workspaceId) {
-      console.error("Missing required parameters:", { workspaceId });
+    if (!token) {
+      console.error("Missing required parameters:", { token });
       toast({
         title: "Error",
-        description: "Invalid invitation parameters",
+        description: "Invalid invitation link",
         variant: "destructive",
       });
       return;
@@ -25,7 +25,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     
     try {
       // Step 1: Verify the invitation
-      const { invitation } = await verifyInvitation(workspaceId);
+      const { invitation } = await verifyInvitation(token);
       console.log("Valid invitation found:", invitation);
 
       // Step 2: Check if user exists

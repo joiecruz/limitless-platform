@@ -15,14 +15,13 @@ interface InviteModalProps {
 
 export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
   const [searchParams] = useSearchParams();
-  const workspaceId = searchParams.get("workspace");
-  const email = searchParams.get("email");
+  const token = searchParams.get("token");
 
   const [formData, setFormData] = useState({
     password: "",
   });
 
-  const { handleSubmit, isLoading } = useInviteSubmit(workspaceId, email);
+  const { handleSubmit, isLoading } = useInviteSubmit(token);
 
   const handleNext = async (stepData: { password: string }) => {
     const updatedData = { ...formData, ...stepData };
