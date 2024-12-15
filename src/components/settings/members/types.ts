@@ -2,27 +2,28 @@ export type MemberStatus = 'Active' | 'Pending';
 
 export interface Member {
   id: string;
-  user_id: string | null;
+  user_id?: string;
   email: string | null;
   role: string;
-  last_active: string | null;
+  last_active: string;
   status: MemberStatus;
-  first_name: string | null;
-  last_name: string | null;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+  };
 }
 
-export interface Profile {
+export interface ProfileData {
   first_name: string | null;
   last_name: string | null;
   id: string;
-  email: string | null;
 }
 
 export interface WorkspaceMember {
   user_id: string;
   role: string;
   last_active: string;
-  profiles: Profile;
+  profiles: ProfileData;
 }
 
 export type TableMember = Member;

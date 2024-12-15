@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Member, WorkspaceMember } from "./types";
 import { useToast } from "@/hooks/use-toast";
 
-export function useMembers(workspaceId: string | null) {
+export function useMembers(workspaceId?: string) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -14,7 +14,7 @@ export function useMembers(workspaceId: string | null) {
         throw new Error('No workspace selected');
       }
 
-      // Fetch active members with their email from auth.users
+      // Fetch active members
       const { data: activeMembers, error: activeMembersError } = await supabase
         .from('workspace_members')
         .select(`
@@ -24,12 +24,11 @@ export function useMembers(workspaceId: string | null) {
           profiles!inner (
             first_name,
             last_name,
-            id,
-            email
+            id
           )
         `)
         .eq('workspace_id', workspaceId)
-        .order('last_active', { ascending: false });
+        .returns<WorkspaceMember[]>();
 
       if (activeMembersError) {
         console.error('Error fetching active members:', activeMembersError);
@@ -39,7 +38,13 @@ export function useMembers(workspaceId: string | null) {
       // Fetch pending invitations
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
         .from('workspace_invitations')
-        .select('*')
+        .select(`
+          id,
+          email,
+          role,
+          status,
+          created_at
+        `)
         .eq('workspace_id', workspaceId)
         .eq('status', 'pending');
 
@@ -48,33 +53,37 @@ export function useMembers(workspaceId: string | null) {
         throw pendingInvitesError;
       }
 
-      // Map active members to the common format
-      const members: Member[] = activeMembers.map((member: WorkspaceMember) => ({
+      // Transform active members data
+      const members: Member[] = activeMembers.map(member => ({
         id: member.user_id,
         user_id: member.user_id,
-        email: member.profiles.email,
+        email: null,
         role: member.role,
         last_active: member.last_active,
         status: 'Active' as const,
-        first_name: member.profiles.first_name,
-        last_name: member.profiles.last_name
+        profiles: {
+          first_name: member.profiles.first_name || null,
+          last_name: member.profiles.last_name || null,
+        }
       }));
 
-      // Add pending invites to the list
+      // Transform pending invites data
       const pendingMembers: Member[] = pendingInvites.map(invite => ({
         id: invite.id,
-        user_id: null,
         email: invite.email,
         role: invite.role,
-        last_active: null,
+        last_active: invite.created_at,
         status: 'Pending' as const,
-        first_name: null,
-        last_name: null
+        profiles: {
+          first_name: null,
+          last_name: null,
+        }
       }));
 
-      // Combine active members and pending invites
+      // Combine and return all members
       return [...members, ...pendingMembers];
-    }
+    },
+    enabled: !!workspaceId,
   });
 
   const handleDeleteMember = async (member: Member) => {
