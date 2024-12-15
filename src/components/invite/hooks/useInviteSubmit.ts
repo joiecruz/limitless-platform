@@ -12,7 +12,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
 
   const handleSubmit = async (data: Pick<InviteFormData, "password">) => {
     if (!workspaceId || !email) {
-      console.error("Missing required parameters:", { workspaceId, email });
+      console.error("🚫 Missing required parameters:", { workspaceId, email });
       toast({
         title: "Error",
         description: "Invalid invitation parameters",
@@ -22,15 +22,18 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     }
 
     setIsLoading(true);
+    console.log("🔄 Starting invitation process:", { workspaceId, email });
     
     try {
       // Step 1: Verify the invitation
+      console.log("👀 Verifying invitation...");
       const { invitation, decodedEmail } = await verifyInvitation(workspaceId, email);
-      console.log("Valid invitation found:", invitation);
+      console.log("✅ Valid invitation found:", invitation);
 
       // Step 2: Update invitation status to accepted
+      console.log("📝 Updating invitation status...");
       await updateInvitationStatus(invitation.id, 'accepted');
-      console.log("Invitation status updated to accepted");
+      console.log("✅ Invitation status updated to accepted");
 
       // Step 3: Sign up user with workspace context in redirectTo
       const redirectUrl = new URL("/auth/callback", window.location.origin);
@@ -38,9 +41,9 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       redirectUrl.searchParams.append("invitation", invitation.id);
       redirectUrl.searchParams.append("next", `/dashboard?workspace=${workspaceId}`);
 
-      console.log("Signup redirect URL:", redirectUrl.toString());
+      console.log("🔗 Signup redirect URL:", redirectUrl.toString());
 
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
         password: data.password,
         options: {
@@ -53,15 +56,24 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       });
 
       if (signUpError) {
+        console.error("❌ Signup error:", signUpError);
         throw signUpError;
       }
 
+      console.log("✅ Signup successful:", { 
+        user: signUpData.user?.id,
+        email: signUpData.user?.email,
+        workspace: workspaceId
+      });
+
       // Store workspace and role info in localStorage for use after email verification
-      localStorage.setItem('pendingWorkspaceJoin', JSON.stringify({
+      const pendingJoinData = {
         workspaceId,
         role: invitation.role,
         invitationId: invitation.id
-      }));
+      };
+      console.log("💾 Storing pending workspace join data:", pendingJoinData);
+      localStorage.setItem('pendingWorkspaceJoin', JSON.stringify(pendingJoinData));
 
       toast({
         title: "Success",
@@ -71,7 +83,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       navigate("/verify-email");
 
     } catch (error: any) {
-      console.error("Invitation process failed:", error);
+      console.error("❌ Invitation process failed:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to process invitation",

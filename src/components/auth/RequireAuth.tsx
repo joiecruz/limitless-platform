@@ -19,18 +19,23 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
     const checkSession = async () => {
       try {
-        console.log("RequireAuth: Checking session...");
+        console.log("🔍 RequireAuth: Checking session...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error("RequireAuth: Session error:", sessionError);
+          console.error("❌ RequireAuth: Session error:", sessionError);
           throw sessionError;
         }
 
-        console.log("RequireAuth: Session state:", session);
+        console.log("📊 RequireAuth: Session state:", {
+          session: session?.user?.id,
+          email: session?.user?.email,
+          emailConfirmed: session?.user?.email_confirmed_at,
+          timestamp: new Date().toISOString()
+        });
         
         if (!session) {
-          console.log("RequireAuth: No session found, redirecting to signin");
+          console.log("🚫 RequireAuth: No session found, redirecting to signin");
           setIsAuthenticated(false);
           await supabase.auth.signOut(); // Force clean session state
           navigate("/signin", { replace: true });
@@ -40,10 +45,16 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         // Check for pending workspace join after email verification
         const pendingWorkspaceJoin = localStorage.getItem('pendingWorkspaceJoin');
         if (pendingWorkspaceJoin && session.user.email_confirmed_at) {
-          console.log("RequireAuth: Found pending workspace join:", pendingWorkspaceJoin);
+          console.log("🏢 RequireAuth: Found pending workspace join:", pendingWorkspaceJoin);
           const { workspaceId, role, invitationId } = JSON.parse(pendingWorkspaceJoin);
           
           try {
+            console.log("➕ RequireAuth: Adding user to workspace:", {
+              workspace: workspaceId,
+              role: role,
+              user: session.user.id
+            });
+
             // Add user to workspace
             const { error: memberError } = await supabase
               .from("workspace_members")
@@ -55,13 +66,15 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
             if (memberError) {
               if (memberError.code === '23505') { // Unique violation
-                console.log("User is already a member of this workspace");
+                console.log("ℹ️ User is already a member of this workspace");
               } else {
+                console.error("❌ Error adding member:", memberError);
                 throw memberError;
               }
             }
 
             // Update invitation status
+            console.log("📝 RequireAuth: Updating invitation status...");
             const { error: inviteError } = await supabase
               .from("workspace_invitations")
               .update({ 
@@ -71,14 +84,16 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
               .eq("id", invitationId);
 
             if (inviteError) {
+              console.error("❌ Error updating invitation:", inviteError);
               throw inviteError;
             }
 
+            console.log("✅ RequireAuth: Workspace join completed successfully");
             localStorage.removeItem('pendingWorkspaceJoin');
             navigate(`/dashboard?workspace=${workspaceId}`);
             return;
           } catch (error: any) {
-            console.error("Error joining workspace:", error);
+            console.error("❌ Error joining workspace:", error);
             toast({
               title: "Error",
               description: error.message || "Failed to join workspace",
@@ -88,7 +103,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         }
 
         if (!session.user.email_confirmed_at) {
-          console.log("RequireAuth: Email not confirmed, redirecting to verify-email");
+          console.log("📧 RequireAuth: Email not confirmed, redirecting to verify-email");
           setIsAuthenticated(false);
           navigate("/verify-email", { replace: true });
           return;
@@ -97,7 +112,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true);
         setIsChecking(false);
       } catch (error: any) {
-        console.error("RequireAuth: Auth error:", error);
+        console.error("❌ RequireAuth: Auth error:", error);
         toast({
           title: "Authentication Error",
           description: "Please sign in again",
@@ -115,7 +130,12 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("RequireAuth: Auth state changed:", event, session);
+      console.log("🔄 RequireAuth: Auth state changed:", {
+        event,
+        user: session?.user?.id,
+        email: session?.user?.email,
+        timestamp: new Date().toISOString()
+      });
       
       // Skip auth redirects for verify-email and signup pages
       if (location.pathname === '/verify-email' || location.pathname === '/signup') {
@@ -123,11 +143,11 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
       }
 
       if (!session) {
-        console.log("RequireAuth: Session lost, redirecting to signin");
+        console.log("🚫 RequireAuth: Session lost, redirecting to signin");
         setIsAuthenticated(false);
         navigate("/signin", { replace: true });
       } else if (!session.user.email_confirmed_at) {
-        console.log("RequireAuth: Email not confirmed, redirecting to verify-email");
+        console.log("📧 RequireAuth: Email not confirmed, redirecting to verify-email");
         setIsAuthenticated(false);
         navigate("/verify-email", { replace: true });
       } else {
