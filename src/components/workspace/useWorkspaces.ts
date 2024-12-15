@@ -25,9 +25,16 @@ export function useWorkspaces() {
 
         console.log("User found:", user.id);
 
-        const { data: workspaces, error: workspacesError } = await supabase
+        const { data: workspaceMembers, error: workspacesError } = await supabase
           .from('workspace_members')
-          .select('workspace_id, workspaces ( id, name, slug )')
+          .select(`
+            workspace_id,
+            workspaces (
+              id,
+              name,
+              slug
+            )
+          `)
           .eq('user_id', user.id);
 
         if (workspacesError) {
@@ -35,13 +42,13 @@ export function useWorkspaces() {
           throw workspacesError;
         }
 
-        console.log('Raw workspace data:', workspaces);
+        console.log('Raw workspace data:', workspaceMembers);
         
         // Transform the data to match the Workspace type
-        const formattedWorkspaces = (workspaces as WorkspaceMemberWithWorkspace[]).map(item => ({
-          id: item.workspaces.id,
-          name: item.workspaces.name || 'Unnamed Workspace',
-          slug: item.workspaces.slug || 'unnamed'
+        const formattedWorkspaces = (workspaceMembers as WorkspaceMemberWithWorkspace[]).map(member => ({
+          id: member.workspaces.id,
+          name: member.workspaces.name || 'Unnamed Workspace',
+          slug: member.workspaces.slug || 'unnamed'
         }));
 
         console.log('Formatted workspaces:', formattedWorkspaces);
