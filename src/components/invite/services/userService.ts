@@ -33,12 +33,12 @@ export async function createNewUser(email: string, password: string, userData: U
     password,
     options: {
       data: {
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-        role: userData.role,
-        company_size: userData.companySize,
-        referral_source: userData.referralSource,
-        goals: userData.goals
+        first_name: userData.firstName || null,
+        last_name: userData.lastName || null,
+        role: userData.role || null,
+        company_size: userData.companySize || null,
+        referral_source: userData.referralSource || null,
+        goals: userData.goals || null
       },
       emailRedirectTo: `${window.location.origin}/dashboard`
     }
