@@ -16,6 +16,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     .select("*")
     .eq("workspace_id", workspaceId)
     .eq("email", decodedEmail)
+    .eq("status", "pending") // Explicitly check for pending status
     .maybeSingle();
 
   console.log("📬 INVITATION QUERY RESULT:", {
@@ -51,6 +52,15 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     throw new Error("No invitation found for this email address. Please request a new invitation.");
   }
 
+  // Check if the invitation has expired
+  if (new Date(invitation.expires_at) < new Date()) {
+    console.error("❌ INVITATION EXPIRED:", {
+      expiryDate: invitation.expires_at,
+      timestamp: new Date().toISOString()
+    });
+    throw new Error("This invitation has expired. Please request a new invitation.");
+  }
+
   // Only check if the invitation has been used
   if (invitation.status === 'accepted') {
     console.error("❌ INVITATION ALREADY USED:", {
@@ -78,7 +88,10 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
 
   const { error: updateError } = await supabase
     .from("workspace_invitations")
-    .update({ status })
+    .update({ 
+      status,
+      accepted_at: status === 'accepted' ? new Date().toISOString() : null 
+    })
     .eq("id", invitationId);
 
   if (updateError) {
