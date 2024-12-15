@@ -23,14 +23,41 @@ export default function VerifyEmail() {
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user.id);
         try {
-          // Call our edge function to handle workspace creation
-          const { error } = await supabase.functions.invoke('handle-email-verification', {
-            body: { user_id: session?.user.id }
-          });
+          // Check if there's a pending workspace join
+          const pendingJoinStr = localStorage.getItem('pendingWorkspaceJoin');
+          if (pendingJoinStr) {
+            const pendingJoin = JSON.parse(pendingJoinStr);
+            
+            // Add user to workspace
+            const { error: memberError } = await supabase
+              .from("workspace_members")
+              .insert({
+                workspace_id: pendingJoin.workspaceId,
+                user_id: session.user.id,
+                role: pendingJoin.role
+              });
 
-          if (error) throw error;
+            if (memberError) {
+              if (memberError.code === '23505') { // Unique violation
+                console.log("User is already a member of this workspace");
+              } else {
+                throw memberError;
+              }
+            }
 
-          // Navigate to dashboard after successful verification and workspace creation
+            // Update invitation status
+            if (pendingJoin.invitationId) {
+              await supabase
+                .from("workspace_invitations")
+                .update({ status: "accepted" })
+                .eq("id", pendingJoin.invitationId);
+            }
+
+            // Clear the pending join data
+            localStorage.removeItem('pendingWorkspaceJoin');
+          }
+
+          // Navigate to dashboard after successful verification and workspace setup
           navigate('/dashboard');
         } catch (error: any) {
           console.error('Error handling email verification:', error);
