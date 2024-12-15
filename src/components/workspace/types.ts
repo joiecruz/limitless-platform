@@ -8,5 +8,5 @@ export interface WorkspaceMember {
   workspace_id: string;
   user_id: string;
   role: string;
-  workspaces: Workspace;  // Changed from Workspace to single object
+  workspaces: Workspace;  // This is a single workspace object, not an array
 }
