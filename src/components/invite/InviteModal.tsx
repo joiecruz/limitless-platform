@@ -3,10 +3,9 @@ import {
   DialogContent,
   DialogHeader,
 } from "@/components/ui/dialog";
-import { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
 import { InviteStep1 } from "./steps/InviteStep1";
 import { useInviteSubmit } from "./hooks/useInviteSubmit";
+import { useSearchParams } from "react-router-dom";
 
 interface InviteModalProps {
   open?: boolean;
@@ -30,8 +29,8 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
           <DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2 text-center mb-6">
-                <h1 className="text-2xl font-semibold tracking-tight">Set Your Password</h1>
-                <p className="text-muted-foreground">Create a password to complete your account setup</p>
+                <h1 className="text-2xl font-semibold tracking-tight">Welcome to Your New Workspace</h1>
+                <p className="text-muted-foreground">Set a password to get started with your account</p>
               </div>
               <InviteStep1 
                 onNext={handleSubmit}

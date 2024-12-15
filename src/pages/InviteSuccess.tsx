@@ -30,9 +30,9 @@ export default function InviteSuccess() {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-semibold">Account Setup Complete!</h2>
+            <h2 className="text-2xl font-semibold">Almost there!</h2>
             <p className="text-gray-600">
-              Your account has been successfully created. To access the dashboard, please check your email and click the verification link we sent you.
+              We've sent you a verification link to complete your account setup. Please check your email and click the link to access your workspace.
             </p>
             <div className="pt-4">
               <Button

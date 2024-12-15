@@ -57,8 +57,8 @@ export default function VerifyEmail() {
             localStorage.removeItem('pendingWorkspaceJoin');
           }
 
-          // Navigate to dashboard after successful verification and workspace setup
-          navigate('/dashboard');
+          // Navigate to onboarding after successful verification
+          navigate('/onboarding');
         } catch (error: any) {
           console.error('Error handling email verification:', error);
           toast({
@@ -135,13 +135,13 @@ export default function VerifyEmail() {
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-semibold mb-2">Verify your email address</h2>
+              <h2 className="text-2xl font-semibold mb-2">Verify your email to continue</h2>
               <p className="text-gray-600 mb-1">
-                A verification email has been sent to{" "}
+                We've sent a verification email to{" "}
                 <span className="font-medium text-gray-900">{email || "your email address"}</span>
               </p>
               <p className="text-gray-600">
-                Please check your email and click the link provided to complete your account registration.
+                Click the link in the email to complete your account setup and join your workspace.
               </p>
             </div>
 
