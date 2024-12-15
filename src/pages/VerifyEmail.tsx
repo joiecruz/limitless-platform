@@ -6,11 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { VerifyEmailHeader } from "@/components/verify-email/VerifyEmailHeader";
 import { VerifyEmailIcon } from "@/components/verify-email/VerifyEmailIcon";
 import { useWorkspaceJoin } from "@/components/verify-email/useWorkspaceJoin";
+import { useToast } from "@/hooks/use-toast";
 
 export default function VerifyEmail() {
   const [email, setEmail] = useState<string>("");
   const [isResending, setIsResending] = useState(false);
   const { joinWorkspace, isJoining } = useWorkspaceJoin();
+  const { toast } = useToast();
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('verificationEmail');
