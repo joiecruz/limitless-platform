@@ -110,8 +110,8 @@ const App = () => {
         return;
       }
 
-      // Handle session expired
-      if (event === 'USER_DELETED' || event === 'USER_UPDATED') {
+      // Handle user updates
+      if (event === 'USER_UPDATED') {
         const { data: { session: newSession }, error } = await supabase.auth.getSession();
         if (error || !newSession) {
           console.log("Session invalid after user update - signing out");
