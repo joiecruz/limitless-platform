@@ -12,8 +12,10 @@ export async function verifyInvitation(token: string) {
     .eq("magic_link_token", token)
     .eq("status", "pending")
     .gt("expires_at", new Date().toISOString())
-    .single()
-    .throwOnError();
+    .single({
+      count: 'exact',
+      head: false
+    });
 
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
