@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
       __SUPABASE_ANON_KEY__: isDev
         ? JSON.stringify('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI2NjQzNzAsImV4cCI6MjAxODI0MDM3MH0.qgkN_0vO8cupvAYkl7J-0I4UuPj0xfXbwKD0Ue1Rx-c')
         : isStaging
-          ? JSON.stringify('YOUR_STAGING_ANON_KEY') // Replace this with your staging project's anon key
+          ? JSON.stringify('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpbWl0bGVzc2xhYi1zdGFnaW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTA4NTI5NzcsImV4cCI6MjAyNjQyODk3N30.Ue2oEHEYwxz_ZWPgk2GyGqP8WXI4JHNDGPXHm9Nf_Oc')
           : 'window.__SUPABASE_ANON_KEY__'
     },
     server: {
