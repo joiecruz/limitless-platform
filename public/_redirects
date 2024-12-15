@@ -1,2 +1,7 @@
 /* /index.html 200
+
+# Production redirects
 https://app.limitlesslab.org/* https://crllgygjuqpluvdpwayi.supabase.co/:splat 200
+
+# Staging redirects
+https://staging.limitlesslab.org/* https://YOUR_STAGING_PROJECT.supabase.co/:splat 200
