@@ -21,7 +21,7 @@ serve(async (req) => {
 
     console.log('Starting email confirmation process for user:', userId);
 
-    // Initialize Supabase admin client
+    // Initialize Supabase admin client with service role key
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -43,14 +43,18 @@ serve(async (req) => {
 
     console.log('User found:', userData.user.email);
 
+    const now = new Date().toISOString();
+
     // Update user's email confirmation status using the admin API
     const { data: updateData, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
       { 
-        email_confirmed_at: new Date().toISOString(),
+        email_confirmed_at: now,
+        confirmed_at: now,
         user_metadata: {
           ...userData.user.user_metadata,
-          email_confirmed: true
+          email_confirmed: true,
+          email_verified: true
         }
       }
     );
