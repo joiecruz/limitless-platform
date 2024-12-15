@@ -53,15 +53,5 @@ export async function createNewUser(email: string, password: string, userData: U
     throw new Error("Failed to create user account");
   }
 
-  // Call the Edge Function to confirm the user's email
-  const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user', {
-    body: { userId: authData.user.id }
-  });
-
-  if (confirmError) {
-    console.error("Error confirming user:", confirmError);
-    throw confirmError;
-  }
-
   return { data: authData, error: null };
 }

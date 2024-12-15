@@ -29,24 +29,20 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, workspaceId, workspaceName, inviterName, role, inviterId } = await req.json() as InviteRequest;
 
-    console.log(`Processing workspace invite for ${email} to workspace ${workspaceName} with role ${role}`);
+    console.log(`Sending workspace invite to ${email} for workspace ${workspaceName} with role ${role}`);
 
     // Initialize Supabase client with service role key
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-
-    // Generate a unique token for the invitation
-    const magicLinkToken = crypto.randomUUID();
 
     // Save the invitation in the database
     const { error: inviteError } = await supabase
       .from('workspace_invitations')
       .insert({
         workspace_id: workspaceId,
-        email: email.toLowerCase(),
+        email: email,
         role: role,
         invited_by: inviterId,
-        status: 'pending',
-        magic_link_token: magicLinkToken
+        status: 'pending'
       });
 
     if (inviteError) {
@@ -63,10 +59,10 @@ const handler = async (req: Request): Promise<Response> => {
       throw inviteError;
     }
 
-    // Create the confirmation link with the magic link token, workspace ID, and email
-    const confirmationLink = `${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}`;
+    // Properly encode the email for the URL
+    const encodedEmail = encodeURIComponent(email);
 
-    // Send the email invitation with the confirmation link
+    // Send the email invitation
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -76,14 +72,14 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [email],
-        subject: `Join ${workspaceName} on Limitless Lab`,
+        subject: `Join ${workspaceName} on our platform`,
         html: `
           <!DOCTYPE html>
           <html lang="en">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Join Workspace</title>
+            <title>You've Been Invited</title>
             <style>
               body {
                 font-family: Arial, sans-serif;
@@ -144,12 +140,12 @@ const handler = async (req: Request): Promise<Response> => {
             <div class="email-container">
               <div class="email-header">
                 <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Logo" class="logo">
-                <h2>You've Been Invited!</h2>
+                <h2>You've been invited!</h2>
               </div>
               <div class="email-body">
-                <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> as a ${role}.</p>
-                <p>Click the link below to set up your account and join the workspace:</p>
-                <a href="${confirmationLink}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Join Workspace</a>
+                <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on our platform as a ${role}.</p>
+                <p>Click the link below to accept the invitation:</p>
+                <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodedEmail}&role=${role}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Accept Invitation</a>
                 <p style="margin-top: 16px; font-size: 14px; color: #666666;">If you didn't expect this invitation, you can safely ignore this email.</p>
               </div>
               <div class="email-footer">

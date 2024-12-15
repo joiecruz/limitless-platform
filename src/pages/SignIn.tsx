@@ -1,9 +1,10 @@
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { SignInLogo } from "@/components/auth/SignInLogo";
-import { SignInCard } from "@/components/auth/SignInCard";
+import { Button } from "@/components/ui/button";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -114,8 +115,113 @@ export default function SignIn() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        <SignInLogo />
-        <SignInCard />
+        {/* Logo Section */}
+        <div className="text-center mb-8">
+          <img 
+            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+            alt="Limitless Lab"
+            className="h-12 w-auto mx-auto mb-6"
+          />
+        </div>
+
+        {/* Sign In Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 animate-fade-in">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">Sign in</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Where innovation meets possibility – your journey to limitless learning begins here
+            </p>
+          </div>
+
+          <Auth
+            supabaseClient={supabase}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#393ca0',
+                    brandAccent: '#2d2f80',
+                    brandButtonText: 'white',
+                    defaultButtonBackground: 'white',
+                    defaultButtonBackgroundHover: '#f9fafb',
+                    inputBackground: 'white',
+                    inputBorder: '#e5e7eb',
+                    inputBorderHover: '#393ca0',
+                    inputBorderFocus: '#393ca0',
+                  },
+                  borderWidths: {
+                    buttonBorderWidth: '1px',
+                    inputBorderWidth: '1px',
+                  },
+                  radii: {
+                    borderRadiusButton: '0.5rem',
+                    buttonBorderRadius: '0.5rem',
+                    inputBorderRadius: '0.5rem',
+                  },
+                },
+              },
+              style: {
+                button: {
+                  height: '2.75rem',
+                  borderRadius: '0.5rem',
+                },
+                input: {
+                  height: '2.75rem',
+                  borderRadius: '0.5rem',
+                },
+                anchor: {
+                  color: '#393ca0',
+                  textDecoration: 'none',
+                },
+                message: {
+                  color: '#ef4444',
+                },
+                divider: {
+                  background: '#e5e7eb',
+                },
+              },
+            }}
+            theme="default"
+            providers={[]}
+            redirectTo={`${window.location.origin}/dashboard`}
+            showLinks={false}
+            localization={{
+              variables: {
+                sign_in: {
+                  email_label: 'Email',
+                  password_label: 'Password',
+                  button_label: 'Sign in',
+                  loading_button_label: 'Signing in...',
+                  social_provider_text: 'Sign in with {{provider}}',
+                  link_text: 'Already have an account? Sign in',
+                },
+                sign_up: {
+                  email_label: 'Email',
+                  password_label: 'Password',
+                  button_label: 'Sign up',
+                  loading_button_label: 'Signing up...',
+                  social_provider_text: 'Sign up with {{provider}}',
+                  link_text: "Don't have an account? Sign up",
+                },
+              },
+            }}
+          />
+          
+          {/* Sign Up Link */}
+          <div className="text-center mt-4">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{" "}
+              <Button
+                variant="link"
+                className="p-0 h-auto font-semibold text-primary hover:text-primary/80"
+                onClick={() => navigate("/signup")}
+              >
+                Sign up
+              </Button>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

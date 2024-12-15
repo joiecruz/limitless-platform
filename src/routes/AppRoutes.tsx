@@ -1,66 +1,56 @@
-import { Routes, Route } from "react-router-dom";
-import { RequireAuth } from "@/components/auth/RequireAuth";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Session } from "@supabase/supabase-js";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import Dashboard from "@/pages/Dashboard";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
-import Dashboard from "@/pages/Dashboard";
-import Settings from "@/pages/Settings";
-import Community from "@/pages/Community";
+import VerifyEmail from "@/pages/VerifyEmail";
+import InvitePage from "@/pages/InvitePage";
 import Courses from "@/pages/Courses";
 import Lessons from "@/pages/Lessons";
 import Lesson from "@/pages/Lesson";
+import Community from "@/pages/Community";
+import Projects from "@/pages/Projects";
 import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
-import Projects from "@/pages/Projects";
-import InvitePage from "@/pages/InvitePage";
-import InviteConfirmPage from "@/pages/InviteConfirmPage";
-import VerifyEmail from "@/pages/VerifyEmail";
+import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
-export default function AppRoutes() {
+interface AppRoutesProps {
+  session: Session | null;
+}
+
+export default function AppRoutes({ session }: AppRoutesProps) {
   return (
     <Routes>
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/invite" element={<InvitePage />} />
-      <Route path="/invite/confirm" element={<InviteConfirmPage />} />
       <Route
         path="/"
-        element={
-          <RequireAuth>
-            <Dashboard />
-          </RequireAuth>
-        }
+        element={<Navigate to={session ? "/dashboard" : "/signin"} replace />}
       />
       <Route
-        path="/settings"
-        element={
-          <RequireAuth>
-            <Settings />
-          </RequireAuth>
-        }
+        path="/signin"
+        element={session ? <Navigate to="/dashboard" replace /> : <SignIn />}
       />
       <Route
-        path="/account"
-        element={
-          <RequireAuth>
-            <AccountSettings />
-          </RequireAuth>
-        }
+        path="/signup"
+        element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
       />
       <Route
-        path="/community"
-        element={
-          <RequireAuth>
-            <Community />
-          </RequireAuth>
-        }
+        path="/verify-email"
+        element={<VerifyEmail />}
+      />
+      <Route
+        path="/invite"
+        element={<InvitePage />}
       />
       <Route
         path="/courses"
         element={
           <RequireAuth>
-            <Courses />
+            <DashboardLayout>
+              <Courses />
+            </DashboardLayout>
           </RequireAuth>
         }
       />
@@ -68,7 +58,9 @@ export default function AppRoutes() {
         path="/courses/:courseId/lessons"
         element={
           <RequireAuth>
-            <Lessons />
+            <DashboardLayout>
+              <Lessons />
+            </DashboardLayout>
           </RequireAuth>
         }
       />
@@ -81,18 +73,12 @@ export default function AppRoutes() {
         }
       />
       <Route
-        path="/tools"
+        path="/dashboard/*"
         element={
           <RequireAuth>
-            <Tools />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/tools/:toolId"
-        element={
-          <RequireAuth>
-            <ToolDetails />
+            <DashboardLayout>
+              <Dashboard />
+            </DashboardLayout>
           </RequireAuth>
         }
       />
@@ -100,7 +86,59 @@ export default function AppRoutes() {
         path="/projects"
         element={
           <RequireAuth>
-            <Projects />
+            <DashboardLayout>
+              <Projects />
+            </DashboardLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/tools"
+        element={
+          <RequireAuth>
+            <DashboardLayout>
+              <Tools />
+            </DashboardLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/tools/:toolId"
+        element={
+          <RequireAuth>
+            <DashboardLayout>
+              <ToolDetails />
+            </DashboardLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/community"
+        element={
+          <RequireAuth>
+            <DashboardLayout>
+              <Community />
+            </DashboardLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/dashboard/settings"
+        element={
+          <RequireAuth>
+            <DashboardLayout>
+              <Settings />
+            </DashboardLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/account-settings"
+        element={
+          <RequireAuth>
+            <DashboardLayout>
+              <AccountSettings />
+            </DashboardLayout>
           </RequireAuth>
         }
       />
