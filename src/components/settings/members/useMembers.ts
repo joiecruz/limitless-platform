@@ -54,16 +54,6 @@ export function useMembers(workspaceId?: string) {
         throw pendingInvitesError;
       }
 
-      // Filter out pending invites for users who are already active members
-      const filteredPendingInvites = pendingInvites.filter(invite => {
-        // If the invite has a user_id, check if they're already an active member
-        if (invite.user_id) {
-          return !activeMembers.some(member => member.user_id === invite.user_id);
-        }
-        // If no user_id (email only invite), keep it in the list
-        return true;
-      });
-
       // Transform active members data
       const members: Member[] = activeMembers.map(member => ({
         id: member.user_id,
@@ -79,7 +69,7 @@ export function useMembers(workspaceId?: string) {
       }));
 
       // Transform pending invites data
-      const pendingMembers: Member[] = filteredPendingInvites.map(invite => ({
+      const pendingMembers: Member[] = pendingInvites.map(invite => ({
         id: invite.id,
         email: invite.email,
         role: invite.role,
