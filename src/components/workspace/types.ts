@@ -4,7 +4,9 @@ export interface Workspace {
   slug: string | null;
 }
 
-export interface WorkspaceMemberWithWorkspace {
+export interface WorkspaceMember {
   workspace_id: string;
+  user_id: string;
+  role: string;
   workspaces: Workspace;
 }
