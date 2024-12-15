@@ -11,6 +11,19 @@ export function useWorkspaces() {
     queryFn: async () => {
       console.log('Fetching workspaces...');
       try {
+        // First check if we have a valid session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
+
+        if (!session) {
+          console.log("No active session found");
+          return [];
+        }
+
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (userError) {
@@ -59,8 +72,22 @@ export function useWorkspaces() {
 
         console.log('Formatted workspaces:', formattedWorkspaces);
         return formattedWorkspaces;
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error in fetchWorkspaces:', error);
+        
+        // Check if it's an auth error and show appropriate message
+        if (error.message?.includes('session_not_found') || error.message?.includes('JWT expired')) {
+          toast({
+            title: "Session expired",
+            description: "Please sign in again to continue.",
+            variant: "destructive",
+          });
+          // Redirect to sign in or handle session expiry
+          await supabase.auth.signOut();
+          window.location.href = '/signin';
+          return [];
+        }
+        
         toast({
           title: "Error",
           description: "Failed to load workspaces. Please try again.",
