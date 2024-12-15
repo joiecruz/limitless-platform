@@ -24,3 +24,5 @@ export interface WorkspaceMember {
   last_active: string;
   profiles: Profile;
 }
+
+export type TableMember = Member;
