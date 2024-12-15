@@ -42,8 +42,8 @@ export async function createNewUser(email: string, password: string, userData: U
         email_confirmed: userData.email_confirmed // This will be used by the trigger
       },
       emailRedirectTo: `${window.location.origin}/dashboard`,
-      // Don't send confirmation email for invited users since they already confirmed by clicking the invite link
-      emailConfirmationRedirectTo: userData.email_confirmed ? undefined : `${window.location.origin}/dashboard`
+      // Skip email verification for invited users
+      emailVerification: userData.email_confirmed ? false : undefined
     }
   });
 
