@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { verifyInvitation, updateInvitationStatus } from "../services/invitationService";
 import { checkExistingUser, createNewUser } from "../services/userService";
 import { InviteFormData } from "../types";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useInviteSubmit(workspaceId: string | null, email: string | null) {
   const [isLoading, setIsLoading] = useState(false);
