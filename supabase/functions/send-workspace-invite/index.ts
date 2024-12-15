@@ -34,16 +34,20 @@ const handler = async (req: Request): Promise<Response> => {
     // Initialize Supabase client with service role key
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Save the invitation in the database
-    const { error: inviteError } = await supabase
+    // Save the invitation in the database with a new magic link token
+    const { data: invitation, error: inviteError } = await supabase
       .from('workspace_invitations')
       .insert({
         workspace_id: workspaceId,
         email: email,
         role: role,
         invited_by: inviterId,
-        status: 'pending'
-      });
+        status: 'pending',
+        magic_link_token: crypto.randomUUID(), // Generate a new UUID for confirmation
+        email_verified: false
+      })
+      .select()
+      .single();
 
     if (inviteError) {
       if (inviteError.code === '23505') {
@@ -58,10 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw inviteError;
     }
 
-    // Properly encode the email for the URL
-    const encodedEmail = encodeURIComponent(email);
-
-    // Send the email invitation
+    // Send the email invitation with the confirmation token
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -131,17 +132,17 @@ const handler = async (req: Request): Promise<Response> => {
                   <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Logo" class="logo">
                 </div>
                 
-                <h2>You have been added to your team's ${workspaceName} account.</h2>
+                <h2>Confirm your email to join ${workspaceName}</h2>
                 
                 <p>Hi ${email},</p>
                 
-                <p>You have been added to your team's ${workspaceName} account by ${inviterName}. Click the button below to set a password and login.</p>
+                <p>${inviterName} has invited you to join their ${workspaceName} account. Click the button below to confirm your email and complete your registration.</p>
                 
                 <div style="text-align: center;">
-                  <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodedEmail}&role=${role}" 
+                  <a href="${req.headers.get("origin")}/?confirmationToken=${invitation.magic_link_token}" 
                      class="button" 
                      style="color: white !important;">
-                    Set your password
+                    Confirm Email
                   </a>
                 </div>
                 
