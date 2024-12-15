@@ -15,8 +15,13 @@ import InvitePage from "@/pages/InvitePage";
 import InviteConfirmPage from "@/pages/InviteConfirmPage";
 import VerifyEmail from "@/pages/VerifyEmail";
 import AccountSettings from "@/pages/AccountSettings";
+import { Session } from "@supabase/supabase-js";
 
-export default function AppRoutes() {
+interface AppRoutesProps {
+  session: Session | null;
+}
+
+export default function AppRoutes({ session }: AppRoutesProps) {
   return (
     <Routes>
       <Route path="/signin" element={<SignIn />} />
