@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Workspace } from "./types";
+import { Workspace, WorkspaceMemberWithWorkspace } from "./types";
 
 export function useWorkspaces() {
   const { toast } = useToast();
@@ -38,7 +38,7 @@ export function useWorkspaces() {
         console.log('Raw workspace data:', workspaces);
         
         // Transform the data to match the Workspace type
-        const formattedWorkspaces = workspaces.map(item => ({
+        const formattedWorkspaces = (workspaces as WorkspaceMemberWithWorkspace[]).map(item => ({
           id: item.workspaces.id,
           name: item.workspaces.name || 'Unnamed Workspace',
           slug: item.workspaces.slug || 'unnamed'
