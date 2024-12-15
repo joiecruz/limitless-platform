@@ -3,10 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 export async function verifyInvitation(workspaceId: string, email: string) {
   const decodedEmail = decodeURIComponent(email).toLowerCase();
 
-  console.log("🔍 INVITATION VERIFICATION START", {
-    rawEmail: email,
-    decodedEmail,
+  console.log("🔍 Verifying invitation:", {
     workspaceId,
+    decodedEmail,
     timestamp: new Date().toISOString()
   });
 
@@ -16,62 +15,38 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     .select("*")
     .eq("workspace_id", workspaceId)
     .eq("email", decodedEmail)
-    .eq("status", "pending") // Explicitly check for pending status
-    .maybeSingle();
-
-  console.log("📬 INVITATION QUERY RESULT:", {
-    invitation,
-    error: inviteError,
-    emailUsedInQuery: decodedEmail,
-    timestamp: new Date().toISOString()
-  });
+    .eq("status", "pending")
+    .single();
 
   if (inviteError) {
-    console.error("❌ INVITATION ERROR:", {
+    console.error("❌ Error verifying invitation:", {
       error: inviteError,
-      decodedEmail,
       workspaceId,
+      decodedEmail,
       timestamp: new Date().toISOString()
     });
-    throw new Error("Failed to verify invitation. Please try again.");
+    throw new Error("Failed to verify invitation");
   }
 
   if (!invitation) {
-    // Query the table directly to see what invitations exist
-    const { data: allInvites } = await supabase
-      .from("workspace_invitations")
-      .select("*")
-      .eq("workspace_id", workspaceId);
-    
-    console.error("❌ NO INVITATION FOUND:", {
-      decodedEmail,
+    console.error("❌ No valid invitation found:", {
       workspaceId,
-      existingInvites: allInvites,
+      decodedEmail,
       timestamp: new Date().toISOString()
     });
-    throw new Error("No invitation found for this email address. Please request a new invitation.");
+    throw new Error("No valid invitation found for this email address");
   }
 
-  // Check if the invitation has expired
+  // Check if invitation has expired
   if (new Date(invitation.expires_at) < new Date()) {
-    console.error("❌ INVITATION EXPIRED:", {
+    console.error("❌ Invitation expired:", {
       expiryDate: invitation.expires_at,
       timestamp: new Date().toISOString()
     });
-    throw new Error("This invitation has expired. Please request a new invitation.");
+    throw new Error("This invitation has expired");
   }
 
-  // Only check if the invitation has been used
-  if (invitation.status === 'accepted') {
-    console.error("❌ INVITATION ALREADY USED:", {
-      status: invitation.status,
-      decodedEmail,
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("This invitation has already been used. Please request a new invitation.");
-  }
-
-  console.log("✅ VALID INVITATION FOUND:", {
+  console.log("✅ Valid invitation found:", {
     invitation,
     timestamp: new Date().toISOString()
   });
@@ -80,13 +55,13 @@ export async function verifyInvitation(workspaceId: string, email: string) {
 }
 
 export async function updateInvitationStatus(invitationId: string, status: 'accepted' | 'rejected') {
-  console.log("📝 UPDATING INVITATION STATUS:", {
+  console.log("📝 Updating invitation status:", {
     invitationId,
     status,
     timestamp: new Date().toISOString()
   });
 
-  const { error: updateError } = await supabase
+  const { error } = await supabase
     .from("workspace_invitations")
     .update({ 
       status,
@@ -94,19 +69,15 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
     })
     .eq("id", invitationId);
 
-  if (updateError) {
-    console.error("❌ INVITATION UPDATE ERROR:", {
-      error: updateError,
+  if (error) {
+    console.error("❌ Error updating invitation status:", {
+      error,
       invitationId,
       status,
       timestamp: new Date().toISOString()
     });
-    throw updateError;
+    throw error;
   }
 
-  console.log("✅ INVITATION STATUS UPDATED:", {
-    invitationId,
-    status,
-    timestamp: new Date().toISOString()
-  });
+  console.log("✅ Invitation status updated successfully");
 }

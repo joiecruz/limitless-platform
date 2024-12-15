@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { verifyInvitation, updateInvitationStatus } from "../services/invitationService";
+import { verifyInvitation } from "../services/invitationService";
 import { InviteFormData } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -22,35 +22,22 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
     }
 
     setIsLoading(true);
-    console.log("🔄 Starting invitation process:", { workspaceId, email });
+    console.log("🔄 Processing invitation:", { workspaceId, email });
     
     try {
-      // Step 1: Verify the invitation
-      console.log("👀 Verifying invitation...");
+      // Step 1: Verify invitation
       const { invitation, decodedEmail } = await verifyInvitation(workspaceId, email);
-      console.log("✅ Valid invitation found:", invitation);
+      console.log("✅ Invitation verified:", invitation);
 
-      // Step 2: Update invitation status to accepted
-      console.log("📝 Updating invitation status...");
-      await updateInvitationStatus(invitation.id, 'accepted');
-      console.log("✅ Invitation status updated to accepted");
-
-      // Step 3: Sign up user with workspace context in redirectTo
-      const redirectUrl = new URL("/auth/callback", window.location.origin);
-      redirectUrl.searchParams.append("workspace", workspaceId);
-      redirectUrl.searchParams.append("invitation", invitation.id);
-      redirectUrl.searchParams.append("next", `/dashboard?workspace=${workspaceId}`);
-
-      console.log("🔗 Signup redirect URL:", redirectUrl.toString());
-
+      // Step 2: Sign up user
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
         password: data.password,
         options: {
-          emailRedirectTo: redirectUrl.toString(),
           data: {
             workspace_id: workspaceId,
-            invitation_id: invitation.id
+            invitation_id: invitation.id,
+            is_invited: true
           }
         }
       });
@@ -60,27 +47,26 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
         throw signUpError;
       }
 
-      console.log("✅ Signup successful:", { 
+      console.log("✅ User signed up successfully:", { 
         user: signUpData.user?.id,
-        email: signUpData.user?.email,
-        workspace: workspaceId
+        email: signUpData.user?.email
       });
 
-      // Store workspace and role info in localStorage for use after email verification
+      // Store workspace context for post-verification
       const pendingJoinData = {
         workspaceId,
         role: invitation.role,
         invitationId: invitation.id
       };
-      console.log("💾 Storing pending workspace join data:", pendingJoinData);
+      console.log("💾 Storing workspace context:", pendingJoinData);
       localStorage.setItem('pendingWorkspaceJoin', JSON.stringify(pendingJoinData));
 
+      // Redirect to verify email page
+      navigate("/verify-email");
       toast({
         title: "Success",
-        description: "Please check your email to complete the verification process.",
+        description: "Please check your email to verify your account",
       });
-
-      navigate("/verify-email");
 
     } catch (error: any) {
       console.error("❌ Invitation process failed:", error);
