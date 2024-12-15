@@ -63,8 +63,8 @@ const handler = async (req: Request): Promise<Response> => {
       throw inviteError;
     }
 
-    // Create the confirmation link with the magic link token
-    const confirmationLink = `${req.headers.get("origin")}/invite/confirm?token=${magicLinkToken}`;
+    // Create the confirmation link with the magic link token, workspace ID, and email
+    const confirmationLink = `${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodeURIComponent(email)}`;
 
     // Send the email invitation with the confirmation link
     const res = await fetch("https://api.resend.com/emails", {
@@ -76,14 +76,14 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [email],
-        subject: `Confirm your invitation to ${workspaceName}`,
+        subject: `Join ${workspaceName} on Limitless Lab`,
         html: `
           <!DOCTYPE html>
           <html lang="en">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Confirm Your Invitation</title>
+            <title>Join Workspace</title>
             <style>
               body {
                 font-family: Arial, sans-serif;
@@ -144,12 +144,12 @@ const handler = async (req: Request): Promise<Response> => {
             <div class="email-container">
               <div class="email-header">
                 <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Logo" class="logo">
-                <h2>Confirm Your Invitation</h2>
+                <h2>You've Been Invited!</h2>
               </div>
               <div class="email-body">
                 <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> as a ${role}.</p>
-                <p>Click the link below to confirm your email and join the workspace:</p>
-                <a href="${confirmationLink}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Confirm Email & Join</a>
+                <p>Click the link below to set up your account and join the workspace:</p>
+                <a href="${confirmationLink}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Join Workspace</a>
                 <p style="margin-top: 16px; font-size: 14px; color: #666666;">If you didn't expect this invitation, you can safely ignore this email.</p>
               </div>
               <div class="email-footer">
