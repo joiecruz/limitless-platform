@@ -1,14 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 
-declare global {
-  interface Window {
-    __SUPABASE_URL__: string;
-    __SUPABASE_ANON_KEY__: string;
+// Get environment-specific Supabase URL and key
+const getSupabaseConfig = () => {
+  // Development environment (local)
+  if (process.env.NODE_ENV === 'development') {
+    return {
+      url: 'https://crllgygjuqpluvdpwayi.supabase.co',
+      key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI2NjQzNzAsImV4cCI6MjAxODI0MDM3MH0.qgkN_0vO8cupvAYkl7J-0I4UuPj0xfXbwKD0Ue1Rx-c'
+    };
   }
-}
 
-const supabaseUrl = typeof __SUPABASE_URL__ !== 'undefined' ? __SUPABASE_URL__ : '';
-const supabaseAnonKey = typeof __SUPABASE_ANON_KEY__ !== 'undefined' ? __SUPABASE_ANON_KEY__ : '';
+  // Production and staging environments
+  return {
+    url: window.__SUPABASE_URL__,
+    key: window.__SUPABASE_ANON_KEY__
+  };
+};
+
+const { url: supabaseUrl, key: supabaseAnonKey } = getSupabaseConfig();
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase configuration. Make sure environment variables are set correctly.');
