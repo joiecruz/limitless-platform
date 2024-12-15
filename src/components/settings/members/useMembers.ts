@@ -1,13 +1,12 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Member, WorkspaceMember } from "./types";
 import { useToast } from "@/hooks/use-toast";
 
 export function useMembers(workspaceId: string | null) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const query = useQuery({
+  return useQuery({
     queryKey: ['workspace-members', workspaceId],
     queryFn: async () => {
       if (!workspaceId) {
@@ -49,7 +48,7 @@ export function useMembers(workspaceId: string | null) {
       }
 
       // Map active members to the common format
-      const members: Member[] = activeMembers.map((member: WorkspaceMember) => ({
+      const members: Member[] = activeMembers.map(member => ({
         id: member.user_id,
         user_id: member.user_id,
         email: member.profiles.email,
@@ -74,52 +73,14 @@ export function useMembers(workspaceId: string | null) {
 
       // Combine active members and pending invites
       return [...members, ...pendingMembers];
-    }
-  });
-
-  const handleDeleteMember = async (member: Member) => {
-    try {
-      if (member.status === 'Active') {
-        const { error } = await supabase
-          .from('workspace_members')
-          .delete()
-          .eq('workspace_id', workspaceId)
-          .eq('user_id', member.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('workspace_invitations')
-          .delete()
-          .eq('id', member.id);
-
-        if (error) throw error;
-      }
-
-      // Invalidate and refetch
-      queryClient.invalidateQueries({
-        queryKey: ['workspace-members', workspaceId]
-      });
-
-      toast({
-        title: "Success",
-        description: member.status === 'Active' 
-          ? "Member has been removed from the workspace"
-          : "Invitation has been cancelled",
-      });
-    } catch (error: any) {
-      console.error('Error deleting member:', error);
+    },
+    onError: (error: Error) => {
+      console.error('Error in useMembers:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to remove member",
+        description: "Failed to fetch workspace members",
         variant: "destructive",
       });
     }
-  };
-
-  return {
-    tableData: query.data || [],
-    isLoading: query.isLoading,
-    handleDeleteMember
-  };
+  });
 }
