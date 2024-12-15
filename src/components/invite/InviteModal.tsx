@@ -24,6 +24,7 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
   });
 
   const { handleSubmit, isLoading } = useInviteSubmit(token);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const handleNext = async (stepData: { password: string }) => {
     const updatedData = { ...formData, ...stepData };
@@ -31,12 +32,7 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
     await handleSubmit({
       password: updatedData.password,
     });
-
-    // Show the email confirmation toast
-    toast({
-      title: "Almost there!",
-      description: "Please check your email to confirm your account and access the workspace dashboard.",
-    });
+    setShowConfirmation(true);
   };
 
   return (
@@ -49,15 +45,28 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">
-              <div className="space-y-2 text-center mb-6">
-                <h1 className="text-2xl font-semibold tracking-tight">Set Your Password</h1>
-                <p className="text-muted-foreground">Create a password to access your workspace</p>
-              </div>
-              <InviteStep1 
-                onNext={handleNext}
-                data={formData}
-                loading={isLoading}
-              />
+              {!showConfirmation ? (
+                <>
+                  <div className="space-y-2 text-center mb-6">
+                    <h1 className="text-2xl font-semibold tracking-tight">Set Your Password</h1>
+                    <p className="text-muted-foreground">Create a password to access your workspace</p>
+                  </div>
+                  <InviteStep1 
+                    onNext={handleNext}
+                    data={formData}
+                    loading={isLoading}
+                  />
+                </>
+              ) : (
+                <div className="space-y-6 text-center">
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-semibold tracking-tight">Almost there!</h2>
+                    <p className="text-muted-foreground">
+                      Please check your email to confirm your account and access the workspace dashboard.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </DialogHeader>
         </div>
