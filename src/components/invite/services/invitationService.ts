@@ -10,7 +10,8 @@ export async function verifyInvitation(token: string) {
     .from("workspace_invitations")
     .select("*")
     .eq('magic_link_token', token)
-    .single();
+    .limit(1)
+    .maybeSingle();
 
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
