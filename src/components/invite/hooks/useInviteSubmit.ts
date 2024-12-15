@@ -10,7 +10,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (data: Pick<InviteFormData, "password">) => {
     if (!workspaceId || !email) {
       console.error("Missing required parameters:", { workspaceId, email });
       toast({
@@ -33,16 +33,12 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       redirectUrl.searchParams.append("workspace", workspaceId);
       redirectUrl.searchParams.append("invitation", invitation.id);
       redirectUrl.searchParams.append("next", `/dashboard?workspace=${workspaceId}`);
-      redirectUrl.searchParams.append("type", "signup");
 
       console.log("Signup redirect URL:", redirectUrl.toString());
 
-      // Generate a secure random password since we won't ask the user for one
-      const tempPassword = crypto.randomUUID();
-
       const { error: signUpError } = await supabase.auth.signUp({
         email: decodedEmail,
-        password: tempPassword,
+        password: data.password,
         options: {
           emailRedirectTo: redirectUrl.toString(),
           data: {
@@ -64,8 +60,8 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
       }));
 
       toast({
-        title: "Almost there!",
-        description: "Please check your email to confirm your account and join the workspace.",
+        title: "Success",
+        description: "Please check your email to complete the verification process.",
       });
 
       navigate("/invite-success");

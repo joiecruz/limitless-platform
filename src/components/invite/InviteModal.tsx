@@ -3,9 +3,9 @@ import {
   DialogContent,
   DialogHeader,
 } from "@/components/ui/dialog";
+import { InviteStep1 } from "./steps/InviteStep1";
 import { useInviteSubmit } from "./hooks/useInviteSubmit";
 import { useSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 
 interface InviteModalProps {
   open?: boolean;
@@ -30,17 +30,13 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
             <div className="space-y-4">
               <div className="space-y-2 text-center mb-6">
                 <h1 className="text-2xl font-semibold tracking-tight">Welcome to Your New Workspace</h1>
-                <p className="text-muted-foreground">Click below to confirm your email and join the workspace</p>
+                <p className="text-muted-foreground">Set a password to get started with your account</p>
               </div>
-              <div className="flex justify-center">
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={isLoading}
-                  className="w-full max-w-sm"
-                >
-                  {isLoading ? "Processing..." : "Confirm Email & Join"}
-                </Button>
-              </div>
+              <InviteStep1 
+                onNext={handleSubmit}
+                loading={isLoading}
+                data={{ password: "" }}
+              />
             </div>
           </DialogHeader>
         </div>
