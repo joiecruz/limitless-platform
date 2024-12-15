@@ -27,6 +27,7 @@ export default function VerifyEmail() {
           const pendingJoinStr = localStorage.getItem('pendingWorkspaceJoin');
           if (pendingJoinStr) {
             const pendingJoin = JSON.parse(pendingJoinStr);
+            console.log('Processing pending workspace join:', pendingJoin);
             
             // Add user to workspace with the correct role
             const { error: memberError } = await supabase
@@ -38,11 +39,14 @@ export default function VerifyEmail() {
               });
 
             if (memberError) {
+              console.error('Error adding member to workspace:', memberError);
               if (memberError.code === '23505') { // Unique violation
                 console.log("User is already a member of this workspace");
               } else {
                 throw memberError;
               }
+            } else {
+              console.log('Successfully added user to workspace');
             }
 
             // Update invitation status to accepted
@@ -56,6 +60,7 @@ export default function VerifyEmail() {
                 console.error('Error updating invitation status:', inviteError);
                 throw inviteError;
               }
+              console.log('Successfully updated invitation status');
             }
 
             // Clear the pending join data
