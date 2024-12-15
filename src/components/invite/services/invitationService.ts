@@ -6,19 +6,18 @@ export async function verifyInvitation(token: string) {
     timestamp: new Date().toISOString()
   });
 
-  const query = supabase
+  // Log the query parameters
+  console.log("🔍 QUERY PARAMETERS:", {
+    table: "workspace_invitations",
+    filter: { magic_link_token: token },
+    timestamp: new Date().toISOString()
+  });
+
+  const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
     .select("*")
     .eq('magic_link_token', token)
     .single();
-
-  // Log the generated SQL query
-  console.log("🔍 GENERATED QUERY:", {
-    query: query.toSQL(), // This will show the actual SQL being executed
-    timestamp: new Date().toISOString()
-  });
-
-  const { data: invitation, error: inviteError } = await query;
 
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
