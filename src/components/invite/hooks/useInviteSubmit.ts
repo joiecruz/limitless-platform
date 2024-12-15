@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { verifyInvitation, updateInvitationStatus } from "../services/invitationService";
 import { checkExistingUser, addUserToWorkspace, createNewUser } from "../services/userService";
@@ -7,7 +6,6 @@ import { InviteFormData } from "../types";
 
 export function useInviteSubmit(token: string | null) {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (data: InviteFormData) => {
@@ -44,8 +42,6 @@ export function useInviteSubmit(token: string | null) {
           title: "Success",
           description: "You have successfully joined the workspace.",
         });
-
-        navigate("/dashboard");
         return;
       }
 
@@ -74,8 +70,6 @@ export function useInviteSubmit(token: string | null) {
         title: "Success",
         description: "Your account has been created successfully.",
       });
-
-      navigate("/dashboard");
     } catch (error: any) {
       console.error("Invitation process failed:", error);
       toast({

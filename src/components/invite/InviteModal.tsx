@@ -4,9 +4,10 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { InviteStep1 } from "./steps/InviteStep1";
 import { useInviteSubmit } from "./hooks/useInviteSubmit";
+import { InvitedUserOnboardingModal } from "./InvitedUserOnboardingModal";
 
 interface InviteModalProps {
   open?: boolean;
@@ -15,7 +16,9 @@ interface InviteModalProps {
 
 export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const token = searchParams.get("token");
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const [formData, setFormData] = useState({
     password: "",
@@ -29,7 +32,19 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
     await handleSubmit({
       password: updatedData.password,
     });
+    setShowOnboarding(true);
   };
+
+  if (showOnboarding) {
+    return (
+      <InvitedUserOnboardingModal 
+        open={true} 
+        onOpenChange={() => {
+          navigate("/dashboard");
+        }} 
+      />
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={(value) => {
