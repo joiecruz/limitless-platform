@@ -35,7 +35,7 @@ export function useMembers(workspaceId?: string) {
         throw activeMembersError;
       }
 
-      // Fetch pending invitations that haven't been accepted yet
+      // Fetch pending invitations
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
         .from('workspace_invitations')
         .select(`
@@ -43,8 +43,7 @@ export function useMembers(workspaceId?: string) {
           email,
           role,
           status,
-          created_at,
-          user_id
+          created_at
         `)
         .eq('workspace_id', workspaceId)
         .eq('status', 'pending');
