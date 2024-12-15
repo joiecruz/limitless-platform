@@ -27,7 +27,7 @@ export async function addUserToWorkspace(userId: string, workspaceId: string, ro
   }
 }
 
-export async function createNewUser(email: string, password: string, userData: UserData & { email_confirmed?: boolean }) {
+export async function createNewUser(email: string, password: string, userData: UserData) {
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
@@ -38,11 +38,8 @@ export async function createNewUser(email: string, password: string, userData: U
         role: userData.role,
         company_size: userData.companySize,
         referral_source: userData.referralSource,
-        goals: userData.goals,
-        email_confirmed: userData.email_confirmed // This will be used by the trigger
-      },
-      // Only set emailRedirectTo if email needs to be verified
-      emailRedirectTo: userData.email_confirmed ? undefined : `${window.location.origin}/dashboard`
+        goals: userData.goals
+      }
     }
   });
 
@@ -54,6 +51,16 @@ export async function createNewUser(email: string, password: string, userData: U
   if (!authData.user) {
     console.error("No user data returned from signup");
     throw new Error("Failed to create user account");
+  }
+
+  // Call the Edge Function to confirm the user's email
+  const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user', {
+    body: { userId: authData.user.id }
+  });
+
+  if (confirmError) {
+    console.error("Error confirming user:", confirmError);
+    throw confirmError;
   }
 
   return { data: authData, error: null };
