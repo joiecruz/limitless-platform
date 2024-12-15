@@ -5,7 +5,8 @@ export interface Workspace {
 }
 
 export interface WorkspaceMemberWithWorkspace {
-  workspace: {
+  workspace_id: string;
+  workspaces: {
     id: string;
     name: string | null;
     slug: string | null;

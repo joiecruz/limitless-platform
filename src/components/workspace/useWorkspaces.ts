@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { WorkspaceMemberWithWorkspace, Workspace } from "./types";
+import { Workspace } from "./types";
 
 export function useWorkspaces() {
   const { toast } = useToast();
@@ -25,15 +25,9 @@ export function useWorkspaces() {
 
         console.log("User found:", user.id);
 
-        const { data: memberWorkspaces, error: workspacesError } = await supabase
+        const { data: workspaces, error: workspacesError } = await supabase
           .from('workspace_members')
-          .select(`
-            workspace:workspaces (
-              id,
-              name,
-              slug
-            )
-          `)
+          .select('workspace_id, workspaces ( id, name, slug )')
           .eq('user_id', user.id);
 
         if (workspacesError) {
@@ -41,13 +35,13 @@ export function useWorkspaces() {
           throw workspacesError;
         }
 
-        console.log('Raw workspace data:', memberWorkspaces);
+        console.log('Raw workspace data:', workspaces);
         
-        // Safely type and transform the response
-        const formattedWorkspaces = (memberWorkspaces as unknown as WorkspaceMemberWithWorkspace[]).map(item => ({
-          id: item.workspace.id,
-          name: item.workspace.name || 'Unnamed Workspace',
-          slug: item.workspace.slug || 'unnamed'
+        // Transform the data to match the Workspace type
+        const formattedWorkspaces = workspaces.map(item => ({
+          id: item.workspaces.id,
+          name: item.workspaces.name || 'Unnamed Workspace',
+          slug: item.workspaces.slug || 'unnamed'
         }));
 
         console.log('Formatted workspaces:', formattedWorkspaces);
