@@ -8,12 +8,11 @@ export async function verifyInvitation(token: string) {
 
   const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
-    .select("*", {
-      headers: {
-        'x-invite-token': token
-      }
-    })
-    .single();
+    .select("*")
+    .single()
+    .headers({
+      'x-invite-token': token
+    });
 
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
