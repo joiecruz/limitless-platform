@@ -28,7 +28,7 @@ export default function VerifyEmail() {
           if (pendingJoinStr) {
             const pendingJoin = JSON.parse(pendingJoinStr);
             
-            // Add user to workspace
+            // Add user to workspace with the correct role
             const { error: memberError } = await supabase
               .from("workspace_members")
               .insert({
@@ -45,12 +45,17 @@ export default function VerifyEmail() {
               }
             }
 
-            // Update invitation status
+            // Update invitation status to accepted
             if (pendingJoin.invitationId) {
-              await supabase
+              const { error: inviteError } = await supabase
                 .from("workspace_invitations")
                 .update({ status: "accepted" })
                 .eq("id", pendingJoin.invitationId);
+
+              if (inviteError) {
+                console.error('Error updating invitation status:', inviteError);
+                throw inviteError;
+              }
             }
 
             // Clear the pending join data
