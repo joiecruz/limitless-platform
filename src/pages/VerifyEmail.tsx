@@ -26,64 +26,84 @@ export default function VerifyEmail() {
         try {
           // Check if there's a pending workspace join
           const pendingJoinStr = localStorage.getItem('pendingWorkspaceJoin');
-          if (pendingJoinStr) {
-            const pendingJoin = JSON.parse(pendingJoinStr);
-            console.log('Processing pending workspace join:', pendingJoin);
+          if (!pendingJoinStr) {
+            console.log('No pending workspace join, redirecting to onboarding');
+            navigate('/onboarding');
+            return;
+          }
 
-            // First, verify the session is active
-            const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-            if (sessionError || !currentSession) {
-              throw new Error('Invalid session. Please try signing in again.');
-            }
+          const pendingJoin = JSON.parse(pendingJoinStr);
+          console.log('Processing pending workspace join:', pendingJoin);
 
-            // Add user to workspace with the correct role
-            const { error: memberError } = await supabase
-              .from("workspace_members")
-              .insert({
-                workspace_id: pendingJoin.workspaceId,
-                user_id: session.user.id,
-                role: pendingJoin.role
-              });
+          // Use the session from the auth state change event
+          if (!session.user.id) {
+            throw new Error('User ID not found in session');
+          }
 
-            if (memberError) {
-              console.error('Error adding member to workspace:', memberError);
-              if (memberError.code === '23505') { // Unique violation
-                console.log("User is already a member of this workspace");
-              } else {
-                throw memberError;
-              }
-            } else {
-              console.log('Successfully added user to workspace');
+          // First attempt to get the workspace member to check if already exists
+          const { data: existingMember } = await supabase
+            .from("workspace_members")
+            .select()
+            .eq('workspace_id', pendingJoin.workspaceId)
+            .eq('user_id', session.user.id)
+            .single();
 
-              // Only update invitation status if workspace member was created successfully
-              if (pendingJoin.invitationId) {
-                const { error: inviteError } = await supabase
-                  .from("workspace_invitations")
-                  .update({ status: "accepted" })
-                  .eq("id", pendingJoin.invitationId);
+          if (existingMember) {
+            console.log('User is already a member of this workspace');
+            localStorage.removeItem('pendingWorkspaceJoin');
+            toast({
+              title: "Welcome back!",
+              description: "You're already a member of this workspace.",
+            });
+            navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
+            return;
+          }
 
-                if (inviteError) {
-                  console.error('Error updating invitation status:', inviteError);
-                  throw inviteError;
-                }
-                console.log('Successfully updated invitation status');
-              }
+          // Add user to workspace with the correct role
+          const { error: memberError } = await supabase
+            .from("workspace_members")
+            .insert({
+              workspace_id: pendingJoin.workspaceId,
+              user_id: session.user.id,
+              role: pendingJoin.role
+            });
 
-              // Clear the pending join data
-              localStorage.removeItem('pendingWorkspaceJoin');
-              
-              // Navigate to the workspace dashboard
+          if (memberError) {
+            console.error('Error adding member to workspace:', memberError);
+            throw memberError;
+          }
+
+          console.log('Successfully added user to workspace');
+
+          // Update invitation status
+          if (pendingJoin.invitationId) {
+            const { error: inviteError } = await supabase
+              .from("workspace_invitations")
+              .update({ status: "accepted" })
+              .eq("id", pendingJoin.invitationId);
+
+            if (inviteError) {
+              console.error('Error updating invitation status:', inviteError);
+              // Don't throw here, as the user is already added to workspace
               toast({
-                title: "Welcome!",
-                description: "You have successfully joined the workspace.",
+                title: "Note",
+                description: "You've joined the workspace, but there was an issue updating the invitation status.",
               });
-              navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
-              return;
+            } else {
+              console.log('Successfully updated invitation status');
             }
           }
 
-          // If no pending workspace join, navigate to onboarding
-          navigate('/onboarding');
+          // Clear the pending join data
+          localStorage.removeItem('pendingWorkspaceJoin');
+          
+          // Navigate to the workspace dashboard
+          toast({
+            title: "Welcome!",
+            description: "You have successfully joined the workspace.",
+          });
+          navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
+
         } catch (error: any) {
           console.error('Error handling email verification:', error);
           toast({
