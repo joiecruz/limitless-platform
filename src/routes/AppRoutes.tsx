@@ -21,7 +21,7 @@ interface AppRoutesProps {
   session: Session | null;
 }
 
-export default function AppRoutes({ session }: AppRoutesProps) {
+const AppRoutes = ({ session }: AppRoutesProps) => {
   return (
     <Routes>
       <Route
@@ -144,4 +144,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       />
     </Routes>
   );
-}
+};
+
+export default AppRoutes;
