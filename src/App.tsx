@@ -8,7 +8,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
-import { useWorkspaceJoin } from "@/components/verify-email/useWorkspaceJoin";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,7 +23,6 @@ const App = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { joinWorkspace } = useWorkspaceJoin();
 
   useEffect(() => {
     // Get initial session
@@ -36,7 +35,7 @@ const App = () => {
           console.error("Error getting session:", error);
           // Clear session and storage on error
           setSession(null);
-          localStorage.clear(); // Clear all localStorage
+          localStorage.clear();
           await supabase.auth.signOut();
           return;
         }
@@ -49,18 +48,10 @@ const App = () => {
 
         console.log("Initial session found:", initialSession);
         setSession(initialSession);
-        
-        // Check if this is a post-verification session
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('type') === 'signup' && initialSession) {
-          console.log("Post-verification session detected, attempting to join workspace...");
-          await joinWorkspace(initialSession);
-        }
       } catch (error) {
         console.error("Error in getInitialSession:", error);
-        // Clear session and storage on error
         setSession(null);
-        localStorage.clear(); // Clear all localStorage
+        localStorage.clear();
         await supabase.auth.signOut();
       } finally {
         setLoading(false);
@@ -75,10 +66,9 @@ const App = () => {
       
       if (event === 'SIGNED_OUT') {
         console.log("User signed out - Clearing session and cache");
-        // Clear session and cached data
         setSession(null);
         queryClient.clear();
-        localStorage.clear(); // Clear all localStorage
+        localStorage.clear();
         toast({
           title: "Signed out",
           description: "You have been signed out successfully.",
@@ -89,13 +79,6 @@ const App = () => {
       if (event === 'SIGNED_IN' && currentSession) {
         console.log("User signed in:", currentSession);
         setSession(currentSession);
-        
-        // Check if this is a post-verification session
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('type') === 'signup') {
-          console.log("Post-verification sign in detected, attempting to join workspace...");
-          await joinWorkspace(currentSession);
-        }
         return;
       }
 
@@ -113,7 +96,7 @@ const App = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast, joinWorkspace]);
+  }, [toast]);
 
   if (loading) {
     return null;
@@ -125,6 +108,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AuthProvider session={session} />
           <AppRoutes session={session} />
         </BrowserRouter>
       </TooltipProvider>
