@@ -23,7 +23,23 @@ export default function InvitePage() {
         }
 
         console.log("Handling invitation with token:", token);
-        const { invitation } = await verifyInvitation(token);
+        
+        // Set the token in the request headers for RLS policy
+        const { data: invitation, error: inviteError } = await supabase
+          .from("workspace_invitations")
+          .select("*")
+          .eq('magic_link_token', token)
+          .single();
+
+        if (inviteError) {
+          console.error("Error verifying invitation:", inviteError);
+          throw new Error("Invalid or expired invitation link");
+        }
+
+        if (!invitation) {
+          console.error("No invitation found for token:", token);
+          throw new Error("Invalid or expired invitation link");
+        }
 
         // Check if user has a session
         const { data: { session } } = await supabase.auth.getSession();
@@ -33,38 +49,52 @@ export default function InvitePage() {
           
           // If the signed-in user's email matches the invitation email
           if (session.user.email?.toLowerCase() === invitation.email.toLowerCase()) {
-            // Add user to workspace
-            const { error: memberError } = await supabase
-              .from("workspace_members")
-              .insert({
-                workspace_id: invitation.workspace_id,
-                user_id: session.user.id,
-                role: invitation.role
-              });
-
-            if (memberError) {
-              if (memberError.code === '23505') { // Unique violation
-                toast({
-                  title: "Already a member",
-                  description: "You are already a member of this workspace.",
+            try {
+              // Add user to workspace
+              const { error: memberError } = await supabase
+                .from("workspace_members")
+                .insert({
+                  workspace_id: invitation.workspace_id,
+                  user_id: session.user.id,
+                  role: invitation.role
                 });
-                navigate("/dashboard");
-                return;
+
+              if (memberError) {
+                if (memberError.code === '23505') { // Unique violation
+                  toast({
+                    title: "Already a member",
+                    description: "You are already a member of this workspace.",
+                  });
+                  navigate("/dashboard");
+                  return;
+                }
+                throw memberError;
               }
-              throw memberError;
+
+              // Update invitation status
+              const { error: updateError } = await supabase
+                .from("workspace_invitations")
+                .update({ 
+                  status: "accepted",
+                  accepted_at: new Date().toISOString()
+                })
+                .eq("id", invitation.id)
+                .eq('magic_link_token', token); // Add token check for RLS
+
+              if (updateError) {
+                console.error("Error updating invitation status:", updateError);
+                throw updateError;
+              }
+
+              toast({
+                title: "Welcome!",
+                description: "You have successfully joined the workspace.",
+              });
+              navigate("/dashboard");
+            } catch (error: any) {
+              console.error("Error processing workspace join:", error);
+              throw new Error("Failed to join workspace. Please try again.");
             }
-
-            // Update invitation status
-            await supabase
-              .from("workspace_invitations")
-              .update({ status: "accepted" })
-              .eq("id", invitation.id);
-
-            toast({
-              title: "Welcome!",
-              description: "You have successfully joined the workspace.",
-            });
-            navigate("/dashboard");
           } else {
             // If emails don't match, sign out current user
             await supabase.auth.signOut();

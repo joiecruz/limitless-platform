@@ -10,8 +10,7 @@ export async function verifyInvitation(token: string) {
     .from("workspace_invitations")
     .select("*")
     .eq('magic_link_token', token)
-    .limit(1)
-    .maybeSingle();
+    .single();
 
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
@@ -47,7 +46,10 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
 
   const { error: updateError } = await supabase
     .from("workspace_invitations")
-    .update({ status })
+    .update({ 
+      status,
+      accepted_at: status === 'accepted' ? new Date().toISOString() : null
+    })
     .eq("id", invitationId);
 
   if (updateError) {
