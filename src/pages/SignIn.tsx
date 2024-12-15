@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
+import { AuthLogo } from "@/components/auth/AuthLogo";
+import { AuthLinks } from "@/components/auth/AuthLinks";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -121,14 +122,7 @@ export default function SignIn() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        {/* Logo Section */}
-        <div className="text-center mb-8">
-          <img 
-            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
-            alt="Limitless Lab"
-            className="h-12 w-auto mx-auto mb-6"
-          />
-        </div>
+        <AuthLogo />
 
         {/* Sign In Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 animate-fade-in">
@@ -214,19 +208,7 @@ export default function SignIn() {
             }}
           />
           
-          {/* Sign Up Link */}
-          <div className="text-center mt-4">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Button
-                variant="link"
-                className="p-0 h-auto font-semibold text-primary hover:text-primary/80"
-                onClick={() => navigate("/signup")}
-              >
-                Sign up
-              </Button>
-            </p>
-          </div>
+          <AuthLinks />
         </div>
       </div>
     </div>
