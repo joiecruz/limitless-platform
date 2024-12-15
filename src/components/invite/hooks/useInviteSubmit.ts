@@ -55,7 +55,7 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
         return;
       }
 
-      // Step 3: Create new user with email confirmed
+      // Step 3: Create new user with email confirmed and without sending confirmation email
       const { data: newAuthData, error: signUpError } = await createNewUser(decodedEmail, data.password, {
         ...data,
         email_confirmed: true // This ensures the user is confirmed immediately

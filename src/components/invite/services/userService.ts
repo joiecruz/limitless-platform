@@ -41,7 +41,9 @@ export async function createNewUser(email: string, password: string, userData: U
         goals: userData.goals,
         email_confirmed: userData.email_confirmed // This will be used by the trigger
       },
-      emailRedirectTo: `${window.location.origin}/dashboard`
+      emailRedirectTo: `${window.location.origin}/dashboard`,
+      // Don't send confirmation email for invited users since they already confirmed by clicking the invite link
+      emailConfirmationRedirectTo: userData.email_confirmed ? undefined : `${window.location.origin}/dashboard`
     }
   });
 
