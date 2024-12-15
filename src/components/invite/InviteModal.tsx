@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { InviteStep1 } from "./steps/InviteStep1";
 import { useInviteSubmit } from "./hooks/useInviteSubmit";
+import { useToast } from "@/hooks/use-toast";
 
 interface InviteModalProps {
   open?: boolean;
@@ -16,6 +17,7 @@ interface InviteModalProps {
 export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     password: "",
@@ -28,6 +30,12 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
     setFormData(updatedData);
     await handleSubmit({
       password: updatedData.password,
+    });
+
+    // Show the email confirmation toast
+    toast({
+      title: "Almost there!",
+      description: "Please check your email to confirm your account and access the workspace dashboard.",
     });
   };
 
