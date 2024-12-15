@@ -35,7 +35,7 @@ export function useMembers(workspaceId?: string) {
         throw activeMembersError;
       }
 
-      // Fetch pending invitations
+      // Fetch pending invitations that haven't been accepted yet
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
         .from('workspace_invitations')
         .select(`
@@ -43,7 +43,8 @@ export function useMembers(workspaceId?: string) {
           email,
           role,
           status,
-          created_at
+          created_at,
+          user_id
         `)
         .eq('workspace_id', workspaceId)
         .eq('status', 'pending');
@@ -52,6 +53,16 @@ export function useMembers(workspaceId?: string) {
         console.error('Error fetching pending invites:', pendingInvitesError);
         throw pendingInvitesError;
       }
+
+      // Filter out pending invites for users who are already active members
+      const filteredPendingInvites = pendingInvites.filter(invite => {
+        // If the invite has a user_id, check if they're already an active member
+        if (invite.user_id) {
+          return !activeMembers.some(member => member.user_id === invite.user_id);
+        }
+        // If no user_id (email only invite), keep it in the list
+        return true;
+      });
 
       // Transform active members data
       const members: Member[] = activeMembers.map(member => ({
@@ -68,7 +79,7 @@ export function useMembers(workspaceId?: string) {
       }));
 
       // Transform pending invites data
-      const pendingMembers: Member[] = pendingInvites.map(invite => ({
+      const pendingMembers: Member[] = filteredPendingInvites.map(invite => ({
         id: invite.id,
         email: invite.email,
         role: invite.role,
