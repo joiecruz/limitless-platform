@@ -55,8 +55,11 @@ export function useInviteSubmit(workspaceId: string | null, email: string | null
         return;
       }
 
-      // Step 3: Create new user
-      const { data: newAuthData, error: signUpError } = await createNewUser(decodedEmail, data.password, data);
+      // Step 3: Create new user with email confirmed
+      const { data: newAuthData, error: signUpError } = await createNewUser(decodedEmail, data.password, {
+        ...data,
+        email_confirmed: true // This ensures the user is confirmed immediately
+      });
       
       if (signUpError || !newAuthData.user) {
         throw new Error(signUpError?.message || "Failed to create user account");

@@ -27,7 +27,7 @@ export async function addUserToWorkspace(userId: string, workspaceId: string, ro
   }
 }
 
-export async function createNewUser(email: string, password: string, userData: UserData) {
+export async function createNewUser(email: string, password: string, userData: UserData & { email_confirmed?: boolean }) {
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
@@ -38,8 +38,10 @@ export async function createNewUser(email: string, password: string, userData: U
         role: userData.role,
         company_size: userData.companySize,
         referral_source: userData.referralSource,
-        goals: userData.goals
-      }
+        goals: userData.goals,
+        email_confirmed: userData.email_confirmed // This will be used by the trigger
+      },
+      emailRedirectTo: `${window.location.origin}/dashboard`
     }
   });
 
