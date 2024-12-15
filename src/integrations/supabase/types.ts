@@ -386,31 +386,46 @@ export type Database = {
       }
       workspace_invitations: {
         Row: {
+          accepted_at: string | null
           created_at: string
           email: string
+          email_verified: boolean | null
           expires_at: string
           id: string
           invited_by: string
+          last_sent_at: string | null
+          magic_link_token: string | null
+          metadata: Json | null
           role: string
           status: string
           workspace_id: string
         }
         Insert: {
+          accepted_at?: string | null
           created_at?: string
           email: string
+          email_verified?: boolean | null
           expires_at?: string
           id?: string
           invited_by: string
+          last_sent_at?: string | null
+          magic_link_token?: string | null
+          metadata?: Json | null
           role: string
           status?: string
           workspace_id: string
         }
         Update: {
+          accepted_at?: string | null
           created_at?: string
           email?: string
+          email_verified?: boolean | null
           expires_at?: string
           id?: string
           invited_by?: string
+          last_sent_at?: string | null
+          magic_link_token?: string | null
+          metadata?: Json | null
           role?: string
           status?: string
           workspace_id?: string
@@ -500,6 +515,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_invitations: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_workspace_with_owner: {
         Args: {
           workspace_name: string
