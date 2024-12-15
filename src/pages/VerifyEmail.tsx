@@ -5,10 +5,13 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { addUserToWorkspace } from "@/components/invite/services/userService";
+import { updateInvitationStatus } from "@/components/invite/services/invitationService";
 
 export default function VerifyEmail() {
   const [email, setEmail] = useState<string>("");
   const [isResending, setIsResending] = useState(false);
+  const [isProcessingInvitation, setIsProcessingInvitation] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -22,15 +25,42 @@ export default function VerifyEmail() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user.id);
+        setIsProcessingInvitation(true);
+
         try {
+          // Get the most recent pending invitation for this user
+          const { data: invitation, error: inviteError } = await supabase
+            .from('workspace_invitations')
+            .select('*')
+            .eq('email', session.user.email)
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (inviteError) {
+            console.error('Error fetching invitation:', inviteError);
+            throw inviteError;
+          }
+
+          if (invitation) {
+            // Add user to workspace
+            await addUserToWorkspace(session.user.id, invitation.workspace_id, invitation.role);
+            
+            // Update invitation status
+            await updateInvitationStatus(invitation.id, 'accepted');
+
+            console.log('Successfully added user to workspace');
+          }
+
           // Call our edge function to handle workspace creation
           const { error } = await supabase.functions.invoke('handle-email-verification', {
-            body: { user_id: session?.user.id }
+            body: { user_id: session.user.id }
           });
 
           if (error) throw error;
 
-          // Navigate to dashboard after successful verification and workspace creation
+          // Navigate to dashboard after successful verification and workspace setup
           navigate('/dashboard');
         } catch (error: any) {
           console.error('Error handling email verification:', error);
@@ -39,6 +69,9 @@ export default function VerifyEmail() {
             description: "There was an error setting up your workspace. Please try again.",
             variant: "destructive",
           });
+          navigate('/signin');
+        } finally {
+          setIsProcessingInvitation(false);
         }
       }
     });
@@ -78,6 +111,24 @@ export default function VerifyEmail() {
       setIsResending(false);
     }
   };
+
+  if (isProcessingInvitation) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <div className="flex flex-col items-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <h2 className="text-xl font-semibold">Setting up your workspace...</h2>
+              <p className="text-sm text-muted-foreground">
+                Please wait while we configure your workspace access.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
