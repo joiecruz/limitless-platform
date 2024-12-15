@@ -41,9 +41,8 @@ export async function createNewUser(email: string, password: string, userData: U
         goals: userData.goals,
         email_confirmed: userData.email_confirmed // This will be used by the trigger
       },
-      emailRedirectTo: `${window.location.origin}/dashboard`,
-      // Skip email verification for invited users
-      emailVerification: userData.email_confirmed ? false : undefined
+      // Only set emailRedirectTo if email needs to be verified
+      emailRedirectTo: userData.email_confirmed ? undefined : `${window.location.origin}/dashboard`
     }
   });
 
