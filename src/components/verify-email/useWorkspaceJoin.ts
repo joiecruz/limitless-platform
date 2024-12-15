@@ -38,7 +38,7 @@ export function useWorkspaceJoin() {
       
       if (!workspaceId) {
         console.log('No workspace context found, redirecting to onboarding');
-        navigate('/onboarding');
+        navigate('/onboarding', { state: { isInvited: false } });
         return;
       }
 
@@ -78,30 +78,16 @@ export function useWorkspaceJoin() {
           throw memberError;
         }
 
-        // Update invitation status
-        const { error: inviteError } = await supabase
-          .from("workspace_invitations")
-          .update({ 
-            status: "accepted",
-            accepted_at: new Date().toISOString()
-          })
-          .eq("id", pendingJoin.invitationId);
-
-        if (inviteError) {
-          console.error('Error updating invitation status:', inviteError);
-          throw inviteError;
-        }
-
         localStorage.removeItem('pendingWorkspaceJoin');
+        
+        // Redirect to onboarding with invited user context
+        navigate('/onboarding', { 
+          state: { 
+            isInvited: true
+          }
+        });
       }
       
-      toast({
-        title: "Welcome!",
-        description: "You have successfully joined the workspace.",
-      });
-      
-      navigate(`/dashboard?workspace=${workspaceId}`);
-
     } catch (error: any) {
       console.error('Error joining workspace:', error);
       toast({

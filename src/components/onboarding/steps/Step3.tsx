@@ -1,83 +1,59 @@
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { OnboardingData } from "../types";
-import { useState } from "react";
 
 interface Step3Props {
   onNext: (data: Partial<OnboardingData>) => void;
   onBack: () => void;
   data: OnboardingData;
   loading?: boolean;
+  isInvitedUser?: boolean;
+  workspaceName?: string;
 }
 
-const REFERRAL_SOURCES = [
-  "Google Search",
-  "Social Media",
-  "Friend or Colleague",
-  "Professional Network",
-  "Online Advertisement",
-  "Blog or Article",
-  "Conference or Event",
-  "Other"
-];
-
-export function Step3({ onNext, onBack, data, loading }: Step3Props) {
-  const [selectedSource, setSelectedSource] = useState<string>(data.referralSource || "");
-
+export function Step3({ onNext, onBack, data, loading, isInvitedUser, workspaceName }: Step3Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onNext({
-      referralSource: selectedSource,
+      referralSource: data.referralSource,
     });
   };
 
-  const isValid = selectedSource !== "";
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-2xl font-semibold leading-tight">How did you hear about us?</h2>
-        <p className="text-muted-foreground">Help us understand how you found Limitless Lab</p>
+        <h2 className="text-2xl font-semibold leading-tight">One last thing...</h2>
+        <p className="text-muted-foreground">
+          {isInvitedUser 
+            ? `You're about to join ${workspaceName}. Help us understand how you found us.`
+            : "Help us understand how you found us"}
+        </p>
       </div>
 
-      <RadioGroup 
-        value={selectedSource}
-        onValueChange={setSelectedSource}
-        className="flex flex-wrap gap-2"
-      >
-        {REFERRAL_SOURCES.map((source) => (
-          <div key={source} className="inline-flex rounded-[5px] border border-muted p-3 hover:bg-muted/50 transition-colors [&:has(:checked)]:border-primary [&:has(:checked)]:bg-primary-50">
-            <RadioGroupItem 
-              value={source} 
-              id={source}
-              className="hidden"
-            />
-            <Label 
-              htmlFor={source} 
-              className="leading-tight cursor-pointer text-base font-normal"
-            >
-              {source}
-            </Label>
-          </div>
-        ))}
-      </RadioGroup>
-
-      <div className="flex gap-2 pt-4">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onBack}
-          className="px-8 rounded-[5px]"
+      <div className="space-y-2">
+        <label htmlFor="referralSource" className="block text-sm font-medium text-gray-700">How did you hear about us?</label>
+        <select
+          id="referralSource"
+          name="referralSource"
+          value={data.referralSource}
+          onChange={(e) => onNext({ referralSource: e.target.value })}
+          required
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50"
         >
+          <option value="">Select an option</option>
+          <option value="friend">Friend</option>
+          <option value="social_media">Social Media</option>
+          <option value="search_engine">Search Engine</option>
+          <option value="advertisement">Advertisement</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div className="flex gap-2">
+        <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button 
-          type="submit" 
-          className="flex-1 rounded-[5px]" 
-          disabled={loading || !isValid}
-        >
-          Continue
+        <Button type="submit" className="flex-1" disabled={loading}>
+          {isInvitedUser ? "Join Workspace" : "Complete Setup"}
         </Button>
       </div>
     </form>
