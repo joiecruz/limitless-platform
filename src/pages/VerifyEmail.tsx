@@ -55,9 +55,13 @@ export default function VerifyEmail() {
 
             // Clear the pending join data
             localStorage.removeItem('pendingWorkspaceJoin');
+            
+            // Navigate to the workspace dashboard
+            navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
+            return;
           }
 
-          // Navigate to onboarding after successful verification
+          // If no pending workspace join, navigate to onboarding
           navigate('/onboarding');
         } catch (error: any) {
           console.error('Error handling email verification:', error);
