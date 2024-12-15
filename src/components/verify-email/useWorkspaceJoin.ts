@@ -22,21 +22,33 @@ export function useWorkspaceJoin() {
 
     setIsJoining(true);
     try {
+      // Check URL parameters first for workspace context
+      const urlParams = new URLSearchParams(window.location.search);
+      const workspaceFromUrl = urlParams.get('workspace');
+      
+      // Then check localStorage as fallback
       const pendingJoinStr = localStorage.getItem('pendingWorkspaceJoin');
-      if (!pendingJoinStr) {
-        console.log('No pending workspace join, redirecting to onboarding');
+      let pendingJoin: PendingJoin | null = null;
+      
+      if (pendingJoinStr) {
+        pendingJoin = JSON.parse(pendingJoinStr);
+      }
+
+      const workspaceId = workspaceFromUrl || (pendingJoin?.workspaceId);
+      
+      if (!workspaceId) {
+        console.log('No workspace context found, redirecting to onboarding');
         navigate('/onboarding');
         return;
       }
 
-      const pendingJoin: PendingJoin = JSON.parse(pendingJoinStr);
-      console.log('Processing pending workspace join:', pendingJoin);
+      console.log('Processing workspace join:', { workspaceId, pendingJoin });
 
       // First check if already a member
       const { data: existingMember } = await supabase
         .from("workspace_members")
         .select()
-        .eq('workspace_id', pendingJoin.workspaceId)
+        .eq('workspace_id', workspaceId)
         .eq('user_id', session.user.id)
         .single();
 
@@ -47,37 +59,40 @@ export function useWorkspaceJoin() {
           title: "Welcome back!",
           description: "You're already a member of this workspace.",
         });
-        navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
+        navigate(`/dashboard?workspace=${workspaceId}`);
         return;
       }
 
-      // Add user to workspace
-      const { error: memberError } = await supabase
-        .from("workspace_members")
-        .insert({
-          workspace_id: pendingJoin.workspaceId,
-          user_id: session.user.id,
-          role: pendingJoin.role
-        });
+      // If we have pending join data, use it to add the user to the workspace
+      if (pendingJoin) {
+        // Add user to workspace
+        const { error: memberError } = await supabase
+          .from("workspace_members")
+          .insert({
+            workspace_id: workspaceId,
+            user_id: session.user.id,
+            role: pendingJoin.role
+          });
 
-      if (memberError) {
-        throw memberError;
+        if (memberError) {
+          throw memberError;
+        }
+
+        // Update invitation status
+        await supabase
+          .from("workspace_invitations")
+          .update({ status: "accepted" })
+          .eq("id", pendingJoin.invitationId);
+
+        localStorage.removeItem('pendingWorkspaceJoin');
       }
-
-      // Update invitation status
-      await supabase
-        .from("workspace_invitations")
-        .update({ status: "accepted" })
-        .eq("id", pendingJoin.invitationId);
-
-      localStorage.removeItem('pendingWorkspaceJoin');
       
       toast({
         title: "Welcome!",
         description: "You have successfully joined the workspace.",
       });
       
-      navigate(`/dashboard?workspace=${pendingJoin.workspaceId}`);
+      navigate(`/dashboard?workspace=${workspaceId}`);
 
     } catch (error: any) {
       console.error('Error joining workspace:', error);
