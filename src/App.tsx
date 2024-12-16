@@ -24,6 +24,19 @@ const App = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    const handleSessionError = async () => {
+      console.log("Handling session error - clearing session and storage");
+      setSession(null);
+      queryClient.clear();
+      localStorage.clear();
+      await supabase.auth.signOut();
+      toast({
+        title: "Session Error",
+        description: "Please sign in again",
+        variant: "destructive",
+      });
+    };
+
     // Get initial session
     const getInitialSession = async () => {
       try {
@@ -32,10 +45,7 @@ const App = () => {
         
         if (error) {
           console.error("Error getting session:", error);
-          // Clear session and storage on error
-          setSession(null);
-          localStorage.clear(); // Clear all localStorage
-          await supabase.auth.signOut();
+          await handleSessionError();
           return;
         }
 
@@ -45,35 +55,19 @@ const App = () => {
           return;
         }
 
-        // Refresh token if it's close to expiring
-        const expiresAt = initialSession.expires_at;
-        const timeNow = Math.floor(Date.now() / 1000);
-        const timeUntilExpiry = expiresAt - timeNow;
-        
-        if (timeUntilExpiry < 60) { // If less than 1 minute until expiry
-          console.log("Session close to expiry, refreshing...");
-          const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-          
-          if (refreshError) {
-            console.error("Error refreshing session:", refreshError);
-            setSession(null);
-            localStorage.clear();
-            await supabase.auth.signOut();
-            return;
-          }
-          
-          console.log("Session refreshed successfully");
-          setSession(refreshedSession);
-        } else {
-          console.log("Initial session found and valid");
-          setSession(initialSession);
+        // Validate session
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error("Error validating user:", userError);
+          await handleSessionError();
+          return;
         }
+
+        console.log("Session validated successfully");
+        setSession(initialSession);
       } catch (error) {
         console.error("Error in getInitialSession:", error);
-        // Clear session and storage on error
-        setSession(null);
-        localStorage.clear();
-        await supabase.auth.signOut();
+        await handleSessionError();
       } finally {
         setLoading(false);
       }
@@ -85,21 +79,28 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("Auth state changed:", event, currentSession);
       
-      if (event === 'SIGNED_OUT') {
-        console.log("User signed out - Clearing session and cache");
-        setSession(null);
-        queryClient.clear();
-        localStorage.clear();
-        toast({
-          title: "Signed out",
-          description: "You have been signed out successfully.",
-        });
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        console.log("User signed out or deleted - Clearing session and cache");
+        await handleSessionError();
         return;
       }
 
       if (event === 'SIGNED_IN' && currentSession) {
-        console.log("User signed in:", currentSession);
-        setSession(currentSession);
+        try {
+          // Validate session
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user) {
+            console.error("Error validating user after sign in:", userError);
+            await handleSessionError();
+            return;
+          }
+
+          console.log("User signed in:", currentSession);
+          setSession(currentSession);
+        } catch (error) {
+          console.error("Error handling sign in:", error);
+          await handleSessionError();
+        }
         return;
       }
 
@@ -111,36 +112,39 @@ const App = () => {
       }
 
       // Handle user updates
-      if (event === 'USER_UPDATED') {
-        const { data: { session: newSession }, error } = await supabase.auth.getSession();
-        if (error || !newSession) {
-          console.log("Session invalid after user update - signing out");
-          setSession(null);
-          queryClient.clear();
-          localStorage.clear();
-          await supabase.auth.signOut();
-          return;
+      if (event === 'USER_UPDATED' && currentSession) {
+        try {
+          const { data: { session: newSession }, error } = await supabase.auth.getSession();
+          if (error || !newSession) {
+            console.log("Session invalid after user update - signing out");
+            await handleSessionError();
+            return;
+          }
+          setSession(newSession);
+        } catch (error) {
+          console.error("Error handling user update:", error);
+          await handleSessionError();
         }
-        setSession(newSession);
       }
     });
 
-    // Set up periodic token refresh
-    const refreshInterval = setInterval(async () => {
-      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-      if (currentSession) {
-        const { data, error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) {
-          console.error("Error refreshing token:", refreshError);
-        } else {
-          console.log("Token refreshed successfully");
+    // Set up periodic session validation
+    const validationInterval = setInterval(async () => {
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error("Session validation failed:", userError);
+          await handleSessionError();
         }
+      } catch (error) {
+        console.error("Error in session validation:", error);
+        await handleSessionError();
       }
-    }, 4 * 60 * 1000); // Refresh every 4 minutes
+    }, 5 * 60 * 1000); // Check every 5 minutes
 
     return () => {
       subscription.unsubscribe();
-      clearInterval(refreshInterval);
+      clearInterval(validationInterval);
     };
   }, [toast]);
 
