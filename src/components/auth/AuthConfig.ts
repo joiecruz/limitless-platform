@@ -66,6 +66,13 @@ export const authConfig = {
         social_provider_text: 'Sign up with {{provider}}',
         link_text: "Don't have an account? Sign up",
       },
+      forgotten_password: {
+        email_label: 'Email',
+        password_label: 'Password',
+        button_label: 'Send reset instructions',
+        loading_button_label: 'Sending reset instructions...',
+        link_text: 'Forgot your password?',
+      },
     },
   },
 };
