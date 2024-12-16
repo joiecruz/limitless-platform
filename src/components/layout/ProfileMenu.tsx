@@ -1,38 +1,64 @@
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, LogOut } from "lucide-react";
 import { ProfileDisplay } from "./ProfileDisplay";
+import { useEffect, useState } from "react";
+
+interface Profile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  email: string | null;
+  is_superadmin?: boolean;
+}
 
 export function ProfileMenu() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile | null>(null);
 
-  const { data: profile } = useQuery({
-    queryKey: ['profile'],
-    queryFn: async () => {
+  useEffect(() => {
+    const fetchProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-      
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
         
-      return profile;
-    },
-  });
+        if (data) {
+          setProfile({
+            ...data,
+            email: user.email
+          });
+        }
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
     navigate('/signin');
   };
 
@@ -63,21 +89,19 @@ export function ProfileMenu() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {profile?.is_superadmin && (
-          <>
-            <DropdownMenuItem onClick={() => navigate('/admin/dashboard')}>
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => navigate('/account-settings')}>
+            Profile Settings
+          </DropdownMenuItem>
+          {profile?.is_superadmin && (
+            <DropdownMenuItem onClick={() => navigate('/admin')}>
               Admin Panel
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
-        <DropdownMenuItem onClick={() => navigate('/account-settings')}>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
-        </DropdownMenuItem>
+          )}
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Sign out</span>
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
