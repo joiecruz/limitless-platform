@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import AdminLayout from "@/components/admin/AdminLayout";
 import Dashboard from "@/pages/Dashboard";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
@@ -16,6 +17,8 @@ import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
 import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUsers from "@/pages/admin/AdminUsers";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 
 interface AppRoutesProps {
@@ -44,6 +47,36 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route
         path="/verify-email"
         element={<VerifyEmail />}
+      />
+      <Route
+        path="/admin"
+        element={
+          <RequireAuth>
+            <AdminLayout>
+              <Navigate to="/admin/dashboard" replace />
+            </AdminLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <RequireAuth>
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <RequireAuth>
+            <AdminLayout>
+              <AdminUsers />
+            </AdminLayout>
+          </RequireAuth>
+        }
       />
       <Route
         path="/courses"
