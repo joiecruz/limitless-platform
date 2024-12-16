@@ -7,14 +7,28 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarProvider,
-  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import { createContext, useContext } from "react";
+import { Workspace } from "../workspace/types";
+
+interface WorkspaceContextType {
+  currentWorkspace: Workspace | null;
+  setCurrentWorkspace: (workspace: Workspace) => void;
+}
+
+export const WorkspaceContext = createContext<WorkspaceContextType>({
+  currentWorkspace: null,
+  setCurrentWorkspace: () => {},
+});
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const { toggleSidebar } = useSidebar();
+
   return (
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full">
@@ -37,7 +51,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </Sidebar>
 
         <main className="flex-1">
-          <MobileHeader />
+          <MobileHeader onOpenSidebar={toggleSidebar} />
           <div className="container mx-auto py-6">
             {children}
           </div>
