@@ -4,6 +4,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
+import ResetPassword from "@/pages/ResetPassword";
 import VerifyEmail from "@/pages/VerifyEmail";
 import InvitePage from "@/pages/InvitePage";
 import Courses from "@/pages/Courses";
@@ -37,12 +38,12 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
       />
       <Route
-        path="/verify-email"
-        element={<VerifyEmail />}
+        path="/reset-password"
+        element={<ResetPassword />}
       />
       <Route
-        path="/invite"
-        element={<InvitePage />}
+        path="/verify-email"
+        element={<VerifyEmail />}
       />
       <Route
         path="/courses"
