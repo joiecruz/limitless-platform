@@ -10,15 +10,22 @@ import { Step3 } from "../onboarding/steps/Step3";
 import { OnboardingProgress } from "../onboarding/components/OnboardingProgress";
 import { OnboardingData } from "../onboarding/types";
 import { useOnboardingSubmit } from "../onboarding/hooks/useOnboardingSubmit";
+import { useNavigate } from "react-router-dom";
 
 interface InvitedUserOnboardingModalProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  workspaceId?: string;
 }
 
-export function InvitedUserOnboardingModal({ open = false, onOpenChange }: InvitedUserOnboardingModalProps) {
+export function InvitedUserOnboardingModal({ 
+  open = false, 
+  onOpenChange,
+  workspaceId 
+}: InvitedUserOnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const TOTAL_STEPS = 3;
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
@@ -30,7 +37,17 @@ export function InvitedUserOnboardingModal({ open = false, onOpenChange }: Invit
     workspaceName: undefined,
   });
 
-  const { handleSubmit, loading } = useOnboardingSubmit({ onOpenChange });
+  const { handleSubmit, loading } = useOnboardingSubmit({ 
+    onOpenChange,
+    workspaceId,
+    onSuccess: () => {
+      if (workspaceId) {
+        navigate(`/dashboard?workspace=${workspaceId}`);
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  });
 
   const handleNext = async (stepData: Partial<OnboardingData>) => {
     const updatedData = { ...formData, ...stepData };
@@ -69,7 +86,6 @@ export function InvitedUserOnboardingModal({ open = false, onOpenChange }: Invit
 
   return (
     <Dialog open={open} onOpenChange={(value) => {
-      // Prevent closing the modal
       if (!value) return;
       if (onOpenChange) onOpenChange(value);
     }}>

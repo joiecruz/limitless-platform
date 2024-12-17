@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 
 export default function Dashboard() {
@@ -96,59 +95,57 @@ export default function Dashboard() {
   ];
 
   return (
-    <RequireAuth>
-      <div className="space-y-8 animate-fade-in">
-        {/* Header Section */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Welcome{getDisplayName() ? `, ${getDisplayName()}` : ''}!
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Here's an overview of your innovation journey
-            </p>
-          </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header Section */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Welcome{getDisplayName() ? `, ${getDisplayName()}` : ''}!
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Here's an overview of your innovation journey
+          </p>
         </div>
-
-        {/* Quick Links Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {quickLinks.map((link, index) => (
-            <Card 
-              key={index} 
-              className="overflow-hidden hover:shadow-lg transition-all duration-200 group"
-            >
-              <div className="aspect-[4/3] relative overflow-hidden">
-                <img
-                  src={link.image}
-                  alt={link.title}
-                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
-                />
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-lg leading-tight">{link.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {link.description}
-                  </p>
-                </div>
-                <a
-                  href={link.link}
-                  className="inline-flex items-center text-primary hover:gap-2 transition-all group/link"
-                >
-                  {link.action}
-                  <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0" />
-                </a>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* Onboarding Modal */}
-        <OnboardingModal 
-          open={showOnboarding} 
-          onOpenChange={setShowOnboarding}
-        />
       </div>
-    </RequireAuth>
+
+      {/* Quick Links Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {quickLinks.map((link, index) => (
+          <Card 
+            key={index} 
+            className="overflow-hidden hover:shadow-lg transition-all duration-200 group"
+          >
+            <div className="aspect-[4/3] relative overflow-hidden">
+              <img
+                src={link.image}
+                alt={link.title}
+                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
+              />
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <h3 className="font-semibold text-lg leading-tight">{link.title}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {link.description}
+                </p>
+              </div>
+              <a
+                href={link.link}
+                className="inline-flex items-center text-primary hover:gap-2 transition-all group/link"
+              >
+                {link.action}
+                <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0" />
+              </a>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Onboarding Modal */}
+      <OnboardingModal 
+        open={showOnboarding} 
+        onOpenChange={setShowOnboarding}
+      />
+    </div>
   );
 }

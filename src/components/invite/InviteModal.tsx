@@ -24,12 +24,12 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
     password: "",
   });
 
-  const { handleSubmit, isLoading } = useInviteSubmit(token);
+  const { handleSubmit: submitInvite, isLoading } = useInviteSubmit(token);
 
   const handleNext = async (stepData: { password: string }) => {
     const updatedData = { ...formData, ...stepData };
     setFormData(updatedData);
-    await handleSubmit({
+    await submitInvite({
       password: updatedData.password,
     });
     setShowOnboarding(true);

@@ -7,7 +7,7 @@ export const navigation = [
   { name: "Courses", href: "/courses", icon: BookOpen },
   { name: "Tools", href: "/tools", icon: Download },
   { name: "Community", href: "/community", icon: Users },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function NavigationLinks() {

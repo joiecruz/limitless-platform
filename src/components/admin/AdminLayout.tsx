@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LayoutDashboard, Users, Briefcase, BookOpen } from "lucide-react";
+import { UserProfile } from "@/components/layout/UserProfile";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
-        <aside className="w-64 bg-white border-r min-h-screen">
+        <aside className="w-64 bg-white border-r min-h-screen flex flex-col">
           <div className="flex items-center px-6 py-4">
             <img 
               src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
@@ -90,10 +91,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="h-12 w-auto"
             />
           </div>
-          <nav className="px-4 mt-6">
+          <nav className="px-4 mt-6 flex-1">
             <div className="space-y-1">
               <Link 
-                to="/admin/dashboard" 
+                to="/admin" 
                 className={`nav-item ${isActive('/admin/dashboard') ? 'active' : ''}`}
               >
                 <LayoutDashboard className="h-5 w-5" />
@@ -122,6 +123,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             </div>
           </nav>
+          <UserProfile />
         </aside>
         <main className="flex-1 p-8">
           {children}
