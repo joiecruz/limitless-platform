@@ -22,6 +22,7 @@ import AdminWorkspaceDetails from "@/pages/admin/AdminWorkspaceDetails";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Outlet } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -36,8 +37,9 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
       
-      <Route element={<RequireAuth><Outlet /></RequireAuth>}>
+      <Route element={<RequireAuth><DashboardLayout><Outlet /></DashboardLayout></RequireAuth>}>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/community" element={<Community />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:courseId/lessons" element={<Lessons />} />
@@ -47,13 +49,13 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         <Route path="/projects" element={<Projects />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/account-settings" element={<AccountSettings />} />
-        
-        <Route path="/admin" element={<AdminLayout><Outlet /></AdminLayout>}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="workspaces" element={<AdminWorkspaces />} />
-          <Route path="workspaces/:id" element={<AdminWorkspaceDetails />} />
-        </Route>
+      </Route>
+
+      <Route path="/admin" element={<RequireAuth><AdminLayout><Outlet /></AdminLayout></RequireAuth>}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="workspaces" element={<AdminWorkspaces />} />
+        <Route path="workspaces/:id" element={<AdminWorkspaceDetails />} />
       </Route>
     </Routes>
   );
