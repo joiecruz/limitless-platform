@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -19,6 +20,7 @@ export default function AdminWorkspaces() {
   const [search, setSearch] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const { data: workspaces, isLoading } = useQuery({
     queryKey: ['admin-workspaces', search],
