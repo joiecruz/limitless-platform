@@ -189,7 +189,7 @@ export default function AdminWorkspaceDetails() {
       )}
 
       <InviteMemberDialog
-        open={showInviteDialog}
+        isOpen={showInviteDialog}
         onOpenChange={setShowInviteDialog}
         workspaceId={workspaceId || ''}
         workspaceName={workspace.name}
