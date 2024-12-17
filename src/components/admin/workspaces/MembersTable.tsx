@@ -38,7 +38,12 @@ export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
                     id: member.user_id,
                     email: member.profiles.email,
                     role: member.role,
-                    status: 'Active'
+                    status: 'Active',
+                    last_active: member.created_at,
+                    profiles: {
+                      first_name: member.profiles.first_name,
+                      last_name: member.profiles.last_name
+                    }
                   }}
                   isCurrentUser={false}
                   onDelete={() => onDeleteMember(member.user_id)}
