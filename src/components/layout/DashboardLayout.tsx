@@ -4,6 +4,7 @@ import { WorkspaceSelector } from "./WorkspaceSelector";
 import { Navigation } from "./Navigation";
 import { MobileHeader } from "./MobileHeader";
 import { useLocation, useNavigate } from "react-router-dom";
+import { StagingBanner } from "./StagingBanner";
 
 interface Workspace {
   id: string;
@@ -51,6 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <WorkspaceContext.Provider value={{ currentWorkspace, setCurrentWorkspace: handleWorkspaceChange }}>
       <div className="min-h-screen bg-gray-50">
+        <StagingBanner />
         {isLoading && (
           <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
             <div className="animate-pulse text-primary-600 text-lg font-medium">

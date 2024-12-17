@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LayoutDashboard, Users, Briefcase, BookOpen } from "lucide-react";
+import { StagingBanner } from "@/components/layout/StagingBanner";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -81,6 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <StagingBanner />
       <div className="flex">
         <aside className="w-64 bg-white border-r min-h-screen">
           <div className="flex items-center px-6 py-4">
