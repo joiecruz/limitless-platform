@@ -10,13 +10,15 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Building, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface CourseWorkspacesProps {
   courseId: string;
 }
 
 const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
-  const { data: workspaces, isLoading } = useQuery({
+  const { toast } = useToast();
+  const { data: workspaces, isLoading, refetch } = useQuery({
     queryKey: ["course-workspaces", courseId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -26,7 +28,10 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
           workspaces:workspace_id (
             id,
             name,
-            slug
+            slug,
+            workspace_members (
+              count
+            )
           )
         `)
         .eq("course_id", courseId);
@@ -35,6 +40,30 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
       return data;
     },
   });
+
+  const handleRevokeAccess = async (accessId: string) => {
+    try {
+      const { error } = await supabase
+        .from("workspace_course_access")
+        .delete()
+        .eq("id", accessId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Workspace access revoked successfully",
+      });
+      refetch();
+    } catch (error) {
+      console.error("Error revoking access:", error);
+      toast({
+        title: "Error",
+        description: "Failed to revoke workspace access",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -59,6 +88,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
           <TableRow>
             <TableHead>Workspace</TableHead>
             <TableHead>Slug</TableHead>
+            <TableHead>Members</TableHead>
             <TableHead>Granted At</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -68,9 +98,18 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
             <TableRow key={access.id}>
               <TableCell>{access.workspaces?.name}</TableCell>
               <TableCell>{access.workspaces?.slug}</TableCell>
-              <TableCell>{new Date(access.created_at).toLocaleDateString()}</TableCell>
               <TableCell>
-                <Button variant="destructive" size="sm">
+                {access.workspaces?.workspace_members?.[0]?.count || 0}
+              </TableCell>
+              <TableCell>
+                {new Date(access.created_at).toLocaleDateString()}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleRevokeAccess(access.id)}
+                >
                   Revoke Access
                 </Button>
               </TableCell>
