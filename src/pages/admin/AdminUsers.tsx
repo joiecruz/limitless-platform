@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -11,12 +11,24 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Search, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminUsers() {
   const [search, setSearch] = useState("");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users', search],
@@ -27,7 +39,7 @@ export default function AdminUsers() {
         .order('created_at', { ascending: false });
         
       if (search) {
-        query.or(`username.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+        query.or(`email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
       }
       
       const { data, error } = await query;
@@ -46,15 +58,42 @@ export default function AdminUsers() {
 
       if (error) throw error;
 
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+
       toast({
         title: "Success",
         description: `User superadmin status updated successfully`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user:', error);
       toast({
         title: "Error",
-        description: "Failed to update user status",
+        description: error.message || "Failed to update user status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+
+      toast({
+        title: "Success",
+        description: "User has been deleted successfully",
+      });
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user",
         variant: "destructive",
       });
     }
@@ -84,8 +123,8 @@ export default function AdminUsers() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Username</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead>Actions</TableHead>
@@ -94,22 +133,55 @@ export default function AdminUsers() {
             <TableBody>
               {users?.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell>{user.username}</TableCell>
                   <TableCell>
                     {user.first_name} {user.last_name}
                   </TableCell>
+                  <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role || 'N/A'}</TableCell>
                   <TableCell>
                     {new Date(user.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant={user.is_superadmin ? "destructive" : "outline"}
-                      size="sm"
-                      onClick={() => toggleSuperAdmin(user.id, user.is_superadmin)}
-                    >
-                      {user.is_superadmin ? 'Remove Admin' : 'Make Admin'}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant={user.is_superadmin ? "destructive" : "outline"}
+                        size="sm"
+                        onClick={() => toggleSuperAdmin(user.id, user.is_superadmin)}
+                      >
+                        {user.is_superadmin ? 'Remove Admin' : 'Make Admin'}
+                      </Button>
+
+                      {user.is_superadmin && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete User</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this user? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteUser(user.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
