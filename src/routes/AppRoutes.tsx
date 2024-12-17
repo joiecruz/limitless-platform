@@ -19,6 +19,7 @@ import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsers from "@/pages/admin/AdminUsers";
+import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 
 interface AppRoutesProps {
@@ -74,6 +75,16 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <RequireAuth>
             <AdminLayout>
               <AdminUsers />
+            </AdminLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/workspaces"
+        element={
+          <RequireAuth>
+            <AdminLayout>
+              <AdminWorkspaces />
             </AdminLayout>
           </RequireAuth>
         }
