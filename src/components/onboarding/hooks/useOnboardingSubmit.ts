@@ -5,7 +5,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { OnboardingData } from "../types";
 import { useLocation } from "react-router-dom";
 
-export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
+interface OnboardingSubmitProps {
+  onOpenChange?: (open: boolean) => void;
+  workspaceId?: string;
+  onSuccess?: () => void;
+}
+
+export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: OnboardingSubmitProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -82,6 +88,7 @@ export function useOnboardingSubmit({ onOpenChange }: { onOpenChange?: (open: bo
       });
 
       if (onOpenChange) onOpenChange(false);
+      if (onSuccess) onSuccess();
     } catch (error: any) {
       console.error("Error in onboarding:", error);
       toast({

@@ -39,6 +39,7 @@ export function InvitedUserOnboardingModal({
 
   const { handleSubmit, loading } = useOnboardingSubmit({ 
     onOpenChange,
+    workspaceId,
     onSuccess: () => {
       if (workspaceId) {
         navigate(`/dashboard?workspace=${workspaceId}`);
