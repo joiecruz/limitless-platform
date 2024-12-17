@@ -10,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ProfileDisplay } from "./ProfileDisplay";
 import { useEffect, useState } from "react";
 
 interface Profile {
@@ -62,30 +61,9 @@ export function ProfileMenu() {
     navigate('/signin');
   };
 
-  const getInitials = () => {
-    if (profile?.first_name || profile?.last_name) {
-      return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
-    }
-    return '?';
-  };
-
-  const getDisplayName = () => {
-    if (profile?.first_name || profile?.last_name) {
-      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-    }
-    return 'User';
-  };
-
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="outline-none">
-        <ProfileDisplay 
-          avatarUrl={profile?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`}
-          initials={getInitials()}
-          displayName={getDisplayName()}
-          email={profile?.email || 'No email provided'}
-        />
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger className="outline-none w-full" />
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
