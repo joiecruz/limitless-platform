@@ -60,7 +60,7 @@ export default function AdminWorkspaces() {
   const onDeleteWorkspace = async (workspaceId: string) => {
     const success = await handleDeleteWorkspace(workspaceId);
     if (success) {
-      refetch();
+      await refetch(); // Explicitly refetch the workspaces list after successful deletion
     }
   };
 
