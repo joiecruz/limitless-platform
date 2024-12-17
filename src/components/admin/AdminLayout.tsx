@@ -94,7 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <nav className="px-4 mt-6 flex-1">
             <div className="space-y-1">
               <Link 
-                to="/admin/dashboard" 
+                to="/admin" 
                 className={`nav-item ${isActive('/admin/dashboard') ? 'active' : ''}`}
               >
                 <LayoutDashboard className="h-5 w-5" />
