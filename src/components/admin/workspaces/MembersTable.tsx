@@ -2,6 +2,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { WorkspaceMember } from "./types";
 import { formatDate } from "@/lib/utils";
 import { DeleteMemberButton } from "@/components/settings/members/DeleteMemberButton";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MembersTableProps {
   members: WorkspaceMember[];
@@ -9,6 +11,15 @@ interface MembersTableProps {
 }
 
 export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
+  const { data: currentUser } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+      return user;
+    }
+  });
+
   return (
     <Table>
       <TableHeader>
@@ -32,7 +43,7 @@ export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
             <TableCell className="capitalize">{member.role}</TableCell>
             <TableCell>{formatDate(member.created_at)}</TableCell>
             <TableCell className="text-right">
-              {onDeleteMember && member.role !== 'owner' && (
+              {onDeleteMember && member.role !== 'owner' && member.user_id !== currentUser?.id && (
                 <DeleteMemberButton 
                   member={{
                     id: member.user_id,
