@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { InviteMemberDialog } from "@/components/settings/members/InviteMemberDialog";
 
 export default function AdminWorkspaceDetails() {
-  const { workspaceId } = useParams();
+  const { id: workspaceId } = useParams();
   const [search, setSearch] = useState("");
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const { toast } = useToast();
@@ -116,7 +116,12 @@ export default function AdminWorkspaceDetails() {
   }
 
   if (!workspace) {
-    return <div>Workspace not found</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-[400px] space-y-4">
+        <p className="text-lg text-gray-600">Workspace not found or you don't have access to it.</p>
+        <p className="text-sm text-gray-500">Please check the URL and try again.</p>
+      </div>
+    );
   }
 
   return (
