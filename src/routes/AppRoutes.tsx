@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
@@ -34,18 +34,24 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
       
-      <Route element={<RequireAuth>
-        <AdminLayout />
-      </RequireAuth>}>
+      <Route element={
+        <RequireAuth>
+          <AdminLayout>
+            <Outlet />
+          </AdminLayout>
+        </RequireAuth>
+      }>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
         <Route path="/admin/workspaces/:workspaceId" element={<AdminWorkspaceDetails />} />
       </Route>
 
-      <Route element={<RequireAuth>
-        <Outlet />
-      </RequireAuth>}>
+      <Route element={
+        <RequireAuth>
+          <Outlet />
+        </RequireAuth>
+      }>
         <Route path="/" element={<Dashboard />} />
         <Route path="/community" element={<Community />} />
         <Route path="/courses" element={<Courses />} />
