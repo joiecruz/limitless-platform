@@ -48,11 +48,12 @@ export function useInviteSubmit(token: string | null) {
       // Step 3: Create new user with email confirmation disabled for invited users
       const { data: newAuthData, error: signUpError } = await createNewUser(
         invitation.email, 
-        data.password, 
-        { ...data, emailConfirm: false }
+        data.password,
+        { emailConfirm: false }
       );
       
-      if (signUpError || !newAuthData.user) {
+      if (signUpError || !newAuthData?.user) {
+        console.error("Error creating user:", signUpError);
         throw new Error(signUpError?.message || "Failed to create user account");
       }
       
