@@ -9,6 +9,7 @@ export function GeneralSettings() {
 
   console.log('GeneralSettings - currentWorkspace:', currentWorkspace);
 
+  // Reset form when workspace changes
   useEffect(() => {
     console.log('Workspace changed in settings:', currentWorkspace);
   }, [currentWorkspace]);
