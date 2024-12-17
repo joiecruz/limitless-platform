@@ -55,7 +55,7 @@ export default function AdminWorkspaceDetails() {
         .from('workspace_members')
         .select(`
           *,
-          profiles:user_id (
+          profiles!inner (
             id,
             first_name,
             last_name,
@@ -152,6 +152,10 @@ export default function AdminWorkspaceDetails() {
         <div className="flex items-center justify-center h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
+      ) : !members?.length ? (
+        <div className="flex items-center justify-center h-[200px] border rounded-lg">
+          <p className="text-gray-500">No members found</p>
+        </div>
       ) : (
         <div className="border rounded-lg">
           <Table>
@@ -165,7 +169,7 @@ export default function AdminWorkspaceDetails() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {members?.map((member) => (
+              {members.map((member) => (
                 <TableRow key={member.user_id}>
                   <TableCell>
                     {member.profiles?.first_name} {member.profiles?.last_name}
