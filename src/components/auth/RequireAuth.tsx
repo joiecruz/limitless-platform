@@ -24,7 +24,12 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         
         if (sessionError) {
           console.error("RequireAuth: Session error:", sessionError);
-          throw sessionError;
+          // Clear local storage and force sign out on session error
+          localStorage.clear();
+          await supabase.auth.signOut();
+          setIsAuthenticated(false);
+          navigate("/signin", { replace: true });
+          return;
         }
 
         console.log("RequireAuth: Session state:", session);
@@ -32,7 +37,8 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         if (!session) {
           console.log("RequireAuth: No session found, redirecting to signin");
           setIsAuthenticated(false);
-          await supabase.auth.signOut(); // Force clean session state
+          localStorage.clear(); // Clear local storage when no session exists
+          await supabase.auth.signOut();
           navigate("/signin", { replace: true });
           return;
         }
@@ -48,33 +54,38 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         setIsChecking(false);
       } catch (error: any) {
         console.error("RequireAuth: Auth error:", error);
+        // Clear local storage and force sign out on any error
+        localStorage.clear();
+        await supabase.auth.signOut();
+        setIsAuthenticated(false);
+        navigate("/signin", { replace: true });
         toast({
           title: "Authentication Error",
           description: "Please sign in again",
           variant: "destructive",
         });
-        
-        setIsAuthenticated(false);
-        // Force clean session state and redirect
-        await supabase.auth.signOut();
-        navigate("/signin", { replace: true });
       }
     };
 
     checkSession();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("RequireAuth: Auth state changed:", event, session);
       
+      if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+        setIsAuthenticated(true);
+        return;
+      }
+
       // Skip auth redirects for verify-email and signup pages
       if (location.pathname === '/verify-email' || location.pathname === '/signup') {
         return;
       }
 
-      if (!session) {
-        console.log("RequireAuth: Session lost, redirecting to signin");
+      if (!session || event === 'SIGNED_OUT') {
+        console.log("RequireAuth: Session lost or signed out, redirecting to signin");
         setIsAuthenticated(false);
+        localStorage.clear();
         navigate("/signin", { replace: true });
       } else if (!session.user.email_confirmed_at) {
         console.log("RequireAuth: Email not confirmed, redirecting to verify-email");

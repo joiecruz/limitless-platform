@@ -9,6 +9,12 @@ import { WorkspaceHeader } from "@/components/admin/workspaces/WorkspaceHeader";
 import { MembersTable } from "@/components/admin/workspaces/MembersTable";
 import { Workspace, WorkspaceMember } from "@/components/admin/workspaces/types";
 
+interface ProfileData {
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}
+
 export default function AdminWorkspaceDetails() {
   const { id: workspaceId } = useParams();
   const [search, setSearch] = useState("");
@@ -73,11 +79,7 @@ export default function AdminWorkspaceDetails() {
         user_id: member.user_id,
         role: member.role,
         created_at: member.created_at,
-        profiles: {
-          first_name: member.profiles.first_name,
-          last_name: member.profiles.last_name,
-          email: member.profiles.email
-        }
+        profiles: member.profiles as ProfileData
       })) as WorkspaceMember[];
     },
     enabled: !!workspaceId,
