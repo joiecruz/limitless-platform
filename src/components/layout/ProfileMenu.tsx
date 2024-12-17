@@ -21,7 +21,11 @@ interface Profile {
   is_superadmin?: boolean;
 }
 
-export function ProfileMenu() {
+interface ProfileMenuProps {
+  children: React.ReactNode;
+}
+
+export function ProfileMenu({ children }: ProfileMenuProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -65,7 +69,7 @@ export function ProfileMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="w-full">
-          <div className="w-full h-full" />
+          {children}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
