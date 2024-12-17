@@ -4,9 +4,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 interface WorkspaceMembersTableProps {
   workspaceId: string;
+  onDeleteMember?: (userId: string) => Promise<void>;
 }
 
-export function WorkspaceMembersTable({ workspaceId }: WorkspaceMembersTableProps) {
+export function WorkspaceMembersTable({ workspaceId, onDeleteMember }: WorkspaceMembersTableProps) {
   const { data: members, isLoading, error } = useWorkspaceMembers(workspaceId);
 
   if (isLoading) {
@@ -25,6 +26,7 @@ export function WorkspaceMembersTable({ workspaceId }: WorkspaceMembersTableProp
           <TableHead>Email</TableHead>
           <TableHead>Role</TableHead>
           <TableHead>Joined</TableHead>
+          {onDeleteMember && <TableHead></TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -36,6 +38,16 @@ export function WorkspaceMembersTable({ workspaceId }: WorkspaceMembersTableProp
             <TableCell>{member.profiles.email}</TableCell>
             <TableCell>{member.role}</TableCell>
             <TableCell>{new Date(member.created_at).toLocaleDateString()}</TableCell>
+            {onDeleteMember && (
+              <TableCell className="text-right">
+                <button
+                  onClick={() => onDeleteMember(member.user_id)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  Delete
+                </button>
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
