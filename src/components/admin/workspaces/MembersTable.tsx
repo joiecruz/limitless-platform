@@ -33,7 +33,16 @@ export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
             <TableCell>{formatDate(member.created_at)}</TableCell>
             <TableCell className="text-right">
               {onDeleteMember && member.role !== 'owner' && (
-                <DeleteMemberButton onDelete={() => onDeleteMember(member.user_id)} />
+                <DeleteMemberButton 
+                  member={{
+                    id: member.user_id,
+                    email: member.profiles.email,
+                    role: member.role,
+                    status: 'Active'
+                  }}
+                  isCurrentUser={false}
+                  onDelete={() => onDeleteMember(member.user_id)}
+                />
               )}
             </TableCell>
           </TableRow>

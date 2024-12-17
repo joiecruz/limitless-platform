@@ -43,20 +43,16 @@ export default function AdminWorkspaceDetails() {
     queryFn: async () => {
       if (!workspaceId) throw new Error("No workspace ID provided");
       
-      console.log("Fetching members for workspace:", workspaceId);
-      
       let query = supabase
         .from('workspace_members')
         .select(`
           user_id,
           role,
           created_at,
-          profiles!inner (
+          profiles (
             first_name,
             last_name,
-            email:id (
-              email
-            )
+            email
           )
         `)
         .eq('workspace_id', workspaceId);
@@ -72,20 +68,21 @@ export default function AdminWorkspaceDetails() {
         throw error;
       }
 
-      console.log("Fetched members data:", data);
-      
       // Transform the data to match our type
       const transformedData = data.map(member => ({
         ...member,
-        profiles: member.profiles[0] // Take the first profile since it's returned as an array
-      }));
+        profiles: {
+          ...member.profiles,
+          email: member.profiles.email
+        }
+      })) as WorkspaceMember[];
 
-      return transformedData as WorkspaceMember[];
+      return transformedData;
     },
     enabled: !!workspaceId,
   });
 
-  const handleRemoveMember = async (userId: string) => {
+  const handleDeleteMember = async (userId: string) => {
     try {
       const { error } = await supabase
         .from('workspace_members')
@@ -146,7 +143,7 @@ export default function AdminWorkspaceDetails() {
       ) : (
         <MembersTable
           members={members}
-          onRemoveMember={handleRemoveMember}
+          onDeleteMember={handleDeleteMember}
         />
       )}
 
