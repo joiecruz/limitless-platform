@@ -82,7 +82,7 @@ export default function AdminWorkspaceDetails() {
       }
 
       // Transform the data to match our WorkspaceMember type
-      return (data as SupabaseWorkspaceMember[]).map((member) => ({
+      return (data as unknown as SupabaseWorkspaceMember[]).map((member) => ({
         user_id: member.user_id,
         role: member.role,
         created_at: member.created_at,
