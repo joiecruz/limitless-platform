@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import RequireAuth from "@/components/auth/RequireAuth";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import Dashboard from "@/pages/Dashboard";
@@ -19,6 +19,7 @@ import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
 import AdminWorkspaceDetails from "@/pages/admin/AdminWorkspaceDetails";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { Outlet } from "react-router-dom";
 
 export default function AppRoutes() {
   return (
@@ -29,7 +30,7 @@ export default function AppRoutes() {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
       
-      <Route element={<RequireAuth />}>
+      <Route element={<RequireAuth><Outlet /></RequireAuth>}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/community" element={<Community />} />
         <Route path="/courses" element={<Courses />} />
@@ -40,7 +41,7 @@ export default function AppRoutes() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/account-settings" element={<AccountSettings />} />
         
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={<AdminLayout><Outlet /></AdminLayout>}>
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="workspaces" element={<AdminWorkspaces />} />
