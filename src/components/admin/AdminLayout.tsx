@@ -83,7 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
-        <aside className="w-64 bg-white border-r min-h-screen flex flex-col">
+        <aside className="w-64 bg-white border-r h-screen flex flex-col fixed">
           <div className="flex items-center px-6 py-4">
             <img 
               src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
@@ -91,7 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="h-12 w-auto"
             />
           </div>
-          <nav className="px-4 mt-6 flex-1">
+          <nav className="px-4 mt-6 flex-1 overflow-y-auto">
             <div className="space-y-1">
               <Link 
                 to="/admin" 
@@ -123,10 +123,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             </div>
           </nav>
+          <div className="mt-auto border-t">
+            <Link to="/dashboard" className="nav-item">
+              User Dashboard
+            </Link>
+          </div>
           <UserProfile />
         </aside>
-        <main className="flex-1 p-8">
-          {children}
+        <main className="flex-1 pl-64">
+          <div className="p-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>
