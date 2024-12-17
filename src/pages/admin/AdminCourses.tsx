@@ -12,14 +12,11 @@ import {
 } from "@/components/ui/table";
 import { Loader2, Lock, Unlock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import CourseDetails from "./courses/CourseDetails";
 
 export default function AdminCourses() {
   const { toast } = useToast();
-  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
-  const [isAccessDialogOpen, setIsAccessDialogOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   // Fetch courses
   const { data: courses, isLoading: isLoadingCourses } = useQuery({
@@ -30,32 +27,6 @@ export default function AdminCourses() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Fetch workspaces for the dropdown
-  const { data: workspaces } = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("workspaces")
-        .select("id, name");
-      
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Fetch users for the dropdown
-  const { data: users } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, email, first_name, last_name");
-      
       if (error) throw error;
       return data;
     },
@@ -84,37 +55,20 @@ export default function AdminCourses() {
     }
   };
 
-  const handleGrantAccess = async (type: "workspace" | "user", id: string) => {
-    if (!selectedCourse) return;
-
-    try {
-      const table = type === "workspace" ? "workspace_course_access" : "user_course_access";
-      const column = type === "workspace" ? "workspace_id" : "user_id";
-
-      const { error } = await supabase
-        .from(table)
-        .insert({
-          course_id: selectedCourse,
-          [column]: id,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: `Access granted to ${type}`,
-      });
-      
-      setIsAccessDialogOpen(false);
-    } catch (error) {
-      console.error("Error granting access:", error);
-      toast({
-        title: "Error",
-        description: "Failed to grant access",
-        variant: "destructive",
-      });
-    }
-  };
+  if (selectedCourseId) {
+    return (
+      <div className="space-y-6">
+        <Button 
+          variant="outline" 
+          onClick={() => setSelectedCourseId(null)}
+          className="mb-4"
+        >
+          Back to Courses
+        </Button>
+        <CourseDetails courseId={selectedCourseId} />
+      </div>
+    );
+  }
 
   if (isLoadingCourses) {
     return (
@@ -128,6 +82,7 @@ export default function AdminCourses() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Courses</h1>
+        <Button>Create Course</Button>
       </div>
 
       <Table>
@@ -162,54 +117,13 @@ export default function AdminCourses() {
                   >
                     {course.locked ? "Unlock" : "Lock"}
                   </Button>
-                  <Dialog open={isAccessDialogOpen} onOpenChange={setIsAccessDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedCourse(course.id)}
-                      >
-                        Grant Access
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Grant Course Access</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label>Grant access to workspace</Label>
-                          <Select onValueChange={(value) => handleGrantAccess("workspace", value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select workspace" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {workspaces?.map((workspace) => (
-                                <SelectItem key={workspace.id} value={workspace.id}>
-                                  {workspace.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Grant access to user</Label>
-                          <Select onValueChange={(value) => handleGrantAccess("user", value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select user" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {users?.map((user) => (
-                                <SelectItem key={user.id} value={user.id}>
-                                  {user.email} ({user.first_name} {user.last_name})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedCourseId(course.id)}
+                  >
+                    Manage
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
