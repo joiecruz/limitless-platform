@@ -2,19 +2,12 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, Search, UserPlus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { InviteMemberDialog } from "@/components/settings/members/InviteMemberDialog";
+import { WorkspaceHeader } from "@/components/admin/workspaces/WorkspaceHeader";
+import { MembersTable } from "@/components/admin/workspaces/MembersTable";
+import { Workspace, WorkspaceMember } from "@/components/admin/workspaces/types";
 
 export default function AdminWorkspaceDetails() {
   const { id: workspaceId } = useParams();
@@ -22,8 +15,6 @@ export default function AdminWorkspaceDetails() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const { toast } = useToast();
   
-  console.log("Fetching workspace details for ID:", workspaceId);
-
   const { data: workspace, isLoading: isLoadingWorkspace } = useQuery({
     queryKey: ['admin-workspace', workspaceId],
     queryFn: async () => {
@@ -40,8 +31,7 @@ export default function AdminWorkspaceDetails() {
         throw error;
       }
       
-      console.log("Workspace data:", data);
-      return data;
+      return data as Workspace;
     },
     enabled: !!workspaceId,
   });
@@ -77,8 +67,7 @@ export default function AdminWorkspaceDetails() {
         throw error;
       }
       
-      console.log("Members data:", data);
-      return data;
+      return data as WorkspaceMember[];
     },
     enabled: !!workspaceId,
   });
@@ -126,27 +115,12 @@ export default function AdminWorkspaceDetails() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">{workspace.name}</h1>
-          <p className="text-sm text-gray-500">Workspace Management</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Search className="w-5 h-5 text-gray-400" />
-            <Input
-              placeholder="Search members..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-64"
-            />
-          </div>
-          <Button onClick={() => setShowInviteDialog(true)}>
-            <UserPlus className="h-4 w-4 mr-2" />
-            Invite Member
-          </Button>
-        </div>
-      </div>
+      <WorkspaceHeader
+        workspaceName={workspace.name}
+        search={search}
+        onSearchChange={setSearch}
+        onInviteClick={() => setShowInviteDialog(true)}
+      />
 
       {isLoadingMembers ? (
         <div className="flex items-center justify-center h-[400px]">
@@ -157,44 +131,10 @@ export default function AdminWorkspaceDetails() {
           <p className="text-gray-500">No members found</p>
         </div>
       ) : (
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {members.map((member) => (
-                <TableRow key={member.user_id}>
-                  <TableCell>
-                    {member.profiles?.first_name} {member.profiles?.last_name}
-                  </TableCell>
-                  <TableCell>
-                    {member.profiles?.email?.email}
-                  </TableCell>
-                  <TableCell className="capitalize">{member.role}</TableCell>
-                  <TableCell>
-                    {new Date(member.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleRemoveMember(member.user_id)}
-                    >
-                      Remove
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <MembersTable
+          members={members}
+          onRemoveMember={handleRemoveMember}
+        />
       )}
 
       <InviteMemberDialog
