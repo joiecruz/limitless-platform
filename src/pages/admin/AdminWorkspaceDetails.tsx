@@ -12,10 +12,10 @@ import { Workspace, WorkspaceMember } from "@/components/admin/workspaces/types"
 interface ProfileData {
   first_name: string | null;
   last_name: string | null;
-  email: string | null;
+  email: string;
 }
 
-interface WorkspaceMemberResponse {
+interface SupabaseWorkspaceMember {
   user_id: string;
   role: string;
   created_at: string;
@@ -82,12 +82,12 @@ export default function AdminWorkspaceDetails() {
       }
 
       // Transform the data to match our WorkspaceMember type
-      return (data || []).map((member: WorkspaceMemberResponse) => ({
+      return (data as SupabaseWorkspaceMember[]).map((member) => ({
         user_id: member.user_id,
         role: member.role,
         created_at: member.created_at,
         profiles: member.profiles
-      })) as WorkspaceMember[];
+      }));
     },
     enabled: !!workspaceId,
   });
