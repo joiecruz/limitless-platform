@@ -313,6 +313,7 @@ export type Database = {
           goals: string | null
           id: string
           is_admin: boolean | null
+          is_superadmin: boolean | null
           last_name: string | null
           referral_source: string | null
           role: string | null
@@ -327,6 +328,7 @@ export type Database = {
           goals?: string | null
           id: string
           is_admin?: boolean | null
+          is_superadmin?: boolean | null
           last_name?: string | null
           referral_source?: string | null
           role?: string | null
@@ -341,6 +343,7 @@ export type Database = {
           goals?: string | null
           id?: string
           is_admin?: boolean | null
+          is_superadmin?: boolean | null
           last_name?: string | null
           referral_source?: string | null
           role?: string | null
