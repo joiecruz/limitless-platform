@@ -15,6 +15,7 @@ export default function AdminWorkspaceDetails() {
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const { toast } = useToast();
   
+  // Fetch workspace details
   const { data: workspace, isLoading: isLoadingWorkspace } = useQuery({
     queryKey: ['admin-workspace', workspaceId],
     queryFn: async () => {
@@ -36,17 +37,21 @@ export default function AdminWorkspaceDetails() {
     enabled: !!workspaceId,
   });
 
+  // Fetch workspace members with their profile information
   const { data: members, isLoading: isLoadingMembers } = useQuery({
     queryKey: ['admin-workspace-members', workspaceId, search],
     queryFn: async () => {
       if (!workspaceId) throw new Error("No workspace ID provided");
       
+      console.log("Fetching members for workspace:", workspaceId);
+      
       let query = supabase
         .from('workspace_members')
         .select(`
-          *,
-          profiles!inner (
-            id,
+          user_id,
+          role,
+          created_at,
+          profiles (
             first_name,
             last_name,
             email:id (
@@ -66,6 +71,8 @@ export default function AdminWorkspaceDetails() {
         console.error("Error fetching members:", error);
         throw error;
       }
+
+      console.log("Fetched members data:", data);
       
       return data as WorkspaceMember[];
     },
