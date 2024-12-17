@@ -30,6 +30,7 @@ import { useWorkspaceDelete } from "@/components/admin/workspaces/useWorkspaceDe
 export default function AdminWorkspaces() {
   const [search, setSearch] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const { handleDeleteWorkspace } = useWorkspaceDelete();
   
@@ -58,9 +59,14 @@ export default function AdminWorkspaces() {
   });
 
   const onDeleteWorkspace = async (workspaceId: string) => {
-    const success = await handleDeleteWorkspace(workspaceId);
-    if (success) {
-      await refetch(); // Explicitly refetch the workspaces list after successful deletion
+    setIsDeleting(true);
+    try {
+      const success = await handleDeleteWorkspace(workspaceId);
+      if (success) {
+        await refetch();
+      }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -85,7 +91,7 @@ export default function AdminWorkspaces() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading || isDeleting ? (
         <div className="flex items-center justify-center h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
