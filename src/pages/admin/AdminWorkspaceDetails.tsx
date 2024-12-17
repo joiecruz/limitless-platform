@@ -51,7 +51,7 @@ export default function AdminWorkspaceDetails() {
           user_id,
           role,
           created_at,
-          profiles (
+          profiles!inner (
             first_name,
             last_name,
             email:id (
@@ -74,7 +74,13 @@ export default function AdminWorkspaceDetails() {
 
       console.log("Fetched members data:", data);
       
-      return data as WorkspaceMember[];
+      // Transform the data to match our type
+      const transformedData = data.map(member => ({
+        ...member,
+        profiles: member.profiles[0] // Take the first profile since it's returned as an array
+      }));
+
+      return transformedData as WorkspaceMember[];
     },
     enabled: !!workspaceId,
   });
