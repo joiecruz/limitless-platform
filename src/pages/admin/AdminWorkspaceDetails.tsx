@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -21,24 +21,36 @@ export default function AdminWorkspaceDetails() {
   const [search, setSearch] = useState("");
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const { toast } = useToast();
+  
+  console.log("Fetching workspace details for ID:", workspaceId);
 
   const { data: workspace, isLoading: isLoadingWorkspace } = useQuery({
     queryKey: ['admin-workspace', workspaceId],
     queryFn: async () => {
+      if (!workspaceId) throw new Error("No workspace ID provided");
+      
       const { data, error } = await supabase
         .from('workspaces')
         .select('*')
         .eq('id', workspaceId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching workspace:", error);
+        throw error;
+      }
+      
+      console.log("Workspace data:", data);
       return data;
     },
+    enabled: !!workspaceId,
   });
 
   const { data: members, isLoading: isLoadingMembers } = useQuery({
     queryKey: ['admin-workspace-members', workspaceId, search],
     queryFn: async () => {
+      if (!workspaceId) throw new Error("No workspace ID provided");
+      
       let query = supabase
         .from('workspace_members')
         .select(`
@@ -59,9 +71,16 @@ export default function AdminWorkspaceDetails() {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Error fetching members:", error);
+        throw error;
+      }
+      
+      console.log("Members data:", data);
       return data;
     },
+    enabled: !!workspaceId,
   });
 
   const handleRemoveMember = async (userId: string) => {
@@ -170,7 +189,7 @@ export default function AdminWorkspaceDetails() {
       )}
 
       <InviteMemberDialog
-        isOpen={showInviteDialog}
+        open={showInviteDialog}
         onOpenChange={setShowInviteDialog}
         workspaceId={workspaceId || ''}
         workspaceName={workspace.name}
