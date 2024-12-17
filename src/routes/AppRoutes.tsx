@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import RequireAuth from "@/components/auth/RequireAuth";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import Dashboard from "@/pages/Dashboard";
@@ -19,8 +19,13 @@ import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
 import AdminWorkspaceDetails from "@/pages/admin/AdminWorkspaceDetails";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { Session } from "@supabase/supabase-js";
 
-export default function AppRoutes() {
+interface AppRoutesProps {
+  session: Session | null;
+}
+
+export default function AppRoutes({ session }: AppRoutesProps) {
   return (
     <Routes>
       <Route path="/signin" element={<SignIn />} />
@@ -29,7 +34,18 @@ export default function AppRoutes() {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
       
-      <Route element={<RequireAuth />}>
+      <Route element={<RequireAuth>
+        <AdminLayout />
+      </RequireAuth>}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
+        <Route path="/admin/workspaces/:workspaceId" element={<AdminWorkspaceDetails />} />
+      </Route>
+
+      <Route element={<RequireAuth>
+        <Outlet />
+      </RequireAuth>}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/community" element={<Community />} />
         <Route path="/courses" element={<Courses />} />
@@ -39,13 +55,6 @@ export default function AppRoutes() {
         <Route path="/tools/:toolId" element={<ToolDetails />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/account-settings" element={<AccountSettings />} />
-        
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="workspaces" element={<AdminWorkspaces />} />
-          <Route path="workspaces/:workspaceId" element={<AdminWorkspaceDetails />} />
-        </Route>
       </Route>
     </Routes>
   );
