@@ -15,6 +15,13 @@ interface ProfileData {
   email: string | null;
 }
 
+interface WorkspaceMemberResponse {
+  user_id: string;
+  role: string;
+  created_at: string;
+  profiles: ProfileData;
+}
+
 export default function AdminWorkspaceDetails() {
   const { id: workspaceId } = useParams();
   const [search, setSearch] = useState("");
@@ -75,11 +82,11 @@ export default function AdminWorkspaceDetails() {
       }
 
       // Transform the data to match our WorkspaceMember type
-      return (data || []).map(member => ({
+      return (data || []).map((member: WorkspaceMemberResponse) => ({
         user_id: member.user_id,
         role: member.role,
         created_at: member.created_at,
-        profiles: member.profiles as ProfileData
+        profiles: member.profiles
       })) as WorkspaceMember[];
     },
     enabled: !!workspaceId,
