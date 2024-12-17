@@ -63,7 +63,11 @@ export function ProfileMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="outline-none w-full" />
+      <DropdownMenuTrigger asChild>
+        <button className="w-full">
+          <div className="w-full h-full" />
+        </button>
+      </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
