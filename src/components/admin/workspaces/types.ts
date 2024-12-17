@@ -5,13 +5,12 @@ export interface WorkspaceMember {
   profiles: {
     first_name: string | null;
     last_name: string | null;
-    email: {
-      email: string;
-    } | null;
+    email: string | null;
   };
 }
 
 export interface Workspace {
   id: string;
   name: string;
+  slug: string;
 }
