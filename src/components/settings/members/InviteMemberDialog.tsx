@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { BatchEmailInput } from "./BatchEmailInput";
 
 interface InviteMemberDialogProps {
   isOpen: boolean;
@@ -20,14 +19,13 @@ export function InviteMemberDialog({
   workspaceId, 
   workspaceName 
 }: InviteMemberDialogProps) {
-  const [inviteEmail, setInviteEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState("member");
   const [isInviting, setIsInviting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const handleInvite = async () => {
-    if (!inviteEmail || !workspaceId) return;
+  const handleInvite = async (emails: string[]) => {
+    if (!workspaceId) return;
 
     setIsInviting(true);
     try {
@@ -46,35 +44,32 @@ export function InviteMemberDialog({
 
       const { error } = await supabase.functions.invoke('send-workspace-invite', {
         body: {
-          email: inviteEmail,
+          emails,
           workspaceId,
           workspaceName,
           inviterName,
           role: selectedRole,
-          inviterId: userData.user.id, // Add the inviter's ID
+          inviterId: userData.user.id,
         },
       });
 
       if (error) throw error;
 
       toast({
-        title: "Invitation Sent",
-        description: `An invitation has been sent to ${inviteEmail}`,
+        title: "Invitations Sent",
+        description: `Invitations have been sent to ${emails.length} email${emails.length === 1 ? '' : 's'}`,
       });
       
-      // Invalidate the workspace members query to refresh the list
       queryClient.invalidateQueries({
         queryKey: ['workspace-members', workspaceId]
       });
       
       onOpenChange(false);
-      setInviteEmail("");
-      setSelectedRole("member");
     } catch (error: any) {
-      console.error('Error sending invite:', error);
+      console.error('Error sending invites:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to send invitation. Please try again.",
+        description: error.message || "Failed to send invitations. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -90,14 +85,6 @@ export function InviteMemberDialog({
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Input
-              type="email"
-              placeholder="Enter email address"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
             <label className="text-sm font-medium">Role</label>
             <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger>
@@ -110,15 +97,8 @@ export function InviteMemberDialog({
               </SelectContent>
             </Select>
           </div>
+          <BatchEmailInput onSubmit={handleInvite} isLoading={isInviting} />
         </div>
-        <DialogFooter>
-          <Button
-            onClick={handleInvite}
-            disabled={!inviteEmail || isInviting}
-          >
-            {isInviting ? "Sending..." : "Send Invitation"}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
