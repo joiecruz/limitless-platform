@@ -12,9 +12,20 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, Plus } from "lucide-react";
+import { Loader2, Search, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateWorkspaceDialog } from "@/components/admin/workspaces/CreateWorkspaceDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminWorkspaces() {
   const [search, setSearch] = useState("");
@@ -22,7 +33,7 @@ export default function AdminWorkspaces() {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const { data: workspaces, isLoading } = useQuery({
+  const { data: workspaces, isLoading, refetch } = useQuery({
     queryKey: ['admin-workspaces', search],
     queryFn: async () => {
       const query = supabase
@@ -45,6 +56,64 @@ export default function AdminWorkspaces() {
       return data;
     }
   });
+
+  const handleDeleteWorkspace = async (workspaceId: string) => {
+    try {
+      // Delete workspace members first due to foreign key constraints
+      const { error: membersError } = await supabase
+        .from('workspace_members')
+        .delete()
+        .eq('workspace_id', workspaceId);
+
+      if (membersError) throw membersError;
+
+      // Delete workspace domains
+      const { error: domainsError } = await supabase
+        .from('workspace_domains')
+        .delete()
+        .eq('workspace_id', workspaceId);
+
+      if (domainsError) throw domainsError;
+
+      // Delete workspace invitations
+      const { error: invitationsError } = await supabase
+        .from('workspace_invitations')
+        .delete()
+        .eq('workspace_id', workspaceId);
+
+      if (invitationsError) throw invitationsError;
+
+      // Delete channels
+      const { error: channelsError } = await supabase
+        .from('channels')
+        .delete()
+        .eq('workspace_id', workspaceId);
+
+      if (channelsError) throw channelsError;
+
+      // Finally delete the workspace
+      const { error: workspaceError } = await supabase
+        .from('workspaces')
+        .delete()
+        .eq('id', workspaceId);
+
+      if (workspaceError) throw workspaceError;
+
+      toast({
+        title: "Success",
+        description: "Workspace deleted successfully",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error('Error deleting workspace:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete workspace. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -91,13 +160,44 @@ export default function AdminWorkspaces() {
                     {new Date(workspace.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/admin/workspaces/${workspace.id}`)}
-                    >
-                      Manage
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/admin/workspaces/${workspace.id}`)}
+                      >
+                        Manage
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Workspace</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete the workspace "{workspace.name}"? This action cannot be undone.
+                              All workspace data, including channels, messages, and member associations will be permanently deleted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteWorkspace(workspace.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
