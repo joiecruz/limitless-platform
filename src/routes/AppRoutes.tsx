@@ -19,6 +19,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
 import AdminWorkspaceDetails from "@/pages/admin/AdminWorkspaceDetails";
+import AdminCourses from "@/pages/admin/AdminCourses";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Outlet } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
@@ -56,6 +57,7 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         <Route path="users" element={<AdminUsers />} />
         <Route path="workspaces" element={<AdminWorkspaces />} />
         <Route path="workspaces/:id" element={<AdminWorkspaceDetails />} />
+        <Route path="courses" element={<AdminCourses />} />
       </Route>
     </Routes>
   );

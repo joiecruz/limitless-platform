@@ -19,7 +19,7 @@ export function AdminSidebar() {
         <div className="space-y-1">
           <Link 
             to="/admin" 
-            className={`nav-item ${isActive('/admin/dashboard') ? 'active' : ''}`}
+            className={`nav-item ${isActive('/admin') ? 'active' : ''}`}
           >
             <LayoutDashboard className="h-5 w-5" />
             Dashboard
