@@ -51,12 +51,10 @@ export default function AdminWorkspaceDetails() {
           user_id,
           role,
           created_at,
-          profiles!inner (
+          profiles (
             first_name,
             last_name,
-            email:id (
-              email
-            )
+            id
           )
         `)
         .eq('workspace_id', workspaceId);
@@ -72,15 +70,22 @@ export default function AdminWorkspaceDetails() {
         throw error;
       }
 
-      console.log("Fetched members data:", data);
+      console.log("Raw members data:", data);
       
-      // Transform the data to match our type
-      const transformedData = data.map(member => ({
-        ...member,
-        profiles: member.profiles[0] // Take the first profile since it's returned as an array
+      // Transform the data to match our WorkspaceMember type
+      const transformedMembers = data.map(member => ({
+        user_id: member.user_id,
+        role: member.role,
+        created_at: member.created_at,
+        profiles: {
+          first_name: member.profiles?.first_name || null,
+          last_name: member.profiles?.last_name || null,
+          email: member.profiles?.id || null // Using profile ID as email for now
+        }
       }));
 
-      return transformedData as WorkspaceMember[];
+      console.log("Transformed members:", transformedMembers);
+      return transformedMembers as WorkspaceMember[];
     },
     enabled: !!workspaceId,
   });
