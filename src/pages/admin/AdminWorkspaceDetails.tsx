@@ -68,16 +68,17 @@ export default function AdminWorkspaceDetails() {
         throw error;
       }
 
-      // Transform the data to match our type
-      const transformedData = data.map(member => ({
-        ...member,
+      // Transform the data to match our WorkspaceMember type
+      return (data || []).map(member => ({
+        user_id: member.user_id,
+        role: member.role,
+        created_at: member.created_at,
         profiles: {
-          ...member.profiles,
+          first_name: member.profiles.first_name,
+          last_name: member.profiles.last_name,
           email: member.profiles.email
         }
       })) as WorkspaceMember[];
-
-      return transformedData;
     },
     enabled: !!workspaceId,
   });
