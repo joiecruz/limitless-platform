@@ -24,6 +24,8 @@ const App = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    let mounted = true;
+    
     // Get initial session
     const getInitialSession = async () => {
       try {
@@ -32,50 +34,37 @@ const App = () => {
         
         if (error) {
           console.error("Error getting session:", error);
-          // Clear session and storage on error
-          setSession(null);
-          localStorage.clear(); // Clear all localStorage
-          await supabase.auth.signOut();
+          if (mounted) {
+            setSession(null);
+            localStorage.clear();
+            await supabase.auth.signOut();
+          }
           return;
         }
 
         if (!initialSession) {
           console.log("No initial session found");
-          setSession(null);
+          if (mounted) {
+            setSession(null);
+          }
           return;
         }
 
-        // Refresh token if it's close to expiring
-        const expiresAt = initialSession.expires_at;
-        const timeNow = Math.floor(Date.now() / 1000);
-        const timeUntilExpiry = expiresAt - timeNow;
-        
-        if (timeUntilExpiry < 60) { // If less than 1 minute until expiry
-          console.log("Session close to expiry, refreshing...");
-          const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-          
-          if (refreshError) {
-            console.error("Error refreshing session:", refreshError);
-            setSession(null);
-            localStorage.clear();
-            await supabase.auth.signOut();
-            return;
-          }
-          
-          console.log("Session refreshed successfully");
-          setSession(refreshedSession);
-        } else {
+        if (mounted) {
           console.log("Initial session found and valid");
           setSession(initialSession);
         }
       } catch (error) {
         console.error("Error in getInitialSession:", error);
-        // Clear session and storage on error
-        setSession(null);
-        localStorage.clear();
-        await supabase.auth.signOut();
+        if (mounted) {
+          setSession(null);
+          localStorage.clear();
+          await supabase.auth.signOut();
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -85,6 +74,8 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("Auth state changed:", event, currentSession);
       
+      if (!mounted) return;
+
       if (event === 'SIGNED_OUT') {
         console.log("User signed out - Clearing session and cache");
         setSession(null);
@@ -103,44 +94,21 @@ const App = () => {
         return;
       }
 
-      // Handle token refresh
       if (event === 'TOKEN_REFRESHED' && currentSession) {
         console.log("Token refreshed:", currentSession);
         setSession(currentSession);
         return;
       }
 
-      // Handle user updates
-      if (event === 'USER_UPDATED') {
-        const { data: { session: newSession }, error } = await supabase.auth.getSession();
-        if (error || !newSession) {
-          console.log("Session invalid after user update - signing out");
-          setSession(null);
-          queryClient.clear();
-          localStorage.clear();
-          await supabase.auth.signOut();
-          return;
-        }
-        setSession(newSession);
+      if (event === 'USER_UPDATED' && currentSession) {
+        console.log("User updated:", currentSession);
+        setSession(currentSession);
       }
     });
 
-    // Set up periodic token refresh
-    const refreshInterval = setInterval(async () => {
-      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-      if (currentSession) {
-        const { data, error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) {
-          console.error("Error refreshing token:", refreshError);
-        } else {
-          console.log("Token refreshed successfully");
-        }
-      }
-    }, 4 * 60 * 1000); // Refresh every 4 minutes
-
     return () => {
+      mounted = false;
       subscription.unsubscribe();
-      clearInterval(refreshInterval);
     };
   }, [toast]);
 
