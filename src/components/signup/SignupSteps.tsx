@@ -28,6 +28,9 @@ export function SignupSteps() {
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/verify-email`,
+        }
       });
 
       if (error) {

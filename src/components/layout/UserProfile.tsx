@@ -1,12 +1,7 @@
-import { useNavigate } from "react-router-dom";
-import {
-  Popover,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 import { ProfileDisplay } from "./ProfileDisplay";
 import { ProfileMenu } from "./ProfileMenu";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 export function UserProfile() {
   const { data: session, isLoading: sessionLoading } = useQuery({
@@ -33,7 +28,6 @@ export function UserProfile() {
     
       if (error) {
         console.error('Error fetching profile:', error);
-        // Return a default profile instead of throwing
         return {
           first_name: '',
           last_name: '',
@@ -43,7 +37,7 @@ export function UserProfile() {
     
       return data;
     },
-    enabled: !!session?.id // Only run this query when we have a session
+    enabled: !!session?.id
   });
 
   const getInitials = () => {
@@ -80,19 +74,16 @@ export function UserProfile() {
 
   return (
     <div className="mt-auto px-3 py-4 border-t border-gray-200">
-      <Popover>
-        <PopoverTrigger asChild>
-          <button className="w-full">
-            <ProfileDisplay
-              avatarUrl={profile?.avatar_url || getDefaultAvatar()}
-              initials={getInitials()}
-              displayName={getDisplayName()}
-              email={session?.email || ''}
-            />
-          </button>
-        </PopoverTrigger>
-        <ProfileMenu />
-      </Popover>
+      <div className="flex justify-center">
+        <ProfileMenu>
+          <ProfileDisplay
+            avatarUrl={profile?.avatar_url || getDefaultAvatar()}
+            initials={getInitials()}
+            displayName={getDisplayName()}
+            email={session?.email || ''}
+          />
+        </ProfileMenu>
+      </div>
     </div>
   );
 }

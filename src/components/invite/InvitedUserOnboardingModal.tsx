@@ -4,25 +4,21 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import { Step1 } from "./steps/Step1";
-import { Step2 } from "./steps/Step2";
-import { Step3 } from "./steps/Step3";
-import { Step4 } from "./steps/Step4";
-import { useOnboardingSubmit } from "./hooks/useOnboardingSubmit";
-import { OnboardingProgress } from "./components/OnboardingProgress";
-import { OnboardingData } from "./types";
-import { useLocation } from "react-router-dom";
+import { Step1 } from "../onboarding/steps/Step1";
+import { Step2 } from "../onboarding/steps/Step2";
+import { Step3 } from "../onboarding/steps/Step3";
+import { OnboardingProgress } from "../onboarding/components/OnboardingProgress";
+import { OnboardingData } from "../onboarding/types";
+import { useOnboardingSubmit } from "../onboarding/hooks/useOnboardingSubmit";
 
-interface OnboardingModalProps {
+interface InvitedUserOnboardingModalProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalProps) {
+export function InvitedUserOnboardingModal({ open = false, onOpenChange }: InvitedUserOnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const location = useLocation();
-  const isInvitedUser = location.state?.isInvited;
-  const TOTAL_STEPS = isInvitedUser ? 3 : 4;
+  const TOTAL_STEPS = 3;
 
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
@@ -31,8 +27,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
     companySize: "",
     goals: [],
     referralSource: "",
-    workspaceName: isInvitedUser ? undefined : "",
-    password: "",
+    workspaceName: undefined,
   });
 
   const { handleSubmit, loading } = useOnboardingSubmit({ onOpenChange });
@@ -58,7 +53,6 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
       onBack: handleBack,
       loading,
       data: formData,
-      isInvitedUser,
     };
 
     switch (currentStep) {
@@ -68,8 +62,6 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
         return <Step2 {...commonProps} />;
       case 3:
         return <Step3 {...commonProps} />;
-      case 4:
-        return !isInvitedUser ? <Step4 {...commonProps} /> : null;
       default:
         return null;
     }
@@ -81,7 +73,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
       if (!value) return;
       if (onOpenChange) onOpenChange(value);
     }}>
-      <DialogContent className="sm:max-w-[600px] h-[500px] p-0 [&>button]:hidden">
+      <DialogContent className="sm:max-w-[600px] h-[600px] p-0 [&>button]:hidden">
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
             <div className="space-y-4">

@@ -1,4 +1,6 @@
-export function SignInLogo() {
+import React from 'react';
+
+export const AuthLogo = () => {
   return (
     <div className="text-center mb-8">
       <img 
@@ -8,4 +10,4 @@ export function SignInLogo() {
       />
     </div>
   );
-}
+};

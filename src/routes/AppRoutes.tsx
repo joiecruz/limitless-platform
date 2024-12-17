@@ -1,9 +1,11 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import AdminLayout from "@/components/admin/AdminLayout";
 import Dashboard from "@/pages/Dashboard";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
+import ResetPassword from "@/pages/ResetPassword";
 import VerifyEmail from "@/pages/VerifyEmail";
 import InvitePage from "@/pages/InvitePage";
 import Courses from "@/pages/Courses";
@@ -15,13 +17,15 @@ import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
 import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUsers from "@/pages/admin/AdminUsers";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 
 interface AppRoutesProps {
   session: Session | null;
 }
 
-export default function AppRoutes({ session }: AppRoutesProps) {
+const AppRoutes = ({ session }: AppRoutesProps) => {
   return (
     <Routes>
       <Route
@@ -37,12 +41,42 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         element={session ? <Navigate to="/dashboard" replace /> : <SignUp />}
       />
       <Route
+        path="/reset-password"
+        element={<ResetPassword />}
+      />
+      <Route
         path="/verify-email"
         element={<VerifyEmail />}
       />
       <Route
-        path="/invite"
-        element={<InvitePage />}
+        path="/admin"
+        element={
+          <RequireAuth>
+            <AdminLayout>
+              <Navigate to="/admin/dashboard" replace />
+            </AdminLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <RequireAuth>
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <RequireAuth>
+            <AdminLayout>
+              <AdminUsers />
+            </AdminLayout>
+          </RequireAuth>
+        }
       />
       <Route
         path="/courses"
@@ -144,4 +178,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       />
     </Routes>
   );
-}
+};
+
+export default AppRoutes;

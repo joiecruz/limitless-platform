@@ -27,21 +27,26 @@ export async function addUserToWorkspace(userId: string, workspaceId: string, ro
   }
 }
 
-export async function createNewUser(email: string, password: string, userData: UserData) {
-  const { data: authData, error: signUpError } = await supabase.auth.signUp({
+export async function createNewUser(email: string, password: string, userData: UserData & { emailConfirm?: boolean }) {
+  // For invited users, we'll use a different signup configuration
+  const signUpOptions = {
     email,
     password,
     options: {
       data: {
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-        role: userData.role,
-        company_size: userData.companySize,
-        referral_source: userData.referralSource,
-        goals: userData.goals
-      }
+        first_name: userData.firstName || null,
+        last_name: userData.lastName || null,
+        role: userData.role || null,
+        company_size: userData.companySize || null,
+        referral_source: userData.referralSource || null,
+        goals: userData.goals || null,
+        is_invited: userData.emailConfirm === false // Mark invited users
+      },
+      emailRedirectTo: `${window.location.origin}/dashboard`
     }
-  });
+  };
+
+  const { data: authData, error: signUpError } = await supabase.auth.signUp(signUpOptions);
 
   if (signUpError) {
     console.error("Error creating auth account:", signUpError);
@@ -53,14 +58,16 @@ export async function createNewUser(email: string, password: string, userData: U
     throw new Error("Failed to create user account");
   }
 
-  // Call the Edge Function to confirm the user's email
-  const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user', {
-    body: { userId: authData.user.id }
-  });
+  // If this is an invited user, confirm their email using the Edge Function
+  if (userData.emailConfirm === false && authData.user.id) {
+    const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user', {
+      body: { user_id: authData.user.id }
+    });
 
-  if (confirmError) {
-    console.error("Error confirming user:", confirmError);
-    throw confirmError;
+    if (confirmError) {
+      console.error("Error confirming email:", confirmError);
+      throw confirmError;
+    }
   }
 
   return { data: authData, error: null };

@@ -1,13 +1,17 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { SignInLogo } from "@/components/auth/SignInLogo";
-import { SignInCard } from "@/components/auth/SignInCard";
+import { AuthLogo } from "@/components/auth/AuthLogo";
+import { AuthLinks } from "@/components/auth/AuthLinks";
 
 export default function SignIn() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get('token');
 
   useEffect(() => {
     // Enable verbose logging
@@ -57,6 +61,10 @@ export default function SignIn() {
           navigate("/dashboard");
         } else {
           console.log("SignIn - No active session found");
+          // If there's an invite token, store it in localStorage
+          if (inviteToken) {
+            localStorage.setItem('inviteToken', inviteToken);
+          }
         }
       } catch (error) {
         console.error("SignIn - Error checking session:", error);
@@ -109,13 +117,99 @@ export default function SignIn() {
       console.log = originalLog;
       console.error = originalError;
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, inviteToken]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        <SignInLogo />
-        <SignInCard />
+        <AuthLogo />
+
+        {/* Sign In Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 animate-fade-in">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">Sign in</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Where innovation meets possibility – your journey to limitless learning begins here
+            </p>
+          </div>
+
+          <Auth
+            supabaseClient={supabase}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#393ca0',
+                    brandAccent: '#2d2f80',
+                    brandButtonText: 'white',
+                    defaultButtonBackground: 'white',
+                    defaultButtonBackgroundHover: '#f9fafb',
+                    inputBackground: 'white',
+                    inputBorder: '#e5e7eb',
+                    inputBorderHover: '#393ca0',
+                    inputBorderFocus: '#393ca0',
+                  },
+                  borderWidths: {
+                    buttonBorderWidth: '1px',
+                    inputBorderWidth: '1px',
+                  },
+                  radii: {
+                    borderRadiusButton: '0.5rem',
+                    buttonBorderRadius: '0.5rem',
+                    inputBorderRadius: '0.5rem',
+                  },
+                },
+              },
+              style: {
+                button: {
+                  height: '2.75rem',
+                  borderRadius: '0.5rem',
+                },
+                input: {
+                  height: '2.75rem',
+                  borderRadius: '0.5rem',
+                },
+                anchor: {
+                  color: '#393ca0',
+                  textDecoration: 'none',
+                },
+                message: {
+                  color: '#ef4444',
+                },
+                divider: {
+                  background: '#e5e7eb',
+                },
+              },
+            }}
+            theme="default"
+            providers={[]}
+            redirectTo={`${window.location.origin}/dashboard`}
+            showLinks={false}
+            localization={{
+              variables: {
+                sign_in: {
+                  email_label: 'Email',
+                  password_label: 'Password',
+                  button_label: 'Sign in',
+                  loading_button_label: 'Signing in...',
+                  social_provider_text: 'Sign in with {{provider}}',
+                  link_text: 'Already have an account? Sign in',
+                },
+                sign_up: {
+                  email_label: 'Email',
+                  password_label: 'Password',
+                  button_label: 'Sign up',
+                  loading_button_label: 'Signing up...',
+                  social_provider_text: 'Sign up with {{provider}}',
+                  link_text: "Don't have an account? Sign up",
+                },
+              },
+            }}
+          />
+          
+          <AuthLinks />
+        </div>
       </div>
     </div>
   );

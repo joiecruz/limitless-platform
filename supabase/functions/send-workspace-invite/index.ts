@@ -8,8 +8,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface InviteRequest {
@@ -22,32 +21,64 @@ interface InviteRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("📨 Starting invite request handler");
+  
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    console.log("Handling CORS preflight request");
+    return new Response(null, {
+      headers: corsHeaders,
+    });
   }
 
   try {
-    const { email, workspaceId, workspaceName, inviterName, role, inviterId } = await req.json() as InviteRequest;
+    if (req.method !== "POST") {
+      throw new Error(`Method ${req.method} not allowed`);
+    }
 
-    console.log(`Sending workspace invite to ${email} for workspace ${workspaceName} with role ${role}`);
+    // Validate required environment variables
+    if (!RESEND_API_KEY || !FROM_EMAIL || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("Missing required environment variables:", {
+        hasResendKey: !!RESEND_API_KEY,
+        hasFromEmail: !!FROM_EMAIL,
+        hasSupabaseUrl: !!SUPABASE_URL,
+        hasServiceKey: !!SUPABASE_SERVICE_ROLE_KEY,
+      });
+      throw new Error("Server configuration error");
+    }
+
+    const requestData = await req.json();
+    console.log("Request payload:", requestData);
+
+    const { email, workspaceId, workspaceName, inviterName, role, inviterId } = requestData as InviteRequest;
+
+    if (!email || !workspaceId || !workspaceName || !inviterName || !role || !inviterId) {
+      console.error("Missing required fields in request:", { email, workspaceId, workspaceName, inviterName, role, inviterId });
+      throw new Error("Missing required fields in invitation request");
+    }
+
+    console.log(`📨 Processing invite request for email: ${email}`);
 
     // Initialize Supabase client with service role key
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Save the invitation in the database
-    const { error: inviteError } = await supabase
+    const { data: invitation, error: inviteError } = await supabase
       .from('workspace_invitations')
       .insert({
         workspace_id: workspaceId,
-        email: email,
+        email: email.toLowerCase(),
         role: role,
         invited_by: inviterId,
         status: 'pending'
-      });
+      })
+      .select()
+      .single();
 
     if (inviteError) {
       // If it's a unique constraint violation, it means there's already a pending invite
       if (inviteError.code === '23505') {
+        console.log("Duplicate invitation detected:", inviteError);
         return new Response(
           JSON.stringify({ error: "An invitation has already been sent to this email" }),
           {
@@ -59,11 +90,14 @@ const handler = async (req: Request): Promise<Response> => {
       throw inviteError;
     }
 
-    // Properly encode the email for the URL
-    const encodedEmail = encodeURIComponent(email);
+    console.log("✅ Invitation created:", invitation);
 
-    // Send the email invitation
-    const res = await fetch("https://api.resend.com/emails", {
+    // Get the magic link token from the invitation
+    const magicLinkToken = invitation.magic_link_token;
+    const inviteUrl = `${req.headers.get("origin")}/invite?token=${magicLinkToken}`;
+
+    // Send the email invitation with the magic link token
+    const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -124,6 +158,7 @@ const handler = async (req: Request): Promise<Response> => {
                 border-radius: 4px;
                 font-size: 16px;
                 margin-top: 20px;
+                color: white !important;
               }
               .email-footer {
                 margin-top: 30px;
@@ -145,7 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="email-body">
                 <p><strong>${inviterName}</strong> has invited you to join <strong>${workspaceName}</strong> on our platform as a ${role}.</p>
                 <p>Click the link below to accept the invitation:</p>
-                <a href="${req.headers.get("origin")}/invite?workspace=${workspaceId}&email=${encodedEmail}&role=${role}" class="email-button" style="background-color: #393ca0; color: white !important; text-decoration: none;">Accept Invitation</a>
+                <a href="${inviteUrl}" class="email-button">Accept Invitation</a>
                 <p style="margin-top: 16px; font-size: 14px; color: #666666;">If you didn't expect this invitation, you can safely ignore this email.</p>
               </div>
               <div class="email-footer">
@@ -160,25 +195,31 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    if (!res.ok) {
-      const error = await res.text();
-      console.error("Resend API error:", error);
+    if (!emailRes.ok) {
+      const error = await emailRes.text();
+      console.error("❌ Resend API error:", error);
       throw new Error(error);
     }
 
-    const data = await res.json();
-    console.log("Email sent successfully:", data);
+    const emailData = await emailRes.json();
+    console.log("✉️ Email sent successfully:", emailData);
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify(emailData), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error: any) {
-    console.error("Error in send-workspace-invite function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    console.error("❌ Error in send-workspace-invite function:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || "An error occurred while processing your request",
+        details: error.toString()
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
   }
 };
 

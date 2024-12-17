@@ -1,64 +1,41 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export async function verifyInvitation(workspaceId: string, email: string) {
-  const decodedEmail = decodeURIComponent(email).toLowerCase();
-
-  console.log("🔍 INVITATION VERIFICATION START", {
-    rawEmail: email,
-    decodedEmail,
-    workspaceId,
+export async function verifyInvitation(token: string) {
+  console.log("🔍 TOKEN VERIFICATION START", {
+    token,
     timestamp: new Date().toISOString()
   });
 
-  // Check if an invitation exists for this email and workspace
+  // Log the query parameters
+  console.log("🔍 QUERY PARAMETERS:", {
+    table: "workspace_invitations",
+    filter: { magic_link_token: token },
+    timestamp: new Date().toISOString()
+  });
+
   const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
     .select("*")
-    .eq("workspace_id", workspaceId)
-    .eq("email", decodedEmail)
-    .maybeSingle();
-
-  console.log("📬 INVITATION QUERY RESULT:", {
-    invitation,
-    error: inviteError,
-    emailUsedInQuery: decodedEmail,
-    timestamp: new Date().toISOString()
-  });
+    .eq('magic_link_token', token)
+    .single();
 
   if (inviteError) {
     console.error("❌ INVITATION ERROR:", {
       error: inviteError,
-      decodedEmail,
-      workspaceId,
+      errorCode: inviteError.code,
+      errorMessage: inviteError.message,
+      token,
       timestamp: new Date().toISOString()
     });
     throw new Error("Failed to verify invitation. Please try again.");
   }
 
   if (!invitation) {
-    // Query the table directly to see what invitations exist
-    const { data: allInvites } = await supabase
-      .from("workspace_invitations")
-      .select("*")
-      .eq("workspace_id", workspaceId);
-    
-    console.error("❌ NO INVITATION FOUND:", {
-      decodedEmail,
-      workspaceId,
-      existingInvites: allInvites,
+    console.error("❌ NO INVITATION FOUND FOR TOKEN:", {
+      token,
       timestamp: new Date().toISOString()
     });
-    throw new Error("No invitation found for this email address. Please request a new invitation.");
-  }
-
-  // Only check if the invitation has been used
-  if (invitation.status === 'accepted') {
-    console.error("❌ INVITATION ALREADY USED:", {
-      status: invitation.status,
-      decodedEmail,
-      timestamp: new Date().toISOString()
-    });
-    throw new Error("This invitation has already been used. Please request a new invitation.");
+    throw new Error("Invalid or expired invitation token.");
   }
 
   console.log("✅ VALID INVITATION FOUND:", {
@@ -66,7 +43,7 @@ export async function verifyInvitation(workspaceId: string, email: string) {
     timestamp: new Date().toISOString()
   });
 
-  return { invitation, decodedEmail };
+  return { invitation };
 }
 
 export async function updateInvitationStatus(invitationId: string, status: 'accepted' | 'rejected') {
@@ -78,12 +55,17 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
 
   const { error: updateError } = await supabase
     .from("workspace_invitations")
-    .update({ status })
+    .update({ 
+      status,
+      accepted_at: status === 'accepted' ? new Date().toISOString() : null
+    })
     .eq("id", invitationId);
 
   if (updateError) {
     console.error("❌ INVITATION UPDATE ERROR:", {
       error: updateError,
+      errorCode: updateError.code,
+      errorMessage: updateError.message,
       invitationId,
       status,
       timestamp: new Date().toISOString()
