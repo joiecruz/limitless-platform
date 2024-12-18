@@ -17,6 +17,24 @@ interface CourseUsersProps {
 }
 
 const CourseUsers = ({ courseId }: CourseUsersProps) => {
+  // Query to check if user is superadmin
+  const { data: currentUser } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No authenticated user");
+      
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+        
+      if (error) throw error;
+      return profile;
+    },
+  });
+
   // Query for users who have explicit access
   const { data: usersWithAccess, isLoading: isLoadingAccess } = useQuery({
     queryKey: ["course-users-access", courseId],
@@ -74,16 +92,22 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Users</h2>
-        <Button>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Grant Access
-        </Button>
+        {currentUser?.is_superadmin && (
+          <Button>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Grant Access
+          </Button>
+        )}
       </div>
 
       <Tabs defaultValue="enrolled">
         <TabsList>
-          <TabsTrigger value="enrolled">Enrolled Users ({enrolledUsers?.length || 0})</TabsTrigger>
-          <TabsTrigger value="access">Users with Access ({usersWithAccess?.length || 0})</TabsTrigger>
+          <TabsTrigger value="enrolled">
+            Enrolled Users ({enrolledUsers?.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="access">
+            Users with Access ({usersWithAccess?.length || 0})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="enrolled">
@@ -95,6 +119,7 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
                 <TableHead>Progress</TableHead>
                 <TableHead>Enrolled At</TableHead>
                 <TableHead>Status</TableHead>
+                {currentUser?.is_superadmin && <TableHead>Workspace</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -121,7 +146,10 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
               ))}
               {enrolledUsers?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={currentUser?.is_superadmin ? 6 : 5}
+                    className="text-center text-muted-foreground"
+                  >
                     No enrolled users found
                   </TableCell>
                 </TableRow>
@@ -159,7 +187,10 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
               ))}
               {usersWithAccess?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={4}
+                    className="text-center text-muted-foreground"
+                  >
                     No users with explicit access found
                   </TableCell>
                 </TableRow>
