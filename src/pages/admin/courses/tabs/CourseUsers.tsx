@@ -17,27 +17,7 @@ interface CourseUsersProps {
 }
 
 const CourseUsers = ({ courseId }: CourseUsersProps) => {
-  const { data: enrolledUsers, isLoading: isLoadingEnrolled } = useQuery({
-    queryKey: ["course-enrolled-users", courseId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("enrollments")
-        .select(`
-          *,
-          profiles:user_id (
-            id,
-            email,
-            first_name,
-            last_name
-          )
-        `)
-        .eq("course_id", courseId);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
+  // Query for users who have explicit access
   const { data: usersWithAccess, isLoading: isLoadingAccess } = useQuery({
     queryKey: ["course-users-access", courseId],
     queryFn: async () => {
@@ -55,6 +35,29 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
         .eq("course_id", courseId);
 
       if (error) throw error;
+      return data;
+    },
+  });
+
+  // Query for enrolled users
+  const { data: enrolledUsers, isLoading: isLoadingEnrolled } = useQuery({
+    queryKey: ["course-enrolled-users", courseId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("enrollments")
+        .select(`
+          *,
+          profiles:user_id (
+            id,
+            email,
+            first_name,
+            last_name
+          )
+        `)
+        .eq("course_id", courseId);
+
+      if (error) throw error;
+      console.log("Enrolled users:", data);
       return data;
     },
   });
@@ -79,8 +82,8 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
 
       <Tabs defaultValue="enrolled">
         <TabsList>
-          <TabsTrigger value="enrolled">Enrolled Users</TabsTrigger>
-          <TabsTrigger value="access">Users with Access</TabsTrigger>
+          <TabsTrigger value="enrolled">Enrolled Users ({enrolledUsers?.length || 0})</TabsTrigger>
+          <TabsTrigger value="access">Users with Access ({usersWithAccess?.length || 0})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="enrolled">
@@ -91,6 +94,7 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
                 <TableHead>Email</TableHead>
                 <TableHead>Progress</TableHead>
                 <TableHead>Enrolled At</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -104,8 +108,24 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
                   <TableCell>
                     {new Date(enrollment.created_at).toLocaleDateString()}
                   </TableCell>
+                  <TableCell>
+                    {enrollment.progress === 100 ? (
+                      <span className="text-green-600 font-medium">Completed</span>
+                    ) : enrollment.progress > 0 ? (
+                      <span className="text-blue-600 font-medium">In Progress</span>
+                    ) : (
+                      <span className="text-gray-600">Not Started</span>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
+              {enrolledUsers?.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                    No enrolled users found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TabsContent>
@@ -137,6 +157,13 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
                   </TableCell>
                 </TableRow>
               ))}
+              {usersWithAccess?.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    No users with explicit access found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TabsContent>
