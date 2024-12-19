@@ -57,7 +57,7 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
     },
   });
 
-  // Query for enrolled users
+  // Query for enrolled users with workspace information
   const { data: enrolledUsers, isLoading: isLoadingEnrolled } = useQuery({
     queryKey: ["course-enrolled-users", courseId],
     queryFn: async () => {
@@ -70,12 +70,17 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
             email,
             first_name,
             last_name
+          ),
+          workspace_members!inner (
+            workspace:workspace_id (
+              id,
+              name
+            )
           )
         `)
         .eq("course_id", courseId);
 
       if (error) throw error;
-      console.log("Enrolled users:", data);
       return data;
     },
   });
@@ -142,6 +147,11 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
                       <span className="text-gray-600">Not Started</span>
                     )}
                   </TableCell>
+                  {currentUser?.is_superadmin && (
+                    <TableCell>
+                      {enrollment.workspace_members?.[0]?.workspace?.name || 'N/A'}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
               {enrolledUsers?.length === 0 && (
