@@ -7,7 +7,9 @@ interface WorkspaceListProps {
 }
 
 export function WorkspaceList({ workspaces, onSelect }: WorkspaceListProps) {
-  if (!workspaces?.length) return null;
+  if (!workspaces?.length) {
+    return <div className="px-2 py-1.5 text-sm text-muted-foreground">No workspaces found</div>;
+  }
 
   return (
     <>
