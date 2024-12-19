@@ -25,26 +25,51 @@ export function useWorkspaces() {
 
         console.log("User found:", user.id);
 
-        const { data: memberWorkspaces, error: workspacesError } = await supabase
-          .from('workspace_members')
-          .select(`
-            workspace:workspaces (
-              id,
-              name,
-              slug
-            )
-          `)
-          .eq('user_id', user.id);
+        // First check if user is superadmin
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_superadmin')
+          .eq('id', user.id)
+          .single();
 
-        if (workspacesError) {
-          console.error('Error fetching workspaces:', workspacesError);
-          throw workspacesError;
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          throw profileError;
         }
 
-        console.log('Raw workspace data:', memberWorkspaces);
+        let workspacesData;
+
+        if (profile?.is_superadmin) {
+          // If superadmin, fetch all workspaces
+          const { data, error } = await supabase
+            .from('workspaces')
+            .select('id, name, slug');
+          
+          if (error) throw error;
+          workspacesData = data.map(workspace => ({
+            workspace: workspace
+          }));
+        } else {
+          // Otherwise fetch only member workspaces
+          const { data, error } = await supabase
+            .from('workspace_members')
+            .select(`
+              workspace:workspaces (
+                id,
+                name,
+                slug
+              )
+            `)
+            .eq('user_id', user.id);
+
+          if (error) throw error;
+          workspacesData = data;
+        }
+
+        console.log('Raw workspace data:', workspacesData);
         
         // Safely type and transform the response
-        const formattedWorkspaces = (memberWorkspaces as unknown as WorkspaceMemberWithWorkspace[]).map(item => ({
+        const formattedWorkspaces = (workspacesData as unknown as WorkspaceMemberWithWorkspace[]).map(item => ({
           id: item.workspace.id,
           name: item.workspace.name || 'Unnamed Workspace',
           slug: item.workspace.slug || 'unnamed'
