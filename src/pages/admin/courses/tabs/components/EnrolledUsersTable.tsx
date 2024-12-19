@@ -8,13 +8,13 @@ interface EnrolledUser {
     first_name: string | null;
     last_name: string | null;
     email: string;
+    workspace_members: Array<{
+      workspace: {
+        id: string;
+        name: string;
+      };
+    }>;
   };
-  workspace_members?: Array<{
-    workspace: {
-      id: string;
-      name: string;
-    };
-  }>;
 }
 
 interface EnrolledUsersTableProps {
@@ -57,7 +57,7 @@ const EnrolledUsersTable = ({ enrolledUsers, isSuperAdmin }: EnrolledUsersTableP
             </TableCell>
             {isSuperAdmin && (
               <TableCell>
-                {enrollment.workspace_members?.[0]?.workspace?.name || 'N/A'}
+                {enrollment.profiles?.workspace_members?.[0]?.workspace?.name || 'N/A'}
               </TableCell>
             )}
           </TableRow>

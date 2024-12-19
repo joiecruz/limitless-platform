@@ -63,12 +63,12 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
             id,
             email,
             first_name,
-            last_name
-          ),
-          workspace_members!inner (
-            workspace:workspace_id (
-              id,
-              name
+            last_name,
+            workspace_members (
+              workspace:workspace_id (
+                id,
+                name
+              )
             )
           )
         `)
