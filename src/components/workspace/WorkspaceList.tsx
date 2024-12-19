@@ -11,9 +11,15 @@ import { Workspace } from "./types";
 interface WorkspaceListProps {
   workspaces: Workspace[] | undefined;
   onSelect: (workspace: Workspace) => void;
+  existingWorkspaceIds?: string[];
 }
 
-export function WorkspaceList({ workspaces, onSelect }: WorkspaceListProps) {
+export function WorkspaceList({ workspaces, onSelect, existingWorkspaceIds = [] }: WorkspaceListProps) {
+  // Filter out workspaces that are already added
+  const availableWorkspaces = workspaces?.filter(
+    workspace => !existingWorkspaceIds.includes(workspace.id)
+  );
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -23,10 +29,10 @@ export function WorkspaceList({ workspaces, onSelect }: WorkspaceListProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        {!workspaces?.length ? (
-          <div className="px-2 py-1.5 text-sm text-muted-foreground">No workspaces found</div>
+        {!availableWorkspaces?.length ? (
+          <div className="px-2 py-1.5 text-sm text-muted-foreground">No workspaces available</div>
         ) : (
-          workspaces.map((workspace) => (
+          availableWorkspaces.map((workspace) => (
             <DropdownMenuItem
               key={workspace.id}
               onClick={() => onSelect(workspace)}

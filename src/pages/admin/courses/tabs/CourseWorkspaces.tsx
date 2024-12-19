@@ -177,6 +177,9 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
     );
   }
 
+  // Extract workspace IDs that already have access
+  const existingWorkspaceIds = workspaceAccess?.map(access => access.workspaces?.id) || [];
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
@@ -194,6 +197,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
               <WorkspaceList
                 workspaces={workspaces}
                 onSelect={handleAddWorkspace}
+                existingWorkspaceIds={existingWorkspaceIds}
               />
             </div>
           </DialogContent>
