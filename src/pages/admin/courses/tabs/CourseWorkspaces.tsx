@@ -16,7 +16,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { WorkspaceList } from "@/components/workspace/WorkspaceList";
@@ -31,28 +30,38 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { data: workspaces } = useWorkspaces();
+  const { data: workspaces, isError: workspacesError } = useWorkspaces();
 
   const { data: workspaceAccess, isLoading, refetch } = useQuery({
     queryKey: ["course-workspaces", courseId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("workspace_course_access")
-        .select(`
-          *,
-          workspaces:workspace_id (
-            id,
-            name,
-            slug,
-            workspace_members (
-              count
+      try {
+        const { data, error } = await supabase
+          .from("workspace_course_access")
+          .select(`
+            *,
+            workspaces:workspace_id (
+              id,
+              name,
+              slug,
+              workspace_members (
+                count
+              )
             )
-          )
-        `)
-        .eq("course_id", courseId);
+          `)
+          .eq("course_id", courseId);
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error("Error fetching workspace access:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load workspace access data",
+          variant: "destructive",
+        });
+        return [];
+      }
     },
   });
 
@@ -116,17 +125,23 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
     );
   }
 
+  if (workspacesError) {
+    return (
+      <div className="p-4 text-center text-red-500">
+        Failed to load workspaces. Please try again later.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Workspace Access</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Building className="h-4 w-4 mr-2" />
-              Add Workspace
-            </Button>
-          </DialogTrigger>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Building className="h-4 w-4 mr-2" />
+            Add Workspace
+          </Button>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Workspace Access</DialogTitle>
