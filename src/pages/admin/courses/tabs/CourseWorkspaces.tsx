@@ -1,5 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Loader2, Building } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -8,9 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Building, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,24 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { data: workspaces, isError: workspacesError } = useWorkspaces();
+
+  // Query to check if user is superadmin
+  const { data: currentUser } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No authenticated user");
+      
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+        
+      if (error) throw error;
+      return profile;
+    },
+  });
 
   const { data: workspaceAccess, isLoading, refetch } = useQuery({
     queryKey: ["course-workspaces", courseId],
@@ -67,6 +85,23 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
 
   const handleAddWorkspace = async (workspace: Workspace) => {
     try {
+      // Check if access already exists
+      const { data: existingAccess } = await supabase
+        .from("workspace_course_access")
+        .select("id")
+        .eq("workspace_id", workspace.id)
+        .eq("course_id", courseId)
+        .single();
+
+      if (existingAccess) {
+        toast({
+          title: "Error",
+          description: "This workspace already has access to the course",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from("workspace_course_access")
         .insert({
@@ -129,6 +164,15 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
     return (
       <div className="p-4 text-center text-red-500">
         Failed to load workspaces. Please try again later.
+      </div>
+    );
+  }
+
+  // Only show the interface if user is superadmin or admin
+  if (!currentUser?.is_superadmin && !currentUser?.is_admin) {
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        You don't have permission to manage workspace access.
       </div>
     );
   }
