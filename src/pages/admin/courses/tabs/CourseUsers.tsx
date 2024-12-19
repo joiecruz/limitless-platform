@@ -1,16 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Loader2, UserPlus } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import EnrolledUsersTable from "./components/EnrolledUsersTable";
+import UsersWithAccessTable from "./components/UsersWithAccessTable";
 
 interface CourseUsersProps {
   courseId: string;
@@ -116,97 +110,14 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
         </TabsList>
 
         <TabsContent value="enrolled">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Enrolled At</TableHead>
-                <TableHead>Status</TableHead>
-                {currentUser?.is_superadmin && <TableHead>Workspace</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {enrolledUsers?.map((enrollment) => (
-                <TableRow key={enrollment.id}>
-                  <TableCell>
-                    {enrollment.profiles?.first_name} {enrollment.profiles?.last_name}
-                  </TableCell>
-                  <TableCell>{enrollment.profiles?.email}</TableCell>
-                  <TableCell>{enrollment.progress || 0}%</TableCell>
-                  <TableCell>
-                    {new Date(enrollment.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    {enrollment.progress === 100 ? (
-                      <span className="text-green-600 font-medium">Completed</span>
-                    ) : enrollment.progress > 0 ? (
-                      <span className="text-blue-600 font-medium">In Progress</span>
-                    ) : (
-                      <span className="text-gray-600">Not Started</span>
-                    )}
-                  </TableCell>
-                  {currentUser?.is_superadmin && (
-                    <TableCell>
-                      {enrollment.workspace_members?.[0]?.workspace?.name || 'N/A'}
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-              {enrolledUsers?.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={currentUser?.is_superadmin ? 6 : 5}
-                    className="text-center text-muted-foreground"
-                  >
-                    No enrolled users found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <EnrolledUsersTable 
+            enrolledUsers={enrolledUsers || []} 
+            isSuperAdmin={!!currentUser?.is_superadmin} 
+          />
         </TabsContent>
 
         <TabsContent value="access">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Granted At</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {usersWithAccess?.map((access) => (
-                <TableRow key={access.id}>
-                  <TableCell>
-                    {access.profiles?.first_name} {access.profiles?.last_name}
-                  </TableCell>
-                  <TableCell>{access.profiles?.email}</TableCell>
-                  <TableCell>
-                    {new Date(access.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="destructive" size="sm">
-                      Revoke Access
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {usersWithAccess?.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="text-center text-muted-foreground"
-                  >
-                    No users with explicit access found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <UsersWithAccessTable usersWithAccess={usersWithAccess || []} />
         </TabsContent>
       </Tabs>
     </div>
