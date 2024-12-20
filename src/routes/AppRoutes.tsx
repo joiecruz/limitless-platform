@@ -38,13 +38,18 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
       
+      {/* Individual lesson page outside DashboardLayout */}
+      <Route 
+        path="/courses/:courseId/lessons/:lessonId" 
+        element={<RequireAuth><Lesson /></RequireAuth>} 
+      />
+      
       <Route element={<RequireAuth><DashboardLayout><Outlet /></DashboardLayout></RequireAuth>}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/community" element={<Community />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:courseId/lessons" element={<Lessons />} />
-        <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="/tools/:toolId" element={<ToolDetails />} />
         <Route path="/projects" element={<Projects />} />
