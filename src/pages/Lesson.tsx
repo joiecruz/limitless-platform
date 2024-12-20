@@ -162,32 +162,40 @@ const Lesson = () => {
         <div className={`flex-1 overflow-auto transition-all duration-300 ${
           isOpen ? 'ml-80' : 'ml-0'
         }`}>
-          <div className="max-w-4xl mx-auto px-6 py-8">
-            {/* Header and description */}
-            <div className="mb-8">
-              <div className="text-sm text-gray-500 mb-2">
-                Lesson {currentIndex + 1} of {totalLessons}
+          <div className="w-full">
+            <div className="w-full max-w-4xl mx-auto py-8">
+              {/* Header and description */}
+              <div className="mb-8 px-6">
+                <div className="text-sm text-gray-500 mb-2">
+                  Lesson {currentIndex + 1} of {totalLessons}
+                </div>
+                <h1 className="text-3xl font-semibold text-gray-900">{lesson.title}</h1>
+                {lesson.description && (
+                  <div className="prose max-w-none mt-4">
+                    <p className="text-gray-600">{lesson.description}</p>
+                  </div>
+                )}
               </div>
-              <h1 className="text-3xl font-semibold text-gray-900">{lesson.title}</h1>
-              {lesson.description && (
-                <div className="prose max-w-none mt-4">
-                  <p className="text-gray-600">{lesson.description}</p>
+
+              {/* Video player */}
+              {lesson.video_url && (
+                <div className="px-6">
+                  <VideoPlayer videoUrl={lesson.video_url} />
                 </div>
               )}
+              
+              {/* Lesson body content */}
+              <LessonBodyContent content={lesson.body_content} />
+
+              <div className="px-6">
+                <LessonNavigation
+                  previousLesson={previousLesson}
+                  nextLesson={nextLesson}
+                  courseId={courseId!}
+                  onComplete={handleComplete}
+                />
+              </div>
             </div>
-
-            {/* Video player */}
-            {lesson.video_url && <VideoPlayer videoUrl={lesson.video_url} />}
-            
-            {/* Lesson body content */}
-            <LessonBodyContent content={lesson.body_content} />
-
-            <LessonNavigation
-              previousLesson={previousLesson}
-              nextLesson={nextLesson}
-              courseId={courseId!}
-              onComplete={handleComplete}
-            />
           </div>
         </div>
       </div>
