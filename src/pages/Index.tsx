@@ -2,28 +2,37 @@ import { useEffect, useState } from "react";
 import { getStoryblokApi, StoryblokComponent } from "@storyblok/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [story, setStory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const getStory = async () => {
       try {
+        console.log("Fetching Storyblok content...");
         const storyblokApi = getStoryblokApi();
         const { data } = await storyblokApi.get(`cdn/stories/home`, {
           version: "draft",
         });
-        setStory(data.story);
+        console.log("Storyblok response:", data);
+        setStory(data?.story);
       } catch (error) {
         console.error("Error fetching Storyblok content:", error);
+        toast({
+          title: "Error loading content",
+          description: "Please try refreshing the page",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
     getStory();
-  }, []);
+  }, [toast]);
 
   if (loading) {
     return (
