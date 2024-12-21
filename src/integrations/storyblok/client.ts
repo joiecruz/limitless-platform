@@ -13,5 +13,14 @@ storyblokInit({
     grid: Grid,
     hero: Hero,
     page: Page,
+    // Make sure these names match EXACTLY with your Storyblok component names
+    // They should be lowercase and match the technical names in Storyblok
   },
+});
+
+console.log("Storyblok components registered:", {
+  feature: !!Feature,
+  grid: !!Grid,
+  hero: !!Hero,
+  page: !!Page,
 });
