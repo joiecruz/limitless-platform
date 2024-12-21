@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import CourseDetails from "./courses/CourseDetails";
 
 export default function AdminCourses() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   // Fetch courses with actual enrollment counts
@@ -56,6 +57,9 @@ export default function AdminCourses() {
         .eq("id", courseId);
 
       if (error) throw error;
+
+      // Invalidate and refetch courses
+      await queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
 
       toast({
         title: "Success",
