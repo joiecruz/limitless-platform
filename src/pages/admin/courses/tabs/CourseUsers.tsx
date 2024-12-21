@@ -1,16 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, UserPlus } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import EnrolledUsersTable from "./components/EnrolledUsersTable";
 import UsersWithAccessTable from "./components/UsersWithAccessTable";
+import GrantAccessDialog from "@/components/admin/courses/GrantAccessDialog";
 
 interface CourseUsersProps {
   courseId: string;
 }
 
 const CourseUsers = ({ courseId }: CourseUsersProps) => {
+  const queryClient = useQueryClient();
+
   // Query to check if user is superadmin
   const { data: currentUser } = useQuery({
     queryKey: ["current-user"],
@@ -79,6 +82,10 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
     },
   });
 
+  const handleAccessChange = () => {
+    queryClient.invalidateQueries({ queryKey: ["course-users-access", courseId] });
+  };
+
   if (isLoadingEnrolled || isLoadingAccess) {
     return (
       <div className="flex items-center justify-center h-48">
@@ -92,10 +99,10 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Users</h2>
         {currentUser?.is_superadmin && (
-          <Button>
-            <UserPlus className="h-4 w-4 mr-2" />
-            Grant Access
-          </Button>
+          <GrantAccessDialog 
+            courseId={courseId}
+            onAccessGranted={handleAccessChange}
+          />
         )}
       </div>
 
@@ -117,7 +124,11 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
         </TabsContent>
 
         <TabsContent value="access">
-          <UsersWithAccessTable usersWithAccess={usersWithAccess || []} />
+          <UsersWithAccessTable 
+            usersWithAccess={usersWithAccess || []} 
+            courseId={courseId}
+            onAccessRevoked={handleAccessChange}
+          />
         </TabsContent>
       </Tabs>
     </div>
