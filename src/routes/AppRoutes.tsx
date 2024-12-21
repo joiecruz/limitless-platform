@@ -31,12 +31,23 @@ interface AppRoutesProps {
 export default function AppRoutes({ session }: AppRoutesProps) {
   return (
     <Routes>
+      {/* Auth routes */}
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
 
+      {/* Admin routes - separate from DashboardLayout */}
+      <Route element={<RequireAuth><AdminLayout><Outlet /></AdminLayout></RequireAuth>}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
+        <Route path="/admin/workspaces/:id" element={<AdminWorkspaceDetails />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/courses" element={<AdminCourses />} />
+      </Route>
+
+      {/* Dashboard routes */}
       <Route element={<RequireAuth><DashboardLayout><Outlet /></DashboardLayout></RequireAuth>}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -48,14 +59,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         <Route path="/projects" element={<Projects />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/account-settings" element={<AccountSettings />} />
-
-        <Route element={<AdminLayout><Outlet /></AdminLayout>}>
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
-          <Route path="/admin/workspaces/:id" element={<AdminWorkspaceDetails />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/courses" element={<AdminCourses />} />
-        </Route>
       </Route>
 
       {/* Individual lesson page outside DashboardLayout */}
