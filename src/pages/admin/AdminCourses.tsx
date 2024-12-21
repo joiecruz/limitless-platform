@@ -18,17 +18,33 @@ export default function AdminCourses() {
   const { toast } = useToast();
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
-  // Fetch courses
+  // Fetch courses with actual enrollment counts
   const { data: courses, isLoading: isLoadingCourses } = useQuery({
     queryKey: ["admin-courses"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: coursesData, error: coursesError } = await supabase
         .from("courses")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (coursesError) throw coursesError;
+
+      // Fetch enrollment counts for each course
+      const coursesWithCounts = await Promise.all(
+        coursesData.map(async (course) => {
+          const { count } = await supabase
+            .from("enrollments")
+            .select("*", { count: "exact" })
+            .eq("course_id", course.id);
+
+          return {
+            ...course,
+            enrollee_count: count || 0
+          };
+        })
+      );
+
+      return coursesWithCounts;
     },
   });
 
@@ -45,11 +61,11 @@ export default function AdminCourses() {
         title: "Success",
         description: `Course ${currentLockState ? "unlocked" : "locked"} successfully`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error toggling course lock:", error);
       toast({
         title: "Error",
-        description: "Failed to update course status",
+        description: error.message || "Failed to update course status",
         variant: "destructive",
       });
     }
@@ -100,7 +116,7 @@ export default function AdminCourses() {
             <TableRow key={course.id}>
               <TableCell>{course.title}</TableCell>
               <TableCell>{course.description}</TableCell>
-              <TableCell>{course.enrollee_count || 0}</TableCell>
+              <TableCell>{course.enrollee_count}</TableCell>
               <TableCell>
                 {course.locked ? (
                   <Lock className="h-4 w-4 text-red-500" />
