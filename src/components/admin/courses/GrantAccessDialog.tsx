@@ -27,7 +27,7 @@ const GrantAccessDialog = ({ courseId, onAccessGranted }: GrantAccessDialogProps
     try {
       setIsLoading(true);
 
-      // First, get the user's profile ID using their email
+      // First, check if user exists and is authenticated
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
         .select("id")
@@ -35,7 +35,19 @@ const GrantAccessDialog = ({ courseId, onAccessGranted }: GrantAccessDialogProps
         .single();
 
       if (profileError || !profiles) {
-        throw new Error("User not found");
+        throw new Error("User not found or not authenticated");
+      }
+
+      // Check if user already has access
+      const { data: existingAccess } = await supabase
+        .from("user_course_access")
+        .select("id")
+        .eq("user_id", profiles.id)
+        .eq("course_id", courseId)
+        .single();
+
+      if (existingAccess) {
+        throw new Error("User already has access to this course");
       }
 
       // Grant access by inserting into user_course_access

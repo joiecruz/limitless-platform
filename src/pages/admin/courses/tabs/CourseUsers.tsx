@@ -86,6 +86,10 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
     queryClient.invalidateQueries({ queryKey: ["course-users-access", courseId] });
   };
 
+  const handleEnrollmentChange = () => {
+    queryClient.invalidateQueries({ queryKey: ["course-enrolled-users", courseId] });
+  };
+
   if (isLoadingEnrolled || isLoadingAccess) {
     return (
       <div className="flex items-center justify-center h-48">
@@ -119,7 +123,9 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
         <TabsContent value="enrolled">
           <EnrolledUsersTable 
             enrolledUsers={enrolledUsers || []} 
-            isSuperAdmin={!!currentUser?.is_superadmin} 
+            isSuperAdmin={!!currentUser?.is_superadmin}
+            courseId={courseId}
+            onEnrollmentRevoked={handleEnrollmentChange}
           />
         </TabsContent>
 
