@@ -12,17 +12,29 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Loader2, Search, Plus, Trash2 } from "lucide-react";
 import { CreateWorkspaceDialog } from "@/components/admin/workspaces/CreateWorkspaceDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useWorkspaceDelete } from "@/components/admin/workspaces/useWorkspaceDelete";
 
 export default function AdminWorkspaces() {
   const [search, setSearch] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
+  const { handleDeleteWorkspace } = useWorkspaceDelete();
   
-  const { data: workspaces, isLoading } = useQuery({
+  const { data: workspaces, isLoading, refetch } = useQuery({
     queryKey: ['admin-workspaces', search],
     queryFn: async () => {
       const query = supabase
@@ -46,6 +58,18 @@ export default function AdminWorkspaces() {
     }
   });
 
+  const onDeleteWorkspace = async (workspaceId: string) => {
+    setIsDeleting(true);
+    try {
+      const success = await handleDeleteWorkspace(workspaceId);
+      if (success) {
+        await refetch();
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -67,7 +91,7 @@ export default function AdminWorkspaces() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading || isDeleting ? (
         <div className="flex items-center justify-center h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -91,13 +115,44 @@ export default function AdminWorkspaces() {
                     {new Date(workspace.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`/admin/workspaces/${workspace.id}`)}
-                    >
-                      Manage
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/admin/workspaces/${workspace.id}`)}
+                      >
+                        Manage
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Workspace</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete the workspace "{workspace.name}"? This action cannot be undone.
+                              All workspace data, including channels, messages, and member associations will be permanently deleted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => onDeleteWorkspace(workspace.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

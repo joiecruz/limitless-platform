@@ -42,6 +42,28 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
     },
   });
 
+  // Fetch actual counts
+  const { data: actualCounts } = useQuery({
+    queryKey: ["course-counts", course.id],
+    queryFn: async () => {
+      const [enrollmentsResult, lessonsResult] = await Promise.all([
+        supabase
+          .from('enrollments')
+          .select('id', { count: 'exact' })
+          .eq('course_id', course.id),
+        supabase
+          .from('lessons')
+          .select('id', { count: 'exact' })
+          .eq('course_id', course.id)
+      ]);
+
+      return {
+        enrolleeCount: enrollmentsResult.count || 0,
+        lessonCount: lessonsResult.count || 0
+      };
+    },
+  });
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CourseImage 
@@ -52,8 +74,8 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
       <CourseDetails 
         title={course.title}
         description={course.description}
-        lessonCount={course.lesson_count}
-        enrolleeCount={course.enrollee_count}
+        lessonCount={actualCounts?.lessonCount || 0}
+        enrolleeCount={actualCounts?.enrolleeCount || 0}
         isEnrolled={!!enrollment}
         isLocked={course.locked}
       />
