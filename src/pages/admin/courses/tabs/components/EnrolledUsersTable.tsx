@@ -1,4 +1,8 @@
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 interface EnrolledUser {
   id: string;
@@ -20,9 +24,42 @@ interface EnrolledUser {
 interface EnrolledUsersTableProps {
   enrolledUsers: EnrolledUser[];
   isSuperAdmin: boolean;
+  courseId: string;
+  onEnrollmentRevoked: () => void;
 }
 
-const EnrolledUsersTable = ({ enrolledUsers, isSuperAdmin }: EnrolledUsersTableProps) => {
+const EnrolledUsersTable = ({ enrolledUsers, isSuperAdmin, courseId, onEnrollmentRevoked }: EnrolledUsersTableProps) => {
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleRevokeEnrollment = async (enrollmentId: string, email: string) => {
+    try {
+      setRevokingId(enrollmentId);
+
+      const { error } = await supabase
+        .from("enrollments")
+        .delete()
+        .eq("id", enrollmentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Enrollment revoked",
+        description: `Successfully revoked enrollment for ${email}`,
+      });
+
+      onEnrollmentRevoked();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to revoke enrollment",
+        variant: "destructive",
+      });
+    } finally {
+      setRevokingId(null);
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -33,6 +70,7 @@ const EnrolledUsersTable = ({ enrolledUsers, isSuperAdmin }: EnrolledUsersTableP
           <TableHead>Enrolled At</TableHead>
           <TableHead>Status</TableHead>
           {isSuperAdmin && <TableHead>Workspace</TableHead>}
+          {isSuperAdmin && <TableHead>Actions</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -60,12 +98,24 @@ const EnrolledUsersTable = ({ enrolledUsers, isSuperAdmin }: EnrolledUsersTableP
                 {enrollment.profiles?.workspace_members?.[0]?.workspace?.name || 'N/A'}
               </TableCell>
             )}
+            {isSuperAdmin && (
+              <TableCell>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleRevokeEnrollment(enrollment.id, enrollment.profiles.email)}
+                  disabled={revokingId === enrollment.id}
+                >
+                  {revokingId === enrollment.id ? "Revoking..." : "Revoke Enrollment"}
+                </Button>
+              </TableCell>
+            )}
           </TableRow>
         ))}
         {enrolledUsers?.length === 0 && (
           <TableRow>
             <TableCell
-              colSpan={isSuperAdmin ? 6 : 5}
+              colSpan={isSuperAdmin ? 7 : 5}
               className="text-center text-muted-foreground"
             >
               No enrolled users found
