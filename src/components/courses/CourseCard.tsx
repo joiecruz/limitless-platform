@@ -82,8 +82,8 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
     },
   });
 
-  // Course is accessible if it's not locked or if user has explicit access
-  const isAccessible = !course.locked || hasAccess || isAdmin;
+  // Course is accessible if it's not locked, user has explicit access, or is enrolled
+  const isAccessible = !course.locked || hasAccess || !!enrollment;
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
