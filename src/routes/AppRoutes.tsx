@@ -24,6 +24,12 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Session } from "@supabase/supabase-js";
 
+// Import website pages
+import Home from "@/pages/website/Home";
+import Product from "@/pages/website/Product";
+import Services from "@/pages/website/Services";
+import Blog from "@/pages/website/Blog";
+
 interface AppRoutesProps {
   session: Session | null;
 }
@@ -31,6 +37,12 @@ interface AppRoutesProps {
 export default function AppRoutes({ session }: AppRoutesProps) {
   return (
     <Routes>
+      {/* Website routes */}
+      <Route path="/" element={<Home />} />
+      <Route path="/product" element={<Product />} />
+      <Route path="/services" element={<Services />} />
+      <Route path="/blog" element={<Blog />} />
+
       {/* Auth routes */}
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
@@ -38,7 +50,7 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
 
-      {/* Admin routes - separate from DashboardLayout */}
+      {/* Admin routes */}
       <Route element={<RequireAuth><AdminLayout><Outlet /></AdminLayout></RequireAuth>}>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
@@ -49,7 +61,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
 
       {/* Dashboard routes */}
       <Route element={<RequireAuth><DashboardLayout><Outlet /></DashboardLayout></RequireAuth>}>
-        <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/community" element={<Community />} />
         <Route path="/courses" element={<Courses />} />
