@@ -1,146 +1,114 @@
-import { useEffect, useState } from "react";
-import { getStoryblokApi, StoryblokComponent } from "@storyblok/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { ArrowRight, BookOpen, Download, Users, Wrench } from "lucide-react";
 
 const Home = () => {
-  const [story, setStory] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const getStory = async () => {
-      try {
-        console.log("Fetching Home page content...");
-        const storyblokApi = getStoryblokApi();
-        const { data } = await storyblokApi.get(`cdn/stories/home`, {
-          version: "draft",
-        });
-        console.log("Storyblok response:", data);
-        setStory(data?.story);
-      } catch (error) {
-        console.error("Error fetching Storyblok content:", error);
-        // Show fallback content if Storyblok is not connected
-        setStory(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getStory();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (story?.content) {
-    return <StoryblokComponent blok={story.content} />;
-  }
-
-  // Fallback content when Storyblok is not connected
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-gradient-to-br from-primary-50 to-white">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            The all-in-one platform empowering innovators to turn ideas into real impact
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800">
+            Turn Ideas into Real Impact
           </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Join the growing network of organizations innovating for social good
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Join the growing network of organizations innovating for social good with our all-in-one platform
           </p>
-          <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700">
-            Get Started
-          </Button>
+          <div className="flex gap-4 justify-center">
+            <Button size="lg" className="bg-primary-600 hover:bg-primary-700">
+              Get Started
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <Button size="lg" variant="outline">
+              Watch Demo
+            </Button>
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-gray-50">
+      <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto space-y-20">
-          {/* Innovation Management Platform */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold mb-4">Innovation Management Platform</h2>
-              <p className="text-gray-600 mb-6">
-                Track and manage projects in a collaborative space where teams can co-create,
-                share updates, and measure impact together.
-              </p>
-              <Button variant="outline">Learn More</Button>
-            </div>
-            <div className="relative">
-              <img
-                src="/lovable-uploads/2a2894d9-5f3a-4a38-bb94-bdc08c6f5957.png"
-                alt="Platform Preview"
-                className="rounded-lg shadow-xl"
-              />
-            </div>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Everything You Need to Innovate</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Access a comprehensive suite of tools, training, and support to drive innovation in your organization
+            </p>
           </div>
 
-          {/* Training Section */}
-          <div className="grid md:grid-cols-2 gap-12 items-center md:flex-row-reverse">
-            <div>
-              <h2 className="text-3xl font-bold mb-4">In-Person Training and Online Courses</h2>
-              <p className="text-gray-600 mb-6">
-                Build your capability as an innovation catalyst through our courses.
-                Join a community of practitioners learning and growing together.
-              </p>
-              <Button variant="outline">Browse Courses</Button>
-            </div>
-            <div className="relative">
-              <div className="bg-purple-100 rounded-lg p-8">
-                {/* Training content placeholder */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Platform */}
+            <Card className="p-6 hover:shadow-lg transition-shadow">
+              <div className="h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
+                <Wrench className="h-6 w-6 text-primary-600" />
               </div>
-            </div>
-          </div>
+              <h3 className="text-xl font-semibold mb-2">Innovation Platform</h3>
+              <p className="text-gray-600">
+                Manage projects, track progress, and collaborate with your team in one place
+              </p>
+            </Card>
 
-          {/* Services Section */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold mb-4">Custom Co-design Services</h2>
-              <p className="text-gray-600 mb-6">
-                Work with our expert team to design and implement your innovation program.
-                We'll help you build the capability you need to create lasting impact.
-              </p>
-              <Button variant="outline">Our Services</Button>
-            </div>
-            <div className="relative">
-              <div className="bg-yellow-100 rounded-lg p-8">
-                {/* Services content placeholder */}
+            {/* Training */}
+            <Card className="p-6 hover:shadow-lg transition-shadow">
+              <div className="h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
+                <BookOpen className="h-6 w-6 text-primary-600" />
               </div>
-            </div>
-          </div>
+              <h3 className="text-xl font-semibold mb-2">Training & Courses</h3>
+              <p className="text-gray-600">
+                Learn innovation methodologies through structured courses and workshops
+              </p>
+            </Card>
 
-          {/* Tools Section */}
-          <div className="grid md:grid-cols-2 gap-12 items-center md:flex-row-reverse">
-            <div>
-              <h2 className="text-3xl font-bold mb-4">Tools and Resources</h2>
-              <p className="text-gray-600 mb-6">
-                Access our library of tools and templates to help you on your innovation journey.
-                Everything you need to get started is right here.
-              </p>
-              <Button variant="outline">Explore Tools</Button>
-            </div>
-            <div className="relative">
-              <div className="bg-blue-100 rounded-lg p-8">
-                {/* Tools content placeholder */}
+            {/* Community */}
+            <Card className="p-6 hover:shadow-lg transition-shadow">
+              <div className="h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
+                <Users className="h-6 w-6 text-primary-600" />
               </div>
-            </div>
+              <h3 className="text-xl font-semibold mb-2">Community</h3>
+              <p className="text-gray-600">
+                Connect with other innovators, share insights, and grow together
+              </p>
+            </Card>
+
+            {/* Tools */}
+            <Card className="p-6 hover:shadow-lg transition-shadow">
+              <div className="h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
+                <Download className="h-6 w-6 text-primary-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Innovation Tools</h3>
+              <p className="text-gray-600">
+                Access templates, frameworks, and resources to accelerate your work
+              </p>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Blog Section */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold mb-12 text-center">Updates and Insights</h2>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Latest Updates</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Stay informed with the latest insights, case studies, and innovation resources
+            </p>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="p-6">
-                <h3 className="text-xl font-bold mb-4">Blog Post Title</h3>
-                <p className="text-gray-600">Preview of the blog post content...</p>
+              <Card key={i} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="h-48 bg-gray-200" />
+                <div className="p-6">
+                  <p className="text-sm text-primary-600 mb-2">Category</p>
+                  <h3 className="text-xl font-semibold mb-2">Article Title</h3>
+                  <p className="text-gray-600 mb-4">
+                    Preview of the article content goes here...
+                  </p>
+                  <Button variant="link" className="p-0">
+                    Read More
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>
@@ -148,13 +116,17 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-indigo-600 text-white">
+      <section className="py-20 px-4 bg-primary-600 text-white">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">
-            Start innovating for impact today
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Start Your Innovation Journey?
           </h2>
-          <Button size="lg" variant="secondary">
-            Join The Lab
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            Join thousands of organizations already using Limitless Lab to drive innovation
+          </p>
+          <Button size="lg" variant="secondary" className="bg-white text-primary-600 hover:bg-gray-100">
+            Get Started Now
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </section>
