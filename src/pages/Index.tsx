@@ -3,6 +3,8 @@ import { getStoryblokApi, StoryblokComponent } from "@storyblok/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { WebsiteNavigation } from "@/components/website/WebsiteNavigation";
+import { WebsiteFooter } from "@/components/website/WebsiteFooter";
 
 const Index = () => {
   const [story, setStory] = useState<any>(null);
@@ -36,33 +38,41 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4">
-        <Card>
-          <CardContent className="p-6">
-            <Skeleton className="h-8 w-3/4 mb-4" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-2/3" />
-          </CardContent>
-        </Card>
+      <div className="min-h-screen">
+        <WebsiteNavigation />
+        <div className="container mx-auto p-4 pt-20">
+          <Card>
+            <CardContent className="p-6">
+              <Skeleton className="h-8 w-3/4 mb-4" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-2/3" />
+            </CardContent>
+          </Card>
+        </div>
+        <WebsiteFooter />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      {story ? (
-        <StoryblokComponent blok={story.content} />
-      ) : (
-        <Card>
-          <CardContent className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Welcome to Limitless Lab</h1>
-            <p className="text-gray-600">
-              Connect your Storyblok space to start managing your content.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+    <div className="min-h-screen">
+      <WebsiteNavigation />
+      <div className="container mx-auto p-4 pt-20">
+        {story ? (
+          <StoryblokComponent blok={story.content} />
+        ) : (
+          <Card>
+            <CardContent className="p-6">
+              <h1 className="text-2xl font-bold mb-4">Welcome to Limitless Lab</h1>
+              <p className="text-gray-600">
+                Connect your Storyblok space to start managing your content.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+      <WebsiteFooter />
     </div>
   );
 };
