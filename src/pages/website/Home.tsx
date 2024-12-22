@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, BookOpen, Download, Users, Wrench } from "lucide-react";
 import { WebsiteNavigation } from "@/components/website/WebsiteNavigation";
+import { WebsiteFooter } from "@/components/website/WebsiteFooter";
 
 const Home = () => {
   return (
@@ -135,6 +136,8 @@ const Home = () => {
           </Button>
         </div>
       </section>
+
+      <WebsiteFooter />
     </div>
   );
 };
