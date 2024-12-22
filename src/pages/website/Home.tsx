@@ -1,27 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, BookOpen, Download, Users, Wrench } from "lucide-react";
+import { WebsiteNavigation } from "@/components/website/WebsiteNavigation";
 
 const Home = () => {
   return (
     <div className="min-h-screen">
+      <WebsiteNavigation />
+      
       {/* Hero Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-primary-50 to-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800">
-            Turn Ideas into Real Impact
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join the growing network of organizations innovating for social good with our all-in-one platform
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" className="bg-primary-600 hover:bg-primary-700">
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button size="lg" variant="outline">
-              Watch Demo
-            </Button>
+      <section className="relative isolate pt-14">
+        <div className="py-20 px-4 bg-gradient-to-br from-primary-50 to-white">
+          <div className="max-w-7xl mx-auto text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800">
+              Turn Ideas into Real Impact
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Join the growing network of organizations innovating for social good with our all-in-one platform
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Button size="lg" className="bg-primary-600 hover:bg-primary-700">
+                Get Started
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button size="lg" variant="outline">
+                Watch Demo
+              </Button>
+            </div>
           </div>
         </div>
       </section>
