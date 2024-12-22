@@ -13,9 +13,13 @@ storyblokInit({
     grid: Grid,
     hero: Hero,
     page: Page,
-    // Make sure these names match EXACTLY with your Storyblok component names
-    // They should be lowercase and match the technical names in Storyblok
   },
+  apiOptions: {
+    // Define your languages here
+    languages: ['default', 'es', 'fr'],
+    // Set your default language
+    defaultLanguage: 'default'
+  }
 });
 
 console.log("Storyblok components registered:", {

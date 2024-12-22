@@ -5,11 +5,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { WebsiteNavigation } from "@/components/website/WebsiteNavigation";
 import { WebsiteFooter } from "@/components/website/WebsiteFooter";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Index = () => {
   const [story, setStory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [currentLanguage, setCurrentLanguage] = useState('default');
   const { toast } = useToast();
+
+  const languages = [
+    { code: 'default', label: 'English' },
+    { code: 'es', label: 'Español' },
+    { code: 'fr', label: 'Français' },
+  ];
 
   useEffect(() => {
     const getStory = async () => {
@@ -18,6 +26,7 @@ const Index = () => {
         const storyblokApi = getStoryblokApi();
         const { data } = await storyblokApi.get(`cdn/stories/home`, {
           version: "draft",
+          language: currentLanguage,
         });
         console.log("Storyblok response:", data);
         setStory(data?.story);
@@ -34,7 +43,12 @@ const Index = () => {
     };
 
     getStory();
-  }, [toast]);
+  }, [toast, currentLanguage]);
+
+  const handleLanguageChange = (language: string) => {
+    setCurrentLanguage(language);
+    setLoading(true);
+  };
 
   if (loading) {
     return (
@@ -59,6 +73,20 @@ const Index = () => {
     <div className="min-h-screen">
       <WebsiteNavigation />
       <div className="container mx-auto p-4 pt-20">
+        <div className="mb-6">
+          <Select value={currentLanguage} onValueChange={handleLanguageChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select language" />
+            </SelectTrigger>
+            <SelectContent>
+              {languages.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         {story ? (
           <StoryblokComponent blok={story.content} />
         ) : (
