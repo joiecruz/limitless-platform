@@ -2,7 +2,7 @@ import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
 
 export const client = createClient({
-  projectId: 'limitless-lab', // Your Sanity project ID
+  projectId: 'bg9ersmx', // Your Sanity project ID
   dataset: 'production',
   useCdn: true,
   apiVersion: '2024-01-01', // Current date
