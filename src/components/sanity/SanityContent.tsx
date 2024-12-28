@@ -1,5 +1,5 @@
-import { Hero } from "@/components/storyblok/Hero";
-import { Feature } from "@/components/storyblok/Feature";
+import Hero from "@/components/storyblok/Hero";
+import Feature from "@/components/storyblok/Feature";
 import { Page } from "@/integrations/sanity/types";
 import { urlFor } from "@/integrations/sanity/client";
 
@@ -16,20 +16,24 @@ export const SanityContent = ({ content }: SanityContentProps) => {
             return (
               <Hero
                 key={index}
-                headline={block.title}
-                subheadline={block.subtitle}
-                image={block.image ? urlFor(block.image).url() : undefined}
-                cta_label={block.cta?.text}
-                cta_link={block.cta?.link}
+                blok={{
+                  headline: block.title,
+                  subheadline: block.subtitle,
+                  image: block.image ? urlFor(block.image).url() : undefined,
+                  cta_text: block.cta?.text,
+                  cta_link: block.cta?.link ? { url: block.cta.link } : undefined,
+                }}
               />
             );
           case 'feature':
             return (
               <Feature
                 key={index}
-                name={block.title}
-                description={block.description}
-                icon={block.icon}
+                blok={{
+                  name: block.title,
+                  description: block.description,
+                  icon: block.icon,
+                }}
               />
             );
           default:
