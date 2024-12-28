@@ -16,24 +16,20 @@ export const SanityContent = ({ content }: SanityContentProps) => {
             return (
               <Hero
                 key={index}
-                blok={{
-                  headline: block.title,
-                  subheadline: block.subtitle,
-                  image: block.image ? urlFor(block.image).url() : undefined,
-                  cta_label: block.cta?.text,
-                  cta_link: block.cta?.link,
-                }}
+                headline={block.title}
+                subheadline={block.subtitle}
+                image={block.image ? urlFor(block.image).url() : undefined}
+                cta_label={block.cta?.text}
+                cta_link={block.cta?.link}
               />
             );
           case 'feature':
             return (
               <Feature
                 key={index}
-                blok={{
-                  name: block.title,
-                  description: block.description,
-                  icon: block.icon,
-                }}
+                name={block.title}
+                description={block.description}
+                icon={block.icon}
               />
             );
           default:
