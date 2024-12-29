@@ -37,16 +37,18 @@ export default function BlogPost() {
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {post.cover_image && (
-          <img
-            src={post.cover_image}
-            alt={post.title}
-            className="w-full h-[400px] object-cover rounded-lg mb-8"
-          />
+          <div className="mb-8">
+            <img
+              src={post.cover_image}
+              alt={post.title}
+              className="w-full h-[400px] object-cover rounded-lg"
+            />
+          </div>
         )}
         
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">{post.title}</h1>
         
-        <div className="prose max-w-none">
+        <div className="prose prose-lg max-w-none">
           {post.content}
         </div>
       </main>
