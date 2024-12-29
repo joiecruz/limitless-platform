@@ -45,6 +45,10 @@ export function AddLogoDialog() {
   const uploadLogo = async (values: LogoFormValues) => {
     setIsUploading(true);
     try {
+      // Get the current user's ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
       const fileExt = values.file.name.split('.').pop();
       const filePath = `${crypto.randomUUID()}.${fileExt}`;
       
@@ -64,6 +68,7 @@ export function AddLogoDialog() {
           name: values.name,
           image_url: publicUrl,
           category: values.category,
+          created_by: user.id // Add the user ID here
         });
 
       if (dbError) throw dbError;
