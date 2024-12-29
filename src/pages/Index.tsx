@@ -24,7 +24,7 @@ export default function Index() {
               <Button 
                 size="lg"
                 onClick={() => navigate("/signup")}
-                className="px-8"
+                className="px-8 bg-primary hover:bg-secondary"
               >
                 Create account
               </Button>
@@ -32,7 +32,7 @@ export default function Index() {
                 size="lg"
                 variant="outline"
                 onClick={() => navigate("/services")}
-                className="px-8"
+                className="px-8 text-primary border-primary hover:bg-accent"
               >
                 Explore services
               </Button>
@@ -44,7 +44,7 @@ export default function Index() {
             <img 
               src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z"
               alt="Limitless Lab Platform"
-              className="w-full rounded-lg shadow-xl"
+              className="w-full rounded-lg"
             />
           </div>
         </div>

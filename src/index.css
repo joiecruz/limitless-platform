@@ -38,19 +38,19 @@
 
 .workspace-select {
   @apply relative inline-flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors;
-  @apply hover:bg-primary-50 rounded-md;
+  @apply hover:bg-accent rounded-md;
 }
 
 .nav-item {
   @apply flex items-center gap-3 px-3 py-2 text-gray-700 transition-colors rounded-md;
-  @apply hover:bg-primary-50 hover:text-primary-600;
+  @apply hover:bg-accent hover:text-primary;
 }
 
 .nav-item.active {
-  @apply bg-primary-50 text-primary-600 font-medium;
+  @apply bg-accent text-primary font-medium;
 }
 
 .module-card {
   @apply p-6 transition-all duration-200 bg-white border rounded-xl hover:shadow-lg;
-  @apply hover:border-primary-200 hover:scale-[1.02];
+  @apply hover:border-primary hover:scale-[1.02];
 }
