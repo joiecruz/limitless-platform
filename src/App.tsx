@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import AppRoutes from "./routes/AppRoutes";
+import { AppRoutes } from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient({
