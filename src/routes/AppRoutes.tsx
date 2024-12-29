@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { AdminLayout } from "../layouts/AdminLayout";
+import { AdminLayout } from "@/layouts/AdminLayout";
 import { Session } from "@supabase/supabase-js";
 
 // Admin pages
