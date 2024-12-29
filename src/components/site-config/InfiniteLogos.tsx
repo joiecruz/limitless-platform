@@ -5,10 +5,9 @@ interface Logo {
   id: string;
   name: string;
   image_url: string;
-  category: string;
 }
 
-export function InfiniteLogos({ direction = "left", category }: { direction?: "left" | "right"; category: string }) {
+export function InfiniteLogos({ direction = "left" }: { direction?: "left" | "right" }) {
   const [logos, setLogos] = useState<Logo[]>([]);
 
   useEffect(() => {
@@ -16,7 +15,6 @@ export function InfiniteLogos({ direction = "left", category }: { direction?: "l
       const { data, error } = await supabase
         .from('client_logos')
         .select('*')
-        .eq('category', category)
         .order('created_at', { ascending: true });
       
       if (error) {
@@ -28,7 +26,7 @@ export function InfiniteLogos({ direction = "left", category }: { direction?: "l
     }
 
     fetchLogos();
-  }, [category]);
+  }, []);
 
   if (logos.length === 0) return null;
 
