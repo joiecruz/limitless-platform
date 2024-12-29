@@ -25,6 +25,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { Session } from "@supabase/supabase-js";
 import AdminPages from "@/pages/admin/AdminPages";
 import AdminContent from "@/pages/admin/AdminContent";
+import Index from "@/pages/Index";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -33,6 +34,9 @@ interface AppRoutesProps {
 export default function AppRoutes({ session }: AppRoutesProps) {
   return (
     <Routes>
+      {/* Public home page */}
+      <Route path="/" element={<Index />} />
+
       {/* Auth routes */}
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
@@ -53,7 +57,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
 
       {/* Dashboard routes */}
       <Route element={<RequireAuth><DashboardLayout><Outlet /></DashboardLayout></RequireAuth>}>
-        <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/community" element={<Community />} />
         <Route path="/courses" element={<Courses />} />
