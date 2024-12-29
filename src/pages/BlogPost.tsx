@@ -109,7 +109,12 @@ export default function BlogPost() {
         <div className="prose prose-lg max-w-none">
           <div 
             dangerouslySetInnerHTML={{ 
-              __html: article.content.replace(/\n/g, '<br />') 
+              __html: article.content
+                .split('\n\n')
+                .map(paragraph => paragraph.trim())
+                .filter(paragraph => paragraph.length > 0)
+                .map(paragraph => `<p class="mb-6">${paragraph.replace(/\n/g, '<br />')}</p>`)
+                .join('')
             }} 
             className="leading-relaxed"
           />
