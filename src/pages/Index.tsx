@@ -4,6 +4,7 @@ import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { InfiniteLogos } from "@/components/site-config/InfiniteLogos";
 import { Features } from "@/components/site-config/Features";
+import { BlogSection } from "@/components/site-config/BlogSection";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -76,6 +77,9 @@ export default function Index() {
 
       {/* Features Section */}
       <Features />
+
+      {/* Blog Section */}
+      <BlogSection />
 
       <Footer />
     </div>

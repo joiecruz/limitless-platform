@@ -24,11 +24,23 @@ export function FeatureSection({
 }: FeatureProps) {
   const navigate = useNavigate();
 
+  const getBadgeColors = (badge: string) => {
+    const colors: { [key: string]: { bg: string, text: string } } = {
+      'Product': { bg: 'bg-blue-50', text: 'text-blue-600' },
+      'Services': { bg: 'bg-teal-50', text: 'text-teal-600' },
+      'Tools': { bg: 'bg-amber-50', text: 'text-amber-600' },
+      'Training': { bg: 'bg-pink-50', text: 'text-pink-600' }
+    };
+    return colors[badge] || { bg: 'bg-gray-50', text: 'text-gray-600' };
+  };
+
+  const badgeColors = getBadgeColors(badge);
+
   return (
     <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
       {!isReversed && (
         <div className="flex-1 space-y-6">
-          <div className={`inline-block px-4 py-1 rounded-full text-sm bg-${badge.toLowerCase()}-50 text-${badge.toLowerCase()}-600`}>
+          <div className={`inline-block px-4 py-1 rounded-full text-sm ${badgeColors.bg} ${badgeColors.text}`}>
             {badge}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{title}</h2>
@@ -54,7 +66,7 @@ export function FeatureSection({
       </div>
       {isReversed && (
         <div className="flex-1 space-y-6">
-          <div className={`inline-block px-4 py-1 rounded-full text-sm bg-${badge.toLowerCase()}-50 text-${badge.toLowerCase()}-600`}>
+          <div className={`inline-block px-4 py-1 rounded-full text-sm ${badgeColors.bg} ${badgeColors.text}`}>
             {badge}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{title}</h2>
