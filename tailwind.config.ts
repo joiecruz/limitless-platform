@@ -19,6 +19,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Inter", ...fontFamily.sans],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -27,7 +30,7 @@ export default {
         foreground: "hsl(var(--foreground))",
         primary: {
           '50': '#f5f3ff',
-          DEFAULT: "#9b87f5",
+          DEFAULT: "#393ca0",
           foreground: "#FFFFFF",
         },
         secondary: {
@@ -59,9 +62,6 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-      },
-      fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       keyframes: {
         "accordion-down": {
