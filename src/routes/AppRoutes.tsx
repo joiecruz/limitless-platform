@@ -51,7 +51,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/invite" element={<InvitePage />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
 
-      {/* Protected routes */}
+      {/* Protected user routes */}
       <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/projects" element={<Projects />} />
@@ -63,20 +63,20 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/community" element={<Community />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/account-settings" element={<AccountSettings />} />
+      </Route>
 
-        {/* Admin routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="workspaces" element={<AdminWorkspaces />} />
-          <Route path="workspaces/:workspaceId" element={<AdminWorkspaceDetails />} />
-          <Route path="courses" element={<AdminCourses />} />
-          <Route path="pages" element={<AdminPages />} />
-          <Route path="content" element={<AdminContent />} />
-          <Route path="content/blog/create" element={<CreateBlog />} />
-          <Route path="content/blog/:id" element={<EditBlog />} />
-          <Route path="settings" element={<AdminSettings />} />
-        </Route>
+      {/* Protected admin routes */}
+      <Route element={<RequireAuth>{session && <AdminLayout />}</RequireAuth>}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
+        <Route path="/admin/workspaces/:workspaceId" element={<AdminWorkspaceDetails />} />
+        <Route path="/admin/courses" element={<AdminCourses />} />
+        <Route path="/admin/pages" element={<AdminPages />} />
+        <Route path="/admin/content" element={<AdminContent />} />
+        <Route path="/admin/content/blog/create" element={<CreateBlog />} />
+        <Route path="/admin/content/blog/:id" element={<EditBlog />} />
+        <Route path="/admin/settings" element={<AdminSettings />} />
       </Route>
     </Routes>
   );
