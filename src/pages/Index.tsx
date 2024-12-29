@@ -59,7 +59,7 @@ export default function Index() {
               <h2 className="text-center text-2xl font-semibold text-gray-900 mb-8">
                 Join the growing network of organizations innovating for social good
               </h2>
-              <InfiniteLogos category="client" direction="left" />
+              <InfiniteLogos direction="left" />
             </div>
 
             {/* User Logos */}
@@ -67,7 +67,7 @@ export default function Index() {
               <h2 className="text-center text-lg font-semibold text-gray-600 mb-8">
                 Empowering innovators worldwide
               </h2>
-              <InfiniteLogos category="user" direction="right" />
+              <InfiniteLogos direction="right" />
             </div>
           </div>
         </div>
