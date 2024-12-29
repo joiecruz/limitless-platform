@@ -20,15 +20,17 @@ export function AppRoutes({ session }: AppRoutesProps) {
   return (
     <Routes>
       {/* Admin routes */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="users" element={<AdminUsers />} />
-        <Route path="workspaces" element={<AdminWorkspaces />} />
-        <Route path="courses" element={<AdminCourses />} />
-        <Route path="pages" element={<AdminPages />} />
-        <Route path="pages/new" element={<AdminCreatePage />} />
-        <Route path="pages/:id/edit" element={<AdminEditPage />} />
-        <Route path="content" element={<AdminContent />} />
+      <Route element={<AdminLayout />}>
+        <Route path="/admin">
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="workspaces" element={<AdminWorkspaces />} />
+          <Route path="courses" element={<AdminCourses />} />
+          <Route path="pages" element={<AdminPages />} />
+          <Route path="pages/new" element={<AdminCreatePage />} />
+          <Route path="pages/:id/edit" element={<AdminEditPage />} />
+          <Route path="content" element={<AdminContent />} />
+        </Route>
       </Route>
 
       {/* Redirect root to admin dashboard temporarily */}
