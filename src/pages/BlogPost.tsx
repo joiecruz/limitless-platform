@@ -76,35 +76,37 @@ export default function BlogPost() {
     <div className="min-h-screen bg-white">
       <MainNav />
       
-      <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         {/* Article Header */}
-        <header className="mb-8">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            {article.title}
-          </h1>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+        <header className="mb-12">
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+            <span className="text-primary-600 font-medium">Innovation</span>
+            <span>•</span>
             <time dateTime={article.created_at}>
               {formatDate(article.created_at)}
             </time>
             <span>•</span>
             <span>{getReadTime(article.content)}</span>
           </div>
-        </header>
+          
+          <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-8">
+            {article.title}
+          </h1>
 
-        {/* Cover Image */}
-        {article.cover_image && (
-          <div className="mb-8">
-            <img
-              src={article.cover_image}
-              alt={article.title}
-              className="w-full h-auto rounded-lg"
-            />
-          </div>
-        )}
+          {/* Cover Image */}
+          {article.cover_image && (
+            <div className="mb-8">
+              <img
+                src={article.cover_image}
+                alt={article.title}
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
+          )}
+        </header>
 
         {/* Article Content */}
         <div className="prose prose-lg max-w-none">
-          {/* Render your content here based on your content structure */}
           <div dangerouslySetInnerHTML={{ __html: article.content }} />
         </div>
 
