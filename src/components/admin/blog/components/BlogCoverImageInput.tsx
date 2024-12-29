@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { UseFormReturn } from "react-hook-form";
 
 interface BlogCoverImageInputProps {
-  form: UseFormReturn<any>;
-  blogId: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  blogId?: string;
 }
 
-export function BlogCoverImageInput({ form, blogId }: BlogCoverImageInputProps) {
+export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCoverImageInputProps) {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
@@ -23,7 +24,7 @@ export function BlogCoverImageInput({ form, blogId }: BlogCoverImageInputProps) 
     setIsUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const filePath = `${blogId}-cover.${fileExt}`;
+      const filePath = `${blogId || 'new'}-cover.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('blog-covers')
@@ -35,7 +36,7 @@ export function BlogCoverImageInput({ form, blogId }: BlogCoverImageInputProps) 
         .from('blog-covers')
         .getPublicUrl(filePath);
 
-      form.setValue('cover_image', publicUrl);
+      onChange(publicUrl);
       
       toast({
         title: "Success",
@@ -54,44 +55,42 @@ export function BlogCoverImageInput({ form, blogId }: BlogCoverImageInputProps) 
   };
 
   return (
-    <FormField
-      control={form.control}
-      name="cover_image"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Cover Image</FormLabel>
-          <div className="flex gap-2">
-            <FormControl>
-              <Input {...field} placeholder="Cover image URL" />
-            </FormControl>
-            <div className="relative">
-              <Input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                id="cover-image-upload"
-                onChange={handleImageUpload}
-                disabled={isUploading}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                asChild
-                disabled={isUploading}
-              >
-                <label htmlFor="cover-image-upload" className="cursor-pointer">
-                  {isUploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4" />
-                  )}
-                </label>
-              </Button>
-            </div>
-          </div>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <FormItem>
+      <FormLabel>Cover Image</FormLabel>
+      <div className="flex gap-2">
+        <FormControl>
+          <Input 
+            value={value} 
+            onChange={(e) => onChange(e.target.value)} 
+            placeholder="Cover image URL" 
+          />
+        </FormControl>
+        <div className="relative">
+          <Input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            id="cover-image-upload"
+            onChange={handleImageUpload}
+            disabled={isUploading}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            asChild
+            disabled={isUploading}
+          >
+            <label htmlFor="cover-image-upload" className="cursor-pointer">
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+            </label>
+          </Button>
+        </div>
+      </div>
+      {error && <p className="text-sm text-red-500">{error}</p>}
+    </FormItem>
   );
 }
