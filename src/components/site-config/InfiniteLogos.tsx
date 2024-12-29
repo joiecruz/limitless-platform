@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 
 interface Logo {
   id: string;
@@ -7,40 +6,39 @@ interface Logo {
   image_url: string;
 }
 
-export function InfiniteLogos({ direction = "left" }: { direction?: "left" | "right" }) {
-  const [logos, setLogos] = useState<Logo[]>([]);
-
-  useEffect(() => {
-    async function fetchLogos() {
-      console.log('Fetching logos...');
-      const { data, error } = await supabase
-        .from('client_logos')
-        .select('*')
-        .order('created_at', { ascending: true });
-      
-      if (error) {
-        console.error('Error fetching logos:', error);
-        return;
-      }
-      
-      console.log('Fetched logos:', data);
-      setLogos(data || []);
-    }
-
-    fetchLogos();
-  }, []);
-
-  // Add debug log for render
-  console.log('Current logos state:', logos);
-
-  if (logos.length === 0) {
-    console.log('No logos found, returning null');
-    return null;
+const staticLogos: Logo[] = [
+  {
+    id: "1",
+    name: "USAID",
+    image_url: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/client_logos/image%201.svg"
+  },
+  {
+    id: "2",
+    name: "US Embassy",
+    image_url: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/client_logos/image%202.svg"
+  },
+  {
+    id: "3",
+    name: "ASEAN Foundation",
+    image_url: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/client_logos/image%203.svg"
+  },
+  {
+    id: "4",
+    name: "The Asia Foundation",
+    image_url: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/client_logos/image%204.svg"
+  },
+  {
+    id: "5",
+    name: "DICT",
+    image_url: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/client_logos/image%205.svg"
   }
+];
+
+export function InfiniteLogos({ direction = "left" }: { direction?: "left" | "right" }) {
+  const [logos, setLogos] = useState<Logo[]>(staticLogos);
 
   // Double the logos array to create seamless loop
   const duplicatedLogos = [...logos, ...logos];
-  console.log('Duplicated logos:', duplicatedLogos);
 
   return (
     <div className="relative flex overflow-hidden py-4 bg-background">
