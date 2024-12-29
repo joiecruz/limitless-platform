@@ -23,6 +23,8 @@ import RequireAuth from "@/components/auth/RequireAuth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Session } from "@supabase/supabase-js";
+import AdminPages from "@/pages/admin/AdminPages";
+import AdminContent from "@/pages/admin/AdminContent";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -45,6 +47,8 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         <Route path="/admin/workspaces/:id" element={<AdminWorkspaceDetails />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/courses" element={<AdminCourses />} />
+        <Route path="/admin/pages" element={<AdminPages />} />
+        <Route path="/admin/content" element={<AdminContent />} />
       </Route>
 
       {/* Dashboard routes */}
