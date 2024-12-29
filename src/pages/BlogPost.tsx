@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
+import { Badge } from "@/components/ui/badge";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -30,10 +31,9 @@ export default function BlogPost() {
     });
   };
 
-  const getReadTime = (content: any) => {
+  const getReadTime = (content: string) => {
     const wordsPerMinute = 200;
-    const text = JSON.stringify(content);
-    const words = text.split(/\s+/).length;
+    const words = content.split(/\s+/).length;
     const minutes = Math.ceil(words / wordsPerMinute);
     return `${minutes} min read`;
   };
@@ -107,8 +107,23 @@ export default function BlogPost() {
 
         {/* Article Content */}
         <div className="prose prose-lg max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: article.content }} />
+          {article.content.split('\n').map((paragraph, index) => (
+            paragraph ? <p key={index}>{paragraph}</p> : <br key={index} />
+          ))}
         </div>
+
+        {/* Tags Section */}
+        {article.tags && article.tags.length > 0 && (
+          <div className="mt-12 pt-6 border-t border-gray-200">
+            <div className="flex flex-wrap gap-2">
+              {article.tags.map((tag: string) => (
+                <Badge key={tag} variant="secondary" className="text-sm">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Meta Description (hidden for SEO) */}
         {article.meta_description && (
