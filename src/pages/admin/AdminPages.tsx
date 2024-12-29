@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,11 +25,10 @@ interface Page {
 }
 
 export default function AdminPages() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
 
-  const { data: pages, isLoading, refetch } = useQuery({
+  const { data: pages, isLoading } = useQuery({
     queryKey: ['admin-pages'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -51,11 +49,14 @@ export default function AdminPages() {
   });
 
   const handlePreview = (slug: string) => {
+    // Open preview in new tab
     window.open(`/preview/pages/${slug}`, '_blank');
   };
 
   const handleEdit = (id: string) => {
-    navigate(`/admin/pages/${id}/edit`);
+    setSelectedPage(id);
+    // Navigate to edit page
+    // TODO: Implement page editor
   };
 
   const handleDelete = async (id: string) => {
@@ -68,13 +69,12 @@ export default function AdminPages() {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Page deleted successfully",
+        title: "Page deleted",
+        description: "The page has been successfully deleted.",
       });
-      refetch();
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Error deleting page",
         description: error.message,
         variant: "destructive",
       });
@@ -98,7 +98,7 @@ export default function AdminPages() {
             Manage your website's landing pages
           </p>
         </div>
-        <Button onClick={() => navigate('/admin/pages/new')}>
+        <Button>
           <PlusCircle className="h-4 w-4 mr-2" />
           Create New Page
         </Button>
@@ -166,11 +166,7 @@ export default function AdminPages() {
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8">
                   <p className="text-muted-foreground">No pages found</p>
-                  <Button 
-                    variant="link" 
-                    className="mt-2"
-                    onClick={() => navigate('/admin/pages/new')}
-                  >
+                  <Button variant="link" className="mt-2">
                     Create your first page
                   </Button>
                 </TableCell>
