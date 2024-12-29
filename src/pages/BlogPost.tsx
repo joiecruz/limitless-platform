@@ -76,7 +76,7 @@ export default function BlogPost() {
     <div className="min-h-screen bg-white">
       <MainNav />
       
-      <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
         {/* Article Header */}
         <header className="mb-12">
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
@@ -89,7 +89,7 @@ export default function BlogPost() {
             <span>{getReadTime(article.content)}</span>
           </div>
           
-          <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-8">
             {article.title}
           </h1>
 
