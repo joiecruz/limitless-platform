@@ -1,246 +1,110 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useToast } from "@/hooks/use-toast";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { RichTextEditor } from "./RichTextEditor";
-
-interface BlogFormData {
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string;
-  meta_description: string;
-  cover_image: string;
-}
+import { BlogTitleInput } from "./components/BlogTitleInput";
+import { BlogSlugInput } from "./components/BlogSlugInput";
+import { BlogExcerptInput } from "./components/BlogExcerptInput";
+import { BlogMetaDescription } from "./components/BlogMetaDescription";
+import { BlogPublishToggle } from "./components/BlogPublishToggle";
 
 interface BlogFormProps {
-  initialData?: BlogFormData;
-  onSuccess: () => void;
-  isEdit?: boolean;
-  blogId?: string;
+  initialData?: {
+    title: string;
+    slug: string;
+    content: string;
+    excerpt?: string;
+    meta_description?: string;
+    published?: boolean;
+  };
+  onSubmit: (data: any) => void;
+  isLoading?: boolean;
 }
 
-export function BlogForm({ initialData, onSuccess, isEdit, blogId }: BlogFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const { toast } = useToast();
-  
-  const form = useForm<BlogFormData>({
-    defaultValues: initialData || {
-      title: "",
-      slug: "",
-      content: "",
-      excerpt: "",
-      meta_description: "",
-      cover_image: "",
-    },
+export function BlogForm({ initialData, onSubmit, isLoading }: BlogFormProps) {
+  const [formData, setFormData] = useState({
+    title: initialData?.title || "",
+    slug: initialData?.slug || "",
+    content: initialData?.content || "",
+    excerpt: initialData?.excerpt || "",
+    meta_description: initialData?.meta_description || "",
+    published: initialData?.published || false,
   });
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-    try {
-      setUploadingImage(true);
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${crypto.randomUUID()}.${fileExt}`;
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.title) newErrors.title = "Title is required";
+    if (!formData.slug) newErrors.slug = "Slug is required";
+    if (!formData.content) newErrors.content = "Content is required";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-      const { error: uploadError } = await supabase.storage
-        .from('web-assets')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('web-assets')
-        .getPublicUrl(filePath);
-
-      form.setValue('cover_image', publicUrl);
-      
-      toast({
-        title: "Image uploaded",
-        description: "Cover image has been uploaded successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error uploading image",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setUploadingImage(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onSubmit(formData);
     }
   };
 
-  const onSubmit = async (data: BlogFormData) => {
-    try {
-      setIsLoading(true);
-      
-      if (isEdit && blogId) {
-        const { error } = await supabase
-          .from('articles')
-          .update({
-            ...data,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', blogId);
-
-        if (error) throw error;
-
-        toast({
-          title: "Blog post updated",
-          description: "The blog post has been updated successfully.",
-        });
-      } else {
-        const { error } = await supabase
-          .from('articles')
-          .insert([{
-            ...data,
-            published: false,
-          }]);
-
-        if (error) throw error;
-
-        toast({
-          title: "Blog post created",
-          description: "The blog post has been created successfully.",
-        });
-      }
-
-      form.reset();
-      onSuccess();
-    } catch (error: any) {
-      toast({
-        title: `Error ${isEdit ? 'updating' : 'creating'} blog post`,
-        description: error.message,
-        variant: "destructive",
+  const updateFormData = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Enter blog post title" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="slug"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Slug</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="enter-url-friendly-slug" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <BlogTitleInput
+        value={formData.title}
+        onChange={(value) => updateFormData("title", value)}
+        error={errors.title}
+      />
 
-        <FormField
-          control={form.control}
-          name="cover_image"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cover Image</FormLabel>
-              <div className="space-y-2">
-                <FormControl>
-                  <Input {...field} placeholder="https://example.com/image.jpg" />
-                </FormControl>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    disabled={uploadingImage}
-                  />
-                  {uploadingImage && <Loader2 className="h-4 w-4 animate-spin" />}
-                </div>
-                {field.value && (
-                  <img 
-                    src={field.value} 
-                    alt="Cover preview" 
-                    className="mt-2 rounded-md max-h-48 object-cover"
-                  />
-                )}
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <BlogSlugInput
+        value={formData.slug}
+        onChange={(value) => updateFormData("slug", value)}
+        error={errors.slug}
+      />
 
-        <FormField
-          control={form.control}
-          name="excerpt"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Excerpt</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder="Brief excerpt of the blog post" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      <div className="space-y-2">
+        <RichTextEditor
+          value={formData.content}
+          onChange={(value) => updateFormData("content", value)}
         />
+        {errors.content && (
+          <p className="text-sm text-red-500">{errors.content}</p>
+        )}
+      </div>
 
-        <FormField
-          control={form.control}
-          name="meta_description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Meta Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder="SEO meta description" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <BlogExcerptInput
+        value={formData.excerpt}
+        onChange={(value) => updateFormData("excerpt", value)}
+        error={errors.excerpt}
+      />
 
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Content</FormLabel>
-              <FormControl>
-                <RichTextEditor 
-                  value={field.value} 
-                  onChange={field.onChange}
-                  className="min-h-[400px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <BlogMetaDescription
+        value={formData.meta_description}
+        onChange={(value) => updateFormData("meta_description", value)}
+        error={errors.meta_description}
+      />
 
-        <div className="flex justify-end gap-2">
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEdit ? 'Update Post' : 'Create Post'}
-          </Button>
-        </div>
-      </form>
-    </Form>
+      <BlogPublishToggle
+        value={formData.published}
+        onChange={(value) => updateFormData("published", value)}
+      />
+
+      <Button type="submit" disabled={isLoading}>
+        {isLoading ? "Saving..." : "Save"}
+      </Button>
+    </form>
   );
 }
