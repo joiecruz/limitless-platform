@@ -5,6 +5,7 @@ import { Footer } from "@/components/site-config/Footer";
 import { InfiniteLogos } from "@/components/site-config/InfiniteLogos";
 import { Features } from "@/components/site-config/Features";
 import { BlogSection } from "@/components/site-config/BlogSection";
+import { CTASection } from "@/components/site-config/CTASection";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -14,9 +15,9 @@ export default function Index() {
       <MainNav />
       
       {/* Hero Section */}
-      <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-8">
               The all-in-one platform<br />
               empowering innovators to turn<br />
@@ -77,6 +78,9 @@ export default function Index() {
 
       {/* Blog Section */}
       <BlogSection />
+
+      {/* CTA Section */}
+      <CTASection />
 
       <Footer />
     </div>
