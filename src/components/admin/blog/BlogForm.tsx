@@ -6,6 +6,8 @@ import { BlogSlugInput } from "./components/BlogSlugInput";
 import { BlogExcerptInput } from "./components/BlogExcerptInput";
 import { BlogMetaDescription } from "./components/BlogMetaDescription";
 import { BlogPublishToggle } from "./components/BlogPublishToggle";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BlogFormProps {
   initialData?: {
@@ -16,11 +18,22 @@ interface BlogFormProps {
     meta_description?: string;
     published?: boolean;
   };
-  onSubmit: (data: any) => void;
+  onSubmit?: (data: any) => void;
+  onSuccess?: () => void;
   isLoading?: boolean;
+  isEdit?: boolean;
+  blogId?: string;
 }
 
-export function BlogForm({ initialData, onSubmit, isLoading }: BlogFormProps) {
+export function BlogForm({ 
+  initialData, 
+  onSubmit, 
+  onSuccess, 
+  isLoading,
+  isEdit,
+  blogId 
+}: BlogFormProps) {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     slug: initialData?.slug || "",
@@ -43,10 +56,51 @@ export function BlogForm({ initialData, onSubmit, isLoading }: BlogFormProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      try {
+        if (isEdit && blogId) {
+          const { error } = await supabase
+            .from('articles')
+            .update({
+              ...formData,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', blogId);
+
+          if (error) throw error;
+
+          toast({
+            title: "Blog post updated",
+            description: "The blog post has been updated successfully.",
+          });
+        } else {
+          const { error } = await supabase
+            .from('articles')
+            .insert([{
+              ...formData,
+              published: false,
+            }]);
+
+          if (error) throw error;
+
+          toast({
+            title: "Blog post created",
+            description: "The blog post has been created successfully.",
+          });
+        }
+
+        if (onSuccess) {
+          onSuccess();
+        }
+      } catch (error: any) {
+        toast({
+          title: `Error ${isEdit ? 'updating' : 'creating'} blog post`,
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     }
   };
 
