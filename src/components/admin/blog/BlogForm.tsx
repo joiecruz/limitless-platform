@@ -6,8 +6,7 @@ import { BlogSlugInput } from "./components/BlogSlugInput";
 import { BlogExcerptInput } from "./components/BlogExcerptInput";
 import { BlogMetaDescription } from "./components/BlogMetaDescription";
 import { BlogPublishToggle } from "./components/BlogPublishToggle";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
 
 interface BlogFormProps {
   initialData?: {
@@ -18,22 +17,23 @@ interface BlogFormProps {
     meta_description?: string;
     published?: boolean;
   };
-  onSubmit?: (data: any) => void;
   onSuccess?: () => void;
-  isLoading?: boolean;
   isEdit?: boolean;
   blogId?: string;
 }
 
 export function BlogForm({ 
   initialData, 
-  onSubmit, 
-  onSuccess, 
-  isLoading,
+  onSuccess,
   isEdit,
   blogId 
 }: BlogFormProps) {
-  const { toast } = useToast();
+  const { handleSubmit: submitForm, isLoading } = useBlogFormSubmit({
+    isEdit,
+    blogId,
+    onSuccess,
+  });
+
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     slug: initialData?.slug || "",
@@ -56,51 +56,10 @@ export function BlogForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      try {
-        if (isEdit && blogId) {
-          const { error } = await supabase
-            .from('articles')
-            .update({
-              ...formData,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', blogId);
-
-          if (error) throw error;
-
-          toast({
-            title: "Blog post updated",
-            description: "The blog post has been updated successfully.",
-          });
-        } else {
-          const { error } = await supabase
-            .from('articles')
-            .insert([{
-              ...formData,
-              published: false,
-            }]);
-
-          if (error) throw error;
-
-          toast({
-            title: "Blog post created",
-            description: "The blog post has been created successfully.",
-          });
-        }
-
-        if (onSuccess) {
-          onSuccess();
-        }
-      } catch (error: any) {
-        toast({
-          title: `Error ${isEdit ? 'updating' : 'creating'} blog post`,
-          description: error.message,
-          variant: "destructive",
-        });
-      }
+      await submitForm(formData);
     }
   };
 
@@ -116,7 +75,7 @@ export function BlogForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleFormSubmit} className="space-y-6">
       <BlogTitleInput
         value={formData.title}
         onChange={(value) => updateFormData("title", value)}
