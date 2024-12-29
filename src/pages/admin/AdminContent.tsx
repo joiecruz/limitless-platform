@@ -1,10 +1,14 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddLogoDialog } from "@/components/admin/logos/AddLogoDialog";
 import { LogosTable } from "@/components/admin/logos/LogosTable";
-import { CreateBlogDialog } from "@/components/admin/blog/CreateBlogDialog";
 import { BlogsTable } from "@/components/admin/blog/BlogsTable";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminContent() {
+  const navigate = useNavigate();
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -22,7 +26,10 @@ export default function AdminContent() {
         <TabsContent value="articles" className="mt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Blog Articles</h2>
-            <CreateBlogDialog onSuccess={() => {}} />
+            <Button onClick={() => navigate("/admin/content/blog/create")}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Blog Post
+            </Button>
           </div>
           <BlogsTable />
         </TabsContent>

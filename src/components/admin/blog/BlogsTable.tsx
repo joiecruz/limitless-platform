@@ -11,8 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { EditBlogDialog } from "./EditBlogDialog";
-import { Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import { Pencil, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Blog {
   id: string;
@@ -25,7 +25,7 @@ interface Blog {
 
 export function BlogsTable() {
   const { toast } = useToast();
-  const [selectedBlog, setSelectedBlog] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const { data: blogs, isLoading, refetch } = useQuery({
     queryKey: ['admin-blogs'],
@@ -149,15 +149,15 @@ export function BlogsTable() {
                     onClick={() => togglePublish(blog.id, blog.published)}
                   >
                     {blog.published ? (
-                      <EyeOff className="h-4 w-4" />
+                      <XCircle className="h-4 w-4" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <CheckCircle className="h-4 w-4" />
                     )}
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setSelectedBlog(blog.id)}
+                    onClick={() => navigate(`/admin/content/blog/${blog.id}`)}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -174,13 +174,6 @@ export function BlogsTable() {
           ))}
         </TableBody>
       </Table>
-
-      <EditBlogDialog
-        blogId={selectedBlog}
-        isOpen={!!selectedBlog}
-        onClose={() => setSelectedBlog(null)}
-        onSuccess={refetch}
-      />
     </div>
   );
 }
