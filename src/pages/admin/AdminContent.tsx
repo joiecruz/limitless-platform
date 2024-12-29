@@ -1,6 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddLogoDialog } from "@/components/admin/logos/AddLogoDialog";
 import { LogosTable } from "@/components/admin/logos/LogosTable";
+import { CreateBlogDialog } from "@/components/admin/blog/CreateBlogDialog";
+import { BlogsTable } from "@/components/admin/blog/BlogsTable";
 
 export default function AdminContent() {
   return (
@@ -18,9 +20,11 @@ export default function AdminContent() {
         </TabsList>
 
         <TabsContent value="articles" className="mt-6">
-          <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
-            <p className="text-gray-500">Articles management coming soon...</p>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Blog Articles</h2>
+            <CreateBlogDialog onSuccess={() => {}} />
           </div>
+          <BlogsTable />
         </TabsContent>
 
         <TabsContent value="testimonials">
