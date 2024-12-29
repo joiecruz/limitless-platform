@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
+import { InfiniteLogos } from "@/components/site-config/InfiniteLogos";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -41,16 +42,32 @@ export default function Index() {
           {/* Hero Image */}
           <div className="relative">
             <img 
-              src="/lovable-uploads/057d95b6-e82b-4331-b3c0-d6713b6a9837.png"
+              src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z"
               alt="Limitless Lab Platform"
               className="w-full rounded-lg shadow-xl"
             />
-            <div className="absolute -top-8 left-8">
-              <img 
-                src="/lovable-uploads/1d0e283e-a2bd-4829-8858-5516a6f1b45a.png"
-                alt="Decorative"
-                className="w-24 h-24"
-              />
+          </div>
+        </div>
+      </div>
+
+      {/* Logo Sections */}
+      <div className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="space-y-8">
+            {/* Client Logos */}
+            <div>
+              <h2 className="text-center text-lg font-semibold text-gray-600 mb-8">
+                Trusted by innovative companies
+              </h2>
+              <InfiniteLogos category="client" direction="left" />
+            </div>
+
+            {/* User Logos */}
+            <div>
+              <h2 className="text-center text-lg font-semibold text-gray-600 mb-8">
+                Empowering innovators worldwide
+              </h2>
+              <InfiniteLogos category="user" direction="right" />
             </div>
           </div>
         </div>
