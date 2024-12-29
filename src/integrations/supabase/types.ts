@@ -12,7 +12,7 @@ export type Database = {
       articles: {
         Row: {
           categories: string[] | null
-          content: Json
+          content: string
           cover_image: string | null
           created_at: string
           created_by: string | null
@@ -27,7 +27,7 @@ export type Database = {
         }
         Insert: {
           categories?: string[] | null
-          content?: Json
+          content: string
           cover_image?: string | null
           created_at?: string
           created_by?: string | null
@@ -42,7 +42,7 @@ export type Database = {
         }
         Update: {
           categories?: string[] | null
-          content?: Json
+          content?: string
           cover_image?: string | null
           created_at?: string
           created_by?: string | null

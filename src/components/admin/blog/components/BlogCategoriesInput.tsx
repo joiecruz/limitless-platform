@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { FormLabel } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 
 interface BlogCategoriesInputProps {
   value: string[];
@@ -25,7 +25,7 @@ export function BlogCategoriesInput({ value, onChange, error }: BlogCategoriesIn
 
   return (
     <div className="space-y-2">
-      <FormLabel>Categories</FormLabel>
+      <Label>Categories</Label>
       <Input
         type="text"
         placeholder="Type a category and press Enter"

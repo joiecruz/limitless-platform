@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { FormLabel } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 
 interface BlogTagsInputProps {
   value: string[];
@@ -25,7 +25,7 @@ export function BlogTagsInput({ value, onChange, error }: BlogTagsInputProps) {
 
   return (
     <div className="space-y-2">
-      <FormLabel>Tags</FormLabel>
+      <Label>Tags</Label>
       <Input
         type="text"
         placeholder="Type a tag and press Enter"
