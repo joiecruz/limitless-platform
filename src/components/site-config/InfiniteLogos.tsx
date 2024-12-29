@@ -1,10 +1,6 @@
-import { useState, useEffect } from "react";
-
-interface Logo {
-  id: string;
-  name: string;
-  image_url: string;
-}
+import { useState } from "react";
+import { Logo } from "./types/logo";
+import { LogoList } from "./LogoList";
 
 const staticLogos: Logo[] = [
   {
@@ -184,14 +180,16 @@ const staticLogos: Logo[] = [
   }
 ];
 
-export function InfiniteLogos({ direction = "left" }: { direction?: "left" | "right" }) {
-  const [logos, setLogos] = useState<Logo[]>(staticLogos);
+interface InfiniteLogosProps {
+  direction?: "left" | "right";
+}
 
-  // Double the logos array to create seamless loop
+export function InfiniteLogos({ direction = "left" }: InfiniteLogosProps) {
+  const [logos] = useState<Logo[]>(staticLogos);
   const duplicatedLogos = [...logos, ...logos];
 
   return (
-    <div className="relative flex overflow-hidden py-4 bg-background">
+    <div className="relative w-full overflow-hidden bg-transparent">
       <div
         className={`flex animate-scroll-${direction} items-center`}
         style={{
@@ -201,19 +199,7 @@ export function InfiniteLogos({ direction = "left" }: { direction?: "left" | "ri
           width: "fit-content",
         }}
       >
-        {duplicatedLogos.map((logo, index) => (
-          <div
-            key={`${logo.id}-${index}`}
-            className="mx-8 flex items-center justify-center"
-          >
-            <img
-              src={logo.image_url}
-              alt={logo.name}
-              className="h-12 w-auto object-contain"
-              loading="lazy"
-            />
-          </div>
-        ))}
+        <LogoList logos={duplicatedLogos} />
       </div>
     </div>
   );
