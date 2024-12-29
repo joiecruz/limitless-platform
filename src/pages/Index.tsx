@@ -66,9 +66,6 @@ export default function Index() {
 
             {/* User Logos */}
             <div>
-              <h2 className="text-center text-lg font-semibold text-gray-600 mb-8">
-                Empowering innovators worldwide
-              </h2>
               <InfiniteLogos direction="right" />
             </div>
           </div>

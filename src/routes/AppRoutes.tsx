@@ -26,6 +26,7 @@ import { Session } from "@supabase/supabase-js";
 import AdminPages from "@/pages/admin/AdminPages";
 import AdminContent from "@/pages/admin/AdminContent";
 import Index from "@/pages/Index";
+import BlogPost from "@/pages/BlogPost";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -36,6 +37,7 @@ export default function AppRoutes({ session }: AppRoutesProps) {
     <Routes>
       {/* Public home page */}
       <Route path="/" element={<Index />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
 
       {/* Auth routes */}
       <Route path="/signin" element={<SignIn />} />
