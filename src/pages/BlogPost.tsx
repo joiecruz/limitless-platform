@@ -5,9 +5,15 @@ import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { CTASection } from "@/components/site-config/CTASection";
 import { format } from "date-fns";
+import { useEffect } from "react";
 
 export default function BlogPost() {
   const { slug } = useParams();
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const { data: post, isLoading } = useQuery({
     queryKey: ['blog-post', slug],
@@ -40,7 +46,7 @@ export default function BlogPost() {
     <div className="min-h-screen bg-white">
       <MainNav />
       
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
         {post.cover_image && (
           <div className="aspect-video w-full mb-12 rounded-lg overflow-hidden">
             <img
@@ -55,7 +61,7 @@ export default function BlogPost() {
           {post.title}
         </h1>
 
-        <div className="flex flex-wrap items-center gap-4 mb-8 text-sm text-gray-600">
+        <div className="flex flex-wrap items-center gap-4 mb-12 text-sm text-gray-600">
           <time dateTime={post.created_at}>
             {format(new Date(post.created_at), 'MMMM d, yyyy')}
           </time>
@@ -79,7 +85,7 @@ export default function BlogPost() {
         </div>
         
         <div 
-          className="prose prose-lg max-w-none prose-headings:font-bold prose-p:text-gray-600 prose-a:text-primary-600 prose-img:rounded-lg"
+          className="prose prose-lg max-w-none prose-headings:font-bold prose-p:text-gray-600 prose-a:text-primary-600 prose-img:rounded-lg mb-24"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
       </article>
