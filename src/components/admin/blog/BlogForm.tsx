@@ -8,6 +8,7 @@ import { BlogMetaDescription } from "./components/BlogMetaDescription";
 import { BlogPublishToggle } from "./components/BlogPublishToggle";
 import { BlogCategoriesInput } from "./components/BlogCategoriesInput";
 import { BlogTagsInput } from "./components/BlogTagsInput";
+import { BlogCoverImageInput } from "./components/BlogCoverImageInput";
 import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
 
 interface BlogFormProps {
@@ -20,6 +21,7 @@ interface BlogFormProps {
     published?: boolean;
     categories?: string[];
     tags?: string[];
+    cover_image?: string;
   };
   onSuccess?: () => void;
   isEdit?: boolean;
@@ -47,6 +49,7 @@ export function BlogForm({
     published: initialData?.published || false,
     categories: initialData?.categories || [],
     tags: initialData?.tags || [],
+    cover_image: initialData?.cover_image || "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -92,6 +95,13 @@ export function BlogForm({
         value={formData.slug}
         onChange={(value) => updateFormData("slug", value)}
         error={errors.slug}
+      />
+
+      <BlogCoverImageInput
+        value={formData.cover_image}
+        onChange={(value) => updateFormData("cover_image", value)}
+        error={errors.cover_image}
+        blogId={blogId}
       />
 
       <div className="space-y-2">
