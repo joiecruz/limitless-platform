@@ -130,7 +130,7 @@ export function AddLogoDialog() {
             <FormField
               control={form.control}
               name="file"
-              render={({ field: { onChange, ...field } }) => (
+              render={({ field: { onChange, value, ...field } }) => (
                 <FormItem>
                   <FormLabel>Logo Image</FormLabel>
                   <FormControl>
