@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       articles: {
         Row: {
+          categories: string[] | null
           content: Json
           cover_image: string | null
           created_at: string
@@ -20,10 +21,12 @@ export type Database = {
           meta_description: string | null
           published: boolean | null
           slug: string
+          tags: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
+          categories?: string[] | null
           content?: Json
           cover_image?: string | null
           created_at?: string
@@ -33,10 +36,12 @@ export type Database = {
           meta_description?: string | null
           published?: boolean | null
           slug: string
+          tags?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
+          categories?: string[] | null
           content?: Json
           cover_image?: string | null
           created_at?: string
@@ -46,6 +51,7 @@ export type Database = {
           meta_description?: string | null
           published?: boolean | null
           slug?: string
+          tags?: string[] | null
           title?: string
           updated_at?: string
         }

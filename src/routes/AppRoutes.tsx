@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { Session } from "@supabase/supabase-js";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import RequireAuth from "@/components/auth/RequireAuth";
 
 // Pages
 import Index from "@/pages/Index";
@@ -46,17 +47,17 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       <Route path="/blog/:slug" element={<BlogPost />} />
 
       {/* Protected routes */}
-      <Route path="/app" element={<DashboardLayout />}>
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="projects" element={<Projects />} />
-        <Route path="courses" element={<Courses />} />
-        <Route path="courses/:courseId/lessons" element={<Lessons />} />
-        <Route path="courses/:courseId/lessons/:lessonId" element={<Lesson />} />
-        <Route path="tools" element={<Tools />} />
-        <Route path="tools/:id" element={<ToolDetails />} />
-        <Route path="community" element={<Community />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="account-settings" element={<AccountSettings />} />
+      <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/courses" element={<Courses />} />
+        <Route path="/courses/:courseId/lessons" element={<Lessons />} />
+        <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
+        <Route path="/tools" element={<Tools />} />
+        <Route path="/tools/:id" element={<ToolDetails />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/account-settings" element={<AccountSettings />} />
       </Route>
 
       {/* Admin routes */}
