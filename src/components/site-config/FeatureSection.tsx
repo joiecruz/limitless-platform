@@ -61,7 +61,7 @@ export function FeatureSection({
         <img 
           src={imageSrc}
           alt={imageAlt}
-          className="w-full rounded-lg shadow-lg"
+          className="w-full rounded-lg"
         />
       </div>
       {isReversed && (

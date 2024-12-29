@@ -18,7 +18,7 @@ export function Footer() {
               <p className="text-gray-600">Join our newsletter to stay up to date on insights, features, and releases.</p>
               <div className="space-y-2">
                 <Input type="email" placeholder="Enter your email" />
-                <Button className="w-full">Subscribe to our newsletter</Button>
+                <Button className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90">Subscribe to our newsletter</Button>
               </div>
             </div>
           </div>

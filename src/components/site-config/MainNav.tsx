@@ -16,17 +16,17 @@ export function MainNav() {
             </Link>
           </div>
           <nav className="hidden md:flex space-x-8">
-            <Link to="/product" className="text-gray-700 hover:text-primary-600">Product</Link>
-            <Link to="/services" className="text-gray-700 hover:text-primary-600">Services</Link>
-            <Link to="/courses" className="text-gray-700 hover:text-primary-600">Courses</Link>
-            <Link to="/tools" className="text-gray-700 hover:text-primary-600">Tools</Link>
+            <Link to="/product" className="text-gray-700 hover:text-[#393CA0]">Product</Link>
+            <Link to="/services" className="text-gray-700 hover:text-[#393CA0]">Services</Link>
+            <Link to="/courses" className="text-gray-700 hover:text-[#393CA0]">Courses</Link>
+            <Link to="/tools" className="text-gray-700 hover:text-[#393CA0]">Tools</Link>
           </nav>
           <div className="flex items-center space-x-4">
             <Link to="/signin">
               <Button variant="ghost">Log in</Button>
             </Link>
             <Link to="/signup">
-              <Button>Sign up</Button>
+              <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90">Sign up</Button>
             </Link>
           </div>
         </div>
