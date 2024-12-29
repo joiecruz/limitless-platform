@@ -17,7 +17,7 @@ export function InfiniteLogos({ direction = "left", category }: { direction?: "l
         .from('client_logos')
         .select('*')
         .eq('category', category)
-        .order('order_index', { ascending: true });
+        .order('created_at', { ascending: true });
       
       if (error) {
         console.error('Error fetching logos:', error);
@@ -43,6 +43,7 @@ export function InfiniteLogos({ direction = "left", category }: { direction?: "l
           animationDuration: "30s",
           animationIterationCount: "infinite",
           animationTimingFunction: "linear",
+          width: "fit-content", // Add this to ensure proper scrolling
         }}
       >
         {duplicatedLogos.map((logo, index) => (
@@ -54,6 +55,7 @@ export function InfiniteLogos({ direction = "left", category }: { direction?: "l
               src={logo.image_url}
               alt={logo.name}
               className="h-12 w-auto object-contain"
+              loading="lazy"
             />
           </div>
         ))}

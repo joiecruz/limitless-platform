@@ -99,33 +99,27 @@ export type Database = {
       }
       client_logos: {
         Row: {
-          category: string
           created_at: string
           created_by: string | null
           id: string
           image_url: string
           name: string
-          order_index: number | null
           updated_at: string
         }
         Insert: {
-          category?: string
           created_at?: string
           created_by?: string | null
           id?: string
           image_url: string
           name: string
-          order_index?: number | null
           updated_at?: string
         }
         Update: {
-          category?: string
           created_at?: string
           created_by?: string | null
           id?: string
           image_url?: string
           name?: string
-          order_index?: number | null
           updated_at?: string
         }
         Relationships: [
