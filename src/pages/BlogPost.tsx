@@ -35,23 +35,26 @@ export default function BlogPost() {
     <div className="min-h-screen bg-white">
       <MainNav />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {post.cover_image && (
-          <div className="mb-8">
+          <div className="aspect-video w-full mb-12 rounded-lg overflow-hidden">
             <img
               src={post.cover_image}
               alt={post.title}
-              className="w-full h-[400px] object-cover rounded-lg"
+              className="w-full h-full object-cover"
             />
           </div>
         )}
         
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">{post.title}</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
+          {post.title}
+        </h1>
         
-        <div className="prose prose-lg max-w-none">
-          {post.content}
-        </div>
-      </main>
+        <div 
+          className="prose prose-lg max-w-none prose-headings:font-bold prose-p:text-gray-600 prose-a:text-primary-600 prose-img:rounded-lg"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
+      </article>
 
       <CTASection />
       <Footer />
