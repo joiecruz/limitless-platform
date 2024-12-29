@@ -6,6 +6,8 @@ import { BlogSlugInput } from "./components/BlogSlugInput";
 import { BlogExcerptInput } from "./components/BlogExcerptInput";
 import { BlogMetaDescription } from "./components/BlogMetaDescription";
 import { BlogPublishToggle } from "./components/BlogPublishToggle";
+import { BlogCategoriesInput } from "./components/BlogCategoriesInput";
+import { BlogTagsInput } from "./components/BlogTagsInput";
 import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
 
 interface BlogFormProps {
@@ -16,6 +18,8 @@ interface BlogFormProps {
     excerpt?: string;
     meta_description?: string;
     published?: boolean;
+    categories?: string[];
+    tags?: string[];
   };
   onSuccess?: () => void;
   isEdit?: boolean;
@@ -41,6 +45,8 @@ export function BlogForm({
     excerpt: initialData?.excerpt || "",
     meta_description: initialData?.meta_description || "",
     published: initialData?.published || false,
+    categories: initialData?.categories || [],
+    tags: initialData?.tags || [],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -108,6 +114,18 @@ export function BlogForm({
         value={formData.meta_description}
         onChange={(value) => updateFormData("meta_description", value)}
         error={errors.meta_description}
+      />
+
+      <BlogCategoriesInput
+        value={formData.categories}
+        onChange={(value) => updateFormData("categories", value)}
+        error={errors.categories}
+      />
+
+      <BlogTagsInput
+        value={formData.tags}
+        onChange={(value) => updateFormData("tags", value)}
+        error={errors.tags}
       />
 
       <BlogPublishToggle
