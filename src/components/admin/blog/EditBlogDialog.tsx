@@ -133,7 +133,17 @@ export function EditBlogDialog({ blogId, isOpen, onClose, onSuccess }: EditBlogD
                 )}
               />
 
-              <BlogCoverImageInput form={form} blogId={blogId || ''} />
+              <FormField
+                control={form.control}
+                name="cover_image"
+                render={({ field }) => (
+                  <BlogCoverImageInput
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    blogId={blogId || ''}
+                  />
+                )}
+              />
 
               <FormField
                 control={form.control}

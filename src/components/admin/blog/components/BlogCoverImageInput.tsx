@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Label } from "@/components/ui/label";
 
 interface BlogCoverImageInputProps {
   value: string;
@@ -55,16 +55,14 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
   };
 
   return (
-    <FormItem>
-      <FormLabel>Cover Image</FormLabel>
+    <div className="space-y-2">
+      <Label>Cover Image</Label>
       <div className="flex gap-2">
-        <FormControl>
-          <Input 
-            value={value} 
-            onChange={(e) => onChange(e.target.value)} 
-            placeholder="Cover image URL" 
-          />
-        </FormControl>
+        <Input 
+          value={value} 
+          onChange={(e) => onChange(e.target.value)} 
+          placeholder="Cover image URL" 
+        />
         <div className="relative">
           <Input
             type="file"
@@ -91,6 +89,6 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
         </div>
       </div>
       {error && <p className="text-sm text-red-500">{error}</p>}
-    </FormItem>
+    </div>
   );
 }
