@@ -9,6 +9,7 @@ interface BlogPost {
   excerpt: string;
   created_at: string;
   slug: string;
+  cover_image: string;
 }
 
 export function BlogSection() {
@@ -19,7 +20,7 @@ export function BlogSection() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('articles')
-        .select('id, title, excerpt, created_at, slug')
+        .select('id, title, excerpt, created_at, slug, cover_image')
         .eq('published', true)
         .order('created_at', { ascending: false })
         .limit(3);
@@ -61,11 +62,20 @@ export function BlogSection() {
           {blogs?.map((blog) => (
             <div 
               key={blog.id} 
-              className="bg-white rounded-lg overflow-hidden cursor-pointer"
+              className="bg-white rounded-lg overflow-hidden cursor-pointer border border-gray-100 hover:border-[#393CA0]/20 transition-all duration-200 hover:shadow-md"
               onClick={() => navigate(`/blog/${blog.slug}`)}
             >
+              {blog.cover_image && (
+                <div className="aspect-video w-full overflow-hidden">
+                  <img
+                    src={blog.cover_image}
+                    alt={blog.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <div className="p-6 space-y-4">
-                <h3 className="text-xl font-semibold text-gray-900 hover:text-[#393CA0] transition-colors">
+                <h3 className="text-2xl font-semibold text-gray-900 hover:text-[#393CA0] transition-colors">
                   {blog.title}
                 </h3>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
