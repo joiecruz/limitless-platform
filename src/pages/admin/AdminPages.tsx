@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react"; // Added this import
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,7 @@ import { Edit, Trash2, Eye, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 import { CreatePageDialog } from "@/components/admin/pages/CreatePageDialog";
+import { EditPageDialog } from "@/components/admin/pages/EditPageDialog";
 
 interface Page {
   id: string;
@@ -29,7 +30,7 @@ export default function AdminPages() {
   const { toast } = useToast();
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
 
-  const { data: pages, isLoading } = useQuery({
+  const { data: pages, isLoading, refetch } = useQuery({
     queryKey: ['admin-pages'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -70,6 +71,7 @@ export default function AdminPages() {
         title: "Page deleted",
         description: "The page has been successfully deleted.",
       });
+      refetch();
     } catch (error: any) {
       toast({
         title: "Error deleting page",
@@ -170,6 +172,13 @@ export default function AdminPages() {
           </TableBody>
         </Table>
       </div>
+
+      <EditPageDialog
+        pageId={selectedPage}
+        isOpen={!!selectedPage}
+        onClose={() => setSelectedPage(null)}
+        onSuccess={refetch}
+      />
     </div>
   );
 }
