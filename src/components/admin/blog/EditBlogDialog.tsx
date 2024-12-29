@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { BlogCoverImageInput } from "./components/BlogCoverImageInput";
 
 interface BlogFormData {
   title: string;
@@ -132,6 +133,8 @@ export function EditBlogDialog({ blogId, isOpen, onClose, onSuccess }: EditBlogD
                 )}
               />
 
+              <BlogCoverImageInput form={form} blogId={blogId || ''} />
+
               <FormField
                 control={form.control}
                 name="excerpt"
@@ -154,20 +157,6 @@ export function EditBlogDialog({ blogId, isOpen, onClose, onSuccess }: EditBlogD
                     <FormLabel>Meta Description</FormLabel>
                     <FormControl>
                       <Textarea {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="cover_image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cover Image URL</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
