@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,9 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusCircle, Edit, Trash2, Eye, Globe } from "lucide-react";
+import { Edit, Trash2, Eye, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
+import { CreatePageDialog } from "@/components/admin/pages/CreatePageDialog";
 
 interface Page {
   id: string;
@@ -49,14 +49,11 @@ export default function AdminPages() {
   });
 
   const handlePreview = (slug: string) => {
-    // Open preview in new tab
     window.open(`/preview/pages/${slug}`, '_blank');
   };
 
   const handleEdit = (id: string) => {
     setSelectedPage(id);
-    // Navigate to edit page
-    // TODO: Implement page editor
   };
 
   const handleDelete = async (id: string) => {
@@ -98,10 +95,7 @@ export default function AdminPages() {
             Manage your website's landing pages
           </p>
         </div>
-        <Button>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Create New Page
-        </Button>
+        <CreatePageDialog />
       </div>
 
       <div className="rounded-md border">
