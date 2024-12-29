@@ -1,75 +1,75 @@
-import { Routes, Route, Outlet } from "react-router-dom";
-import SignIn from "@/pages/SignIn";
-import SignUp from "@/pages/SignUp";
-import ResetPassword from "@/pages/ResetPassword";
-import VerifyEmail from "@/pages/VerifyEmail";
-import InvitePage from "@/pages/InvitePage";
-import Dashboard from "@/pages/Dashboard";
-import Community from "@/pages/Community";
-import Courses from "@/pages/Courses";
-import Lessons from "@/pages/Lessons";
-import Lesson from "@/pages/Lesson";
-import Tools from "@/pages/Tools";
-import ToolDetails from "@/pages/ToolDetails";
-import Projects from "@/pages/Projects";
-import Settings from "@/pages/Settings";
-import AccountSettings from "@/pages/AccountSettings";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useUser } from "@/hooks/use-user";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { SignupLayout } from "@/components/signup/SignupLayout";
+
+// Auth pages
+import Login from "@/pages/auth/Login";
+import Signup from "@/pages/auth/Signup";
+import ForgotPassword from "@/pages/auth/ForgotPassword";
+import ResetPassword from "@/pages/auth/ResetPassword";
+
+// Admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
-import AdminWorkspaceDetails from "@/pages/admin/AdminWorkspaceDetails";
 import AdminUsers from "@/pages/admin/AdminUsers";
+import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
 import AdminCourses from "@/pages/admin/AdminCourses";
-import RequireAuth from "@/components/auth/RequireAuth";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import AdminLayout from "@/components/admin/AdminLayout";
-import { Session } from "@supabase/supabase-js";
 import AdminPages from "@/pages/admin/AdminPages";
 import AdminContent from "@/pages/admin/AdminContent";
+import AdminCreatePage from "@/pages/admin/AdminCreatePage";
+import AdminEditPage from "@/pages/admin/AdminEditPage";
 
-interface AppRoutesProps {
-  session: Session | null;
-}
+// Dashboard pages
+import Dashboard from "@/pages/dashboard/Dashboard";
+import Courses from "@/pages/dashboard/Courses";
+import Course from "@/pages/dashboard/Course";
+import Lesson from "@/pages/dashboard/Lesson";
+import Settings from "@/pages/dashboard/Settings";
 
-export default function AppRoutes({ session }: AppRoutesProps) {
+// Signup pages
+import SignupFlow from "@/pages/signup/SignupFlow";
+
+export function AppRoutes() {
   return (
     <Routes>
       {/* Auth routes */}
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/invite" element={<InvitePage />} />
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+      </Route>
 
-      {/* Admin routes - separate from DashboardLayout */}
-      <Route element={<RequireAuth><AdminLayout><Outlet /></AdminLayout></RequireAuth>}>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
-        <Route path="/admin/workspaces/:id" element={<AdminWorkspaceDetails />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/courses" element={<AdminCourses />} />
-        <Route path="/admin/pages" element={<AdminPages />} />
-        <Route path="/admin/content" element={<AdminContent />} />
+      {/* Signup flow */}
+      <Route element={<SignupLayout />}>
+        <Route path="/welcome" element={<SignupFlow />} />
+      </Route>
+
+      {/* Admin routes */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="workspaces" element={<AdminWorkspaces />} />
+        <Route path="courses" element={<AdminCourses />} />
+        <Route path="pages" element={<AdminPages />} />
+        <Route path="pages/new" element={<AdminCreatePage />} />
+        <Route path="pages/:id/edit" element={<AdminEditPage />} />
+        <Route path="content" element={<AdminContent />} />
       </Route>
 
       {/* Dashboard routes */}
-      <Route element={<RequireAuth><DashboardLayout><Outlet /></DashboardLayout></RequireAuth>}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/courses/:courseId/lessons" element={<Lessons />} />
-        <Route path="/tools" element={<Tools />} />
-        <Route path="/tools/:toolId" element={<ToolDetails />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/account-settings" element={<AccountSettings />} />
+      <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="courses" element={<Courses />} />
+        <Route path="courses/:courseId" element={<Course />} />
+        <Route path="courses/:courseId/lessons/:lessonId" element={<Lesson />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
 
-      {/* Individual lesson page outside DashboardLayout */}
-      <Route 
-        path="/courses/:courseId/lessons/:lessonId" 
-        element={<RequireAuth><Lesson /></RequireAuth>} 
-      />
+      {/* Redirect root to dashboard */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
