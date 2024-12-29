@@ -12,6 +12,7 @@ export function InfiniteLogos({ direction = "left" }: { direction?: "left" | "ri
 
   useEffect(() => {
     async function fetchLogos() {
+      console.log('Fetching logos...');
       const { data, error } = await supabase
         .from('client_logos')
         .select('*')
@@ -22,16 +23,24 @@ export function InfiniteLogos({ direction = "left" }: { direction?: "left" | "ri
         return;
       }
       
+      console.log('Fetched logos:', data);
       setLogos(data || []);
     }
 
     fetchLogos();
   }, []);
 
-  if (logos.length === 0) return null;
+  // Add debug log for render
+  console.log('Current logos state:', logos);
+
+  if (logos.length === 0) {
+    console.log('No logos found, returning null');
+    return null;
+  }
 
   // Double the logos array to create seamless loop
   const duplicatedLogos = [...logos, ...logos];
+  console.log('Duplicated logos:', duplicatedLogos);
 
   return (
     <div className="relative flex overflow-hidden py-4 bg-background">
@@ -41,7 +50,7 @@ export function InfiniteLogos({ direction = "left" }: { direction?: "left" | "ri
           animationDuration: "30s",
           animationIterationCount: "infinite",
           animationTimingFunction: "linear",
-          width: "fit-content", // Add this to ensure proper scrolling
+          width: "fit-content",
         }}
       >
         {duplicatedLogos.map((logo, index) => (
