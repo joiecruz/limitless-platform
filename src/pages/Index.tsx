@@ -24,7 +24,7 @@ export default function Index() {
               <Button 
                 size="lg"
                 onClick={() => navigate("/signup")}
-                className="px-8 bg-primary hover:bg-secondary"
+                className="px-8 bg-primary hover:bg-primary/90 transition-colors duration-200"
               >
                 Create account
               </Button>
@@ -32,7 +32,7 @@ export default function Index() {
                 size="lg"
                 variant="outline"
                 onClick={() => navigate("/services")}
-                className="px-8 text-primary border-primary hover:bg-accent"
+                className="px-8 text-primary border-primary hover:bg-primary/5 transition-colors duration-200"
               >
                 Explore services
               </Button>
@@ -53,11 +53,11 @@ export default function Index() {
       {/* Logo Sections */}
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-8">
+          <div className="space-y-12">
             {/* Client Logos */}
             <div>
-              <h2 className="text-center text-lg font-semibold text-gray-600 mb-8">
-                Trusted by innovative companies
+              <h2 className="text-center text-2xl font-semibold text-gray-900 mb-8">
+                Join the growing network of organizations innovating for social good
               </h2>
               <InfiniteLogos category="client" direction="left" />
             </div>
