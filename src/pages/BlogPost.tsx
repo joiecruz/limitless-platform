@@ -107,9 +107,12 @@ export default function BlogPost() {
 
         {/* Article Content */}
         <div className="prose prose-lg max-w-none">
-          {article.content.split('\n').map((paragraph, index) => (
-            paragraph ? <p key={index}>{paragraph}</p> : <br key={index} />
-          ))}
+          <div 
+            dangerouslySetInnerHTML={{ 
+              __html: article.content.replace(/\n/g, '<br />') 
+            }} 
+            className="leading-relaxed"
+          />
         </div>
 
         {/* Tags Section */}
