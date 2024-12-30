@@ -30,7 +30,7 @@ export default function Product() {
             </div>
             <div>
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Website_Assets__3_.png"
+                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product.png"
                 alt="Innovation Platform Interface"
                 className="w-full rounded-lg"
               />
@@ -56,9 +56,9 @@ export default function Product() {
             </div>
             <div>
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product-Empathize.png"
+                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Website_Assets__3_.png"
                 alt="Innovation Journey"
-                className="w-full rounded-lg shadow-lg"
+                className="w-full rounded-lg"
               />
             </div>
           </div>
