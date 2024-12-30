@@ -2,8 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ProfileMenu } from "@/components/layout/ProfileMenu";
-import { ProfileDisplay } from "@/components/layout/ProfileDisplay";
+import { WebNavProfileMenu } from "@/components/layout/WebNavProfileMenu";
 
 export function MainNav() {
   const { data: session } = useQuery({
@@ -69,16 +68,11 @@ export function MainNav() {
           </nav>
           <div className="flex items-center space-x-4">
             {session ? (
-              <div className="w-[200px]">
-                <ProfileMenu>
-                  <ProfileDisplay
-                    avatarUrl={profile?.avatar_url || getDefaultAvatar()}
-                    initials={getInitials()}
-                    displayName={getDisplayName()}
-                    email={session.email || ''}
-                  />
-                </ProfileMenu>
-              </div>
+              <WebNavProfileMenu
+                avatarUrl={profile?.avatar_url || getDefaultAvatar()}
+                initials={getInitials()}
+                displayName={getDisplayName()}
+              />
             ) : (
               <>
                 <Link to="/signin">
