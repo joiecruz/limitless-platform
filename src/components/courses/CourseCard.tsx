@@ -13,6 +13,7 @@ interface Course {
   lesson_count: number;
   enrollee_count: number;
   locked: boolean;
+  format: string;
 }
 
 interface CourseCardProps {
@@ -108,6 +109,7 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
         enrolleeCount={actualCounts?.enrolleeCount || 0}
         isEnrolled={!!enrollment}
         isLocked={!isAccessible}
+        format={course.format}
       />
       {isAuthenticated && (
         <CardContent className="space-y-4">

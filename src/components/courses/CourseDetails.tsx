@@ -1,4 +1,4 @@
-import { BookOpen, Users } from "lucide-react";
+import { BookOpen, Users, Badge } from "lucide-react";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CourseDetailsProps {
@@ -8,6 +8,7 @@ interface CourseDetailsProps {
   enrolleeCount: number;
   isEnrolled: boolean;
   isLocked: boolean;
+  format?: string;
 }
 
 const CourseDetails = ({ 
@@ -16,11 +17,18 @@ const CourseDetails = ({
   lessonCount, 
   enrolleeCount,
   isEnrolled,
-  isLocked
+  isLocked,
+  format = 'Online'
 }: CourseDetailsProps) => {
   return (
     <>
       <CardHeader>
+        {format && (
+          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+            <Badge className="h-4 w-4" />
+            <span>{format}</span>
+          </div>
+        )}
         <CardTitle className="leading-[1.2]">{title}</CardTitle>
         <CardDescription className="line-clamp-2">{description}</CardDescription>
       </CardHeader>
