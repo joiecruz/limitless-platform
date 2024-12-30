@@ -31,15 +31,15 @@ export default function BlogPost() {
     }
   });
 
-  // Extract first two sentences for meta description
   const getMetaDescription = (content: string | null | undefined): string => {
-    if (!content) return '';
+    if (!content || typeof content !== 'string') return '';
     
     try {
       const sentences = content.split(/[.!?]+/).filter(sentence => 
         sentence && sentence.trim().length > 0
       );
-      return sentences.slice(0, 2).join('. ').trim() + '.';
+      const description = sentences.slice(0, 2).join('. ').trim();
+      return description ? description + '.' : '';
     } catch {
       return '';
     }
@@ -60,18 +60,21 @@ export default function BlogPost() {
   const wordCount = post.content.split(/\s+/).length;
   const readTime = Math.ceil(wordCount / 200);
 
+  const title = post?.title ? String(post.title) : 'Blog Post';
+  const metaDescription = getMetaDescription(post?.content);
+
   return (
     <div className="min-h-screen bg-white">
       <Helmet defer={false}>
-        <title>{post.title || 'Blog Post'}</title>
-        <meta name="description" content={getMetaDescription(post.content)} />
-        <meta property="og:title" content={post.title || 'Blog Post'} />
-        <meta property="og:description" content={getMetaDescription(post.content)} />
+        <title>{title}</title>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={metaDescription} />
         {post.cover_image && (
           <>
-            <meta property="og:image" content={post.cover_image} />
+            <meta property="og:image" content={String(post.cover_image)} />
             <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:image" content={post.cover_image} />
+            <meta name="twitter:image" content={String(post.cover_image)} />
           </>
         )}
       </Helmet>
