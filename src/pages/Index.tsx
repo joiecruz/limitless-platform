@@ -58,7 +58,7 @@ export default function Index() {
       {/* Logo Sections */}
       <div className="py-8">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-gray-900">
             Join the growing network of organizations innovating for social good
           </h2>
         </div>
