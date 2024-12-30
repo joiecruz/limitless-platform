@@ -15,35 +15,33 @@ export function InfiniteLogos({ direction = "left" }: InfiniteLogosProps) {
   }
 
   return (
-    <div className="w-full overflow-hidden bg-transparent py-4">
-      <div className="max-w-7xl mx-auto">
-        <Swiper
-          modules={[Autoplay]}
-          slidesPerView="auto"
-          loop={true}
-          speed={8000}
-          autoplay={{
-            delay: 0,
-            disableOnInteraction: false,
-            reverseDirection: direction === "right",
-            pauseOnMouseEnter: false
-          }}
-          spaceBetween={24}
-          className="!flex items-center"
-          allowTouchMove={false}
-        >
-          {logos.map((logo) => (
-            <SwiperSlide key={logo.id} className="!w-auto">
-              <img
-                src={logo.image_url}
-                alt={logo.name}
-                className="h-10 w-auto object-contain"
-                loading="lazy"
-              />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
+    <div className="w-full overflow-hidden">
+      <Swiper
+        modules={[Autoplay]}
+        slidesPerView="auto"
+        loop={true}
+        speed={8000}
+        autoplay={{
+          delay: 0,
+          disableOnInteraction: false,
+          reverseDirection: direction === "right",
+          pauseOnMouseEnter: false
+        }}
+        spaceBetween={24}
+        className="!flex items-center"
+        allowTouchMove={false}
+      >
+        {logos.map((logo) => (
+          <SwiperSlide key={logo.id} className="!w-auto">
+            <img
+              src={logo.image_url}
+              alt={logo.name}
+              className="h-10 w-auto object-contain grayscale opacity-70"
+              loading="lazy"
+            />
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </div>
   );
 }

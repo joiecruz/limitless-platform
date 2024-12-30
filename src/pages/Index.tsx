@@ -54,22 +54,15 @@ export default function Index() {
       </div>
 
       {/* Logo Sections */}
-      <div className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="space-y-12">
-            {/* Client Logos */}
-            <div>
-              <h2 className="text-center text-2xl font-semibold text-gray-900 mb-8">
-                Join the growing network of organizations innovating for social good
-              </h2>
-              <InfiniteLogos direction="left" />
-            </div>
-
-            {/* User Logos */}
-            <div>
-              <InfiniteLogos direction="right" />
-            </div>
-          </div>
+      <div className="py-8">
+        <div className="mb-8 text-center">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Join the growing network of organizations innovating for social good
+          </h2>
+        </div>
+        <div className="space-y-4">
+          <InfiniteLogos direction="left" />
+          <InfiniteLogos direction="right" />
         </div>
       </div>
 
