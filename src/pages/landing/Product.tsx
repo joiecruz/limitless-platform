@@ -40,26 +40,26 @@ export default function Product() {
       </section>
 
       {/* Creativity Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Boost your team's creativity with a simpler innovation journey
-              </h2>
-              <p className="text-xl text-gray-600 mb-6">
-                Create and implement new ideas faster and better with our guided and structured innovation workflows designed for corporate teams, SMEs, and government innovators.
-              </p>
-              <p className="text-xl text-gray-600">
-                Our platform simplifies the process from user research, ideation, to implementation, ensuring that every idea has the best chance to thrive.
-              </p>
-            </div>
             <div>
               <img
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Website_Assets__3_.png"
                 alt="Innovation Journey"
                 className="w-full rounded-lg"
               />
+            </div>
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                Leverage both the power of design thinking and AI
+              </h2>
+              <p className="text-xl text-gray-600 mb-6">
+                Blend creativity and AI to create meaningful solutions.
+              </p>
+              <p className="text-xl text-gray-600">
+                Limitless Lab helps you uncover opportunities, refine ideas, and turn them into impactful results with ease.
+              </p>
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function Product() {
               <img
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Screenshot_2024-11-15_at_2.36.42_PM.png"
                 alt="AI Integration"
-                className="w-full rounded-lg shadow-lg"
+                className="w-full rounded-lg"
               />
             </div>
           </div>
