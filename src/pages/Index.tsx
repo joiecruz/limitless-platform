@@ -19,13 +19,13 @@ export default function Index() {
       {/* Hero Section - Adjusted spacing */}
       <div className="pt-20 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
+          <div className="text-center mb-4">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
               The all-in-one platform<br />
               empowering innovators to turn<br />
               ideas into real impact
             </h1>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-4 mb-6">
               <Button 
                 size="lg"
                 onClick={() => navigate("/signup")}
