@@ -61,22 +61,22 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       {/* Landing/Website Pages */}
       <Route path="/product" element={<Product />} />
       <Route path="/services" element={<Services />} />
-      <Route path="/courses-overview" element={<CoursesLanding />} />
-      <Route path="/tools-overview" element={<ToolsLanding />} />
+      <Route path="/courses" element={<CoursesLanding />} />
+      <Route path="/tools" element={<ToolsLanding />} />
       <Route path="/blog" element={<Blog />} />
 
       {/* Protected user routes */}
       <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/courses/:courseId/lessons" element={<Lessons />} />
-        <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
-        <Route path="/tools" element={<Tools />} />
-        <Route path="/tools/:id" element={<ToolDetails />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/account-settings" element={<AccountSettings />} />
+        <Route path="/dashboard/projects" element={<Projects />} />
+        <Route path="/dashboard/courses" element={<Courses />} />
+        <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />
+        <Route path="/dashboard/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
+        <Route path="/dashboard/tools" element={<Tools />} />
+        <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
+        <Route path="/dashboard/community" element={<Community />} />
+        <Route path="/dashboard/settings" element={<Settings />} />
+        <Route path="/dashboard/account-settings" element={<AccountSettings />} />
       </Route>
 
       {/* Protected admin routes */}
