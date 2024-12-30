@@ -9,10 +9,10 @@ interface InfiniteLogosProps {
 export function InfiniteLogos({ direction = "left" }: InfiniteLogosProps) {
   const { data: logos, isLoading } = useClientLogos();
 
-  console.log('Logos data:', logos); // Add this to debug
+  console.log('Logos data:', logos);
 
   return (
-    <div className="relative w-full overflow-hidden bg-transparent">
+    <div className="relative w-screen overflow-hidden bg-transparent -mx-4 sm:-mx-6 lg:-mx-8">
       <div
         className={`flex animate-scroll-${direction}`}
         style={{

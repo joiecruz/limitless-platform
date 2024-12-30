@@ -20,7 +20,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", ...fontFamily.sans],
+        sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -84,10 +84,10 @@ export default {
         },
         "scroll-left": {
           from: { transform: "translateX(0)" },
-          to: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(-50%)" },
         },
         "scroll-right": {
-          from: { transform: "translateX(-100%)" },
+          from: { transform: "translateX(-50%)" },
           to: { transform: "translateX(0)" },
         },
       },
