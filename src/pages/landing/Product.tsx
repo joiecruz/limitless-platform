@@ -1,6 +1,7 @@
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
+import { CTASection } from "@/components/site-config/CTASection";
 
 export default function Product() {
   return (
@@ -71,19 +72,19 @@ export default function Product() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Leverage both the power of design thinking and AI
+                Boost your team's creativity with a simpler innovation journey
               </h2>
               <p className="text-xl text-gray-600 mb-6">
-                Blend creativity and AI to create meaningful solutions.
+                Create and implement new ideas faster and better with our guided and structured innovation workflows designed for corporate teams, SMEs, and government innovators.
               </p>
               <p className="text-xl text-gray-600">
-                Limitless Lab helps you uncover opportunities, refine ideas, and turn them into impactful results with ease.
+                Our platform simplifies the process from user research, ideation, to implementation, ensuring that every idea has the best chance to thrive.
               </p>
             </div>
             <div>
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Screenshot_2024-11-15_at_2.36.42_PM.png"
-                alt="AI Integration"
+                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product-Empathize.png"
+                alt="Innovation Platform Interface"
                 className="w-full rounded-lg"
               />
             </div>
@@ -91,24 +92,7 @@ export default function Product() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-primary-600 text-white text-center">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold mb-4">
-            Start innovating for
-          </h2>
-          <p className="text-5xl font-bold text-[#40E0D0] mb-8">
-            impact today
-          </p>
-          <Button
-            variant="secondary"
-            size="lg"
-            className="text-primary-700 bg-white hover:bg-gray-100"
-          >
-            Register for free
-          </Button>
-        </div>
-      </section>
+      <CTASection />
 
       <Footer />
     </div>
