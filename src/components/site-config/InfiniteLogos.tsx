@@ -9,12 +9,14 @@ interface InfiniteLogosProps {
 export function InfiniteLogos({ direction = "left" }: InfiniteLogosProps) {
   const { data: logos, isLoading } = useClientLogos();
 
+  console.log('Logos data:', logos); // Add this to debug
+
   return (
     <div className="relative w-full overflow-hidden bg-transparent">
       <div
-        className={`flex min-w-full animate-scroll-${direction}`}
+        className={`flex animate-scroll-${direction}`}
         style={{
-          width: "fit-content",
+          width: "max-content",
           animationDuration: "30s",
           animationIterationCount: "infinite",
           animationTimingFunction: "linear",
