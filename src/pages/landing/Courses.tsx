@@ -4,6 +4,7 @@ import CourseCard from "@/components/courses/CourseCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { TestimonialsSection } from "@/components/site-config/TestimonialsSection";
 
 export default function Courses() {
   const { toast } = useToast();
@@ -14,6 +15,7 @@ export default function Courses() {
       const { data, error } = await supabase
         .from('courses')
         .select('*')
+        .in('format', ['Online', 'Hybrid'])
         .limit(3);
       
       if (error) {
@@ -88,6 +90,9 @@ export default function Courses() {
           </div>
         </div>
       </div>
+      
+      {/* Testimonials Section */}
+      <TestimonialsSection />
       
       {/* Course List Section */}
       <div className="py-12 px-4 sm:px-6 lg:px-8">
