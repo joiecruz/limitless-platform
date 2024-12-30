@@ -26,11 +26,9 @@ const CourseEnrollment = ({
   const handleEnroll = async () => {
     console.log('Starting enrollment process');
     try {
-      // Create enrollment in database
       await onEnroll();
       console.log('Enrollment successful');
       
-      // Show success toast
       toast({
         title: "Successfully enrolled!",
         description: `You are now enrolled in ${courseTitle || "this course"}`,
@@ -49,8 +47,8 @@ const CourseEnrollment = ({
     return (
       <div className="space-y-4">
         <CourseProgress progress={progress} />
-        <Link to={`/courses/${courseId}/lessons`} className="block w-full">
-          <Button className="w-full">
+        <Link to={`/dashboard/courses/${courseId}/lessons`} className="block w-full">
+          <Button className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90">
             {progress === 0 ? "Start Learning" : "Continue Learning"}
             <ArrowRight className="ml-2" />
           </Button>
@@ -61,7 +59,7 @@ const CourseEnrollment = ({
 
   return (
     <Button 
-      className="w-full"
+      className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90"
       onClick={handleEnroll}
       disabled={isEnrolling}
     >
