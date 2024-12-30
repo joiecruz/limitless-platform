@@ -60,6 +60,15 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
     },
   });
 
+  // Check if user is authenticated
+  const { data: isAuthenticated } = useQuery({
+    queryKey: ["isAuthenticated"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return !!session;
+    },
+  });
+
   // Fetch actual counts
   const { data: actualCounts } = useQuery({
     queryKey: ["course-counts", course.id],
@@ -100,17 +109,19 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
         isEnrolled={!!enrollment}
         isLocked={!isAccessible}
       />
-      <CardContent className="space-y-4">
-        <CourseActions 
-          courseId={course.id}
-          courseTitle={course.title}
-          isLocked={!isAccessible}
-          isEnrolled={!!enrollment}
-          progress={enrollment?.progress}
-          onEnroll={onEnroll}
-          isEnrolling={isEnrolling}
-        />
-      </CardContent>
+      {isAuthenticated && (
+        <CardContent className="space-y-4">
+          <CourseActions 
+            courseId={course.id}
+            courseTitle={course.title}
+            isLocked={!isAccessible}
+            isEnrolled={!!enrollment}
+            progress={enrollment?.progress}
+            onEnroll={onEnroll}
+            isEnrolling={isEnrolling}
+          />
+        </CardContent>
+      )}
     </Card>
   );
 };
