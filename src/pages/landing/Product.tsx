@@ -12,21 +12,27 @@ export default function Product() {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
-                Track impact, align with the SDGs, and achieve your goals
+              <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                Innovation is messy.
+                <br />
+                Make it easier.
               </h1>
-              <p className="text-xl text-gray-600 mb-6">
-                Make data-driven decisions using our impact measurement tools. Monitor the success of your innovation projects and align them with the Sustainable Development Goals (SDGs).
+              <p className="text-xl text-gray-600 mb-8">
+                Our innovation platform helps you manage the risks of your projects with tried-and-tested workflows, giving you the tools to streamline your process and significantly increase your chances of success.
               </p>
-              <p className="text-xl text-gray-600">
-                Whether you're a corporate innovator, a small business, or a government entity, our tools help you quantify your contributions and track your impact.
-              </p>
+              <Button
+                variant="default"
+                size="lg"
+                className="bg-[#393CA0] hover:bg-[#2F3282] text-white px-8"
+              >
+                Try for free
+              </Button>
             </div>
             <div>
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product.png"
-                alt="Impact Dashboard"
-                className="w-full rounded-lg shadow-lg"
+                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Website_Assets__3_.png"
+                alt="Innovation Platform Interface"
+                className="w-full rounded-lg"
               />
             </div>
           </div>
