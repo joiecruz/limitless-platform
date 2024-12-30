@@ -1,8 +1,35 @@
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import CoursePreviewCard from "@/components/courses/CoursePreviewCard";
+import CourseCard from "@/components/courses/CourseCard";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Courses() {
+  const { toast } = useToast();
+
+  const { data: courses } = useQuery({
+    queryKey: ["featured-courses"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .limit(3);
+      
+      if (error) {
+        console.error('Error fetching courses:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load courses. Please try again later.",
+          variant: "destructive",
+        });
+        return [];
+      }
+      
+      return data;
+    },
+  });
+
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
@@ -45,23 +72,19 @@ export default function Courses() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <CoursePreviewCard
-              title="Certified Social Innovation Facilitator Program™"
-              lessonCount={12}
-              duration="30 hours"
-            />
-            
-            <CoursePreviewCard
-              title="Design Thinking for Social Innovation"
-              lessonCount={5}
-              duration="2 hours"
-            />
-            
-            <CoursePreviewCard
-              title="LimitlessGov: Human-Centered and AI-Powered Good Governance"
-              lessonCount={12}
-              duration="30 hours"
-            />
+            {courses?.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                onEnroll={() => {
+                  toast({
+                    title: "Coming Soon",
+                    description: "Course enrollment will be available soon.",
+                  });
+                }}
+                isEnrolling={false}
+              />
+            ))}
           </div>
         </div>
       </div>
