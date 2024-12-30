@@ -1,7 +1,6 @@
 import { useClientLogos } from "./hooks/useClientLogos";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay } from 'swiper/modules';
-import 'swiper/css';
+import { useEffect, useRef } from 'react';
+import { cn } from "@/lib/utils";
 
 interface InfiniteLogosProps {
   direction?: "left" | "right";
@@ -10,6 +9,7 @@ interface InfiniteLogosProps {
 
 export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }: InfiniteLogosProps) {
   const { data: logos, isLoading } = useClientLogos();
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   if (isLoading || !logos) {
     return null;
@@ -28,37 +28,53 @@ export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }:
       : !rectangularLogos.includes(logo.name)
   );
 
-  // Triple the logos array to ensure smooth infinite scrolling
-  const tripledLogos = [...filteredLogos, ...filteredLogos, ...filteredLogos];
+  // Quadruple the logos array to ensure smooth infinite scrolling
+  const quadrupledLogos = [...filteredLogos, ...filteredLogos, ...filteredLogos, ...filteredLogos];
 
   return (
-    <div className="w-full overflow-hidden">
-      <Swiper
-        modules={[Autoplay]}
-        slidesPerView="auto"
-        loop={true}
-        speed={20000}
-        autoplay={{
-          delay: 0,
-          disableOnInteraction: false,
-          reverseDirection: direction === "right",
-          pauseOnMouseEnter: false
-        }}
-        spaceBetween={48}
-        className="!flex items-center"
-        allowTouchMove={false}
+    <div className="relative flex w-full overflow-hidden">
+      <div
+        ref={scrollerRef}
+        className={cn(
+          "flex min-w-full gap-12 py-4",
+          direction === "left" ? "animate-scroll-left" : "animate-scroll-right"
+        )}
       >
-        {tripledLogos.map((logo, index) => (
-          <SwiperSlide key={`${logo.id}-${index}`} className="!w-auto">
+        {quadrupledLogos.map((logo, index) => (
+          <div
+            key={`${logo.id}-${index}`}
+            className="flex-shrink-0"
+          >
             <img
               src={logo.image_url}
               alt={logo.name}
-              className="h-16 w-auto object-contain"
+              className="h-20 w-auto object-contain"
               loading="lazy"
             />
-          </SwiperSlide>
+          </div>
         ))}
-      </Swiper>
+      </div>
+      <div
+        className={cn(
+          "flex min-w-full gap-12 py-4",
+          direction === "left" ? "animate-scroll-left" : "animate-scroll-right"
+        )}
+        aria-hidden="true"
+      >
+        {quadrupledLogos.map((logo, index) => (
+          <div
+            key={`${logo.id}-clone-${index}`}
+            className="flex-shrink-0"
+          >
+            <img
+              src={logo.image_url}
+              alt={logo.name}
+              className="h-20 w-auto object-contain"
+              loading="lazy"
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
