@@ -45,7 +45,7 @@ export default function Index() {
           </div>
           
           {/* Hero Image */}
-          <div className="relative">
+          <div className="relative -mt-[30px]">
             <img 
               src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z"
               alt="Limitless Lab Platform"
