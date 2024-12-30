@@ -33,9 +33,15 @@ export default function BlogPost() {
   });
 
   // Extract first two sentences for meta description
-  const getMetaDescription = (content: string) => {
-    const sentences = content.split(/[.!?]+/);
-    return sentences.slice(0, 2).join('. ').trim() + '.';
+  const getMetaDescription = (content: string | null | undefined): string => {
+    if (!content) return '';
+    try {
+      const sentences = content.split(/[.!?]+/).filter(Boolean);
+      return sentences.slice(0, 2).join('. ').trim() + '.';
+    } catch (error) {
+      console.error('Error generating meta description:', error);
+      return '';
+    }
   };
 
   if (isLoading) {
@@ -57,9 +63,9 @@ export default function BlogPost() {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>{post.title}</title>
+        <title>{post.title || 'Blog Post'}</title>
         <meta name="description" content={getMetaDescription(post.content)} />
-        <meta property="og:title" content={post.title} />
+        <meta property="og:title" content={post.title || 'Blog Post'} />
         <meta property="og:description" content={getMetaDescription(post.content)} />
         {post.cover_image && (
           <>
