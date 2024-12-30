@@ -1,5 +1,4 @@
 import { useClientLogos } from "./hooks/useClientLogos";
-import { useEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
 
 interface InfiniteLogosProps {
@@ -9,7 +8,6 @@ interface InfiniteLogosProps {
 
 export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }: InfiniteLogosProps) {
   const { data: logos, isLoading } = useClientLogos();
-  const scrollerRef = useRef<HTMLDivElement>(null);
 
   if (isLoading || !logos) {
     return null;
@@ -32,12 +30,12 @@ export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }:
   const quadrupledLogos = [...filteredLogos, ...filteredLogos, ...filteredLogos, ...filteredLogos];
 
   return (
-    <div className="relative flex w-full overflow-hidden">
+    <div className="relative flex w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_20%,white_80%,transparent)]">
       <div
-        ref={scrollerRef}
         className={cn(
-          "flex min-w-full gap-12 py-4",
-          direction === "left" ? "animate-scroll-left" : "animate-scroll-right"
+          "flex min-w-full shrink-0 gap-12 py-4",
+          direction === "left" ? "animate-scroll-left" : "animate-scroll-right",
+          "absolute top-0 left-0"
         )}
       >
         {quadrupledLogos.map((logo, index) => (
@@ -56,8 +54,9 @@ export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }:
       </div>
       <div
         className={cn(
-          "flex min-w-full gap-12 py-4",
-          direction === "left" ? "animate-scroll-left" : "animate-scroll-right"
+          "flex min-w-full shrink-0 gap-12 py-4",
+          direction === "left" ? "animate-scroll-left" : "animate-scroll-right",
+          "absolute top-0 left-[100%]"
         )}
         aria-hidden="true"
       >

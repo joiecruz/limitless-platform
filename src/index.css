@@ -54,3 +54,20 @@
   @apply p-6 transition-all duration-200 bg-white border rounded-xl;
   @apply hover:border-[#393CA0]/20 hover:shadow-md hover:shadow-[#393CA0]/5 hover:translate-y-[-2px];
 }
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-scroll-left {
+  animation: scroll 20s linear infinite;
+}
+
+.animate-scroll-right {
+  animation: scroll 20s linear infinite reverse;
+}

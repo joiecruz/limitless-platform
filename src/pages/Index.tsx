@@ -6,6 +6,8 @@ import { InfiniteLogos } from "@/components/site-config/InfiniteLogos";
 import { Features } from "@/components/site-config/Features";
 import { BlogSection } from "@/components/site-config/BlogSection";
 import { CTASection } from "@/components/site-config/CTASection";
+import { LoadingPage } from "@/components/common/LoadingPage";
+import { Suspense } from "react";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -56,21 +58,27 @@ export default function Index() {
       {/* Logo Sections */}
       <div className="py-8">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-semibold text-gray-900">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-900">
             Join the growing network of organizations innovating for social good
           </h2>
         </div>
-        <div className="space-y-4">
-          <InfiniteLogos direction="left" logoGroup="rectangular" />
-          <InfiniteLogos direction="right" logoGroup="square" />
-        </div>
+        <Suspense fallback={<LoadingPage />}>
+          <div className="space-y-4">
+            <InfiniteLogos direction="left" logoGroup="rectangular" />
+            <InfiniteLogos direction="right" logoGroup="square" />
+          </div>
+        </Suspense>
       </div>
 
       {/* Features Section */}
-      <Features />
+      <Suspense fallback={<LoadingPage />}>
+        <Features />
+      </Suspense>
 
       {/* Blog Section */}
-      <BlogSection />
+      <Suspense fallback={<LoadingPage />}>
+        <BlogSection />
+      </Suspense>
 
       {/* CTA Section */}
       <CTASection />
