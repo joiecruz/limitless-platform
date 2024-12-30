@@ -84,10 +84,10 @@ export default {
         },
         "scroll-left": {
           from: { transform: "translateX(0)" },
-          to: { transform: "translateX(-50%)" },
+          to: { transform: "translateX(-100%)" },
         },
         "scroll-right": {
-          from: { transform: "translateX(-50%)" },
+          from: { transform: "translateX(-100%)" },
           to: { transform: "translateX(0)" },
         },
       },
