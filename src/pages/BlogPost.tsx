@@ -7,6 +7,7 @@ import { CTASection } from "@/components/site-config/CTASection";
 import { format } from "date-fns";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { Helmet } from "react-helmet";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -31,6 +32,12 @@ export default function BlogPost() {
     }
   });
 
+  // Extract first two sentences for meta description
+  const getMetaDescription = (content: string) => {
+    const sentences = content.split(/[.!?]+/);
+    return sentences.slice(0, 2).join('. ').trim() + '.';
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -49,6 +56,20 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>{post.title}</title>
+        <meta name="description" content={getMetaDescription(post.content)} />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={getMetaDescription(post.content)} />
+        {post.cover_image && (
+          <>
+            <meta property="og:image" content={post.cover_image} />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:image" content={post.cover_image} />
+          </>
+        )}
+      </Helmet>
+      
       <MainNav />
       
       <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
