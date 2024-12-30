@@ -12,6 +12,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function Blog() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,10 +65,14 @@ export default function Blog() {
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious 
+                        <Button
+                          variant="outline"
                           onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                           disabled={currentPage === 1}
-                        />
+                          className="gap-2"
+                        >
+                          Previous
+                        </Button>
                       </PaginationItem>
                       
                       {[...Array(totalPages)].map((_, i) => (
@@ -82,10 +87,14 @@ export default function Blog() {
                       ))}
 
                       <PaginationItem>
-                        <PaginationNext 
+                        <Button
+                          variant="outline"
                           onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                           disabled={currentPage === totalPages}
-                        />
+                          className="gap-2"
+                        >
+                          Next
+                        </Button>
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
