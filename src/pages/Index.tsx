@@ -16,11 +16,11 @@ export default function Index() {
     <div className="min-h-screen bg-white">
       <MainNav />
       
-      {/* Hero Section - Adjusted spacing */}
-      <div className="pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+      {/* Hero Section */}
+      <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-8">
               The all-in-one platform<br />
               empowering innovators to turn<br />
               ideas into real impact
@@ -44,12 +44,12 @@ export default function Index() {
             </div>
           </div>
           
-          {/* Hero Image - Adjusted container */}
-          <div className="relative max-h-[calc(100vh-400px)] overflow-hidden rounded-lg">
+          {/* Hero Image */}
+          <div className="relative">
             <img 
               src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z"
               alt="Limitless Lab Platform"
-              className="w-full h-full object-contain"
+              className="w-full rounded-lg"
             />
           </div>
         </div>
