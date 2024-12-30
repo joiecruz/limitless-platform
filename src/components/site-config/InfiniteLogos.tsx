@@ -15,31 +15,35 @@ export function InfiniteLogos({ direction = "left" }: InfiniteLogosProps) {
   }
 
   return (
-    <div className="w-full overflow-hidden bg-transparent py-8">
-      <Swiper
-        modules={[Autoplay]}
-        slidesPerView="auto"
-        loop={true}
-        speed={3000}
-        autoplay={{
-          delay: 0,
-          disableOnInteraction: false,
-          reverseDirection: direction === "right"
-        }}
-        spaceBetween={32}
-        className="!flex items-center"
-      >
-        {logos.map((logo) => (
-          <SwiperSlide key={logo.id} className="!w-auto">
-            <img
-              src={logo.image_url}
-              alt={logo.name}
-              className="h-12 w-auto object-contain"
-              loading="lazy"
-            />
-          </SwiperSlide>
-        ))}
-      </Swiper>
+    <div className="w-full overflow-hidden bg-transparent py-4">
+      <div className="max-w-7xl mx-auto">
+        <Swiper
+          modules={[Autoplay]}
+          slidesPerView="auto"
+          loop={true}
+          speed={8000}
+          autoplay={{
+            delay: 0,
+            disableOnInteraction: false,
+            reverseDirection: direction === "right",
+            pauseOnMouseEnter: false
+          }}
+          spaceBetween={24}
+          className="!flex items-center"
+          allowTouchMove={false}
+        >
+          {logos.map((logo) => (
+            <SwiperSlide key={logo.id} className="!w-auto">
+              <img
+                src={logo.image_url}
+                alt={logo.name}
+                className="h-10 w-auto object-contain"
+                loading="lazy"
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
     </div>
   );
 }
