@@ -6,6 +6,7 @@ import { Footer } from "@/components/site-config/Footer";
 import { CTASection } from "@/components/site-config/CTASection";
 import { format } from "date-fns";
 import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -31,7 +32,11 @@ export default function BlogPost() {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-[#393CA0] animate-spin" />
+      </div>
+    );
   }
 
   if (!post) {
@@ -47,21 +52,7 @@ export default function BlogPost() {
       <MainNav />
       
       <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-        {post.cover_image && (
-          <div className="aspect-video w-full mb-12 rounded-lg overflow-hidden">
-            <img
-              src={post.cover_image}
-              alt={post.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-        
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-          {post.title}
-        </h1>
-
-        <div className="flex flex-wrap items-center gap-4 mb-12 text-sm text-gray-600">
+        <div className="flex flex-wrap items-center gap-4 mb-8 text-sm text-gray-600">
           <time dateTime={post.created_at}>
             {format(new Date(post.created_at), 'MMMM d, yyyy')}
           </time>
@@ -83,6 +74,20 @@ export default function BlogPost() {
             </>
           )}
         </div>
+
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-12 leading-tight">
+          {post.title}
+        </h1>
+        
+        {post.cover_image && (
+          <div className="aspect-video w-full mb-12 rounded-lg overflow-hidden">
+            <img
+              src={post.cover_image}
+              alt={post.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
         
         <div 
           className="prose prose-lg max-w-none prose-headings:font-bold prose-p:text-gray-600 prose-a:text-primary-600 prose-img:rounded-lg mb-24"
