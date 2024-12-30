@@ -92,6 +92,32 @@ export default function Product() {
         </div>
       </section>
 
+      {/* Impact Measurement Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                Track impact, align with the SDGs, and achieve your goals
+              </h2>
+              <p className="text-xl text-gray-600 mb-6">
+                Make data-driven decisions using our impact measurement tools. Monitor the success of your innovation projects and align them with the Sustainable Development Goals (SDGs).
+              </p>
+              <p className="text-xl text-gray-600">
+                Whether you're a corporate innovator, a small business, or a government entity, our tools help you quantify your contributions and track your impact.
+              </p>
+            </div>
+            <div>
+              <img
+                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Screenshot_2024-11-15_at_2.36.42_PM.png"
+                alt="Impact Measurement Dashboard"
+                className="w-full rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       <CTASection />
 
       <Footer />
