@@ -76,9 +76,19 @@ export default function Index() {
       </Suspense>
 
       {/* Blog Section */}
-      <Suspense fallback={<LoadingPage />}>
-        <BlogSection />
-      </Suspense>
+      <div className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900">Latest Articles</h2>
+            <p className="mt-4 text-lg text-gray-600">
+              Stay updated with our latest insights and news
+            </p>
+          </div>
+          <Suspense fallback={<LoadingPage />}>
+            <BlogSection />
+          </Suspense>
+        </div>
+      </div>
 
       {/* CTA Section */}
       <CTASection />
