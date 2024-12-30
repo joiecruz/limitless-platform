@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TestimonialsSection } from "@/components/site-config/TestimonialsSection";
+import { WorkshopsSection } from "@/components/site-config/WorkshopsSection";
 
 export default function Courses() {
   const { toast } = useToast();
@@ -93,6 +94,9 @@ export default function Courses() {
       
       {/* Testimonials Section */}
       <TestimonialsSection />
+
+      {/* Workshops Section */}
+      <WorkshopsSection />
       
       {/* Course List Section */}
       <div className="py-12 px-4 sm:px-6 lg:px-8">

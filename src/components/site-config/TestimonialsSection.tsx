@@ -43,9 +43,9 @@ const testimonials: Testimonial[] = [
 
 export function TestimonialsSection() {
   return (
-    <div className="py-16 bg-gray-50">
+    <div className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold text-gray-900 text-center mb-12">
+        <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
           What Our Students Say
         </h2>
         <div className="relative px-12">
@@ -59,17 +59,17 @@ export function TestimonialsSection() {
             <CarouselContent className="-ml-2 md:-ml-4">
               {testimonials.map((testimonial, index) => (
                 <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                  <div className="bg-white p-6 rounded-lg shadow-sm relative h-full">
-                    <div className="absolute -top-4 left-6">
+                  <div className="bg-white p-8 rounded-lg shadow-sm relative min-h-[280px] flex flex-col">
+                    <div className="absolute -top-6 left-6">
                       <div className="bg-[#393CA0] rounded-full p-2">
                         <Quote className="h-5 w-5 text-white" />
                       </div>
                     </div>
-                    <blockquote className="mt-4">
-                      <p className="text-gray-600 italic mb-4">
+                    <blockquote className="mt-6 flex-grow">
+                      <p className="text-gray-600 italic mb-6">
                         "{testimonial.quote}"
                       </p>
-                      <footer>
+                      <footer className="mt-auto">
                         <p className="font-semibold text-gray-900">
                           {testimonial.author}
                         </p>
