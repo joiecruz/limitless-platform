@@ -70,14 +70,7 @@ export default function Product() {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div>
-              <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product-Empathize.png"
-                alt="Innovation Platform Interface"
-                className="w-full rounded-lg shadow-lg"
-              />
-            </div>
-            <div>
+            <div className="order-2 lg:order-1">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
                 Boost your team's creativity with a simpler innovation journey
               </h2>
@@ -87,6 +80,13 @@ export default function Product() {
               <p className="text-lg sm:text-xl text-gray-600">
                 Our platform simplifies the process from user research, ideation, to implementation, ensuring that every idea has the best chance to thrive.
               </p>
+            </div>
+            <div className="order-1 lg:order-2">
+              <img
+                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product-Empathize.png"
+                alt="Innovation Platform Interface"
+                className="w-full rounded-lg shadow-lg"
+              />
             </div>
           </div>
         </div>
