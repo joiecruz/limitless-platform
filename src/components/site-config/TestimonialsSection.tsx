@@ -15,16 +15,6 @@ interface Testimonial {
 
 const testimonials: Testimonial[] = [
   {
-    quote: "The courses have transformed how I approach innovation. The practical tools and frameworks are invaluable.",
-    author: "Sarah Johnson",
-    company: "Tech Innovators Inc."
-  },
-  {
-    quote: "The hybrid learning format perfectly balanced flexibility with hands-on practice. Highly recommended!",
-    author: "Michael Chen",
-    company: "Future Labs"
-  },
-  {
     quote: "This program helped me develop practical innovation skills I use every day in my role.",
     author: "Emma Rodriguez",
     company: "Global Solutions"
@@ -38,14 +28,24 @@ const testimonials: Testimonial[] = [
     quote: "A game-changing learning experience that has accelerated my professional growth.",
     author: "Lisa Thompson",
     company: "Digital Ventures"
+  },
+  {
+    quote: "The courses have transformed how I approach innovation. The practical tools and frameworks are invaluable.",
+    author: "Sarah Johnson",
+    company: "Tech Innovators Inc."
+  },
+  {
+    quote: "The hybrid learning format perfectly balanced flexibility with hands-on practice. Highly recommended!",
+    author: "Michael Chen",
+    company: "Future Labs"
   }
 ];
 
 export function TestimonialsSection() {
   return (
-    <div className="py-24 bg-gray-50">
+    <div className="py-32 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
+        <h2 className="text-4xl font-bold text-gray-900 text-center mb-24">
           What Our Students Say
         </h2>
         <div className="relative px-12">
@@ -59,21 +59,21 @@ export function TestimonialsSection() {
             <CarouselContent className="-ml-2 md:-ml-4">
               {testimonials.map((testimonial, index) => (
                 <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                  <div className="bg-white p-8 rounded-lg shadow-sm relative min-h-[280px] flex flex-col">
-                    <div className="absolute -top-6 left-6">
-                      <div className="bg-[#393CA0] rounded-full p-2">
-                        <Quote className="h-5 w-5 text-white" />
+                  <div className="bg-white p-8 rounded-xl shadow-sm relative min-h-[300px] flex flex-col pt-16">
+                    <div className="absolute -top-8 left-8">
+                      <div className="bg-[#393CA0] rounded-full p-3">
+                        <Quote className="h-6 w-6 text-white" />
                       </div>
                     </div>
-                    <blockquote className="mt-6 flex-grow">
-                      <p className="text-gray-600 italic mb-6">
+                    <blockquote className="flex-grow flex flex-col">
+                      <p className="text-gray-600 italic text-lg mb-8 flex-grow">
                         "{testimonial.quote}"
                       </p>
                       <footer className="mt-auto">
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-semibold text-gray-900 text-lg">
                           {testimonial.author}
                         </p>
-                        <p className="text-gray-500 text-sm">
+                        <p className="text-gray-500">
                           {testimonial.company}
                         </p>
                       </footer>
