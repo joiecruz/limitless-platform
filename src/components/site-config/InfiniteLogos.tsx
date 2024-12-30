@@ -1,3 +1,5 @@
+import { useClientLogos } from "./hooks/useClientLogos";
+import { LogoList } from "./LogoList";
 import { ScrollingPlaceholders } from "./ScrollingPlaceholders";
 
 interface InfiniteLogosProps {
@@ -5,6 +7,8 @@ interface InfiniteLogosProps {
 }
 
 export function InfiniteLogos({ direction = "left" }: InfiniteLogosProps) {
+  const { data: logos, isLoading } = useClientLogos();
+
   return (
     <div className="relative w-full overflow-hidden bg-transparent">
       <div
@@ -17,8 +21,17 @@ export function InfiniteLogos({ direction = "left" }: InfiniteLogosProps) {
           willChange: "transform"
         }}
       >
-        <ScrollingPlaceholders />
-        <ScrollingPlaceholders />
+        {isLoading || !logos ? (
+          <>
+            <ScrollingPlaceholders />
+            <ScrollingPlaceholders />
+          </>
+        ) : (
+          <>
+            <LogoList logos={logos} />
+            <LogoList logos={logos} />
+          </>
+        )}
       </div>
     </div>
   );
