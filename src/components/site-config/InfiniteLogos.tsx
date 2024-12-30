@@ -34,7 +34,7 @@ export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }:
       <div className="flex">
         <div
           className={cn(
-            "flex min-w-full shrink-0 gap-12 py-4",
+            "flex min-w-full shrink-0 gap-8 py-3",
             direction === "left" ? "animate-scroll-left" : "animate-scroll-right"
           )}
         >
@@ -46,7 +46,7 @@ export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }:
               <img
                 src={logo.image_url}
                 alt={logo.name}
-                className="h-20 w-auto object-contain"
+                className="h-14 w-auto object-contain"
                 loading="lazy"
               />
             </div>
@@ -54,7 +54,7 @@ export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }:
         </div>
         <div
           className={cn(
-            "flex min-w-full shrink-0 gap-12 py-4",
+            "flex min-w-full shrink-0 gap-8 py-3",
             direction === "left" ? "animate-scroll-left" : "animate-scroll-right"
           )}
           aria-hidden="true"
@@ -67,7 +67,7 @@ export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }:
               <img
                 src={logo.image_url}
                 alt={logo.name}
-                className="h-20 w-auto object-contain"
+                className="h-14 w-auto object-contain"
                 loading="lazy"
               />
             </div>
