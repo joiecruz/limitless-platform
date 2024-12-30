@@ -1,20 +1,21 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { DashboardLayout } from "@/layouts/DashboardLayout";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { AdminLayout } from "@/layouts/AdminLayout";
-import { AuthLayout } from "@/layouts/AuthLayout";
-import { PrivateRoute } from "@/components/auth/PrivateRoute";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { RequireAuth } from "@/components/auth/RequireAuth";
+import { Session } from "@supabase/supabase-js";
 
 import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
 import Courses from "@/pages/Courses";
-import Course from "@/pages/Course";
-import CourseLessons from "@/pages/CourseLessons";
+import Course from "@/components/courses/Course";
+import CourseLessons from "@/components/courses/CourseLessons";
 import Tools from "@/pages/Tools";
 import Community from "@/pages/Community";
 import Settings from "@/pages/Settings";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
-import ForgotPassword from "@/pages/ForgotPassword";
+import ForgotPassword from "@/components/auth/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsers from "@/pages/admin/AdminUsers";
@@ -24,12 +25,16 @@ import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import PageBuilder from "@/pages/admin/PageBuilder";
 
-export default function AppRoutes() {
+interface AppRoutesProps {
+  session: Session | null;
+}
+
+const AppRoutes = ({ session }: AppRoutesProps) => {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       
-      <Route element={<PrivateRoute />}>
+      <Route element={<RequireAuth />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/projects" element={<Projects />} />
@@ -60,4 +65,6 @@ export default function AppRoutes() {
       </Route>
     </Routes>
   );
-}
+};
+
+export default AppRoutes;
