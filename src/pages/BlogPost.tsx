@@ -32,14 +32,20 @@ export default function BlogPost() {
   });
 
   const getMetaDescription = (content: string | null | undefined): string => {
-    if (!content || typeof content !== 'string') return '';
+    if (!content) return '';
     
     try {
-      const sentences = content.split(/[.!?]+/).filter(sentence => 
+      // Remove any HTML tags and get clean text
+      const cleanText = content.replace(/<[^>]*>/g, '');
+      // Get first two sentences or 160 characters
+      const sentences = cleanText.split(/[.!?]+/).filter(sentence => 
         sentence && sentence.trim().length > 0
       );
       const description = sentences.slice(0, 2).join('. ').trim();
-      return description ? description + '.' : '';
+      // Ensure it's not too long for meta description
+      return description.length > 160 
+        ? description.substring(0, 157) + '...' 
+        : description;
     } catch {
       return '';
     }
@@ -60,23 +66,41 @@ export default function BlogPost() {
   const wordCount = post.content.split(/\s+/).length;
   const readTime = Math.ceil(wordCount / 200);
 
+  // Prepare metadata values
+  const title = post.title || "Blog Post";
+  const description = post.meta_description || getMetaDescription(post.content);
+  const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
+  const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
+
   return (
     <div className="min-h-screen bg-white">
-      {post && (
-        <Helmet defer={false}>
-          <title>{post.title || "Blog Post"}</title>
-          <meta name="description" content={getMetaDescription(post.content)} />
-          <meta property="og:title" content={post.title || "Blog Post"} />
-          <meta property="og:description" content={getMetaDescription(post.content)} />
-          {post.cover_image && (
-            <>
-              <meta property="og:image" content={String(post.cover_image)} />
-              <meta name="twitter:card" content="summary_large_image" />
-              <meta name="twitter:image" content={String(post.cover_image)} />
-            </>
-          )}
-        </Helmet>
-      )}
+      <Helmet defer={false}>
+        {/* Basic metadata */}
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonicalUrl} />
+
+        {/* Open Graph metadata */}
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:image" content={imageUrl} />
+        <meta property="og:site_name" content="Limitless Lab" />
+        
+        {/* Twitter Card metadata */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={imageUrl} />
+        
+        {/* Article specific metadata */}
+        <meta property="article:published_time" content={post.created_at} />
+        <meta property="article:modified_time" content={post.updated_at} />
+        {post.categories && post.categories.map((category: string) => (
+          <meta property="article:tag" content={category} key={category} />
+        ))}
+      </Helmet>
       
       <MainNav />
       
