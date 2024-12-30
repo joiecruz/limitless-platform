@@ -12,7 +12,6 @@ import { Helmet } from "react-helmet";
 export default function BlogPost() {
   const { slug } = useParams();
 
-  // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
@@ -34,17 +33,14 @@ export default function BlogPost() {
 
   // Extract first two sentences for meta description
   const getMetaDescription = (content: string | null | undefined): string => {
-    if (!content || typeof content !== 'string') return '';
+    if (!content) return '';
     
     try {
       const sentences = content.split(/[.!?]+/).filter(sentence => 
         sentence && sentence.trim().length > 0
       );
-      return sentences.length > 0 
-        ? `${sentences.slice(0, 2).join('. ').trim()}.`
-        : '';
-    } catch (error) {
-      console.error('Error generating meta description:', error);
+      return sentences.slice(0, 2).join('. ').trim() + '.';
+    } catch {
       return '';
     }
   };
@@ -52,7 +48,7 @@ export default function BlogPost() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-[#393CA0] animate-spin" />
+        <Loader2 className="h-8 w-8 text-primary animate-spin" />
       </div>
     );
   }
@@ -61,27 +57,24 @@ export default function BlogPost() {
     return <div>Post not found</div>;
   }
 
-  // Calculate read time (assuming average reading speed of 200 words per minute)
   const wordCount = post.content.split(/\s+/).length;
   const readTime = Math.ceil(wordCount / 200);
 
   return (
     <div className="min-h-screen bg-white">
-      {post && (
-        <Helmet>
-          <title>{post.title || 'Blog Post'}</title>
-          <meta name="description" content={getMetaDescription(post.content)} />
-          <meta property="og:title" content={post.title || 'Blog Post'} />
-          <meta property="og:description" content={getMetaDescription(post.content)} />
-          {post.cover_image && (
-            <>
-              <meta property="og:image" content={post.cover_image} />
-              <meta name="twitter:card" content="summary_large_image" />
-              <meta name="twitter:image" content={post.cover_image} />
-            </>
-          )}
-        </Helmet>
-      )}
+      <Helmet defer={false}>
+        <title>{post.title || 'Blog Post'}</title>
+        <meta name="description" content={getMetaDescription(post.content)} />
+        <meta property="og:title" content={post.title || 'Blog Post'} />
+        <meta property="og:description" content={getMetaDescription(post.content)} />
+        {post.cover_image && (
+          <>
+            <meta property="og:image" content={post.cover_image} />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:image" content={post.cover_image} />
+          </>
+        )}
+      </Helmet>
       
       <MainNav />
       
