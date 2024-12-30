@@ -6,7 +6,7 @@ interface LogoItemProps {
 
 export function LogoItem({ logo }: LogoItemProps) {
   return (
-    <div className="flex items-center justify-center w-32">
+    <div className="mx-4 flex items-center justify-center">
       <img
         src={logo.image_url}
         alt={logo.name}
