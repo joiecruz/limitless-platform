@@ -526,6 +526,39 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          name: string
+          organization: string
+          photo_url: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          name: string
+          organization: string
+          photo_url?: string | null
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          name?: string
+          organization?: string
+          photo_url?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_course_access: {
         Row: {
           course_id: string
