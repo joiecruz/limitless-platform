@@ -19,6 +19,6 @@ export function useClientLogos() {
       return data as Logo[];
     },
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    cacheTime: 30 * 60 * 1000, // Keep data in cache for 30 minutes
+    gcTime: 30 * 60 * 1000, // Keep data in cache for 30 minutes (formerly cacheTime)
   });
 }
