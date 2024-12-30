@@ -14,29 +14,32 @@ export function InfiniteLogos({ direction = "left" }: InfiniteLogosProps) {
     return null;
   }
 
+  // Double the logos array to ensure smooth infinite scrolling
+  const doubledLogos = [...logos, ...logos];
+
   return (
     <div className="w-full overflow-hidden">
       <Swiper
         modules={[Autoplay]}
         slidesPerView="auto"
         loop={true}
-        speed={8000}
+        speed={15000}
         autoplay={{
           delay: 0,
           disableOnInteraction: false,
           reverseDirection: direction === "right",
           pauseOnMouseEnter: false
         }}
-        spaceBetween={24}
+        spaceBetween={48}
         className="!flex items-center"
         allowTouchMove={false}
       >
-        {logos.map((logo) => (
-          <SwiperSlide key={logo.id} className="!w-auto">
+        {doubledLogos.map((logo, index) => (
+          <SwiperSlide key={`${logo.id}-${index}`} className="!w-auto">
             <img
               src={logo.image_url}
               alt={logo.name}
-              className="h-10 w-auto object-contain grayscale opacity-70"
+              className="h-16 w-auto object-contain"
               loading="lazy"
             />
           </SwiperSlide>
