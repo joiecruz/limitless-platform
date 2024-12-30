@@ -16,16 +16,16 @@ export default function Index() {
     <div className="min-h-screen bg-white">
       <MainNav />
       
-      {/* Hero Section - Adjusted spacing */}
+      {/* Hero Section - Original layout */}
       <div className="pt-20 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-4">
+          <div className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
               The all-in-one platform<br />
               empowering innovators to turn<br />
               ideas into real impact
             </h1>
-            <div className="flex justify-center gap-4 mb-6">
+            <div className="flex justify-center gap-4">
               <Button 
                 size="lg"
                 onClick={() => navigate("/signup")}
@@ -44,7 +44,7 @@ export default function Index() {
             </div>
           </div>
           
-          {/* Hero Image - Adjusted container */}
+          {/* Hero Image */}
           <div className="relative max-h-[calc(100vh-400px)] overflow-hidden rounded-lg">
             <img 
               src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z"
