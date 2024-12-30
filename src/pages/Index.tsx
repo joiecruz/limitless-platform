@@ -87,6 +87,15 @@ export default function Index() {
           <Suspense fallback={<LoadingPage />}>
             <BlogSection />
           </Suspense>
+          <div className="mt-12 text-center">
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/blog')}
+              className="px-8 text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
+            >
+              View All Articles
+            </Button>
+          </div>
         </div>
       </div>
 

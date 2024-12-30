@@ -1,10 +1,12 @@
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import { BlogSection } from "@/components/site-config/BlogSection";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 const categories = [
   "All",
@@ -17,6 +19,7 @@ const categories = [
 ];
 
 export default function Blog() {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const postsPerPage = 9;
@@ -80,13 +83,35 @@ export default function Blog() {
           
           {isLoading ? (
             <div className="flex justify-center items-center min-h-[400px]">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <Loader2 className="h-8 w-8 text-primary animate-spin" />
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {posts?.posts?.map((post) => (
-                  <BlogSection key={post.id} post={post} />
+                  <div 
+                    key={post.id} 
+                    className="bg-white rounded-lg overflow-hidden cursor-pointer border border-gray-100 hover:border-[#393CA0]/20 transition-all duration-200 hover:shadow-md"
+                    onClick={() => navigate(`/blog/${post.slug}`)}
+                  >
+                    {post.cover_image && (
+                      <div className="aspect-video w-full overflow-hidden">
+                        <img
+                          src={post.cover_image}
+                          alt={post.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-6 space-y-4">
+                      <h3 className="text-2xl font-semibold text-gray-900 hover:text-[#393CA0] transition-colors">
+                        {post.title}
+                      </h3>
+                      <div className="text-sm text-gray-600">
+                        {format(new Date(post.created_at), 'MMMM d, yyyy')}
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
 
