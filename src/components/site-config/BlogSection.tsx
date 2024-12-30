@@ -17,14 +17,6 @@ interface BlogSectionProps {
 export function BlogSection({ post }: BlogSectionProps) {
   const navigate = useNavigate();
 
-  const getReadTime = (excerpt: string | null) => {
-    if (!excerpt) return '3 min read';
-    const wordsPerMinute = 200;
-    const words = excerpt.split(/\s+/).length;
-    const minutes = Math.ceil(words / wordsPerMinute);
-    return `${minutes} min read`;
-  };
-
   return (
     <div 
       key={post.id} 
@@ -44,13 +36,8 @@ export function BlogSection({ post }: BlogSectionProps) {
         <h3 className="text-2xl font-semibold text-gray-900 hover:text-[#393CA0] transition-colors">
           {post.title}
         </h3>
-        {post.excerpt && (
-          <p className="text-gray-600 line-clamp-2">{post.excerpt}</p>
-        )}
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <span>{format(new Date(post.created_at), 'MMMM d, yyyy')}</span>
-          <span>•</span>
-          <span>{getReadTime(post.excerpt)}</span>
+        <div className="text-sm text-gray-600">
+          {format(new Date(post.created_at), 'MMMM d, yyyy')}
         </div>
       </div>
     </div>
