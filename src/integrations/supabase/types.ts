@@ -143,6 +143,7 @@ export type Database = {
           created_at: string
           description: string | null
           enrollee_count: number | null
+          format: string
           id: string
           image_url: string | null
           lesson_count: number | null
@@ -154,6 +155,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           enrollee_count?: number | null
+          format?: string
           id?: string
           image_url?: string | null
           lesson_count?: number | null
@@ -165,6 +167,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           enrollee_count?: number | null
+          format?: string
           id?: string
           image_url?: string | null
           lesson_count?: number | null
