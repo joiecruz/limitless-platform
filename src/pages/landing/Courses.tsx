@@ -1,6 +1,6 @@
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import { BookOpen, Clock, Award } from "lucide-react";
+import CoursePreviewCard from "@/components/courses/CoursePreviewCard";
 
 export default function Courses() {
   return (
@@ -45,77 +45,23 @@ export default function Courses() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Course Card 1 */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-              <div className="aspect-video bg-gray-100" />
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  Certified Social Innovation Facilitator Program™
-                </h3>
-                <div className="flex items-center gap-6 text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    <span>12 lessons</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span>30 hours</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4" />
-                    <span>Certificate</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Course Card 2 */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-              <div className="aspect-video bg-gray-100" />
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  Design Thinking for Social Innovation
-                </h3>
-                <div className="flex items-center gap-6 text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    <span>5 lessons</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span>2 hours</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4" />
-                    <span>Certificate</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Course Card 3 */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-              <div className="aspect-video bg-gray-100" />
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  LimitlessGov: Human-Centered and AI-Powered Good Governance
-                </h3>
-                <div className="flex items-center gap-6 text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    <span>12 lessons</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span>30 hours</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4" />
-                    <span>Certificate</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CoursePreviewCard
+              title="Certified Social Innovation Facilitator Program™"
+              lessonCount={12}
+              duration="30 hours"
+            />
+            
+            <CoursePreviewCard
+              title="Design Thinking for Social Innovation"
+              lessonCount={5}
+              duration="2 hours"
+            />
+            
+            <CoursePreviewCard
+              title="LimitlessGov: Human-Centered and AI-Powered Good Governance"
+              lessonCount={12}
+              duration="30 hours"
+            />
           </div>
         </div>
       </div>
@@ -131,7 +77,7 @@ export default function Courses() {
           </p>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
