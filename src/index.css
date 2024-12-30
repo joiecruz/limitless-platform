@@ -65,9 +65,9 @@
 }
 
 .animate-scroll-left {
-  animation: scroll 60s linear infinite;
+  animation: scroll 120s linear infinite;
 }
 
 .animate-scroll-right {
-  animation: scroll 60s linear infinite reverse;
+  animation: scroll 120s linear infinite reverse;
 }
