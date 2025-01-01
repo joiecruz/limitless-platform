@@ -54,18 +54,20 @@ export const Step1 = ({ formData, handleInputChange, nextStep, loading, emailExi
   return (
     <>
       {emailExists && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription className="flex items-center justify-between">
-            <span>This email is already registered.</span>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate("/signin")}
-            >
-              Sign in instead
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <div className="mb-4">
+          <Alert variant="destructive" className="animate-in fade-in-0 duration-300">
+            <AlertDescription className="flex items-center justify-between">
+              <span>This email is already registered.</span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate("/signin")}
+              >
+                Sign in instead
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
       )}
       <TextStep
         fields={[
