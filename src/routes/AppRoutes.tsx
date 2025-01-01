@@ -29,7 +29,6 @@ import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
 import Courses from "@/pages/Courses";
 import Tools from "@/pages/Tools";
-import ToolDetails from "@/pages/ToolDetails";
 import Community from "@/pages/Community";
 import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
@@ -58,14 +57,12 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
 
   // Create redirect components
   const RedirectToMain = () => {
-    const mainUrl = window.location.href.replace('app.limitlesslab.org', 'www.limitlesslab.org');
-    window.location.href = mainUrl;
+    window.location.href = window.location.href.replace('app.limitlesslab.org', 'www.limitlesslab.org');
     return null;
   };
 
   const RedirectToApp = () => {
-    const appUrl = window.location.href.replace('www.limitlesslab.org', 'app.limitlesslab.org');
-    window.location.href = appUrl;
+    window.location.href = window.location.href.replace('www.limitlesslab.org', 'app.limitlesslab.org');
     return null;
   };
 
@@ -80,7 +77,6 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />
           <Route path="/dashboard/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
           <Route path="/dashboard/tools" element={<Tools />} />
-          <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
           <Route path="/dashboard/community" element={<Community />} />
           <Route path="/dashboard/settings" element={<Settings />} />
           <Route path="/dashboard/account-settings" element={<AccountSettings />} />
@@ -100,20 +96,8 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
 
-        {/* Redirect auth and marketing pages to main domain */}
-        <Route path="/signin" element={<RedirectToMain />} />
-        <Route path="/signup" element={<RedirectToMain />} />
-        <Route path="/reset-password" element={<RedirectToMain />} />
-        <Route path="/verify-email" element={<RedirectToMain />} />
-        <Route path="/invite" element={<RedirectToMain />} />
-        <Route path="/" element={<RedirectToMain />} />
-        <Route path="/product" element={<RedirectToMain />} />
-        <Route path="/services" element={<RedirectToMain />} />
-        <Route path="/courses" element={<RedirectToMain />} />
-        <Route path="/tools" element={<RedirectToMain />} />
-        <Route path="/blog" element={<RedirectToMain />} />
-        <Route path="/case-studies" element={<RedirectToMain />} />
-        <Route path="/about" element={<RedirectToMain />} />
+        {/* Redirect non-app routes to main domain */}
+        <Route path="*" element={<RedirectToMain />} />
       </Routes>
     );
   }
