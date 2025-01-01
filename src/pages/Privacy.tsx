@@ -31,7 +31,8 @@ export default function Privacy() {
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : (
-          <div className="prose prose-lg max-w-none" 
+          <div 
+            className="prose prose-lg max-w-none" 
             dangerouslySetInnerHTML={{ 
               __html: page?.content?.html || `
                 <h2>1. Information We Collect</h2>
