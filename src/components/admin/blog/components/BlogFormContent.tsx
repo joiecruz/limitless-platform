@@ -7,22 +7,27 @@ import { BlogCoverImageInput } from "./BlogCoverImageInput";
 import { BlogCategorySelect } from "./BlogCategorySelect";
 import { BlogTagsInput } from "./BlogTagsInput";
 import { BlogPublishToggle } from "./BlogPublishToggle";
+import { BlogFormHeader } from "./BlogFormHeader";
 
 interface BlogFormContentProps {
   formData: any;
   updateFormData: (field: string, value: any) => void;
   errors: Record<string, string>;
   blogId?: string;
+  isEdit?: boolean;
 }
 
 export function BlogFormContent({ 
   formData, 
   updateFormData, 
   errors,
-  blogId 
+  blogId,
+  isEdit
 }: BlogFormContentProps) {
   return (
     <div className="space-y-6">
+      <BlogFormHeader title={isEdit ? "Edit Blog Post" : "Create New Blog Post"} />
+      
       <BlogTitleInput
         value={formData.title}
         onChange={(value) => updateFormData("title", value)}

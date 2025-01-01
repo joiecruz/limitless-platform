@@ -14,7 +14,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { BLOG_CATEGORIES } from "@/constants/blogCategories";
-import { useState } from "react";
 
 interface BlogCategorySelectProps {
   value: string[];

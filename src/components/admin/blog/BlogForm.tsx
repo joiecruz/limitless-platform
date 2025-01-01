@@ -78,12 +78,12 @@ export function BlogForm({
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-6">
-      <BlogFormHeader title={isEdit ? "Edit Blog Post" : "Create New Blog Post"} />
       <BlogFormContent 
         formData={formData}
         updateFormData={updateFormData}
         errors={errors}
         blogId={blogId}
+        isEdit={isEdit}
       />
       <BlogFormFooter isLoading={isLoading} />
     </form>
