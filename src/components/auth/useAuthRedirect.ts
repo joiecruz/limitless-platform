@@ -39,13 +39,8 @@ export function useAuthRedirect() {
 
         // Check domain and redirect if needed
         const currentDomain = window.location.hostname;
+        const isAppDomain = currentDomain === 'app.limitlesslab.org';
         const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
-
-        if (session && isMainDomain) {
-          console.log("SignIn - Redirecting to app domain");
-          window.location.href = `https://app.limitlesslab.org/dashboard`;
-          return;
-        }
 
         if (session) {
           console.log("SignIn - Session found:", {
@@ -63,8 +58,18 @@ export function useAuthRedirect() {
             });
             return;
           }
-          console.log("SignIn - Active session found, redirecting to dashboard");
-          navigate("/dashboard", { replace: true });
+
+          if (isMainDomain) {
+            console.log("SignIn - Redirecting to app domain");
+            window.location.href = `https://app.limitlesslab.org/dashboard`;
+            return;
+          }
+
+          if (isAppDomain) {
+            console.log("SignIn - Active session found, redirecting to dashboard");
+            navigate("/dashboard", { replace: true });
+            return;
+          }
         } else {
           console.log("SignIn - No active session found");
           // Store invite token if present
@@ -88,6 +93,7 @@ export function useAuthRedirect() {
 
       // Check domain and redirect if needed
       const currentDomain = window.location.hostname;
+      const isAppDomain = currentDomain === 'app.limitlesslab.org';
       const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
 
       if (event === 'SIGNED_IN' && session) {
@@ -96,12 +102,6 @@ export function useAuthRedirect() {
           emailConfirmed: session.user.email_confirmed_at,
           email: session.user.email
         });
-
-        if (isMainDomain) {
-          console.log("SignIn - Redirecting to app domain");
-          window.location.href = `https://app.limitlesslab.org/dashboard`;
-          return;
-        }
 
         if (!session.user.email_confirmed_at) {
           console.log("SignIn - Email not confirmed, redirecting to verify-email");
@@ -112,8 +112,18 @@ export function useAuthRedirect() {
           });
           return;
         }
-        console.log("SignIn - User signed in, redirecting to dashboard");
-        navigate("/dashboard", { replace: true });
+
+        if (isMainDomain) {
+          console.log("SignIn - Redirecting to app domain");
+          window.location.href = `https://app.limitlesslab.org/dashboard`;
+          return;
+        }
+
+        if (isAppDomain) {
+          console.log("SignIn - User signed in, redirecting to dashboard");
+          navigate("/dashboard", { replace: true });
+          return;
+        }
       }
 
       if (!session || event === 'SIGNED_OUT') {
