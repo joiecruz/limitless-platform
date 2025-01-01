@@ -30,17 +30,8 @@ export default function VerifyEmail() {
 
           if (error) throw error;
 
-          // Check domain and redirect if needed
-          const currentDomain = window.location.hostname;
-          const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
-
-          if (isMainDomain) {
-            window.location.href = `https://app.limitlesslab.org/dashboard`;
-            return;
-          }
-
           // Navigate to dashboard after successful verification and workspace creation
-          navigate('/dashboard', { replace: true });
+          navigate('/dashboard');
         } catch (error: any) {
           console.error('Error handling email verification:', error);
           toast({

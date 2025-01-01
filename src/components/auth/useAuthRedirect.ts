@@ -22,22 +22,13 @@ export function useAuthRedirect() {
           return;
         }
 
-        // Check URL parameters for error messages
-        const params = new URLSearchParams(window.location.hash.substring(1));
-        const errorMessage = params.get('error_description');
-        
-        if (errorMessage) {
-          console.error("Auth Error:", errorMessage);
-          toast({
-            title: "Authentication Error",
-            description: errorMessage.replace(/\+/g, ' '),
-            variant: "destructive",
-          });
-          navigate("/signin");
-          return;
-        }
-
         if (session) {
+          console.log("SignIn - Session found:", {
+            user: session.user,
+            emailConfirmed: session.user.email_confirmed_at,
+            email: session.user.email
+          });
+
           if (!session.user.email_confirmed_at) {
             console.log("SignIn - Email not confirmed, redirecting to verify-email");
             localStorage.setItem('verificationEmail', session.user.email || '');
@@ -47,9 +38,8 @@ export function useAuthRedirect() {
             });
             return;
           }
-
           console.log("SignIn - Active session found, redirecting to dashboard");
-          navigate("/dashboard", { replace: true });
+          navigate("/dashboard");
         } else {
           console.log("SignIn - No active session found");
           // Store invite token if present
@@ -72,6 +62,12 @@ export function useAuthRedirect() {
       console.log("SignIn - Auth state changed:", { event, session });
 
       if (event === 'SIGNED_IN' && session) {
+        console.log("SignIn - Sign in event detected:", {
+          user: session.user,
+          emailConfirmed: session.user.email_confirmed_at,
+          email: session.user.email
+        });
+
         if (!session.user.email_confirmed_at) {
           console.log("SignIn - Email not confirmed, redirecting to verify-email");
           localStorage.setItem('verificationEmail', session.user.email || '');
@@ -81,9 +77,8 @@ export function useAuthRedirect() {
           });
           return;
         }
-
         console.log("SignIn - User signed in, redirecting to dashboard");
-        navigate("/dashboard", { replace: true });
+        navigate("/dashboard");
       }
 
       if (!session || event === 'SIGNED_OUT') {
