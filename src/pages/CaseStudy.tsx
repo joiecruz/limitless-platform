@@ -1,14 +1,16 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { CTASection } from "@/components/site-config/CTASection";
 import { useEffect } from "react";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet";
-import { Button } from "@/components/ui/button";
 import { CaseStudyContent } from "@/components/case-studies/CaseStudyContent";
+import { CaseStudyHeader } from "@/components/case-studies/CaseStudyHeader";
+import { CaseStudyMeta } from "@/components/case-studies/CaseStudyMeta";
+import { CaseStudyImages } from "@/components/case-studies/CaseStudyImages";
 
 export default function CaseStudy() {
   const { slug } = useParams();
@@ -71,104 +73,32 @@ export default function CaseStudy() {
       <MainNav />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">
-        <Link to="/case-studies">
-          <Button variant="ghost" className="mb-8 -ml-4 text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            See all case studies
-          </Button>
-        </Link>
+        <CaseStudyHeader 
+          name={caseStudy.name}
+          description={caseStudy.description}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-          <div className="lg:col-span-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              {caseStudy.name}
-            </h1>
-            
-            <p className="text-xl text-gray-600">
-              {caseStudy.description}
-            </p>
-          </div>
-
-          <div className="lg:col-span-4">
-            {caseStudy.client && (
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Clients & Partners</h3>
-                <p className="text-gray-900">{caseStudy.client}</p>
-              </div>
-            )}
-
-            {caseStudy.sdgs && caseStudy.sdgs.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">SDGs</h3>
-                <div className="flex flex-wrap gap-2">
-                  {caseStudy.sdgs.map((sdg: string) => (
-                    <span
-                      key={sdg}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
-                    >
-                      {sdg}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {caseStudy.services && caseStudy.services.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Services</h3>
-                <div className="flex flex-wrap gap-2">
-                  {caseStudy.services.map((service: string) => (
-                    <span
-                      key={service}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                    >
-                      {service}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <div className="lg:col-span-8" />
+          <CaseStudyMeta 
+            client={caseStudy.client}
+            sdgs={caseStudy.sdgs}
+            services={caseStudy.services}
+          />
         </div>
 
-        {caseStudy.cover_photo && (
-          <div className="w-full mb-12">
-            <div className="aspect-video w-full rounded-lg overflow-hidden">
-              <img
-                src={caseStudy.cover_photo}
-                alt={caseStudy.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        )}
+        <CaseStudyImages 
+          coverPhoto={caseStudy.cover_photo}
+          name={caseStudy.name}
+          additionalPhoto1={caseStudy.additional_photo1}
+          additionalPhoto2={caseStudy.additional_photo2}
+        />
 
         <CaseStudyContent
           problem={caseStudy.problem_opportunity}
           approach={caseStudy.approach}
           impact={caseStudy.impact}
         />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-12">
-          {caseStudy.additional_photo1 && (
-            <div className="aspect-video rounded-lg overflow-hidden">
-              <img
-                src={caseStudy.additional_photo1}
-                alt="Additional case study photo 1"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-          {caseStudy.additional_photo2 && (
-            <div className="aspect-video rounded-lg overflow-hidden">
-              <img
-                src={caseStudy.additional_photo2}
-                alt="Additional case study photo 2"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-        </div>
       </div>
 
       <CTASection />
