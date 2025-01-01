@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link } from "react-router-dom";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import { CoDesignProcess } from "@/components/services/CoDesignProcess";
+import { useState } from "react";
 
 const services = [
   {
@@ -37,17 +38,29 @@ const services = [
   }
 ];
 
+const ITEMS_PER_PAGE = 6;
+
 export default function Services() {
-  const { data: caseStudies } = useQuery({
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { data: caseStudies, isLoading } = useQuery({
     queryKey: ['case-studies'],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, count } = await supabase
         .from('case_studies')
-        .select('*')
-        .limit(3);
-      return data;
+        .select('*', { count: 'exact' });
+      return { studies: data, total: count };
     }
   });
+
+  const totalPages = caseStudies?.total 
+    ? Math.ceil(caseStudies.total / ITEMS_PER_PAGE) 
+    : 0;
+
+  const paginatedCaseStudies = caseStudies?.studies?.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -61,7 +74,7 @@ export default function Services() {
               <img
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design.png"
                 alt="Co-design Process"
-                className="w-full rounded-lg" // Removed shadow-lg class
+                className="w-full rounded-lg"
               />
             </div>
             <div>
@@ -113,7 +126,7 @@ export default function Services() {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {caseStudies?.map((study) => (
+            {paginatedCaseStudies?.map((study) => (
               <Card key={study.id} className="hover:shadow-lg transition-shadow">
                 <div className="aspect-video w-full overflow-hidden rounded-t-lg">
                   {study.cover_photo && (
@@ -141,6 +154,37 @@ export default function Services() {
               </Card>
             ))}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              
+              {[...Array(totalPages)].map((_, i) => (
+                <Button
+                  key={i}
+                  variant={currentPage === i + 1 ? "default" : "outline"}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
