@@ -22,16 +22,16 @@ export default function Terms() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Terms of Service</h1>
-        <div className="text-gray-600 mb-8">Last updated: {new Date().toLocaleDateString()}</div>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+        <h1 className="text-4xl font-bold text-gray-900 mb-12">Terms of Service</h1>
+        <div className="text-gray-600 mb-16">Last updated: {new Date().toLocaleDateString()}</div>
         
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : (
-          <div className="prose prose-lg max-w-none" 
+          <div className="prose prose-lg max-w-none mb-32 space-y-8" 
             dangerouslySetInnerHTML={{ __html: page?.content?.html || defaultTermsContent }} 
           />
         )}
