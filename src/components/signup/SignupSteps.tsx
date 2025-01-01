@@ -70,11 +70,20 @@ export function SignupSteps() {
     
     setLoading(true);
     try {
+      // Get the current domain
+      const currentDomain = window.location.origin;
+      const redirectUrl = `${currentDomain}/verify-email`;
+      
+      console.log("Signup redirect URL:", redirectUrl);
+      
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/verify-email`,
+          emailRedirectTo: redirectUrl,
+          data: {
+            email_confirmed_at: null // Ensure email needs verification
+          }
         }
       });
 

@@ -51,6 +51,18 @@ const App = () => {
           return;
         }
 
+        // Check if we're on the wrong domain
+        const currentDomain = window.location.hostname;
+        const isAppDomain = currentDomain === 'app.limitlesslab.org';
+        const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
+
+        if (initialSession && isMainDomain) {
+          // Redirect to app domain if authenticated on main domain
+          console.log("Redirecting to app domain...");
+          window.location.href = `https://app.limitlesslab.org${window.location.pathname}`;
+          return;
+        }
+
         if (mounted) {
           console.log("Initial session found and valid");
           setSession(initialSession);
@@ -91,6 +103,12 @@ const App = () => {
 
       if (event === 'SIGNED_IN' && currentSession) {
         console.log("User signed in:", currentSession);
+        // Check domain and redirect if needed
+        const currentDomain = window.location.hostname;
+        if (currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org') {
+          window.location.href = `https://app.limitlesslab.org/dashboard`;
+          return;
+        }
         setSession(currentSession);
         return;
       }
