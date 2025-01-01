@@ -47,6 +47,10 @@ export function MainNav() {
     return `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`;
   };
 
+  const handleAuthClick = (path: string) => {
+    window.location.href = `https://app.limitlesslab.org${path}`;
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,9 +58,9 @@ export function MainNav() {
           <div className="flex-shrink-0">
             <Link to="/">
               <img 
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
                 alt="Limitless Lab"
-                className="h-10 w-auto" // Increased from h-8 to h-10
+                className="h-10 w-auto"
               />
             </Link>
           </div>
@@ -75,12 +79,18 @@ export function MainNav() {
               />
             ) : (
               <>
-                <Link to="/signin">
-                  <Button variant="ghost">Log in</Button>
-                </Link>
-                <Link to="/signup">
-                  <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90">Sign up</Button>
-                </Link>
+                <Button 
+                  variant="ghost"
+                  onClick={() => handleAuthClick('/signin')}
+                >
+                  Log in
+                </Button>
+                <Button 
+                  className="bg-[#393CA0] hover:bg-[#393CA0]/90"
+                  onClick={() => handleAuthClick('/signup')}
+                >
+                  Sign up
+                </Button>
               </>
             )}
           </div>
