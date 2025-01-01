@@ -1,69 +1,104 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AddLogoDialog } from "@/components/admin/logos/AddLogoDialog";
-import { LogosTable } from "@/components/admin/logos/LogosTable";
-import { BlogsTable } from "@/components/admin/blog/BlogsTable";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PagesTable } from "@/components/admin/pages/PagesTable";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PageEditor } from "@/components/admin/pages/PageEditor";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminContent() {
-  const navigate = useNavigate();
+  const [selectedPage, setSelectedPage] = useState<string | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const { toast } = useToast();
+
+  const { data: pages, isLoading, refetch } = useQuery({
+    queryKey: ['admin-pages'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pages')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error loading pages",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
+      return data;
+    },
+  });
+
+  const handleEdit = (id: string) => {
+    setSelectedPage(id);
+    setIsEditorOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('pages')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Page deleted",
+        description: "The page has been successfully deleted.",
+      });
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting page",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePreview = (slug: string) => {
+    window.open(`/preview/pages/${slug}`, '_blank');
+  };
+
+  const selectedPageData = pages?.find(page => page.id === selectedPage);
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Content Management</h1>
-      </div>
-
-      <Tabs defaultValue="articles" className="w-full">
+      <Tabs defaultValue="pages" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="articles">Blog Articles</TabsTrigger>
-          <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-          <TabsTrigger value="case-studies">Case Studies</TabsTrigger>
-          <TabsTrigger value="logos">Client Logos</TabsTrigger>
+          <TabsTrigger value="pages">Landing Pages</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="articles" className="mt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Blog Articles</h2>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={() => navigate("/admin/content/blog/create")}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Blog Post
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Create a new blog post</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <BlogsTable />
-        </TabsContent>
-
-        <TabsContent value="testimonials">
-          <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
-            <p className="text-gray-500">Testimonials management coming soon...</p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="case-studies">
-          <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
-            <p className="text-gray-500">Case studies management coming soon...</p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="logos" className="mt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Join the growing network of organizations innovating for social good</h2>
-            <AddLogoDialog />
-          </div>
-          <LogosTable />
+        <TabsContent value="pages" className="space-y-6">
+          <PagesTable
+            pages={pages}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onPreview={handlePreview}
+          />
         </TabsContent>
       </Tabs>
+
+      <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{selectedPage ? 'Edit Page' : 'Create New Page'}</DialogTitle>
+          </DialogHeader>
+          <PageEditor
+            pageId={selectedPage || undefined}
+            initialData={selectedPageData}
+            onSuccess={() => {
+              setIsEditorOpen(false);
+              setSelectedPage(null);
+              refetch();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
