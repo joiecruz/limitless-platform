@@ -49,15 +49,15 @@ export default function Terms() {
     <div className="min-h-screen bg-background flex flex-col">
       <MainNav />
       <div className="flex-grow">
-        <div className="container mx-auto px-4 py-16">
+        <div className="container mx-auto px-4 pt-32 pb-16">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold mb-8">{page.title}</h1>
+            <h1 className="text-4xl font-bold mb-12">{page.title}</h1>
             <div 
-              className="prose prose-lg max-w-none dark:prose-invert"
+              className="prose prose-lg max-w-none dark:prose-invert [&>p]:mb-6 [&>h2]:mt-12 [&>h2]:mb-6"
               dangerouslySetInnerHTML={{ 
                 __html: typeof page.content === 'object' && page.content.html 
                   ? page.content.html 
-                  : page.content 
+                  : page.content.replace(/\n/g, '<br />') 
               }}
             />
           </div>
