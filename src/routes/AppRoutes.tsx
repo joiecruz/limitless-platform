@@ -64,8 +64,8 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/case-studies/:slug" element={<CaseStudy />} />
       <Route path="/about" element={<About />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy-policy" element={<Privacy />} />
+      <Route path="/terms-of-service" element={<Terms />} />
 
       {/* Landing/Website Pages */}
       <Route path="/product" element={<Product />} />
