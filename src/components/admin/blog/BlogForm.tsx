@@ -1,14 +1,7 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { RichTextEditor } from "./RichTextEditor";
-import { BlogTitleInput } from "./components/BlogTitleInput";
-import { BlogSlugInput } from "./components/BlogSlugInput";
-import { BlogExcerptInput } from "./components/BlogExcerptInput";
-import { BlogMetaDescription } from "./components/BlogMetaDescription";
-import { BlogPublishToggle } from "./components/BlogPublishToggle";
-import { BlogCategorySelect } from "./components/BlogCategorySelect";
-import { BlogTagsInput } from "./components/BlogTagsInput";
-import { BlogCoverImageInput } from "./components/BlogCoverImageInput";
+import { BlogFormHeader } from "./components/BlogFormHeader";
+import { BlogFormContent } from "./components/BlogFormContent";
+import { BlogFormFooter } from "./components/BlogFormFooter";
 import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
 
 interface BlogFormProps {
@@ -85,67 +78,14 @@ export function BlogForm({
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-6">
-      <BlogTitleInput
-        value={formData.title}
-        onChange={(value) => updateFormData("title", value)}
-        error={errors.title}
-      />
-
-      <BlogSlugInput
-        value={formData.slug}
-        onChange={(value) => updateFormData("slug", value)}
-        error={errors.slug}
-      />
-
-      <BlogCoverImageInput
-        value={formData.cover_image}
-        onChange={(value) => updateFormData("cover_image", value)}
-        error={errors.cover_image}
+      <BlogFormHeader title={isEdit ? "Edit Blog Post" : "Create New Blog Post"} />
+      <BlogFormContent 
+        formData={formData}
+        updateFormData={updateFormData}
+        errors={errors}
         blogId={blogId}
       />
-
-      <div className="space-y-2">
-        <RichTextEditor
-          value={formData.content}
-          onChange={(value) => updateFormData("content", value)}
-        />
-        {errors.content && (
-          <p className="text-sm text-red-500">{errors.content}</p>
-        )}
-      </div>
-
-      <BlogExcerptInput
-        value={formData.excerpt}
-        onChange={(value) => updateFormData("excerpt", value)}
-        error={errors.excerpt}
-      />
-
-      <BlogMetaDescription
-        value={formData.meta_description}
-        onChange={(value) => updateFormData("meta_description", value)}
-        error={errors.meta_description}
-      />
-
-      <BlogCategorySelect
-        value={formData.categories}
-        onChange={(value) => updateFormData("categories", value)}
-        error={errors.categories}
-      />
-
-      <BlogTagsInput
-        value={formData.tags}
-        onChange={(value) => updateFormData("tags", value)}
-        error={errors.tags}
-      />
-
-      <BlogPublishToggle
-        value={formData.published}
-        onChange={(value) => updateFormData("published", value)}
-      />
-
-      <Button type="submit" disabled={isLoading}>
-        {isLoading ? "Saving..." : "Save"}
-      </Button>
+      <BlogFormFooter isLoading={isLoading} />
     </form>
   );
 }
