@@ -8,9 +8,28 @@ import { BlogSection } from "@/components/site-config/BlogSection";
 import { CTASection } from "@/components/site-config/CTASection";
 import { LoadingPage } from "@/components/common/LoadingPage";
 import { Suspense } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Index() {
   const navigate = useNavigate();
+
+  // Query to check if user is authenticated
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    }
+  });
+
+  const handleCreateAccount = () => {
+    if (session) {
+      navigate("/dashboard");
+    } else {
+      navigate("/signup");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -28,10 +47,10 @@ export default function Index() {
             <div className="flex justify-center gap-4">
               <Button 
                 size="lg"
-                onClick={() => navigate("/signup")}
+                onClick={handleCreateAccount}
                 className="px-8 bg-[#393CA0] hover:bg-[#393CA0]/90 transition-colors duration-200"
               >
-                Create account
+                {session ? "Go to Dashboard" : "Create account"}
               </Button>
               <Button 
                 size="lg"
