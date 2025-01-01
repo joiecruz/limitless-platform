@@ -5,6 +5,7 @@ import { BlogsTable } from "@/components/admin/blog/BlogsTable";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AdminContent() {
   const navigate = useNavigate();
@@ -26,10 +27,19 @@ export default function AdminContent() {
         <TabsContent value="articles" className="mt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Blog Articles</h2>
-            <Button onClick={() => navigate("/admin/content/blog/create")}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Blog Post
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={() => navigate("/admin/content/blog/create")}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Blog Post
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Create a new blog post</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <BlogsTable />
         </TabsContent>

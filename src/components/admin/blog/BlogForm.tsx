@@ -6,7 +6,7 @@ import { BlogSlugInput } from "./components/BlogSlugInput";
 import { BlogExcerptInput } from "./components/BlogExcerptInput";
 import { BlogMetaDescription } from "./components/BlogMetaDescription";
 import { BlogPublishToggle } from "./components/BlogPublishToggle";
-import { BlogCategoriesInput } from "./components/BlogCategoriesInput";
+import { BlogCategorySelect } from "./components/BlogCategorySelect";
 import { BlogTagsInput } from "./components/BlogTagsInput";
 import { BlogCoverImageInput } from "./components/BlogCoverImageInput";
 import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
@@ -126,7 +126,7 @@ export function BlogForm({
         error={errors.meta_description}
       />
 
-      <BlogCategoriesInput
+      <BlogCategorySelect
         value={formData.categories}
         onChange={(value) => updateFormData("categories", value)}
         error={errors.categories}
