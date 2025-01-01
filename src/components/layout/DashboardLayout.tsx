@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { WorkspaceSelector } from "./WorkspaceSelector";
 import { Navigation } from "./Navigation";
 import { MobileHeader } from "./MobileHeader";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Outlet } from "react-router-dom";
 
 interface Workspace {
   id: string;
@@ -21,7 +21,7 @@ export const WorkspaceContext = createContext<WorkspaceContextType>({
   setCurrentWorkspace: () => {},
 });
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -125,7 +125,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <MobileHeader onOpenSidebar={() => setSidebarOpen(true)} />
           <main className="pt-20 pb-10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              {children}
+              <Outlet />
             </div>
           </main>
         </div>

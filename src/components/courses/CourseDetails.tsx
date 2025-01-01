@@ -8,6 +8,7 @@ interface CourseDetailsProps {
   enrolleeCount: number;
   isEnrolled: boolean;
   isLocked: boolean;
+  format?: string;
 }
 
 const CourseDetails = ({ 
@@ -16,11 +17,33 @@ const CourseDetails = ({
   lessonCount, 
   enrolleeCount,
   isEnrolled,
-  isLocked
+  isLocked,
+  format = 'Online'
 }: CourseDetailsProps) => {
+  // Helper function to get badge color based on format
+  const getBadgeColor = (format: string) => {
+    switch (format.toLowerCase()) {
+      case 'online':
+        return 'bg-blue-50 text-blue-600';
+      case 'hybrid':
+        return 'bg-purple-50 text-purple-600';
+      case 'in-person':
+        return 'bg-green-50 text-green-600';
+      default:
+        return 'bg-gray-50 text-gray-600';
+    }
+  };
+
   return (
     <>
       <CardHeader>
+        {format && (
+          <div className="flex items-center gap-1 mb-2">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeColor(format)}`}>
+              {format}
+            </span>
+          </div>
+        )}
         <CardTitle className="leading-[1.2]">{title}</CardTitle>
         <CardDescription className="line-clamp-2">{description}</CardDescription>
       </CardHeader>

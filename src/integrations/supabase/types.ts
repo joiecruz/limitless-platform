@@ -9,6 +9,119 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      articles: {
+        Row: {
+          categories: string[] | null
+          content: string
+          cover_image: string | null
+          created_at: string
+          created_by: string | null
+          excerpt: string | null
+          id: string
+          meta_description: string | null
+          published: boolean | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          categories?: string[] | null
+          content: string
+          cover_image?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          meta_description?: string | null
+          published?: boolean | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          categories?: string[] | null
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          meta_description?: string | null
+          published?: boolean | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "articles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_studies: {
+        Row: {
+          additional_photo1: string | null
+          additional_photo2: string | null
+          approach: string | null
+          client: string | null
+          cover_photo: string | null
+          created_at: string
+          description: string | null
+          id: string
+          impact: string | null
+          name: string
+          problem_opportunity: string | null
+          quote_from_customer: string | null
+          sdgs: string[] | null
+          services: string[] | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          additional_photo1?: string | null
+          additional_photo2?: string | null
+          approach?: string | null
+          client?: string | null
+          cover_photo?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact?: string | null
+          name: string
+          problem_opportunity?: string | null
+          quote_from_customer?: string | null
+          sdgs?: string[] | null
+          services?: string[] | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          additional_photo1?: string | null
+          additional_photo2?: string | null
+          approach?: string | null
+          client?: string | null
+          cover_photo?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact?: string | null
+          name?: string
+          problem_opportunity?: string | null
+          quote_from_customer?: string | null
+          sdgs?: string[] | null
+          services?: string[] | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       channels: {
         Row: {
           created_at: string
@@ -47,15 +160,54 @@ export type Database = {
           },
         ]
       }
+      client_logos: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          image_url: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_logos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           created_at: string
           description: string | null
           enrollee_count: number | null
+          format: string
           id: string
           image_url: string | null
+          learning_outcomes: string[] | null
           lesson_count: number | null
           locked: boolean | null
+          long_description: string | null
+          price: number | null
           title: string
           updated_at: string
         }
@@ -63,10 +215,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           enrollee_count?: number | null
+          format?: string
           id?: string
           image_url?: string | null
+          learning_outcomes?: string[] | null
           lesson_count?: number | null
           locked?: boolean | null
+          long_description?: string | null
+          price?: number | null
           title: string
           updated_at?: string
         }
@@ -74,10 +230,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           enrollee_count?: number | null
+          format?: string
           id?: string
           image_url?: string | null
+          learning_outcomes?: string[] | null
           lesson_count?: number | null
           locked?: boolean | null
+          long_description?: string | null
+          price?: number | null
           title?: string
           updated_at?: string
         }
@@ -304,6 +464,50 @@ export type Database = {
           },
         ]
       }
+      pages: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          meta_description: string | null
+          published: boolean | null
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          meta_description?: string | null
+          published?: boolean | null
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          meta_description?: string | null
+          published?: boolean | null
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -352,6 +556,63 @@ export type Database = {
           role?: string | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      secrets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          name: string
+          photo_url: string | null
+          role: string
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          name: string
+          photo_url?: string | null
+          role: string
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          name?: string
+          photo_url?: string | null
+          role?: string
+          type?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

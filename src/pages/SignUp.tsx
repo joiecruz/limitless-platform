@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { PasswordRequirements } from "@/components/signup/steps/PasswordRequirements";
 import { QuotesCarousel } from "@/components/signup/QuotesCarousel";
+import { AuthLogo } from "@/components/auth/AuthLogo";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -14,6 +16,23 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Query to check if user is authenticated
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    }
+  });
+
+  const handleLogoClick = () => {
+    if (session) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,11 +81,9 @@ export default function Register() {
       <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 bg-white">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <img 
-              src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
-              alt="Limitless Lab"
-              className="h-12 w-auto mx-auto mb-8"
-            />
+            <div onClick={handleLogoClick} className="cursor-pointer">
+              <AuthLogo />
+            </div>
             <h2 className="text-3xl font-bold tracking-tight text-gray-900">
               Create your account
             </h2>

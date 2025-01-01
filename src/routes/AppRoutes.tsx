@@ -1,71 +1,149 @@
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import RequireAuth from "@/components/auth/RequireAuth";
+import { AdminLayout } from "@/layouts/AdminLayout";
+import { Session } from "@supabase/supabase-js";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+
+// Public/Marketing pages
+import Index from "@/pages/Index";
+import Product from "@/pages/landing/Product";
+import Services from "@/pages/landing/Services";
+import CoursesLanding from "@/pages/landing/Courses";
+import ToolsLanding from "@/pages/landing/Tools";
+import ToolDetail from "@/pages/landing/ToolDetail";
+import Blog from "@/pages/landing/Blog";
+import BlogPost from "@/pages/BlogPost";
+import CaseStudies from "@/pages/landing/CaseStudies";
+import CaseStudy from "@/pages/CaseStudy";
+import About from "@/pages/About";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
+
+// App pages
+import Dashboard from "@/pages/Dashboard";
+import Projects from "@/pages/Projects";
+import Courses from "@/pages/Courses";
+import Tools from "@/pages/Tools";
+import ToolDetails from "@/pages/ToolDetails";
+import Community from "@/pages/Community";
+import Settings from "@/pages/Settings";
+import AccountSettings from "@/pages/AccountSettings";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import ResetPassword from "@/pages/ResetPassword";
 import VerifyEmail from "@/pages/VerifyEmail";
 import InvitePage from "@/pages/InvitePage";
-import Dashboard from "@/pages/Dashboard";
-import Community from "@/pages/Community";
-import Courses from "@/pages/Courses";
 import Lessons from "@/pages/Lessons";
 import Lesson from "@/pages/Lesson";
-import Tools from "@/pages/Tools";
-import ToolDetails from "@/pages/ToolDetails";
-import Projects from "@/pages/Projects";
-import Settings from "@/pages/Settings";
-import AccountSettings from "@/pages/AccountSettings";
+
+// Admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
 import AdminWorkspaceDetails from "@/pages/admin/AdminWorkspaceDetails";
-import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminCourses from "@/pages/admin/AdminCourses";
-import RequireAuth from "@/components/auth/RequireAuth";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import AdminLayout from "@/components/admin/AdminLayout";
-import { Session } from "@supabase/supabase-js";
+import AdminPages from "@/pages/admin/AdminPages";
+import AdminContent from "@/pages/admin/AdminContent";
+import CreateBlog from "@/pages/admin/blog/CreateBlog";
+import EditBlog from "@/pages/admin/blog/EditBlog";
+import AdminSettings from "@/pages/admin/AdminSettings";
 
 interface AppRoutesProps {
   session: Session | null;
 }
 
-export default function AppRoutes({ session }: AppRoutesProps) {
+const AppRoutes = ({ session }: AppRoutesProps) => {
+  // Check if we're on the app subdomain
+  const isAppDomain = window.location.hostname.startsWith('app.');
+
+  // Create redirect components
+  const RedirectToWWW = () => {
+    const wwwUrl = window.location.href.replace('app.', 'www.');
+    window.location.href = wwwUrl;
+    return null;
+  };
+
+  const RedirectToApp = () => {
+    const appUrl = window.location.href.replace('www.', 'app.');
+    window.location.href = appUrl;
+    return null;
+  };
+
+  if (isAppDomain) {
+    return (
+      <Routes>
+        {/* Auth routes */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/invite" element={<InvitePage />} />
+
+        {/* Protected app routes */}
+        <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/projects" element={<Projects />} />
+          <Route path="/dashboard/courses" element={<Courses />} />
+          <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />
+          <Route path="/dashboard/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
+          <Route path="/dashboard/tools" element={<Tools />} />
+          <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
+          <Route path="/dashboard/community" element={<Community />} />
+          <Route path="/dashboard/settings" element={<Settings />} />
+          <Route path="/dashboard/account-settings" element={<AccountSettings />} />
+        </Route>
+
+        {/* Protected admin routes */}
+        <Route element={<RequireAuth>{session && <AdminLayout />}</RequireAuth>}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
+          <Route path="/admin/workspaces/:workspaceId" element={<AdminWorkspaceDetails />} />
+          <Route path="/admin/courses" element={<AdminCourses />} />
+          <Route path="/admin/pages" element={<AdminPages />} />
+          <Route path="/admin/content" element={<AdminContent />} />
+          <Route path="/admin/content/blog/create" element={<CreateBlog />} />
+          <Route path="/admin/content/blog/:id" element={<EditBlog />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+        </Route>
+
+        {/* Redirect marketing pages to www domain */}
+        <Route path="/" element={<RedirectToWWW />} />
+        <Route path="/product" element={<RedirectToWWW />} />
+        <Route path="/services" element={<RedirectToWWW />} />
+        <Route path="/courses" element={<RedirectToWWW />} />
+        <Route path="/tools" element={<RedirectToWWW />} />
+        <Route path="/blog" element={<RedirectToWWW />} />
+        <Route path="/case-studies" element={<RedirectToWWW />} />
+        <Route path="/about" element={<RedirectToWWW />} />
+      </Routes>
+    );
+  }
+
+  // Main website routes (www or base domain)
   return (
     <Routes>
-      {/* Auth routes */}
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/invite" element={<InvitePage />} />
+      <Route path="/" element={<Index />} />
+      <Route path="/product" element={<Product />} />
+      <Route path="/services" element={<Services />} />
+      <Route path="/courses" element={<CoursesLanding />} />
+      <Route path="/tools" element={<ToolsLanding />} />
+      <Route path="/tools/:id" element={<ToolDetail />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/case-studies" element={<CaseStudies />} />
+      <Route path="/case-studies/:slug" element={<CaseStudy />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/privacy-policy" element={<Privacy />} />
+      <Route path="/terms-of-service" element={<Terms />} />
 
-      {/* Admin routes - separate from DashboardLayout */}
-      <Route element={<RequireAuth><AdminLayout><Outlet /></AdminLayout></RequireAuth>}>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
-        <Route path="/admin/workspaces/:id" element={<AdminWorkspaceDetails />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/courses" element={<AdminCourses />} />
-      </Route>
-
-      {/* Dashboard routes */}
-      <Route element={<RequireAuth><DashboardLayout><Outlet /></DashboardLayout></RequireAuth>}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/courses/:courseId/lessons" element={<Lessons />} />
-        <Route path="/tools" element={<Tools />} />
-        <Route path="/tools/:toolId" element={<ToolDetails />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/account-settings" element={<AccountSettings />} />
-      </Route>
-
-      {/* Individual lesson page outside DashboardLayout */}
-      <Route 
-        path="/courses/:courseId/lessons/:lessonId" 
-        element={<RequireAuth><Lesson /></RequireAuth>} 
-      />
+      {/* Redirect auth and app routes to app subdomain */}
+      <Route path="/signin" element={<RedirectToApp />} />
+      <Route path="/signup" element={<RedirectToApp />} />
+      <Route path="/dashboard/*" element={<RedirectToApp />} />
+      <Route path="/admin/*" element={<RedirectToApp />} />
     </Routes>
   );
-}
+};
+
+export default AppRoutes;

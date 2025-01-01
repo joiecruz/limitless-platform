@@ -12,6 +12,7 @@ interface Course {
   lesson_count: number;
   enrollee_count: number;
   locked: boolean;
+  format: string;
 }
 
 interface Enrollment {
@@ -28,7 +29,8 @@ const Courses = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('courses')
-        .select('*');
+        .select('*')
+        .in('format', ['Online', 'Hybrid']); // Filter for Online and Hybrid courses only
       
       if (error) {
         console.error('Error fetching courses:', error);
@@ -119,7 +121,7 @@ const Courses = () => {
           Courses
         </h1>
         <p className="text-muted-foreground mt-1">
-          Explore our available courses and track your progress
+          Explore our available online and hybrid courses and track your progress
         </p>
       </div>
       

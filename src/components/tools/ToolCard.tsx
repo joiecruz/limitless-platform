@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Tool } from "@/pages/Tools";
 import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 interface ToolCardProps {
   tool: Tool;
@@ -60,7 +61,7 @@ export function ToolCard({ tool }: ToolCardProps) {
 
   return (
     <Card className="flex flex-col h-full">
-      <div className="relative pt-[56.25%]">
+      <div className="relative pt-[56.25%]"> {/* Changed to 56.25% for 16:9 aspect ratio */}
         <div className="absolute inset-0">
           <img
             src={tool.imageUrl || "/placeholder.svg"}
@@ -79,16 +80,11 @@ export function ToolCard({ tool }: ToolCardProps) {
         <p className="text-sm text-gray-500">{tool.description}</p>
       </CardContent>
       <CardFooter className="mt-auto">
-        <Button
-          className="w-full"
-          onClick={handleDownload}
-          disabled={isDownloading || !tool.downloadUrl}
-        >
-          <Download className="w-4 h-4 mr-2" />
-          {tool.type === "premium"
-            ? `Download ($${tool.price})`
-            : "Download Free"}
-        </Button>
+        <Link to={`/tools/${tool.id}`} className="w-full">
+          <Button className="w-full">
+            Learn more
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

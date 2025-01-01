@@ -1,5 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Briefcase, BookOpen, ArrowLeft } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Users, 
+  Briefcase, 
+  BookOpen,
+  ArrowLeft,
+  Globe,
+  FileText,
+  Database,
+  BookMarked
+} from "lucide-react";
 import { UserProfile } from "@/components/layout/UserProfile";
 
 export function AdminSidebar() {
@@ -45,6 +55,34 @@ export function AdminSidebar() {
             <BookOpen className="h-5 w-5" />
             Courses
           </Link>
+          
+          {/* Website section */}
+          <div className="pt-4 border-t mt-4">
+            <div className="text-sm font-medium text-gray-500 px-3 mb-2">
+              Website
+            </div>
+            <Link 
+              to="/admin/pages" 
+              className={`nav-item ${isActive('/admin/pages') ? 'active' : ''}`}
+            >
+              <FileText className="h-5 w-5" />
+              Pages
+            </Link>
+            <Link 
+              to="/admin/content" 
+              className={`nav-item ${isActive('/admin/content') ? 'active' : ''}`}
+            >
+              <Database className="h-5 w-5" />
+              Content
+            </Link>
+            <Link 
+              to="/admin/case-studies" 
+              className={`nav-item ${isActive('/admin/case-studies') ? 'active' : ''}`}
+            >
+              <BookMarked className="h-5 w-5" />
+              Case Studies
+            </Link>
+          </div>
         </div>
       </nav>
       <div className="mt-auto border-t">
