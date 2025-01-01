@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { RichTextEditor } from "@/components/admin/blog/RichTextEditor";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { PageTitleInput } from "./components/PageTitleInput";
+import { PageSlugInput } from "./components/PageSlugInput";
+import { PageMetaDescription } from "./components/PageMetaDescription";
+import { PagePublishToggle } from "./components/PagePublishToggle";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface PageEditorProps {
   pageId?: string;
@@ -83,52 +85,35 @@ export function PageEditor({ pageId, initialData, onSuccess }: PageEditorProps) 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <div>
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            required
-          />
-        </div>
+        <PageTitleInput
+          value={formData.title}
+          onChange={(title) => setFormData(prev => ({ ...prev, title }))}
+        />
 
-        <div>
-          <Label htmlFor="slug">Slug</Label>
-          <Input
-            id="slug"
-            value={formData.slug}
-            onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-            required
-          />
-        </div>
+        <PageSlugInput
+          value={formData.slug}
+          onChange={(slug) => setFormData(prev => ({ ...prev, slug }))}
+        />
 
-        <div>
-          <Label htmlFor="meta_description">Meta Description</Label>
-          <Textarea
-            id="meta_description"
-            value={formData.meta_description}
-            onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
-          />
-        </div>
+        <PageMetaDescription
+          value={formData.meta_description}
+          onChange={(meta_description) => setFormData(prev => ({ ...prev, meta_description }))}
+        />
 
         <div>
           <Label>Content</Label>
-          <RichTextEditor
-            value={formData.content.html || ""}
-            onChange={(html) => setFormData(prev => ({ ...prev, content: { html } }))}
-            className="min-h-[400px] mt-2"
-          />
+          <ScrollArea className="h-[400px] mt-2">
+            <RichTextEditor
+              value={formData.content.html || ""}
+              onChange={(html) => setFormData(prev => ({ ...prev, content: { html } }))}
+            />
+          </ScrollArea>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="published"
-            checked={formData.published}
-            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, published: checked }))}
-          />
-          <Label htmlFor="published">Published</Label>
-        </div>
+        <PagePublishToggle
+          checked={formData.published}
+          onCheckedChange={(published) => setFormData(prev => ({ ...prev, published }))}
+        />
       </div>
 
       <Button type="submit" disabled={isLoading}>
