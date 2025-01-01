@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
+import { CaseStudyContent } from "@/components/case-studies/CaseStudyContent";
 
 export default function CaseStudy() {
   const { slug } = useParams();
@@ -128,37 +129,11 @@ export default function CaseStudy() {
           </div>
         )}
 
-        {/* Rest of the content */}
-        <div className="grid grid-cols-12 gap-8">
-          <div className="col-span-12 lg:col-span-8">
-            {caseStudy.problem_opportunity && (
-              <div className="mb-12">
-                <h2 className="text-2xl font-semibold mb-4">Problem/Opportunity</h2>
-                <p className="text-gray-600">{caseStudy.problem_opportunity}</p>
-              </div>
-            )}
-
-            {caseStudy.approach && (
-              <div className="mb-12">
-                <h2 className="text-2xl font-semibold mb-4">Our Approach</h2>
-                <p className="text-gray-600">{caseStudy.approach}</p>
-              </div>
-            )}
-
-            {caseStudy.impact && (
-              <div className="mb-12">
-                <h2 className="text-2xl font-semibold mb-4">Impact</h2>
-                <p className="text-gray-600">{caseStudy.impact}</p>
-              </div>
-            )}
-
-            {caseStudy.quote_from_customer && (
-              <blockquote className="border-l-4 border-primary pl-4 italic text-gray-700 my-12">
-                "{caseStudy.quote_from_customer}"
-              </blockquote>
-            )}
-          </div>
-        </div>
+        <CaseStudyContent
+          problem={caseStudy.problem_opportunity}
+          approach={caseStudy.approach}
+          impact={caseStudy.impact}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-12">
           {caseStudy.additional_photo1 && (
