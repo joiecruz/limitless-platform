@@ -28,6 +28,18 @@ export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Check if we're on the wrong domain and redirect if needed
+  useEffect(() => {
+    const currentDomain = window.location.hostname;
+    const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
+    
+    if (isMainDomain) {
+      console.log("DashboardLayout - Redirecting to app domain");
+      window.location.href = `https://app.limitlesslab.org${location.pathname}`;
+      return;
+    }
+  }, [location.pathname]);
+
   const handleWorkspaceChange = (workspace: Workspace) => {
     console.log('Changing workspace to:', workspace);
     setIsLoading(true);
@@ -132,4 +144,4 @@ export default function DashboardLayout() {
       </div>
     </WorkspaceContext.Provider>
   );
-}
+};
