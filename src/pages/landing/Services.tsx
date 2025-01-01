@@ -54,21 +54,33 @@ export default function Services() {
       {/* Hero Section */}
       <section className="pt-20 lg:pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Transform Your Innovation Journey with Expert Support
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 mb-8">
-              Get hands-on, customized guidance to turn your innovation challenges into opportunities. Our experienced team works alongside you to create lasting impact.
-            </p>
-            <Button 
-              variant="default"
-              size="lg"
-              className="bg-[#393CA0] hover:bg-[#2F3282] text-white px-8"
-              onClick={() => window.open('https://calendly.com/limitlesslab/consultation', '_blank')}
-            >
-              Book a Consultation Call
-            </Button>
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div>
+              <img
+                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/landing_page/co-design.png"
+                alt="Co-design Process"
+                className="w-full rounded-lg shadow-lg"
+              />
+            </div>
+            <div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                Accelerate your innovation journey with expert support
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-600 mb-6">
+                Get hands-on, customized guidance to turn your organization challenges into innovation projects that are measurable and impactful.
+              </p>
+              <p className="text-lg sm:text-xl text-gray-600 mb-8">
+                Our team has worked with organizations from public, private, and civil society on diverse verticals and sectors.
+              </p>
+              <Button 
+                variant="default"
+                size="lg"
+                className="bg-[#393CA0] hover:bg-[#2F3282] text-white px-8"
+                onClick={() => window.open('https://calendly.com/limitlesslab/consultation', '_blank')}
+              >
+                Book a Consultation Call
+              </Button>
+            </div>
           </div>
         </div>
       </section>
