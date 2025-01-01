@@ -2,8 +2,29 @@ import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
 import { CTASection } from "@/components/site-config/CTASection";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Product() {
+  const navigate = useNavigate();
+
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    }
+  });
+
+  const handleTryForFree = () => {
+    if (session) {
+      navigate("/dashboard");
+    } else {
+      navigate("/signup");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
@@ -25,8 +46,9 @@ export default function Product() {
                 variant="default"
                 size="lg"
                 className="bg-[#393CA0] hover:bg-[#2F3282] text-white px-8"
+                onClick={handleTryForFree}
               >
-                Try for free
+                {session ? "Go to Dashboard" : "Try for free"}
               </Button>
             </div>
             <div className="order-1 lg:order-2">
