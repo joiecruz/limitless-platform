@@ -89,18 +89,46 @@ export default function CaseStudy() {
           </div>
         </div>
 
-        <CaseStudyImages 
-          coverPhoto={caseStudy.cover_photo}
-          name={caseStudy.name}
-          additionalPhoto1={caseStudy.additional_photo1}
-          additionalPhoto2={caseStudy.additional_photo2}
-        />
+        {caseStudy.cover_photo && (
+          <div className="w-full mb-12">
+            <div className="aspect-video w-full rounded-lg overflow-hidden">
+              <img
+                src={caseStudy.cover_photo}
+                alt={caseStudy.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        )}
 
         <CaseStudyContent
           problem={caseStudy.problem_opportunity}
           approach={caseStudy.approach}
           impact={caseStudy.impact}
         />
+
+        {(caseStudy.additional_photo1 || caseStudy.additional_photo2) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+            {caseStudy.additional_photo1 && (
+              <div className="aspect-video rounded-lg overflow-hidden">
+                <img
+                  src={caseStudy.additional_photo1}
+                  alt="Additional case study photo 1"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            {caseStudy.additional_photo2 && (
+              <div className="aspect-video rounded-lg overflow-hidden">
+                <img
+                  src={caseStudy.additional_photo2}
+                  alt="Additional case study photo 2"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <CTASection />
