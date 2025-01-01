@@ -3,11 +3,12 @@ import {
   LayoutDashboard, 
   Users, 
   Briefcase, 
-  BookOpen, 
+  BookOpen,
   ArrowLeft,
   Globe,
   FileText,
-  Database
+  Database,
+  BookMarked
 } from "lucide-react";
 import { UserProfile } from "@/components/layout/UserProfile";
 
@@ -55,7 +56,7 @@ export function AdminSidebar() {
             Courses
           </Link>
           
-          {/* New Website section */}
+          {/* Website section */}
           <div className="pt-4 border-t mt-4">
             <div className="text-sm font-medium text-gray-500 px-3 mb-2">
               Website
@@ -73,6 +74,13 @@ export function AdminSidebar() {
             >
               <Database className="h-5 w-5" />
               Content
+            </Link>
+            <Link 
+              to="/admin/case-studies" 
+              className={`nav-item ${isActive('/admin/case-studies') ? 'active' : ''}`}
+            >
+              <BookMarked className="h-5 w-5" />
+              Case Studies
             </Link>
           </div>
         </div>

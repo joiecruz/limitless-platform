@@ -4,7 +4,6 @@ import { AdminLayout } from "@/layouts/AdminLayout";
 import { Session } from "@supabase/supabase-js";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
-// Pages
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
@@ -29,8 +28,9 @@ import Services from "@/pages/landing/Services";
 import CoursesLanding from "@/pages/landing/Courses";
 import ToolsLanding from "@/pages/landing/Tools";
 import Blog from "@/pages/landing/Blog";
+import CaseStudies from "@/pages/landing/CaseStudies";
+import CaseStudy from "@/pages/CaseStudy";
 
-// Admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
@@ -57,6 +57,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/case-studies/:slug" element={<CaseStudy />} />
 
       {/* Landing/Website Pages */}
       <Route path="/product" element={<Product />} />
@@ -64,6 +65,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/courses" element={<CoursesLanding />} />
       <Route path="/tools" element={<ToolsLanding />} />
       <Route path="/blog" element={<Blog />} />
+      <Route path="/case-studies" element={<CaseStudies />} />
 
       {/* Protected user routes */}
       <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
