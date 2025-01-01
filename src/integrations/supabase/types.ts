@@ -80,7 +80,6 @@ export type Database = {
           problem_opportunity: string | null
           quote_from_customer: string | null
           sdgs: string[] | null
-          service_types: string[] | null
           services: string[] | null
           slug: string
           updated_at: string
@@ -99,7 +98,6 @@ export type Database = {
           problem_opportunity?: string | null
           quote_from_customer?: string | null
           sdgs?: string[] | null
-          service_types?: string[] | null
           services?: string[] | null
           slug: string
           updated_at?: string
@@ -118,7 +116,6 @@ export type Database = {
           problem_opportunity?: string | null
           quote_from_customer?: string | null
           sdgs?: string[] | null
-          service_types?: string[] | null
           services?: string[] | null
           slug?: string
           updated_at?: string
