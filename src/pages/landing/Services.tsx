@@ -57,7 +57,7 @@ export default function Services() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/landing_page/co-design.png"
+                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design.png"
                 alt="Co-design Process"
                 className="w-full rounded-lg shadow-lg"
               />
@@ -76,7 +76,7 @@ export default function Services() {
                 variant="default"
                 size="lg"
                 className="bg-[#393CA0] hover:bg-[#2F3282] text-white px-8"
-                onClick={() => window.open('https://calendly.com/limitlesslab/consultation', '_blank')}
+                onClick={() => window.open('https://calendar.app.google/Sbztdtob1XHqj1gbA', '_blank')}
               >
                 Book a Consultation Call
               </Button>
@@ -151,7 +151,7 @@ export default function Services() {
             variant="outline" 
             size="lg"
             className="bg-white text-[#393CA0] hover:bg-gray-100"
-            onClick={() => window.open('https://calendly.com/limitlesslab/consultation', '_blank')}
+            onClick={() => window.open('https://calendar.app.google/Sbztdtob1XHqj1gbA', '_blank')}
           >
             Book Your Free Consultation
           </Button>
