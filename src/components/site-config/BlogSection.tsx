@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Suspense } from "react";
 import { LoadingPage } from "@/components/common/LoadingPage";
-import { BlogSection as BlogContent } from "./BlogSection";
+import { BlogContent } from "./BlogContent";
 
 export function BlogSectionWrapper() {
   const navigate = useNavigate();
