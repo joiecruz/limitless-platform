@@ -30,13 +30,13 @@ export function AuthButtons({
         <>
           <Button 
             variant="ghost"
-            onClick={() => handleAuthClick('/signin')}
+            onClick={() => window.location.href = 'https://www.limitlesslab.org/signin'}
           >
             Log in
           </Button>
           <Button 
             className="bg-[#393CA0] hover:bg-[#393CA0]/90"
-            onClick={() => handleAuthClick('/signup')}
+            onClick={() => window.location.href = 'https://www.limitlesslab.org/signup'}
           >
             Sign up
           </Button>
