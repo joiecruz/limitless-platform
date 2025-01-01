@@ -54,17 +54,17 @@ interface AppRoutesProps {
 
 const AppRoutes = ({ session }: AppRoutesProps) => {
   // Check if we're on the app subdomain
-  const isAppDomain = window.location.hostname.startsWith('app.');
+  const isAppDomain = window.location.hostname === 'app.limitlesslab.org';
 
   // Create redirect components
-  const RedirectToWWW = () => {
-    const wwwUrl = window.location.href.replace('app.', 'www.');
-    window.location.href = wwwUrl;
+  const RedirectToMain = () => {
+    const mainUrl = window.location.href.replace('app.limitlesslab.org', 'limitlesslab.org');
+    window.location.href = mainUrl;
     return null;
   };
 
   const RedirectToApp = () => {
-    const appUrl = window.location.href.replace('www.', 'app.');
+    const appUrl = window.location.href.replace('limitlesslab.org', 'app.limitlesslab.org');
     window.location.href = appUrl;
     return null;
   };
@@ -107,20 +107,20 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
 
-        {/* Redirect marketing pages to www domain */}
-        <Route path="/" element={<RedirectToWWW />} />
-        <Route path="/product" element={<RedirectToWWW />} />
-        <Route path="/services" element={<RedirectToWWW />} />
-        <Route path="/courses" element={<RedirectToWWW />} />
-        <Route path="/tools" element={<RedirectToWWW />} />
-        <Route path="/blog" element={<RedirectToWWW />} />
-        <Route path="/case-studies" element={<RedirectToWWW />} />
-        <Route path="/about" element={<RedirectToWWW />} />
+        {/* Redirect marketing pages to main domain */}
+        <Route path="/" element={<RedirectToMain />} />
+        <Route path="/product" element={<RedirectToMain />} />
+        <Route path="/services" element={<RedirectToMain />} />
+        <Route path="/courses" element={<RedirectToMain />} />
+        <Route path="/tools" element={<RedirectToMain />} />
+        <Route path="/blog" element={<RedirectToMain />} />
+        <Route path="/case-studies" element={<RedirectToMain />} />
+        <Route path="/about" element={<RedirectToMain />} />
       </Routes>
     );
   }
 
-  // Main website routes (www or base domain)
+  // Main website routes (limitlesslab.org)
   return (
     <Routes>
       <Route path="/" element={<Index />} />

@@ -15,7 +15,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist',
-    copyPublicDir: true, // Ensure public files are copied
+    outDir: process.env.VITE_APP_DOMAIN === 'app' ? 'dist-app' : 'dist',
+    copyPublicDir: true,
   },
 })

@@ -16,9 +16,9 @@ export function CTASection() {
 
   const handleClick = () => {
     if (session) {
-      navigate("/dashboard");
+      window.location.href = 'https://app.limitlesslab.org/dashboard';
     } else {
-      navigate("/signup");
+      window.location.href = 'https://app.limitlesslab.org/signup';
     }
   };
 
