@@ -45,25 +45,25 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Follow us</h3>
             <ul className="space-y-3">
               <li>
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
+                <a href="https://www.facebook.com/thelimitlesslab/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
                   <Facebook size={20} />
                   <span>Facebook</span>
                 </a>
               </li>
               <li>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
+                <a href="https://www.instagram.com/thelimitlesslab/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
                   <Instagram size={20} />
                   <span>Instagram</span>
                 </a>
               </li>
               <li>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
+                <a href="https://www.linkedin.com/company/limitlesslab/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
                   <Linkedin size={20} />
                   <span>LinkedIn</span>
                 </a>
               </li>
               <li>
-                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
+                <a href="https://www.youtube.com/channel/UCl_uNGwqTRMq_1dr7_BBs2g" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
                   <Youtube size={20} />
                   <span>Youtube</span>
                 </a>
