@@ -5,37 +5,10 @@ import { AuthLinks } from "@/components/auth/AuthLinks";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 
 export default function SignIn() {
   useAuthRedirect();
   const navigate = useNavigate();
-
-  // Check domain and redirect if needed
-  useEffect(() => {
-    const currentDomain = window.location.hostname;
-    const isAppDomain = currentDomain === 'app.limitlesslab.org';
-    const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
-
-    if (!isAppDomain && !isMainDomain) return;
-
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        if (isMainDomain) {
-          window.location.href = `https://app.limitlesslab.org/dashboard`;
-          return;
-        }
-        if (isAppDomain) {
-          navigate('/dashboard');
-          return;
-        }
-      }
-    };
-
-    checkSession();
-  }, [navigate]);
 
   // Query to check if user is authenticated
   const { data: session } = useQuery({
