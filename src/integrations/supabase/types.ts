@@ -11,48 +11,81 @@ export type Database = {
     Tables: {
       articles: {
         Row: {
+          additional_photo1: string | null
+          additional_photo2: string | null
+          approach: string | null
           categories: string[] | null
+          client: string | null
           content: string
           cover_image: string | null
           created_at: string
           created_by: string | null
+          date_published: string | null
           excerpt: string | null
           id: string
           meta_description: string | null
+          problem_opportunity: string | null
           published: boolean | null
+          quote_from_customer: string | null
+          sdgs: string[] | null
+          service_types: string[] | null
+          services: string[] | null
           slug: string
           tags: string[] | null
           title: string
+          type: string
           updated_at: string
         }
         Insert: {
+          additional_photo1?: string | null
+          additional_photo2?: string | null
+          approach?: string | null
           categories?: string[] | null
+          client?: string | null
           content: string
           cover_image?: string | null
           created_at?: string
           created_by?: string | null
+          date_published?: string | null
           excerpt?: string | null
           id?: string
           meta_description?: string | null
+          problem_opportunity?: string | null
           published?: boolean | null
+          quote_from_customer?: string | null
+          sdgs?: string[] | null
+          service_types?: string[] | null
+          services?: string[] | null
           slug: string
           tags?: string[] | null
           title: string
+          type?: string
           updated_at?: string
         }
         Update: {
+          additional_photo1?: string | null
+          additional_photo2?: string | null
+          approach?: string | null
           categories?: string[] | null
+          client?: string | null
           content?: string
           cover_image?: string | null
           created_at?: string
           created_by?: string | null
+          date_published?: string | null
           excerpt?: string | null
           id?: string
           meta_description?: string | null
+          problem_opportunity?: string | null
           published?: boolean | null
+          quote_from_customer?: string | null
+          sdgs?: string[] | null
+          service_types?: string[] | null
+          services?: string[] | null
           slug?: string
           tags?: string[] | null
           title?: string
+          type?: string
           updated_at?: string
         }
         Relationships: [
