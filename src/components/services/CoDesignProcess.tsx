@@ -11,7 +11,7 @@ export function CoDesignProcess() {
         </p>
         
         <img 
-          src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design.png"
+          src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design%20Diamond.png"
           alt="Co-Design Process"
           className="w-full mb-12 rounded-lg"
         />

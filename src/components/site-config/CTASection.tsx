@@ -1,8 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function CTASection() {
   const navigate = useNavigate();
+
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    }
+  });
+
+  const handleClick = () => {
+    if (session) {
+      navigate("/dashboard");
+    } else {
+      navigate("/signup");
+    }
+  };
 
   return (
     <div className="bg-[#393CA0] py-24">
@@ -12,11 +30,11 @@ export function CTASection() {
           <span className="block text-[#66E6F5]">impact today</span>
         </h2>
         <Button 
-          onClick={() => navigate("/signup")}
+          onClick={handleClick}
           size="lg"
           className="bg-white text-[#393CA0] hover:bg-gray-100 px-8 py-6 text-lg"
         >
-          Register for free
+          {session ? "Go to Dashboard" : "Register for free"}
         </Button>
       </div>
     </div>
