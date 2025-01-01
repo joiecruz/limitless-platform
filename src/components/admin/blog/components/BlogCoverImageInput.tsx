@@ -31,7 +31,12 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      
+      console.log('Profile data:', data);
       return data;
     }
   });
@@ -42,12 +47,15 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
 
     // Check if user is superadmin
     if (!profile?.is_superadmin) {
+      console.log('Superadmin access denied');
       toast({
         title: "Unauthorized",
         description: "Only superadmins can upload blog cover images",
         variant: "destructive",
       });
       return;
+    } else {
+      console.log('Superadmin access granted');
     }
 
     setIsUploading(true);
@@ -60,6 +68,7 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
         throw new Error('File size must be less than 10MB');
       }
 
+      // Upload the file
       const { error: uploadError, data } = await supabase.storage
         .from('blog-covers')
         .upload(filePath, file, { 
@@ -69,9 +78,10 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
 
       if (uploadError) {
         console.error('Error uploading:', uploadError);
-        throw new Error(uploadError.message);
+        throw uploadError;
       }
 
+      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('blog-covers')
         .getPublicUrl(filePath);
