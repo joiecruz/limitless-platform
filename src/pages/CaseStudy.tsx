@@ -112,6 +112,22 @@ export default function CaseStudy() {
                 </div>
               </div>
             )}
+
+            {caseStudy.services && caseStudy.services.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Services</h3>
+                <div className="flex flex-wrap gap-2">
+                  {caseStudy.services.map((service: string) => (
+                    <span
+                      key={service}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                    >
+                      {service}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
