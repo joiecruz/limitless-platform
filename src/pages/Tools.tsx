@@ -71,9 +71,22 @@ export default function Tools() {
   );
 
   return (
-    <div>
+    <div className="animate-fade-in">
+      {/* Hero Section */}
+      <div className="bg-[#6366F1] text-white py-16 -mx-6 px-6 mb-8">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-4xl font-bold mb-6">Innovation</h1>
+          <p className="text-lg">
+            Empower your creative process with our collection of free worksheets,
+            canvases, and downloadable resources. Whether you're brainstorming new
+            ideas or planning your next big project, our tools are designed to help you
+            structure your thoughts and innovate effectively.
+          </p>
+        </div>
+      </div>
+
       {/* Category Filters */}
-      <div className="flex flex-wrap gap-2 mb-8">
+      <div className="flex flex-wrap justify-center gap-2 mb-8">
         {CATEGORIES.map((category) => (
           <Button
             key={category}
