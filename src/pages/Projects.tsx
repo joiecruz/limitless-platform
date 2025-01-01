@@ -30,9 +30,10 @@ export default function Projects() {
           </div>
           
           <ul className="space-y-2 text-left list-disc list-inside text-muted-foreground">
-            <li>A streamlined, intuitive way to track and manage your innovation projects</li>
+            <li>A streamlined, intuitive, and AI-powered way to manage your innovation projects</li>
+            <li>Tried and tested innovation workflows to increase your chances of success</li>
             <li>Collaborative tools designed to bring ideas to life faster</li>
-            <li>Insights and analytics that drive impact at every stage</li>
+            <li>Insights and analytics to help you measure the impact for your projects</li>
           </ul>
           
           <p className="text-sm italic">
