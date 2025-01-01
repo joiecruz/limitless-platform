@@ -64,7 +64,7 @@ export function useAuthRedirect() {
             return;
           }
           console.log("SignIn - Active session found, redirecting to dashboard");
-          navigate("/dashboard");
+          navigate("/dashboard", { replace: true });
         } else {
           console.log("SignIn - No active session found");
           // Store invite token if present
@@ -113,7 +113,7 @@ export function useAuthRedirect() {
           return;
         }
         console.log("SignIn - User signed in, redirecting to dashboard");
-        navigate("/dashboard");
+        navigate("/dashboard", { replace: true });
       }
 
       if (!session || event === 'SIGNED_OUT') {
