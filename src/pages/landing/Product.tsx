@@ -33,7 +33,7 @@ export default function Product() {
               <img
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product.png"
                 alt="Innovation Platform Interface"
-                className="w-full rounded-lg shadow-lg"
+                className="w-full rounded-lg"
               />
             </div>
           </div>
@@ -48,7 +48,7 @@ export default function Product() {
               <img
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Website_Assets__3_.png"
                 alt="Innovation Journey"
-                className="w-full rounded-lg shadow-lg"
+                className="w-full rounded-lg"
               />
             </div>
             <div>
@@ -85,7 +85,7 @@ export default function Product() {
               <img
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product-Empathize.png"
                 alt="Innovation Platform Interface"
-                className="w-full rounded-lg shadow-lg"
+                className="w-full rounded-lg"
               />
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function Product() {
               <img
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Screenshot_2024-11-15_at_2.36.42_PM.png"
                 alt="Impact Measurement Dashboard"
-                className="w-full rounded-lg shadow-lg"
+                className="w-full rounded-lg"
               />
             </div>
             <div>
