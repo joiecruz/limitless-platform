@@ -22,9 +22,9 @@ export default function Privacy() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">Privacy Policy</h1>
-        <div className="text-gray-600 mb-12">Last updated: {new Date().toLocaleDateString()}</div>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+        <h1 className="text-4xl font-bold text-gray-900 mb-12">Privacy Policy</h1>
+        <div className="text-gray-600 mb-16">Last updated: {new Date().toLocaleDateString()}</div>
         
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
@@ -32,7 +32,7 @@ export default function Privacy() {
           </div>
         ) : (
           <div 
-            className="prose prose-lg max-w-none mb-24" 
+            className="prose prose-lg max-w-none mb-32 space-y-8" 
             dangerouslySetInnerHTML={{ 
               __html: page?.content?.html || `
                 <h2>1. Information We Collect</h2>
