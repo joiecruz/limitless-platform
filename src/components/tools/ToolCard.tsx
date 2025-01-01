@@ -12,8 +12,6 @@ import { Tool } from "@/pages/Tools";
 import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 interface ToolCardProps {
   tool: Tool;
@@ -22,21 +20,8 @@ interface ToolCardProps {
 export function ToolCard({ tool }: ToolCardProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
-  
-  const { data: session } = useQuery({
-    queryKey: ['session'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      return session;
-    }
-  });
 
   const handleDownload = async () => {
-    if (!session) {
-      window.location.href = 'https://app.limitlesslab.org/signup';
-      return;
-    }
-
     if (!tool.downloadUrl) {
       toast({
         title: "Download not available",
@@ -76,7 +61,7 @@ export function ToolCard({ tool }: ToolCardProps) {
 
   return (
     <Card className="flex flex-col h-full">
-      <div className="relative pt-[56.25%]">
+      <div className="relative pt-[56.25%]"> {/* Changed to 56.25% for 16:9 aspect ratio */}
         <div className="absolute inset-0">
           <img
             src={tool.imageUrl || "/placeholder.svg"}

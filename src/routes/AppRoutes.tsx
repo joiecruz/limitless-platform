@@ -18,20 +18,21 @@ import CaseStudy from "@/pages/CaseStudy";
 import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
-import SignIn from "@/pages/SignIn";
-import SignUp from "@/pages/SignUp";
-import ResetPassword from "@/pages/ResetPassword";
-import VerifyEmail from "@/pages/VerifyEmail";
-import InvitePage from "@/pages/InvitePage";
 
 // App pages
 import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
 import Courses from "@/pages/Courses";
 import Tools from "@/pages/Tools";
+import ToolDetails from "@/pages/ToolDetails";
 import Community from "@/pages/Community";
 import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
+import SignIn from "@/pages/SignIn";
+import SignUp from "@/pages/SignUp";
+import ResetPassword from "@/pages/ResetPassword";
+import VerifyEmail from "@/pages/VerifyEmail";
+import InvitePage from "@/pages/InvitePage";
 import Lessons from "@/pages/Lessons";
 import Lesson from "@/pages/Lesson";
 
@@ -57,18 +58,27 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
 
   // Create redirect components
   const RedirectToMain = () => {
-    window.location.href = window.location.href.replace('app.limitlesslab.org', 'www.limitlesslab.org');
+    const mainUrl = window.location.href.replace('app.limitlesslab.org', 'limitlesslab.org');
+    window.location.href = mainUrl;
     return null;
   };
 
   const RedirectToApp = () => {
-    window.location.href = window.location.href.replace('www.limitlesslab.org', 'app.limitlesslab.org');
+    const appUrl = window.location.href.replace('limitlesslab.org', 'app.limitlesslab.org');
+    window.location.href = appUrl;
     return null;
   };
 
   if (isAppDomain) {
     return (
       <Routes>
+        {/* Auth routes */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/invite" element={<InvitePage />} />
+
         {/* Protected app routes */}
         <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
           <Route path="/dashboard" element={<Dashboard />} />
@@ -77,6 +87,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />
           <Route path="/dashboard/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
           <Route path="/dashboard/tools" element={<Tools />} />
+          <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
           <Route path="/dashboard/community" element={<Community />} />
           <Route path="/dashboard/settings" element={<Settings />} />
           <Route path="/dashboard/account-settings" element={<AccountSettings />} />
@@ -96,23 +107,22 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
 
-        {/* Redirect non-app routes to main domain */}
-        <Route path="*" element={<RedirectToMain />} />
+        {/* Redirect marketing pages to main domain */}
+        <Route path="/" element={<RedirectToMain />} />
+        <Route path="/product" element={<RedirectToMain />} />
+        <Route path="/services" element={<RedirectToMain />} />
+        <Route path="/courses" element={<RedirectToMain />} />
+        <Route path="/tools" element={<RedirectToMain />} />
+        <Route path="/blog" element={<RedirectToMain />} />
+        <Route path="/case-studies" element={<RedirectToMain />} />
+        <Route path="/about" element={<RedirectToMain />} />
       </Routes>
     );
   }
 
-  // Main website routes (www.limitlesslab.org)
+  // Main website routes (limitlesslab.org)
   return (
     <Routes>
-      {/* Auth routes */}
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/invite" element={<InvitePage />} />
-
-      {/* Marketing pages */}
       <Route path="/" element={<Index />} />
       <Route path="/product" element={<Product />} />
       <Route path="/services" element={<Services />} />
@@ -127,7 +137,9 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/privacy-policy" element={<Privacy />} />
       <Route path="/terms-of-service" element={<Terms />} />
 
-      {/* Redirect dashboard routes to app subdomain */}
+      {/* Redirect auth and app routes to app subdomain */}
+      <Route path="/signin" element={<RedirectToApp />} />
+      <Route path="/signup" element={<RedirectToApp />} />
       <Route path="/dashboard/*" element={<RedirectToApp />} />
       <Route path="/admin/*" element={<RedirectToApp />} />
     </Routes>

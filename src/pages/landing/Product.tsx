@@ -19,9 +19,9 @@ export default function Product() {
 
   const handleTryForFree = () => {
     if (session) {
-      window.location.href = 'https://app.limitlesslab.org/dashboard';
+      navigate("/dashboard");
     } else {
-      window.location.href = 'https://app.limitlesslab.org/signup';
+      navigate("/signup");
     }
   };
 
