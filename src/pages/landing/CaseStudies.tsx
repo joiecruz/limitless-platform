@@ -21,7 +21,8 @@ export default function CaseStudies() {
       const { data, count } = await supabase
         .from('case_studies')
         .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
       return { studies: data, total: count };
     }
   });
@@ -29,11 +30,6 @@ export default function CaseStudies() {
   const totalPages = caseStudies?.total 
     ? Math.ceil(caseStudies.total / ITEMS_PER_PAGE) 
     : 0;
-
-  const paginatedCaseStudies = caseStudies?.studies?.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   if (isLoading) {
     return (
@@ -58,7 +54,7 @@ export default function CaseStudies() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {paginatedCaseStudies?.map((study) => (
+          {caseStudies?.studies?.map((study) => (
             <Card 
               key={study.id} 
               className="hover:shadow-lg transition-shadow cursor-pointer"
