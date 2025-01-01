@@ -31,7 +31,11 @@ import ToolDetail from "@/pages/landing/ToolDetail";
 import Blog from "@/pages/landing/Blog";
 import CaseStudies from "@/pages/landing/CaseStudies";
 import CaseStudy from "@/pages/CaseStudy";
+import About from "@/pages/About";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 
+// Admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
@@ -59,6 +63,9 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/invite" element={<InvitePage />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/case-studies/:slug" element={<CaseStudy />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
 
       {/* Landing/Website Pages */}
       <Route path="/product" element={<Product />} />

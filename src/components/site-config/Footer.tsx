@@ -27,7 +27,6 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
               <li><Link to="/about" className="text-gray-600 hover:text-primary-600">About</Link></li>
-              <li><Link to="/pricing" className="text-gray-600 hover:text-primary-600">Pricing</Link></li>
               <li><Link to="/privacy" className="text-gray-600 hover:text-primary-600">Privacy Policy</Link></li>
               <li><Link to="/terms" className="text-gray-600 hover:text-primary-600">Terms of Service</Link></li>
             </ul>
@@ -39,7 +38,6 @@ export function Footer() {
               <li><Link to="/blog" className="text-gray-600 hover:text-primary-600">Blog & Updates</Link></li>
               <li><Link to="/case-studies" className="text-gray-600 hover:text-primary-600">Case Studies</Link></li>
               <li><Link to="/tools" className="text-gray-600 hover:text-primary-600">Tools</Link></li>
-              <li><Link to="/events" className="text-gray-600 hover:text-primary-600">Events</Link></li>
             </ul>
           </div>
           
