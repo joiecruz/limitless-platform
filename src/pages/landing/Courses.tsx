@@ -34,6 +34,27 @@ export default function Courses() {
     },
   });
 
+  // Fetch enrollments for authenticated user
+  const { data: enrollments } = useQuery({
+    queryKey: ["enrollments"],
+    queryFn: async () => {
+      const { data: userSession } = await supabase.auth.getSession();
+      if (!userSession?.session?.user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('enrollments')
+        .select('course_id, progress')
+        .eq('user_id', userSession.session.user.id);
+      
+      if (error) {
+        console.error('Error fetching enrollments:', error);
+        return [];
+      }
+      
+      return data;
+    },
+  });
+
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
@@ -76,19 +97,24 @@ export default function Courses() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {courses?.map((course) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                onEnroll={() => {
-                  toast({
-                    title: "Coming Soon",
-                    description: "Course enrollment will be available soon.",
-                  });
-                }}
-                isEnrolling={false}
-              />
-            ))}
+            {courses?.map((course) => {
+              const enrollment = enrollments?.find((e) => e.course_id === course.id);
+              
+              return (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  enrollment={enrollment}
+                  onEnroll={() => {
+                    toast({
+                      title: "Coming Soon",
+                      description: "Course enrollment will be available soon.",
+                    });
+                  }}
+                  isEnrolling={false}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
