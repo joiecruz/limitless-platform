@@ -23,7 +23,7 @@ export default function About() {
           </div>
 
           <div className="relative">
-            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl">
+            <div className="aspect-[16/9] w-full overflow-hidden rounded-2xl">
               <img
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/About%20photo.png"
                 alt="Limitless Lab Team"
