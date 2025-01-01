@@ -73,8 +73,6 @@ export type Database = {
           client: string | null
           cover_photo: string | null
           created_at: string
-          created_by: string | null
-          date_published: string | null
           description: string | null
           id: string
           impact: string | null
@@ -94,8 +92,6 @@ export type Database = {
           client?: string | null
           cover_photo?: string | null
           created_at?: string
-          created_by?: string | null
-          date_published?: string | null
           description?: string | null
           id?: string
           impact?: string | null
@@ -115,8 +111,6 @@ export type Database = {
           client?: string | null
           cover_photo?: string | null
           created_at?: string
-          created_by?: string | null
-          date_published?: string | null
           description?: string | null
           id?: string
           impact?: string | null
@@ -129,15 +123,7 @@ export type Database = {
           slug?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "case_studies_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       channels: {
         Row: {
