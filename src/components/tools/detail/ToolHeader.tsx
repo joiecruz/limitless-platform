@@ -6,9 +6,10 @@ interface ToolHeaderProps {
   title: string;
   subtitle?: string;
   onDownload: () => void;
+  coverImage?: string;
 }
 
-export function ToolHeader({ title, subtitle, onDownload }: ToolHeaderProps) {
+export function ToolHeader({ title, subtitle, onDownload, coverImage }: ToolHeaderProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Link to="/tools" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8 group">
@@ -30,7 +31,7 @@ export function ToolHeader({ title, subtitle, onDownload }: ToolHeaderProps) {
         </div>
         <div className="aspect-[16/9] rounded-xl overflow-hidden bg-[#FFD700]">
           <img
-            src="/lovable-uploads/6b30bfa4-1fc9-4deb-87e0-da8c7f794313.png"
+            src={coverImage || "/placeholder.svg"}
             alt="Tool preview"
             className="w-full h-full object-cover"
           />

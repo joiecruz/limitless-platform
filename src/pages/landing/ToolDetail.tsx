@@ -104,6 +104,7 @@ export default function ToolDetail() {
         title={tool.title}
         subtitle={tool.description}
         onDownload={handleDownload}
+        coverImage={tool.image_url}
       />
 
       <ToolAbout description={tool.description} />
