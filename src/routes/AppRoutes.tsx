@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { Session } from "@supabase/supabase-js";
@@ -56,16 +56,17 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
   // Check if we're on the app subdomain
   const isAppDomain = window.location.hostname.startsWith('app.');
 
-  // If we're on the app domain but trying to access a marketing page, redirect to www
-  const redirectToWWW = () => {
+  // Create redirect components
+  const RedirectToWWW = () => {
     const wwwUrl = window.location.href.replace('app.', 'www.');
     window.location.href = wwwUrl;
+    return null;
   };
 
-  // If we're on www domain but trying to access an app page, redirect to app
-  const redirectToApp = () => {
+  const RedirectToApp = () => {
     const appUrl = window.location.href.replace('www.', 'app.');
     window.location.href = appUrl;
+    return null;
   };
 
   if (isAppDomain) {
@@ -107,14 +108,14 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         </Route>
 
         {/* Redirect marketing pages to www domain */}
-        <Route path="/" element={redirectToWWW()} />
-        <Route path="/product" element={redirectToWWW()} />
-        <Route path="/services" element={redirectToWWW()} />
-        <Route path="/courses" element={redirectToWWW()} />
-        <Route path="/tools" element={redirectToWWW()} />
-        <Route path="/blog" element={redirectToWWW()} />
-        <Route path="/case-studies" element={redirectToWWW()} />
-        <Route path="/about" element={redirectToWWW()} />
+        <Route path="/" element={<RedirectToWWW />} />
+        <Route path="/product" element={<RedirectToWWW />} />
+        <Route path="/services" element={<RedirectToWWW />} />
+        <Route path="/courses" element={<RedirectToWWW />} />
+        <Route path="/tools" element={<RedirectToWWW />} />
+        <Route path="/blog" element={<RedirectToWWW />} />
+        <Route path="/case-studies" element={<RedirectToWWW />} />
+        <Route path="/about" element={<RedirectToWWW />} />
       </Routes>
     );
   }
@@ -137,10 +138,10 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/terms-of-service" element={<Terms />} />
 
       {/* Redirect auth and app routes to app subdomain */}
-      <Route path="/signin" element={redirectToApp()} />
-      <Route path="/signup" element={redirectToApp()} />
-      <Route path="/dashboard/*" element={redirectToApp()} />
-      <Route path="/admin/*" element={redirectToApp()} />
+      <Route path="/signin" element={<RedirectToApp />} />
+      <Route path="/signup" element={<RedirectToApp />} />
+      <Route path="/dashboard/*" element={<RedirectToApp />} />
+      <Route path="/admin/*" element={<RedirectToApp />} />
     </Routes>
   );
 };
