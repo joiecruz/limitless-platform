@@ -16,38 +16,19 @@ export default function CaseStudy() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const { data: post, isLoading } = useQuery({
+  const { data: caseStudy, isLoading } = useQuery({
     queryKey: ['case-study', slug],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('articles')
+        .from('case_studies')
         .select('*')
         .eq('slug', slug)
-        .eq('type', 'case-study')
-        .eq('published', true)
         .single();
 
       if (error) throw error;
       return data;
     }
   });
-
-  const getMetaDescription = (content: string | null | undefined): string => {
-    if (!content) return '';
-    
-    try {
-      const cleanText = content.replace(/<[^>]*>/g, '');
-      const sentences = cleanText.split(/[.!?]+/).filter(sentence => 
-        sentence && sentence.trim().length > 0
-      );
-      const description = sentences.slice(0, 2).join('. ').trim();
-      return description.length > 160 
-        ? description.substring(0, 157) + '...' 
-        : description;
-    } catch {
-      return '';
-    }
-  };
 
   if (isLoading) {
     return (
@@ -57,14 +38,14 @@ export default function CaseStudy() {
     );
   }
 
-  if (!post) {
+  if (!caseStudy) {
     return <div>Case study not found</div>;
   }
 
-  const title = post.title || "Case Study";
-  const description = post.meta_description || getMetaDescription(post.content);
-  const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
-  const canonicalUrl = `${window.location.origin}/case-studies/${post.slug}`;
+  const title = caseStudy.name || "Case Study";
+  const description = caseStudy.description || "";
+  const imageUrl = caseStudy.cover_photo || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
+  const canonicalUrl = `${window.location.origin}/case-studies/${caseStudy.slug}`;
 
   return (
     <div className="min-h-screen bg-white">
@@ -82,10 +63,10 @@ export default function CaseStudy() {
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={imageUrl} />
-        <meta property="article:published_time" content={post.created_at} />
-        <meta property="article:modified_time" content={post.updated_at} />
-        {post.categories && post.categories.map((category: string) => (
-          <meta property="article:tag" content={category} key={category} />
+        <meta property="article:published_time" content={caseStudy.date_published} />
+        <meta property="article:modified_time" content={caseStudy.updated_at} />
+        {caseStudy.service_types && caseStudy.service_types.map((type: string) => (
+          <meta property="article:tag" content={type} key={type} />
         ))}
       </Helmet>
       
@@ -98,19 +79,19 @@ export default function CaseStudy() {
         </div>
 
         <div className="flex flex-wrap items-center gap-4 mb-8 text-sm text-gray-600">
-          <time dateTime={post.created_at}>
-            {format(new Date(post.created_at), 'MMMM d, yyyy')}
+          <time dateTime={caseStudy.date_published}>
+            {format(new Date(caseStudy.date_published), 'MMMM d, yyyy')}
           </time>
-          {post.categories && post.categories.length > 0 && (
+          {caseStudy.service_types && caseStudy.service_types.length > 0 && (
             <>
               <span>·</span>
               <div className="flex flex-wrap gap-2">
-                {post.categories.map((category: string) => (
+                {caseStudy.service_types.map((type: string) => (
                   <span
-                    key={category}
+                    key={type}
                     className="bg-primary-50 text-primary-700 px-2 py-1 rounded-full text-xs"
                   >
-                    {category}
+                    {type}
                   </span>
                 ))}
               </div>
@@ -119,23 +100,80 @@ export default function CaseStudy() {
         </div>
 
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-12 leading-tight">
-          {post.title}
+          {caseStudy.name}
         </h1>
         
-        {post.cover_image && (
+        {caseStudy.cover_photo && (
           <div className="aspect-video w-full mb-12 rounded-lg overflow-hidden">
             <img
-              src={post.cover_image}
-              alt={post.title}
+              src={caseStudy.cover_photo}
+              alt={caseStudy.name}
               className="w-full h-full object-cover"
             />
           </div>
         )}
-        
-        <div 
-          className="prose prose-lg max-w-none prose-headings:font-bold prose-p:text-gray-600 prose-a:text-primary-600 prose-img:rounded-lg mb-24"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
+
+        {caseStudy.client && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Client</h2>
+            <p className="text-gray-600">{caseStudy.client}</p>
+          </div>
+        )}
+
+        {caseStudy.description && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Overview</h2>
+            <p className="text-gray-600">{caseStudy.description}</p>
+          </div>
+        )}
+
+        {caseStudy.problem_opportunity && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Problem/Opportunity</h2>
+            <p className="text-gray-600">{caseStudy.problem_opportunity}</p>
+          </div>
+        )}
+
+        {caseStudy.approach && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Our Approach</h2>
+            <p className="text-gray-600">{caseStudy.approach}</p>
+          </div>
+        )}
+
+        {caseStudy.impact && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Impact</h2>
+            <p className="text-gray-600">{caseStudy.impact}</p>
+          </div>
+        )}
+
+        {caseStudy.quote_from_customer && (
+          <blockquote className="border-l-4 border-primary pl-4 italic text-gray-700 my-8">
+            "{caseStudy.quote_from_customer}"
+          </blockquote>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-12">
+          {caseStudy.additional_photo1 && (
+            <div className="aspect-video rounded-lg overflow-hidden">
+              <img
+                src={caseStudy.additional_photo1}
+                alt="Additional case study photo 1"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          {caseStudy.additional_photo2 && (
+            <div className="aspect-video rounded-lg overflow-hidden">
+              <img
+                src={caseStudy.additional_photo2}
+                alt="Additional case study photo 2"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+        </div>
       </article>
 
       <CTASection />

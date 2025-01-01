@@ -31,14 +31,12 @@ export default function CaseStudies() {
       const endRange = startRange + postsPerPage - 1;
 
       let query = supabase
-        .from('articles')
+        .from('case_studies')
         .select('*', { count: 'exact' })
-        .eq('published', true)
-        .eq('type', 'case-study')
-        .order('created_at', { ascending: false });
+        .order('date_published', { ascending: false });
 
       if (selectedCategory !== "All") {
-        query = query.contains('categories', [selectedCategory]);
+        query = query.contains('service_types', [selectedCategory]);
       }
 
       const { data: posts, count } = await query
@@ -95,11 +93,11 @@ export default function CaseStudies() {
                     className="bg-white rounded-lg overflow-hidden cursor-pointer border border-gray-100 hover:border-[#393CA0]/20 transition-all duration-200 hover:shadow-md"
                     onClick={() => navigate(`/case-studies/${post.slug}`)}
                   >
-                    {post.cover_image && (
+                    {post.cover_photo && (
                       <div className="aspect-video w-full overflow-hidden">
                         <img
-                          src={post.cover_image}
-                          alt={post.title}
+                          src={post.cover_photo}
+                          alt={post.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -110,13 +108,13 @@ export default function CaseStudies() {
                         <span className="text-sm font-medium">Case Study</span>
                       </div>
                       <h3 className="text-2xl font-semibold text-gray-900 hover:text-[#393CA0] transition-colors">
-                        {post.title}
+                        {post.name}
                       </h3>
                       <p className="text-gray-600 line-clamp-2">
-                        {post.excerpt}
+                        {post.description}
                       </p>
                       <div className="text-sm text-gray-600">
-                        {format(new Date(post.created_at), 'MMMM d, yyyy')}
+                        {format(new Date(post.date_published), 'MMMM d, yyyy')}
                       </div>
                     </div>
                   </div>

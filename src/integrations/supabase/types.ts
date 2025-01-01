@@ -77,6 +77,7 @@ export type Database = {
           date_published: string | null
           description: string | null
           id: string
+          impact: string | null
           name: string
           problem_opportunity: string | null
           quote_from_customer: string | null
@@ -97,6 +98,7 @@ export type Database = {
           date_published?: string | null
           description?: string | null
           id?: string
+          impact?: string | null
           name: string
           problem_opportunity?: string | null
           quote_from_customer?: string | null
@@ -117,6 +119,7 @@ export type Database = {
           date_published?: string | null
           description?: string | null
           id?: string
+          impact?: string | null
           name?: string
           problem_opportunity?: string | null
           quote_from_customer?: string | null
