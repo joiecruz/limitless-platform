@@ -26,6 +26,7 @@ export default function DashboardLayout() {
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Check if we're on the wrong domain and redirect if needed
   useEffect(() => {
@@ -143,4 +144,4 @@ export default function DashboardLayout() {
       </div>
     </WorkspaceContext.Provider>
   );
-}
+};
