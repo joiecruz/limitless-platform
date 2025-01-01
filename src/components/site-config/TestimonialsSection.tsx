@@ -59,13 +59,13 @@ export function TestimonialsSection() {
             <CarouselContent className="-ml-2 md:-ml-4">
               {testimonials.map((testimonial, index) => (
                 <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                  <div className="bg-white p-8 rounded-lg shadow-sm relative min-h-[280px] flex flex-col">
-                    <div className="absolute -top-6 left-6">
+                  <div className="bg-white p-8 rounded-lg shadow-sm relative mt-8">
+                    <div className="absolute -top-8 left-8">
                       <div className="bg-[#393CA0] rounded-full p-2">
                         <Quote className="h-5 w-5 text-white" />
                       </div>
                     </div>
-                    <blockquote className="mt-6 flex-grow">
+                    <blockquote className="flex-grow">
                       <p className="text-gray-600 italic mb-6">
                         "{testimonial.quote}"
                       </p>
