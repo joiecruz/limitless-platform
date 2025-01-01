@@ -56,6 +56,18 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
   // Check if we're on the app subdomain
   const isAppDomain = window.location.hostname.startsWith('app.');
 
+  // If we're on the app domain but trying to access a marketing page, redirect to www
+  const redirectToWWW = () => {
+    const wwwUrl = window.location.href.replace('app.', 'www.');
+    window.location.href = wwwUrl;
+  };
+
+  // If we're on www domain but trying to access an app page, redirect to app
+  const redirectToApp = () => {
+    const appUrl = window.location.href.replace('www.', 'app.');
+    window.location.href = appUrl;
+  };
+
   if (isAppDomain) {
     return (
       <Routes>
@@ -94,8 +106,15 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
 
-        {/* Redirect all other routes to dashboard */}
-        <Route path="*" element={<Dashboard />} />
+        {/* Redirect marketing pages to www domain */}
+        <Route path="/" element={redirectToWWW()} />
+        <Route path="/product" element={redirectToWWW()} />
+        <Route path="/services" element={redirectToWWW()} />
+        <Route path="/courses" element={redirectToWWW()} />
+        <Route path="/tools" element={redirectToWWW()} />
+        <Route path="/blog" element={redirectToWWW()} />
+        <Route path="/case-studies" element={redirectToWWW()} />
+        <Route path="/about" element={redirectToWWW()} />
       </Routes>
     );
   }
@@ -118,10 +137,10 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/terms-of-service" element={<Terms />} />
 
       {/* Redirect auth and app routes to app subdomain */}
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/dashboard/*" element={<Dashboard />} />
-      <Route path="/admin/*" element={<AdminDashboard />} />
+      <Route path="/signin" element={redirectToApp()} />
+      <Route path="/signup" element={redirectToApp()} />
+      <Route path="/dashboard/*" element={redirectToApp()} />
+      <Route path="/admin/*" element={redirectToApp()} />
     </Routes>
   );
 };
