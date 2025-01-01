@@ -7,33 +7,42 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Loader2, BookOpen } from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+
+const categories = [
+  "All",
+  "Innovation",
+  "Digital Transformation",
+  "Social Impact",
+  "Education",
+  "Healthcare",
+  "Sustainability"
+];
 
 export default function CaseStudies() {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const postsPerPage = 9;
 
   const { data: caseStudies, isLoading } = useQuery({
-    queryKey: ['case-studies', currentPage],
+    queryKey: ['case-studies', currentPage, selectedCategory],
     queryFn: async () => {
       const startRange = (currentPage - 1) * postsPerPage;
       const endRange = startRange + postsPerPage - 1;
 
-      const { data, count } = await supabase
+      let query = supabase
         .from('case_studies')
         .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
+        .order('date_published', { ascending: false });
+
+      if (selectedCategory !== "All") {
+        query = query.contains('service_types', [selectedCategory]);
+      }
+
+      const { data: posts, count } = await query
         .range(startRange, endRange);
 
-      return { posts: data, totalCount: count };
+      return { posts, totalCount: count };
     },
   });
 
@@ -53,6 +62,22 @@ export default function CaseStudies() {
             <p className="text-lg text-gray-600">
               Discover how organizations are driving innovation and social impact
             </p>
+          </div>
+          
+          <div className="flex justify-center mb-12 gap-2 flex-wrap">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
+                onClick={() => {
+                  setSelectedCategory(category);
+                  setCurrentPage(1);
+                }}
+                className="rounded-full"
+              >
+                {category}
+              </Button>
+            ))}
           </div>
           
           {isLoading ? (
@@ -89,7 +114,7 @@ export default function CaseStudies() {
                         {post.description}
                       </p>
                       <div className="text-sm text-gray-600">
-                        {format(new Date(post.created_at), 'MMMM d, yyyy')}
+                        {format(new Date(post.date_published), 'MMMM d, yyyy')}
                       </div>
                     </div>
                   </div>
