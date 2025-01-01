@@ -37,6 +37,16 @@ export function useAuthRedirect() {
           return;
         }
 
+        // Check domain and redirect if needed
+        const currentDomain = window.location.hostname;
+        const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
+
+        if (session && isMainDomain) {
+          console.log("SignIn - Redirecting to app domain");
+          window.location.href = `https://app.limitlesslab.org/dashboard`;
+          return;
+        }
+
         if (session) {
           console.log("SignIn - Session found:", {
             user: session.user,
@@ -76,12 +86,22 @@ export function useAuthRedirect() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("SignIn - Auth state changed:", { event, session });
 
+      // Check domain and redirect if needed
+      const currentDomain = window.location.hostname;
+      const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
+
       if (event === 'SIGNED_IN' && session) {
         console.log("SignIn - Sign in event detected:", {
           user: session.user,
           emailConfirmed: session.user.email_confirmed_at,
           email: session.user.email
         });
+
+        if (isMainDomain) {
+          console.log("SignIn - Redirecting to app domain");
+          window.location.href = `https://app.limitlesslab.org/dashboard`;
+          return;
+        }
 
         if (!session.user.email_confirmed_at) {
           console.log("SignIn - Email not confirmed, redirecting to verify-email");
