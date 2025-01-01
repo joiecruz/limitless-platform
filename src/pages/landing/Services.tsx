@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const services = [
   {
@@ -88,6 +89,7 @@ export default function Services() {
       {/* Services Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">Our Services</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, index) => (
               <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
@@ -97,6 +99,61 @@ export default function Services() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Co-Design Process Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4">What Makes Us Different: Our Co-Design Process</h2>
+          <p className="text-lg text-gray-600 mb-12">
+            Our signature co-design process makes sure that our clients and their stakeholders are part of the innovation journey. 
+            When innovations and solutions are co-designed, we achieve greater ownership and greater impact.
+          </p>
+          
+          <div className="aspect-video w-full mb-12 bg-gray-100 rounded-lg">
+            {/* Placeholder for process image */}
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              Process Image Placeholder
+            </div>
+          </div>
+
+          <Tabs defaultValue="discover" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="discover">Discover</TabsTrigger>
+              <TabsTrigger value="design">Design</TabsTrigger>
+              <TabsTrigger value="deliver">Deliver</TabsTrigger>
+              <TabsTrigger value="debrief">Debrief</TabsTrigger>
+            </TabsList>
+            <TabsContent value="discover" className="mt-6 text-left">
+              <h3 className="text-xl font-semibold mb-3">Discover Phase</h3>
+              <p className="text-gray-600">
+                In this initial phase, we work closely with stakeholders to understand the context, challenges, and opportunities. 
+                Through user research and collaborative workshops, we gather insights that inform our approach.
+              </p>
+            </TabsContent>
+            <TabsContent value="design" className="mt-6 text-left">
+              <h3 className="text-xl font-semibold mb-3">Design Phase</h3>
+              <p className="text-gray-600">
+                During the design phase, we collaborate with stakeholders to generate and refine solutions. 
+                Through iterative prototyping and testing, we ensure that the solutions meet user needs and organizational goals.
+              </p>
+            </TabsContent>
+            <TabsContent value="deliver" className="mt-6 text-left">
+              <h3 className="text-xl font-semibold mb-3">Deliver Phase</h3>
+              <p className="text-gray-600">
+                In the delivery phase, we implement the solutions with careful attention to quality and user experience. 
+                We provide training and support to ensure smooth adoption and sustainable impact.
+              </p>
+            </TabsContent>
+            <TabsContent value="debrief" className="mt-6 text-left">
+              <h3 className="text-xl font-semibold mb-3">Debrief Phase</h3>
+              <p className="text-gray-600">
+                The debrief phase focuses on measuring impact and gathering learnings. 
+                We document insights, celebrate successes, and identify opportunities for continuous improvement.
+              </p>
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
 
