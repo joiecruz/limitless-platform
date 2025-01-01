@@ -8,6 +8,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollToTop } from "@/components/common/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -122,6 +123,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToTop />
           <AppRoutes session={session} />
         </BrowserRouter>
       </TooltipProvider>
