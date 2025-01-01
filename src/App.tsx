@@ -30,7 +30,6 @@ const App = () => {
     // Get initial session
     const getInitialSession = async () => {
       try {
-        console.log("Getting initial session...");
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -43,29 +42,41 @@ const App = () => {
           return;
         }
 
-        if (!initialSession) {
-          console.log("No initial session found");
-          if (mounted) {
-            setSession(null);
-          }
-          return;
-        }
-
-        // Check if we're on the wrong domain
+        // Handle domain redirects based on authentication state
         const currentDomain = window.location.hostname;
         const isAppDomain = currentDomain === 'app.limitlesslab.org';
         const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
+        const currentPath = window.location.pathname;
 
-        if (initialSession && isMainDomain) {
-          // Redirect to app domain if authenticated on main domain
-          console.log("Redirecting to app domain...");
-          window.location.href = `https://app.limitlesslab.org${window.location.pathname}`;
-          return;
-        }
+        // If authenticated
+        if (initialSession?.user) {
+          console.log("User is authenticated");
+          
+          // If on main domain and authenticated, redirect to app domain
+          if (isMainDomain && currentPath !== '/signin') {
+            console.log("Redirecting authenticated user from main to app domain");
+            window.location.href = `https://app.limitlesslab.org${currentPath}`;
+            return;
+          }
 
-        if (mounted) {
-          console.log("Initial session found and valid");
-          setSession(initialSession);
+          if (mounted) {
+            setSession(initialSession);
+          }
+        } 
+        // If not authenticated
+        else {
+          console.log("User is not authenticated");
+          
+          // If on app domain and not authenticated, redirect to main domain
+          if (isAppDomain && currentPath !== '/signin') {
+            console.log("Redirecting unauthenticated user from app to main domain");
+            window.location.href = `https://limitlesslab.org${currentPath}`;
+            return;
+          }
+
+          if (mounted) {
+            setSession(null);
+          }
         }
       } catch (error) {
         console.error("Error in getInitialSession:", error);
@@ -85,15 +96,26 @@ const App = () => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log("Auth state changed:", event, currentSession);
+      console.log("Auth state changed:", event);
       
       if (!mounted) return;
 
+      const currentDomain = window.location.hostname;
+      const isAppDomain = currentDomain === 'app.limitlesslab.org';
+      const isMainDomain = currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org';
+      const currentPath = window.location.pathname;
+
       if (event === 'SIGNED_OUT') {
-        console.log("User signed out - Clearing session and cache");
+        console.log("User signed out");
         setSession(null);
         queryClient.clear();
         localStorage.clear();
+        
+        // Redirect to main domain if on app domain
+        if (isAppDomain) {
+          window.location.href = `https://limitlesslab.org/signin`;
+        }
+        
         toast({
           title: "Signed out",
           description: "You have been signed out successfully.",
@@ -102,25 +124,19 @@ const App = () => {
       }
 
       if (event === 'SIGNED_IN' && currentSession) {
-        console.log("User signed in:", currentSession);
-        // Check domain and redirect if needed
-        const currentDomain = window.location.hostname;
-        if (currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org') {
+        console.log("User signed in");
+        
+        // If on main domain, redirect to app domain
+        if (isMainDomain) {
           window.location.href = `https://app.limitlesslab.org/dashboard`;
           return;
         }
+        
         setSession(currentSession);
         return;
       }
 
-      if (event === 'TOKEN_REFRESHED' && currentSession) {
-        console.log("Token refreshed:", currentSession);
-        setSession(currentSession);
-        return;
-      }
-
-      if (event === 'USER_UPDATED' && currentSession) {
-        console.log("User updated:", currentSession);
+      if ((event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && currentSession) {
         setSession(currentSession);
       }
     });
