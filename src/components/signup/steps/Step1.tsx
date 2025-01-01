@@ -4,18 +4,23 @@ import { SignupData } from "../types";
 import { useToast } from "@/hooks/use-toast";
 import { useSignupValidation } from "@/hooks/useSignupValidation";
 import { PasswordInput } from "../components/PasswordInput";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface Step1Props {
   formData: SignupData;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   nextStep: () => void;
   loading: boolean;
+  emailExists?: boolean;
 }
 
-export const Step1 = ({ formData, handleInputChange, nextStep, loading }: Step1Props) => {
+export const Step1 = ({ formData, handleInputChange, nextStep, loading, emailExists }: Step1Props) => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isChecking, setIsChecking] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { validateEmail, validatePassword, isFormValid } = useSignupValidation();
 
   const handleNext = async () => {
@@ -47,33 +52,49 @@ export const Step1 = ({ formData, handleInputChange, nextStep, loading }: Step1P
   };
 
   return (
-    <TextStep
-      fields={[
-        {
-          name: "email",
-          label: "Work Email",
-          type: "email",
-          placeholder: "you@company.com",
-          required: true,
-          containerClassName: "w-full",
-          error: errors.email,
-        }
-      ]}
-      values={formData}
-      onChange={handleInputChange}
-      onNext={handleNext}
-      loading={loading || isChecking}
-      fieldsContainerClassName="flex gap-4 flex-wrap"
-      isNextDisabled={!isFormValid(formData)}
-      customFields={[
-        <PasswordInput
-          key="password"
-          value={formData.password}
-          onChange={handleInputChange}
-          error={errors.password}
-          disabled={loading}
-        />
-      ]}
-    />
+    <>
+      {emailExists && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription className="flex items-center justify-between">
+            <span>This email is already registered.</span>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate("/signin")}
+            >
+              Sign in instead
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+      <TextStep
+        fields={[
+          {
+            name: "email",
+            label: "Work Email",
+            type: "email",
+            placeholder: "you@company.com",
+            required: true,
+            containerClassName: "w-full",
+            error: errors.email,
+          }
+        ]}
+        values={formData}
+        onChange={handleInputChange}
+        onNext={handleNext}
+        loading={loading || isChecking}
+        fieldsContainerClassName="flex gap-4 flex-wrap"
+        isNextDisabled={!isFormValid(formData) || emailExists}
+        customFields={[
+          <PasswordInput
+            key="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            error={errors.password}
+            disabled={loading}
+          />
+        ]}
+      />
+    </>
   );
 };

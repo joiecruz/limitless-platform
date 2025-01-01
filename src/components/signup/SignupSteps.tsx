@@ -11,14 +11,40 @@ export function SignupSteps() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Check email existence when email field changes
+    if (name === 'email' && value) {
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: value,
+        options: {
+          shouldCreateUser: false,
+        }
+      });
+      
+      // If we get data back, it means the email exists
+      setEmailExists(!!data.user);
+      setLoading(false);
+    }
   };
 
   const handleSignup = async () => {
+    if (emailExists) {
+      toast({
+        title: "Account exists",
+        description: "This email is already registered. Please sign in instead.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     console.log("Starting signup process with data:", {
       email: formData.email,
     });
@@ -71,6 +97,7 @@ export function SignupSteps() {
     handleInputChange,
     nextStep: handleSignup,
     loading,
+    emailExists,
   };
 
   return (
