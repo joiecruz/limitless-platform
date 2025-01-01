@@ -1,5 +1,5 @@
 import { Upload } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -11,11 +11,38 @@ interface CourseImageProps {
 
 const CourseImage = ({ courseId, imageUrl, isAdmin }: CourseImageProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const checkSuperAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_superadmin')
+          .eq('id', user.id)
+          .single();
+        
+        setIsSuperAdmin(!!profile?.is_superadmin);
+      }
+    };
+
+    checkSuperAdmin();
+  }, []);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (!isSuperAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Only superadmins can upload course images.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsUploading(true);
     try {
@@ -64,7 +91,7 @@ const CourseImage = ({ courseId, imageUrl, isAdmin }: CourseImageProps) => {
         alt="Course cover"
         className="object-cover w-full h-full"
       />
-      {isAdmin && (
+      {isAdmin && isSuperAdmin && (
         <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
           <input
             type="file"
