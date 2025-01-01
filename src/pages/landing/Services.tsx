@@ -8,6 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link } from "react-router-dom";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import { CoDesignProcess } from "@/components/services/CoDesignProcess";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { useState } from "react";
 
 const services = [
   {
@@ -38,16 +47,27 @@ const services = [
 ];
 
 export default function Services() {
-  const { data: caseStudies } = useQuery({
-    queryKey: ['case-studies'],
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  const { data: caseStudies, isLoading } = useQuery({
+    queryKey: ['case-studies', currentPage],
     queryFn: async () => {
-      const { data } = await supabase
+      const startRange = (currentPage - 1) * itemsPerPage;
+      const endRange = startRange + itemsPerPage - 1;
+      
+      const { data, count } = await supabase
         .from('case_studies')
-        .select('*')
-        .limit(3);
-      return data;
+        .select('*', { count: 'exact' })
+        .range(startRange, endRange);
+      
+      return { items: data, totalCount: count };
     }
   });
+
+  const totalPages = caseStudies?.totalCount 
+    ? Math.ceil(caseStudies.totalCount / itemsPerPage) 
+    : 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -113,7 +133,7 @@ export default function Services() {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {caseStudies?.map((study) => (
+            {caseStudies?.items?.map((study) => (
               <Card key={study.id} className="hover:shadow-lg transition-shadow">
                 <div className="aspect-video w-full overflow-hidden rounded-t-lg">
                   {study.cover_photo && (
@@ -141,6 +161,39 @@ export default function Services() {
               </Card>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="mt-8">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    />
+                  </PaginationItem>
+                  
+                  {[...Array(totalPages)].map((_, i) => (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(i + 1)}
+                        isActive={currentPage === i + 1}
+                      >
+                        {i + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </div>
       </section>
 
