@@ -11,27 +11,30 @@ export function CaseStudyContent({ problem, approach, impact }: CaseStudyContent
         {problem && (
           <div>
             <h2 className="text-4xl font-bold text-[#393CA0] mb-8">The opportunity</h2>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-3xl">
-              {problem}
-            </p>
+            <div 
+              className="text-gray-600 text-lg leading-relaxed max-w-3xl prose prose-lg"
+              dangerouslySetInnerHTML={{ __html: problem }}
+            />
           </div>
         )}
 
         {approach && (
           <div>
             <h2 className="text-4xl font-bold text-[#393CA0] mb-8">Our approach</h2>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-3xl">
-              {approach}
-            </p>
+            <div 
+              className="text-gray-600 text-lg leading-relaxed max-w-3xl prose prose-lg"
+              dangerouslySetInnerHTML={{ __html: approach }}
+            />
           </div>
         )}
 
         {impact && (
           <div>
             <h2 className="text-4xl font-bold text-[#393CA0] mb-8">Impact</h2>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-3xl">
-              {impact}
-            </p>
+            <div 
+              className="text-gray-600 text-lg leading-relaxed max-w-3xl prose prose-lg"
+              dangerouslySetInnerHTML={{ __html: impact }}
+            />
           </div>
         )}
       </div>

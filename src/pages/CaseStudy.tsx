@@ -70,7 +70,7 @@ export default function CaseStudy() {
       
       <MainNav />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">
         <Link to="/case-studies">
           <Button variant="ghost" className="mb-8 -ml-4 text-gray-600 hover:text-gray-900">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -78,7 +78,6 @@ export default function CaseStudy() {
           </Button>
         </Link>
 
-        {/* Two-column section for title, description, and client info */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
           <div className="lg:col-span-8">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -116,7 +115,6 @@ export default function CaseStudy() {
           </div>
         </div>
 
-        {/* Full-width image section */}
         {caseStudy.cover_photo && (
           <div className="w-full mb-12">
             <div className="aspect-video w-full rounded-lg overflow-hidden">
