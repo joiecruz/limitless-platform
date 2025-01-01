@@ -27,6 +27,7 @@ import Product from "@/pages/landing/Product";
 import Services from "@/pages/landing/Services";
 import CoursesLanding from "@/pages/landing/Courses";
 import ToolsLanding from "@/pages/landing/Tools";
+import ToolDetail from "@/pages/landing/ToolDetail";
 import Blog from "@/pages/landing/Blog";
 import CaseStudies from "@/pages/landing/CaseStudies";
 import CaseStudy from "@/pages/CaseStudy";
@@ -64,6 +65,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/services" element={<Services />} />
       <Route path="/courses" element={<CoursesLanding />} />
       <Route path="/tools" element={<ToolsLanding />} />
+      <Route path="/tools/:id" element={<ToolDetail />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/case-studies" element={<CaseStudies />} />
 
