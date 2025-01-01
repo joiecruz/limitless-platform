@@ -43,7 +43,7 @@ const WorkshopCard = ({ workshop }: WorkshopCardProps) => {
           </span>
         </div>
         <CardTitle className="leading-[1.2]">{workshop.title}</CardTitle>
-        <CardDescription className="line-clamp-2">{workshop.description}</CardDescription>
+        <CardDescription>{workshop.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <Link to={`/workshops/${workshop.id}`} className="block w-full">
