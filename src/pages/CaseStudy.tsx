@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { CTASection } from "@/components/site-config/CTASection";
-import { format } from "date-fns";
 import { useEffect } from "react";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet";
@@ -71,15 +70,16 @@ export default function CaseStudy() {
       <MainNav />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-16">
-          <Link to="/case-studies">
-            <Button variant="ghost" className="mb-8 -ml-4 text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              See all case studies
-            </Button>
-          </Link>
+        <Link to="/case-studies">
+          <Button variant="ghost" className="mb-8 -ml-4 text-gray-600 hover:text-gray-900">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            See all case studies
+          </Button>
+        </Link>
 
-          <div className="max-w-3xl">
+        {/* Two-column section for title, description, and client info */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+          <div className="lg:col-span-8">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               {caseStudy.name}
             </h1>
@@ -88,20 +88,49 @@ export default function CaseStudy() {
               {caseStudy.description}
             </p>
           </div>
-        </div>
 
-        <div className="grid grid-cols-12 gap-8">
-          <div className="col-span-12 lg:col-span-8">
-            {caseStudy.cover_photo && (
-              <div className="aspect-video w-full rounded-lg overflow-hidden mb-12">
-                <img
-                  src={caseStudy.cover_photo}
-                  alt={caseStudy.name}
-                  className="w-full h-full object-cover"
-                />
+          <div className="lg:col-span-4">
+            {caseStudy.client && (
+              <div className="mb-8">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Clients & Partners</h3>
+                <p className="text-gray-900">{caseStudy.client}</p>
               </div>
             )}
 
+            {caseStudy.sdgs && caseStudy.sdgs.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">SDGs</h3>
+                <div className="flex flex-wrap gap-2">
+                  {caseStudy.sdgs.map((sdg: string) => (
+                    <span
+                      key={sdg}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
+                    >
+                      {sdg}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Full-width image section */}
+        {caseStudy.cover_photo && (
+          <div className="w-full mb-12">
+            <div className="aspect-video w-full rounded-lg overflow-hidden">
+              <img
+                src={caseStudy.cover_photo}
+                alt={caseStudy.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Rest of the content */}
+        <div className="grid grid-cols-12 gap-8">
+          <div className="col-span-12 lg:col-span-8">
             {caseStudy.problem_opportunity && (
               <div className="mb-12">
                 <h2 className="text-2xl font-semibold mb-4">Problem/Opportunity</h2>
@@ -127,31 +156,6 @@ export default function CaseStudy() {
               <blockquote className="border-l-4 border-primary pl-4 italic text-gray-700 my-12">
                 "{caseStudy.quote_from_customer}"
               </blockquote>
-            )}
-          </div>
-
-          <div className="col-span-12 lg:col-span-4">
-            {caseStudy.client && (
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Clients & Partners</h3>
-                <p className="text-gray-900">{caseStudy.client}</p>
-              </div>
-            )}
-
-            {caseStudy.sdgs && caseStudy.sdgs.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">SDGs</h3>
-                <div className="flex flex-wrap gap-2">
-                  {caseStudy.sdgs.map((sdg: string) => (
-                    <span
-                      key={sdg}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
-                    >
-                      {sdg}
-                    </span>
-                  ))}
-                </div>
-              </div>
             )}
           </div>
         </div>
