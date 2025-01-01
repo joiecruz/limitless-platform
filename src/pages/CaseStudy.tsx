@@ -79,26 +79,31 @@ export default function CaseStudy() {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-          <div className="lg:col-span-8" />
-          <CaseStudyMeta 
-            client={caseStudy.client}
-            sdgs={caseStudy.sdgs}
-            services={caseStudy.services}
-          />
+          <div className="lg:col-span-8">
+            <CaseStudyImages 
+              coverPhoto={caseStudy.cover_photo}
+              name={caseStudy.name}
+              additionalPhoto1={caseStudy.additional_photo1}
+              additionalPhoto2={caseStudy.additional_photo2}
+            />
+
+            <CaseStudyContent
+              problem={caseStudy.problem_opportunity}
+              approach={caseStudy.approach}
+              impact={caseStudy.impact}
+            />
+          </div>
+          
+          <div className="lg:col-span-4">
+            <div className="sticky top-32">
+              <CaseStudyMeta 
+                client={caseStudy.client}
+                sdgs={caseStudy.sdgs}
+                services={caseStudy.services}
+              />
+            </div>
+          </div>
         </div>
-
-        <CaseStudyImages 
-          coverPhoto={caseStudy.cover_photo}
-          name={caseStudy.name}
-          additionalPhoto1={caseStudy.additional_photo1}
-          additionalPhoto2={caseStudy.additional_photo2}
-        />
-
-        <CaseStudyContent
-          problem={caseStudy.problem_opportunity}
-          approach={caseStudy.approach}
-          impact={caseStudy.impact}
-        />
       </div>
 
       <CTASection />
