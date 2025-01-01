@@ -61,7 +61,7 @@ export default function Services() {
               <img
                 src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design.png"
                 alt="Co-design Process"
-                className="w-full rounded-lg shadow-lg"
+                className="w-full rounded-lg" // Removed shadow-lg class
               />
             </div>
             <div>
@@ -70,9 +70,6 @@ export default function Services() {
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 mb-6">
                 Get hands-on, customized guidance to turn your organization challenges into innovation projects that are measurable and impactful.
-              </p>
-              <p className="text-lg sm:text-xl text-gray-600 mb-8">
-                Our team has worked with organizations from public, private, and civil society on diverse verticals and sectors.
               </p>
               <Button 
                 variant="default"

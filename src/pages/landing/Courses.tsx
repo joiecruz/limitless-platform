@@ -1,6 +1,6 @@
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import CourseCard from "@/components/courses/CourseCard";
+import { CourseCard } from "@/components/courses/CourseCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -99,18 +99,6 @@ export default function Courses() {
       {/* Workshops Section */}
       <WorkshopsSection />
       
-      {/* Course List Section */}
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">
-            Training and Courses
-          </h2>
-          <p className="text-xl text-gray-600">
-            Equip your team with the skills and mindset for innovation through engaging in-person workshops and flexible online courses.
-          </p>
-        </div>
-      </div>
-
       {/* CTA Section */}
       <CTASection />
 
