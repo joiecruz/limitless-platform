@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CourseCard } from "@/components/courses/CourseCard";
+import CourseCard from "@/components/courses/CourseCard";
 
 export function WorkshopsSection() {
   const { data: courses } = useQuery({
@@ -36,12 +36,9 @@ export function WorkshopsSection() {
           {courses?.map((course) => (
             <CourseCard
               key={course.id}
-              id={course.id}
-              title={course.title}
-              description={course.description || ''}
-              imageUrl={course.image_url}
-              lessonCount={course.lesson_count || 0}
-              enrolleeCount={course.enrollee_count || 0}
+              course={course}
+              onEnroll={() => {}}
+              isEnrolling={false}
             />
           ))}
         </div>

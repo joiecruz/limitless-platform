@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CourseCard } from "@/components/courses/CourseCard";
+import CourseCard from "@/components/courses/CourseCard";
 import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 
 interface Course {
@@ -131,12 +131,10 @@ const Courses = () => {
           return (
             <CourseCard
               key={course.id}
-              id={course.id}
-              title={course.title}
-              description={course.description || ''}
-              imageUrl={course.image_url}
-              lessonCount={course.lesson_count || 0}
-              enrolleeCount={course.enrollee_count || 0}
+              course={course}
+              enrollment={enrollment}
+              onEnroll={() => enrollMutation.mutate(course.id)}
+              isEnrolling={enrollMutation.isPending}
             />
           );
         })}
