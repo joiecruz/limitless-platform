@@ -12,7 +12,7 @@ export default function Terms() {
         .from('pages')
         .select('*')
         .eq('slug', 'terms-of-service')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
