@@ -22,6 +22,21 @@ export function useAuthRedirect() {
           return;
         }
 
+        // Check URL parameters for error messages
+        const params = new URLSearchParams(window.location.hash.substring(1));
+        const errorMessage = params.get('error_description');
+        
+        if (errorMessage) {
+          console.error("Auth Error:", errorMessage);
+          toast({
+            title: "Authentication Error",
+            description: errorMessage.replace(/\+/g, ' '),
+            variant: "destructive",
+          });
+          navigate("/signin");
+          return;
+        }
+
         if (session) {
           console.log("SignIn - Session found:", {
             user: session.user,
