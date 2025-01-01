@@ -5,6 +5,8 @@ import { useToast } from "@/hooks/use-toast";
 import { EditPageDialog } from "@/components/admin/pages/EditPageDialog";
 import { PagesHeader } from "@/components/admin/pages/PagesHeader";
 import { PagesTable } from "@/components/admin/pages/PagesTable";
+import { PageEditor } from "@/components/admin/pages/PageEditor";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Page {
   id: string;
@@ -14,11 +16,13 @@ interface Page {
   created_at: string;
   updated_at: string;
   meta_description: string | null;
+  content: any;
 }
 
 export default function AdminPages() {
   const { toast } = useToast();
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   const { data: pages, isLoading, refetch } = useQuery({
     queryKey: ['admin-pages'],
@@ -46,6 +50,7 @@ export default function AdminPages() {
 
   const handleEdit = (id: string) => {
     setSelectedPage(id);
+    setIsEditorOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -71,6 +76,8 @@ export default function AdminPages() {
     }
   };
 
+  const selectedPageData = pages?.find(page => page.id === selectedPage);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -88,12 +95,23 @@ export default function AdminPages() {
         onDelete={handleDelete}
         onPreview={handlePreview}
       />
-      <EditPageDialog
-        pageId={selectedPage}
-        isOpen={!!selectedPage}
-        onClose={() => setSelectedPage(null)}
-        onSuccess={refetch}
-      />
+      
+      <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{selectedPage ? 'Edit Page' : 'Create New Page'}</DialogTitle>
+          </DialogHeader>
+          <PageEditor
+            pageId={selectedPage || undefined}
+            initialData={selectedPageData}
+            onSuccess={() => {
+              setIsEditorOpen(false);
+              setSelectedPage(null);
+              refetch();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
