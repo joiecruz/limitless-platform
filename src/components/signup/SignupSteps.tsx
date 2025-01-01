@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SignupData } from "./types";
 import { Step1 } from "./steps/Step1";
+import { debounce } from "lodash";
 
 export function SignupSteps() {
   const [formData, setFormData] = useState<SignupData>({
@@ -15,23 +16,41 @@ export function SignupSteps() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Debounced email check function
+  const checkEmailExists = useCallback(
+    debounce(async (email: string) => {
+      if (!email) {
+        setEmailExists(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            shouldCreateUser: false,
+          }
+        });
+        
+        if (!error) {
+          setEmailExists(!!data.user);
+        }
+      } catch (error) {
+        console.error("Error checking email:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, 500),
+    []
+  );
+
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Check email existence when email field changes
-    if (name === 'email' && value) {
-      setLoading(true);
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: value,
-        options: {
-          shouldCreateUser: false,
-        }
-      });
-      
-      // If we get data back, it means the email exists
-      setEmailExists(!!data.user);
-      setLoading(false);
+    if (name === 'email') {
+      checkEmailExists(value);
     }
   };
 
