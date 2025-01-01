@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/carousel";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import Autoplay from "embla-carousel-autoplay";
+import { useEffect, useRef } from "react";
 
 interface Testimonial {
   id: string;
@@ -19,6 +21,10 @@ interface Testimonial {
 }
 
 export function TestimonialsSection() {
+  const autoplayRef = useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true })
+  );
+
   const { data: testimonials } = useQuery({
     queryKey: ["testimonials"],
     queryFn: async () => {
@@ -53,6 +59,7 @@ export function TestimonialsSection() {
               align: "start",
               loop: true,
             }}
+            plugins={[autoplayRef.current]}
             className="w-full"
           >
             <CarouselContent className="-ml-2 md:-ml-4">
