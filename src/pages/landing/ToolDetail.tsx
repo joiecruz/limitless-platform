@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import { CTASection } from "@/components/site-config/CTASection";
 import { ToolHeader } from "@/components/tools/detail/ToolHeader";
 import { ToolAbout } from "@/components/tools/detail/ToolAbout";
 import { ToolUsage } from "@/components/tools/detail/ToolUsage";
+import { ToolDownloadCTA } from "@/components/tools/detail/ToolDownloadCTA";
 
 export default function ToolDetail() {
   const { id } = useParams();
@@ -113,7 +113,7 @@ export default function ToolDetail() {
         whenToUse={whenToUse}
       />
 
-      <CTASection />
+      <ToolDownloadCTA onDownload={handleDownload} />
       <Footer />
     </div>
   );

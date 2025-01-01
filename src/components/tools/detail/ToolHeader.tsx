@@ -13,7 +13,7 @@ export function ToolHeader({ title, subtitle, onDownload }: ToolHeaderProps) {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Link to="/tools" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8 group">
         <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
-        See all tools
+        Back to all tools
       </Link>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -25,12 +25,12 @@ export function ToolHeader({ title, subtitle, onDownload }: ToolHeaderProps) {
             size="lg"
             className="bg-[#393CA0] hover:bg-[#2D2F7E] transition-colors"
           >
-            Get template
+            Download Tool
           </Button>
         </div>
         <div className="aspect-[16/9] rounded-xl overflow-hidden bg-[#FFD700]">
           <img
-            src="/lovable-uploads/adfba729-479c-4408-b470-41dc5f7630c9.png"
+            src="/lovable-uploads/6b30bfa4-1fc9-4deb-87e0-da8c7f794313.png"
             alt="Tool preview"
             className="w-full h-full object-cover"
           />
