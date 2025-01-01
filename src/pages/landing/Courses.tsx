@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TestimonialsSection } from "@/components/site-config/TestimonialsSection";
 import { WorkshopsSection } from "@/components/site-config/WorkshopsSection";
+import { CTASection } from "@/components/site-config/CTASection";
 
 export default function Courses() {
   const { toast } = useToast();
@@ -109,6 +110,9 @@ export default function Courses() {
           </p>
         </div>
       </div>
+
+      {/* CTA Section */}
+      <CTASection />
 
       <Footer />
     </div>

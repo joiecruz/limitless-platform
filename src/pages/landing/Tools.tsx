@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CTASection } from "@/components/site-config/CTASection";
 
 const categories = [
   "All tools",
@@ -112,6 +113,9 @@ export default function Tools() {
           </div>
         </div>
       </div>
+
+      {/* CTA Section */}
+      <CTASection />
 
       <Footer />
     </div>
