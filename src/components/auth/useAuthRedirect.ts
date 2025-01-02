@@ -31,7 +31,8 @@ export function useAuthRedirect() {
 
           // Check if this is a new confirmation
           const isEmailConfirmation = window.location.hash.includes('type=signup') || 
-                                    window.location.hash.includes('type=email_change');
+                                    window.location.hash.includes('type=email_change') ||
+                                    new URLSearchParams(window.location.search).get('type') === 'signup';
 
           if (!session.user.email_confirmed_at) {
             console.log("SignIn - Email not confirmed, redirecting to verify-email");
