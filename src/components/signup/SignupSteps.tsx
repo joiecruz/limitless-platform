@@ -57,8 +57,7 @@ const SignupSteps = () => {
   const handleSignup = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const baseUrl = window.location.origin;
-      const redirectUrl = `${baseUrl}/dashboard?type=signup`;
+      const redirectUrl = `https://limitlesslab.org/dashboard?type=signup`;
       console.log("Signup redirect URL:", redirectUrl);
       
       const { data, error } = await supabase.auth.signUp({
