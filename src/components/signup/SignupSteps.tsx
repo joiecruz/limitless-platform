@@ -25,24 +25,7 @@ export function SignupSteps() {
     
     setLoading(true);
     try {
-      // Get the current domain
-      const currentDomain = window.location.hostname;
-      
-      // Determine the appropriate redirect domain
-      let redirectDomain;
-      if (currentDomain === 'localhost') {
-        redirectDomain = 'localhost:3000';
-      } else if (currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org') {
-        redirectDomain = 'app.limitlesslab.org';
-      } else {
-        // For app subdomain or any other case, use current domain
-        redirectDomain = currentDomain;
-      }
-      
-      // Construct the redirect URL using the current protocol
-      const protocol = window.location.protocol;
-      const redirectTo = `${protocol}//${redirectDomain}/verify-email`;
-      
+      const redirectTo = `${window.location.origin}/verify-email`;
       console.log("Signup redirect URL:", redirectTo);
       
       const { data, error } = await supabase.auth.signUp({
