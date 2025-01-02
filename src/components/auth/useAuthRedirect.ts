@@ -60,9 +60,12 @@ export function useAuthRedirect() {
           const isAppDomain = window.location.hostname === 'app.limitlesslab.org';
           
           if (!isAppDomain) {
-            // Redirect to app domain
+            // Redirect to app domain with the current session
             const appUrl = window.location.href.replace('limitlesslab.org', 'app.limitlesslab.org');
-            window.location.href = `${appUrl}/dashboard${needsOnboarding || isEmailConfirmation ? '?showOnboarding=true' : ''}`;
+            // If this is a new confirmation or needs onboarding, add the appropriate parameter
+            const redirectUrl = `${appUrl}/dashboard${needsOnboarding || isEmailConfirmation ? '?showOnboarding=true' : ''}`;
+            console.log("Redirecting to app domain:", redirectUrl);
+            window.location.href = redirectUrl;
             return;
           }
 
@@ -132,7 +135,7 @@ export function useAuthRedirect() {
         const isAppDomain = window.location.hostname === 'app.limitlesslab.org';
         
         if (!isAppDomain) {
-          // Redirect to app domain
+          // Redirect to app domain with the current session
           const appUrl = window.location.href.replace('limitlesslab.org', 'app.limitlesslab.org');
           window.location.href = `${appUrl}/dashboard${needsOnboarding ? '?showOnboarding=true' : ''}`;
           return;
