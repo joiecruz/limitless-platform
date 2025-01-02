@@ -25,11 +25,15 @@ export function SignupSteps() {
     
     setLoading(true);
     try {
+      // Get the current hostname to determine the correct redirect URL
+      const isAppDomain = window.location.hostname === 'app.limitlesslab.org';
+      const baseUrl = isAppDomain ? window.location.origin : window.location.origin.replace('limitlesslab.org', 'app.limitlesslab.org');
+      
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/verify-email`,
+          emailRedirectTo: `${baseUrl}/verify-email`,
         }
       });
 
