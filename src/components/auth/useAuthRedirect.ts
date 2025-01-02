@@ -29,6 +29,9 @@ export function useAuthRedirect() {
             email: session.user.email
           });
 
+          // Check if this is a new confirmation
+          const isEmailConfirmation = window.location.hash.includes('type=signup');
+
           if (!session.user.email_confirmed_at) {
             console.log("SignIn - Email not confirmed, redirecting to verify-email");
             localStorage.setItem('verificationEmail', session.user.email || '');
@@ -38,8 +41,31 @@ export function useAuthRedirect() {
             });
             return;
           }
-          console.log("SignIn - Active session found, redirecting to dashboard");
-          navigate("/dashboard");
+
+          // Get user profile to check if onboarding is needed
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, role, company_size, goals, referral_source')
+            .eq('id', session.user.id)
+            .single();
+
+          const needsOnboarding = !profile?.first_name || 
+                                !profile?.last_name || 
+                                !profile?.role || 
+                                !profile?.company_size || 
+                                !profile?.goals || 
+                                !profile?.referral_source;
+
+          if (needsOnboarding || isEmailConfirmation) {
+            console.log("SignIn - User needs onboarding, setting state");
+            navigate("/dashboard", { 
+              replace: true,
+              state: { showOnboarding: true }
+            });
+          } else {
+            console.log("SignIn - Active session found, redirecting to dashboard");
+            navigate("/dashboard", { replace: true });
+          }
         } else {
           console.log("SignIn - No active session found");
           // Store invite token if present
@@ -77,8 +103,31 @@ export function useAuthRedirect() {
           });
           return;
         }
-        console.log("SignIn - User signed in, redirecting to dashboard");
-        navigate("/dashboard");
+
+        // Get user profile to check if onboarding is needed
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, role, company_size, goals, referral_source')
+          .eq('id', session.user.id)
+          .single();
+
+        const needsOnboarding = !profile?.first_name || 
+                              !profile?.last_name || 
+                              !profile?.role || 
+                              !profile?.company_size || 
+                              !profile?.goals || 
+                              !profile?.referral_source;
+
+        if (needsOnboarding) {
+          console.log("SignIn - User needs onboarding, setting state");
+          navigate("/dashboard", { 
+            replace: true,
+            state: { showOnboarding: true }
+          });
+        } else {
+          console.log("SignIn - User signed in, redirecting to dashboard");
+          navigate("/dashboard", { replace: true });
+        }
       }
 
       if (!session || event === 'SIGNED_OUT') {

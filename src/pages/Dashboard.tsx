@@ -3,11 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Query to get user profile data
@@ -52,9 +53,10 @@ export default function Dashboard() {
                             !profile.goals || 
                             !profile.referral_source;
       
-      setShowOnboarding(needsOnboarding);
+      // Show onboarding if needed or if coming from email confirmation
+      setShowOnboarding(needsOnboarding || location.state?.showOnboarding);
     }
-  }, [profile, profileLoading]);
+  }, [profile, profileLoading, location.state]);
 
   const getDisplayName = () => {
     if (profile?.first_name || profile?.last_name) {
