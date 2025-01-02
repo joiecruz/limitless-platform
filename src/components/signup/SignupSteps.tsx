@@ -58,14 +58,14 @@ const SignupSteps = () => {
     try {
       setIsLoading(true);
       const baseUrl = window.location.origin;
-      const redirectTo = `${baseUrl}/dashboard`;
-      console.log("Signup redirect URL:", redirectTo);
+      const redirectUrl = `${baseUrl}/verify-email`;
+      console.log("Signup redirect URL:", redirectUrl);
       
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectTo,
+          emailRedirectTo: redirectUrl,
           data: {
             signup_date: new Date().toISOString(),
             source: "web",
