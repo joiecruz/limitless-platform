@@ -24,11 +24,14 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         
         if (sessionError) {
           console.error("RequireAuth: Session error:", sessionError);
-          // Clear local storage and force sign out on session error
           localStorage.clear();
           await supabase.auth.signOut();
           setIsAuthenticated(false);
-          navigate("/signin", { replace: true });
+          
+          // Only redirect if we're on the app domain
+          if (window.location.hostname === 'app.limitlesslab.org') {
+            navigate("/signin", { replace: true });
+          }
           return;
         }
 
@@ -37,9 +40,13 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         if (!session) {
           console.log("RequireAuth: No session found, redirecting to signin");
           setIsAuthenticated(false);
-          localStorage.clear(); // Clear local storage when no session exists
+          localStorage.clear();
           await supabase.auth.signOut();
-          navigate("/signin", { replace: true });
+          
+          // Only redirect if we're on the app domain
+          if (window.location.hostname === 'app.limitlesslab.org') {
+            navigate("/signin", { replace: true });
+          }
           return;
         }
 
@@ -54,11 +61,14 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         setIsChecking(false);
       } catch (error: any) {
         console.error("RequireAuth: Auth error:", error);
-        // Clear local storage and force sign out on any error
         localStorage.clear();
         await supabase.auth.signOut();
         setIsAuthenticated(false);
-        navigate("/signin", { replace: true });
+        
+        // Only redirect if we're on the app domain
+        if (window.location.hostname === 'app.limitlesslab.org') {
+          navigate("/signin", { replace: true });
+        }
         toast({
           title: "Authentication Error",
           description: "Please sign in again",
@@ -86,7 +96,11 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         console.log("RequireAuth: Session lost or signed out, redirecting to signin");
         setIsAuthenticated(false);
         localStorage.clear();
-        navigate("/signin", { replace: true });
+        
+        // Only redirect if we're on the app domain
+        if (window.location.hostname === 'app.limitlesslab.org') {
+          navigate("/signin", { replace: true });
+        }
       } else if (!session.user.email_confirmed_at) {
         console.log("RequireAuth: Email not confirmed, redirecting to verify-email");
         setIsAuthenticated(false);
@@ -106,8 +120,10 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isAuthenticated) {
-    // Redirect to signin while preserving the attempted URL
-    return <Navigate to="/signin" state={{ from: location }} replace />;
+    // Only redirect if we're on the app domain
+    if (window.location.hostname === 'app.limitlesslab.org') {
+      return <Navigate to="/signin" state={{ from: location }} replace />;
+    }
   }
 
   return <>{children}</>;

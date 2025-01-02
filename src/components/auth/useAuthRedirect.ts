@@ -56,6 +56,16 @@ export function useAuthRedirect() {
                                 !profile?.goals || 
                                 !profile?.referral_source;
 
+          // Check if we're on the app domain
+          const isAppDomain = window.location.hostname === 'app.limitlesslab.org';
+          
+          if (!isAppDomain) {
+            // Redirect to app domain
+            const appUrl = window.location.href.replace('limitlesslab.org', 'app.limitlesslab.org');
+            window.location.href = `${appUrl}/dashboard${needsOnboarding || isEmailConfirmation ? '?showOnboarding=true' : ''}`;
+            return;
+          }
+
           if (needsOnboarding || isEmailConfirmation) {
             console.log("SignIn - User needs onboarding, setting state");
             navigate("/dashboard", { 
@@ -117,6 +127,16 @@ export function useAuthRedirect() {
                               !profile?.company_size || 
                               !profile?.goals || 
                               !profile?.referral_source;
+
+        // Check if we're on the app domain
+        const isAppDomain = window.location.hostname === 'app.limitlesslab.org';
+        
+        if (!isAppDomain) {
+          // Redirect to app domain
+          const appUrl = window.location.href.replace('limitlesslab.org', 'app.limitlesslab.org');
+          window.location.href = `${appUrl}/dashboard${needsOnboarding ? '?showOnboarding=true' : ''}`;
+          return;
+        }
 
         if (needsOnboarding) {
           console.log("SignIn - User needs onboarding, setting state");
