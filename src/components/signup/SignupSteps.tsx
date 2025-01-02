@@ -45,7 +45,7 @@ export function SignupSteps() {
         localStorage.setItem('verificationEmail', formData.email);
         
         console.log("Navigating to verify-email page");
-        navigate("/verify-email");
+        navigate("/verify-email", { replace: true });
 
         toast({
           title: "Check your email",
@@ -74,7 +74,10 @@ export function SignupSteps() {
   };
 
   return (
-    <form className="space-y-6 w-full max-w-md animate-fade-in">
+    <form className="space-y-6 w-full max-w-md animate-fade-in" onSubmit={(e) => {
+      e.preventDefault();
+      handleSignup();
+    }}>
       <Step1 {...stepProps} />
     </form>
   );

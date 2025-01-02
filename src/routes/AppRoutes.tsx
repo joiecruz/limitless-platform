@@ -19,6 +19,13 @@ import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
 
+// Auth pages
+import SignIn from "@/pages/SignIn";
+import SignUp from "@/pages/SignUp";
+import ResetPassword from "@/pages/ResetPassword";
+import VerifyEmail from "@/pages/VerifyEmail";
+import InvitePage from "@/pages/InvitePage";
+
 // App pages
 import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
@@ -28,11 +35,6 @@ import ToolDetails from "@/pages/ToolDetails";
 import Community from "@/pages/Community";
 import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
-import SignIn from "@/pages/SignIn";
-import SignUp from "@/pages/SignUp";
-import ResetPassword from "@/pages/ResetPassword";
-import VerifyEmail from "@/pages/VerifyEmail";
-import InvitePage from "@/pages/InvitePage";
 import Lessons from "@/pages/Lessons";
 import Lesson from "@/pages/Lesson";
 
@@ -116,6 +118,9 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/blog" element={<RedirectToMain />} />
         <Route path="/case-studies" element={<RedirectToMain />} />
         <Route path="/about" element={<RedirectToMain />} />
+        
+        {/* Catch all redirect */}
+        <Route path="*" element={<Navigate to="/signin" replace />} />
       </Routes>
     );
   }
@@ -142,6 +147,9 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/signup" element={<RedirectToApp />} />
       <Route path="/dashboard/*" element={<RedirectToApp />} />
       <Route path="/admin/*" element={<RedirectToApp />} />
+      
+      {/* Catch all redirect */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
