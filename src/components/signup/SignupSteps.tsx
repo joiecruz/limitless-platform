@@ -28,16 +28,20 @@ export function SignupSteps() {
       // Get the current domain
       const currentDomain = window.location.hostname;
       
-      // Always redirect to app subdomain for verification
-      const appDomain = currentDomain === 'localhost' 
-        ? 'localhost:3000'
-        : currentDomain.includes('app.') 
-          ? currentDomain 
-          : `app.${currentDomain.replace('www.', '')}`;
+      // Determine the appropriate redirect domain
+      let redirectDomain;
+      if (currentDomain === 'localhost') {
+        redirectDomain = 'localhost:3000';
+      } else if (currentDomain === 'limitlesslab.org' || currentDomain === 'www.limitlesslab.org') {
+        redirectDomain = 'app.limitlesslab.org';
+      } else {
+        // For app subdomain or any other case, use current domain
+        redirectDomain = currentDomain;
+      }
       
       // Construct the redirect URL using the current protocol
       const protocol = window.location.protocol;
-      const redirectTo = `${protocol}//${appDomain}/verify-email`;
+      const redirectTo = `${protocol}//${redirectDomain}/verify-email`;
       
       console.log("Signup redirect URL:", redirectTo);
       
@@ -46,6 +50,9 @@ export function SignupSteps() {
         password: formData.password,
         options: {
           emailRedirectTo: redirectTo,
+          data: {
+            email: formData.email,
+          }
         }
       });
 
