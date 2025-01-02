@@ -25,20 +25,7 @@ export function SignupSteps() {
     
     setLoading(true);
     try {
-      // Get the current domain
-      const currentDomain = window.location.hostname;
-      
-      // Always redirect to app subdomain for verification
-      const appDomain = currentDomain === 'localhost' 
-        ? 'localhost:3000'
-        : currentDomain.includes('app.') 
-          ? currentDomain 
-          : `app.${currentDomain.replace('www.', '')}`;
-      
-      // Construct the redirect URL using the current protocol
-      const protocol = window.location.protocol;
-      const redirectTo = `${protocol}//${appDomain}/verify-email`;
-      
+      const redirectTo = `${window.location.origin}/verify-email`;
       console.log("Signup redirect URL:", redirectTo);
       
       const { data, error } = await supabase.auth.signUp({
@@ -46,6 +33,9 @@ export function SignupSteps() {
         password: formData.password,
         options: {
           emailRedirectTo: redirectTo,
+          data: {
+            email: formData.email,
+          }
         }
       });
 

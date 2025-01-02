@@ -30,7 +30,8 @@ export function useAuthRedirect() {
           });
 
           // Check if this is a new confirmation
-          const isEmailConfirmation = window.location.hash.includes('type=signup');
+          const isEmailConfirmation = window.location.hash.includes('type=signup') || 
+                                    window.location.hash.includes('type=email_change');
 
           if (!session.user.email_confirmed_at) {
             console.log("SignIn - Email not confirmed, redirecting to verify-email");
@@ -55,19 +56,6 @@ export function useAuthRedirect() {
                                 !profile?.company_size || 
                                 !profile?.goals || 
                                 !profile?.referral_source;
-
-          // Check if we're on the app domain
-          const isAppDomain = window.location.hostname === 'app.limitlesslab.org';
-          
-          if (!isAppDomain) {
-            // Redirect to app domain with the current session
-            const appUrl = window.location.href.replace('limitlesslab.org', 'app.limitlesslab.org');
-            // If this is a new confirmation or needs onboarding, add the appropriate parameter
-            const redirectUrl = `${appUrl}/dashboard${needsOnboarding || isEmailConfirmation ? '?showOnboarding=true' : ''}`;
-            console.log("Redirecting to app domain:", redirectUrl);
-            window.location.href = redirectUrl;
-            return;
-          }
 
           if (needsOnboarding || isEmailConfirmation) {
             console.log("SignIn - User needs onboarding, setting state");
@@ -130,16 +118,6 @@ export function useAuthRedirect() {
                               !profile?.company_size || 
                               !profile?.goals || 
                               !profile?.referral_source;
-
-        // Check if we're on the app domain
-        const isAppDomain = window.location.hostname === 'app.limitlesslab.org';
-        
-        if (!isAppDomain) {
-          // Redirect to app domain with the current session
-          const appUrl = window.location.href.replace('limitlesslab.org', 'app.limitlesslab.org');
-          window.location.href = `${appUrl}/dashboard${needsOnboarding ? '?showOnboarding=true' : ''}`;
-          return;
-        }
 
         if (needsOnboarding) {
           console.log("SignIn - User needs onboarding, setting state");
