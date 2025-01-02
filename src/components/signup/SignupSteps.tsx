@@ -21,7 +21,7 @@ export function SignupSteps() {
       const baseUrl = import.meta.env.DEV 
         ? 'http://localhost:8080'
         : window.location.origin;
-      const redirectTo = `${baseUrl}/verify-email`;
+      const redirectTo = `${baseUrl}/dashboard`;
       console.log("Signup redirect URL:", redirectTo);
       
       const { data, error } = await supabase.auth.signUp({
