@@ -25,7 +25,9 @@ export function SignupSteps() {
     
     setLoading(true);
     try {
-      const redirectTo = `${window.location.origin}/verify-email`;
+      // Get the current URL for proper redirect handling
+      const currentUrl = window.location.origin;
+      const redirectTo = `${currentUrl}/verify-email`;
       console.log("Signup redirect URL:", redirectTo);
       
       const { data, error } = await supabase.auth.signUp({
