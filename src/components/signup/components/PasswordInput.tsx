@@ -3,21 +3,23 @@ import { Label } from "@/components/ui/label";
 import { PasswordRequirements } from "../steps/PasswordRequirements";
 
 interface PasswordInputProps {
+  id?: string;  // Made optional to maintain backward compatibility
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   error?: string;
   disabled?: boolean;
+  required?: boolean;
 }
 
-export function PasswordInput({ value, onChange, error, disabled }: PasswordInputProps) {
+export function PasswordInput({ id = "password", value, onChange, error, disabled, required }: PasswordInputProps) {
   return (
     <div className="w-full">
-      <Label htmlFor="password">Password</Label>
+      <Label htmlFor={id}>Password</Label>
       <Input
-        id="password"
+        id={id}
         name="password"
         type="password"
-        required
+        required={required}
         value={value}
         onChange={onChange}
         placeholder="••••••••"

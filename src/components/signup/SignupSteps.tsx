@@ -2,86 +2,172 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { SignupData } from "./types";
-import { Step1 } from "./steps/Step1";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+import { validateEmail, validatePassword } from "@/lib/utils";
 
-export function SignupSteps() {
-  const [formData, setFormData] = useState<SignupData>({
-    email: "",
-    password: "",
-  });
-  const [loading, setLoading] = useState(false);
+const SignupSteps = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const validateForm = () => {
+    let isValid = true;
+    setEmailError("");
+    setPasswordError("");
+    setConfirmPasswordError("");
+
+    if (!email) {
+      setEmailError("Email is required");
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address");
+      isValid = false;
+    }
+
+    if (!password) {
+      setPasswordError("Password is required");
+      isValid = false;
+    } else if (!validatePassword(password)) {
+      setPasswordError(
+        "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number"
+      );
+      isValid = false;
+    }
+
+    if (!confirmPassword) {
+      setConfirmPasswordError("Please confirm your password");
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      setConfirmPasswordError("Passwords do not match");
+      isValid = false;
+    }
+
+    return isValid;
   };
 
-  const handleSignup = async () => {
-    console.log("Starting signup process with data:", {
-      email: formData.email,
-    });
-    
-    setLoading(true);
+  const handleSignup = async (email: string, password: string) => {
     try {
-      const redirectTo = `${window.location.origin}/verify-email`;
+      setIsLoading(true);
+      const baseUrl = window.location.origin;
+      const redirectTo = `${baseUrl}/dashboard`;
       console.log("Signup redirect URL:", redirectTo);
       
       const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
+        email,
+        password,
         options: {
           emailRedirectTo: redirectTo,
           data: {
-            email: formData.email,
+            signup_date: new Date().toISOString(),
+            source: "web",
+            referral: localStorage.getItem("referral") || "direct",
+            utm_source: localStorage.getItem("utm_source") || "",
+            utm_medium: localStorage.getItem("utm_medium") || "",
+            utm_campaign: localStorage.getItem("utm_campaign") || "",
           }
         }
       });
 
       if (error) {
         console.error("Signup error:", error);
-        throw error;
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
       }
-
-      console.log("Signup response:", data);
 
       if (data?.user) {
-        // Store email in localStorage for verify-email page
-        localStorage.setItem('verificationEmail', formData.email);
-        
-        console.log("Navigating to verify-email page");
-        navigate("/verify-email");
-
+        localStorage.setItem("verificationEmail", email);
+        navigate("/verify-email", { replace: true });
         toast({
-          title: "Check your email",
-          description: "We've sent you a verification link to complete your registration.",
+          description: "Please check your email to confirm your account.",
         });
-      } else {
-        throw new Error("No user data returned from signup");
       }
     } catch (error: any) {
-      console.error("Error in handleSignup:", error);
+      console.error("Signup error:", error);
       toast({
         title: "Error",
         description: error.message || "An error occurred during signup",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const stepProps = {
-    formData,
-    handleInputChange,
-    nextStep: handleSignup,
-    loading,
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      await handleSignup(email, password);
+    }
   };
 
   return (
-    <form className="space-y-6 w-full max-w-md animate-fade-in">
-      <Step1 {...stepProps} />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
+          />
+          {emailError && (
+            <p className="text-sm text-red-500">{emailError}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Create a password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+          />
+          {passwordError && (
+            <p className="text-sm text-red-500">{passwordError}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="confirm-password">Confirm Password</Label>
+          <Input
+            id="confirm-password"
+            type="password"
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={isLoading}
+          />
+          {confirmPasswordError && (
+            <p className="text-sm text-red-500">{confirmPasswordError}</p>
+          )}
+        </div>
+      </div>
+
+      <Button className="w-full" type="submit" disabled={isLoading}>
+        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isLoading ? "Creating Account..." : "Create Account"}
+      </Button>
     </form>
   );
-}
+};
+
+export default SignupSteps;
