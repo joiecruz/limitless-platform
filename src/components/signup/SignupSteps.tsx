@@ -2,65 +2,60 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import Step1 from "./steps/Step1";
-import { useSignupValidation } from "@/hooks/useSignupValidation";
+import { SignupData } from "./types";
+import { Step1 } from "./steps/Step1";
 
 export function SignupSteps() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const { validateStep1 } = useSignupValidation();
-
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignupData>({
     email: "",
     password: "",
-    confirmPassword: "",
   });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSignup = async () => {
+    console.log("Starting signup process with data:", {
+      email: formData.email,
+    });
+    
+    setLoading(true);
     try {
-      setLoading(true);
-      console.log("Validating signup data...");
-      
-      // Validate form data
-      const validationError = validateStep1(formData);
-      if (validationError) {
-        toast({
-          title: "Validation Error",
-          description: validationError,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log("Signing up with Supabase...");
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/verify-email`,
+        }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Signup error:", error);
+        throw error;
+      }
 
-      console.log("Signup successful, storing email for verification...");
-      // Store email for verification page
-      localStorage.setItem('verificationEmail', formData.email);
-      
-      console.log("Navigating to verify-email page");
-      navigate("/verify-email", { replace: true });
+      console.log("Signup response:", data);
 
-      toast({
-        title: "Check your email",
-        description: "We've sent you a verification link to complete your registration.",
-      });
+      if (data?.user) {
+        // Store email in localStorage for verify-email page
+        localStorage.setItem('verificationEmail', formData.email);
+        
+        console.log("Navigating to verify-email page");
+        navigate("/verify-email");
+
+        toast({
+          title: "Check your email",
+          description: "We've sent you a verification link to complete your registration.",
+        });
+      } else {
+        throw new Error("No user data returned from signup");
+      }
     } catch (error: any) {
-      console.error("Signup error:", error);
+      console.error("Error in handleSignup:", error);
       toast({
         title: "Error",
         description: error.message || "An error occurred during signup",
@@ -73,18 +68,13 @@ export function SignupSteps() {
 
   const stepProps = {
     formData,
+    handleInputChange,
+    nextStep: handleSignup,
     loading,
-    onInputChange: handleInputChange,
   };
 
   return (
-    <form 
-      className="space-y-6 w-full max-w-md animate-fade-in" 
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSignup();
-      }}
-    >
+    <form className="space-y-6 w-full max-w-md animate-fade-in">
       <Step1 {...stepProps} />
     </form>
   );
