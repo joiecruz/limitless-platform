@@ -8,9 +8,10 @@ interface PasswordInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   error?: string;
   disabled?: boolean;
+  required?: boolean;
 }
 
-export function PasswordInput({ id = "password", value, onChange, error, disabled }: PasswordInputProps) {
+export function PasswordInput({ id = "password", value, onChange, error, disabled, required }: PasswordInputProps) {
   return (
     <div className="w-full">
       <Label htmlFor={id}>Password</Label>
@@ -18,7 +19,7 @@ export function PasswordInput({ id = "password", value, onChange, error, disable
         id={id}
         name="password"
         type="password"
-        required
+        required={required}
         value={value}
         onChange={onChange}
         placeholder="••••••••"
