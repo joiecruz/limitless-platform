@@ -1,72 +1,49 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { SignupData } from "./types";
-import { Step1 } from "./steps/Step1";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PasswordInput } from "./components/PasswordInput";
+import { PasswordRequirements } from "./steps/PasswordRequirements";
 
 export function SignupSteps() {
-  const [formData, setFormData] = useState<SignupData>({
-    email: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSignup = async () => {
-    console.log("Starting signup process with data:", {
-      email: formData.email,
-    });
-    
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     try {
-      // Get the current URL for proper redirect handling
-      const currentUrl = window.location.origin;
-      const redirectTo = `${currentUrl}/verify-email`;
+      // For development, use localhost, otherwise use the production URL
+      const baseUrl = import.meta.env.DEV 
+        ? 'http://localhost:8080'
+        : window.location.origin;
+      const redirectTo = `${baseUrl}/verify-email`;
       console.log("Signup redirect URL:", redirectTo);
       
       const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
+        email,
+        password,
         options: {
           emailRedirectTo: redirectTo,
-          data: {
-            email: formData.email,
-          }
-        }
+        },
       });
 
-      if (error) {
-        console.error("Signup error:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log("Signup response:", data);
-
-      if (data?.user) {
-        // Store email in localStorage for verify-email page
-        localStorage.setItem('verificationEmail', formData.email);
-        
-        console.log("Navigating to verify-email page");
-        navigate("/verify-email");
-
-        toast({
-          title: "Check your email",
-          description: "We've sent you a verification link to complete your registration.",
-        });
-      } else {
-        throw new Error("No user data returned from signup");
-      }
+      console.log("Signup successful:", data);
+      toast({
+        title: "Check your email",
+        description: "We sent you a confirmation link. Please check your email.",
+      });
     } catch (error: any) {
-      console.error("Error in handleSignup:", error);
+      console.error("Signup error:", error);
       toast({
         title: "Error",
-        description: error.message || "An error occurred during signup",
+        description: error.message || "An error occurred during sign up",
         variant: "destructive",
       });
     } finally {
@@ -74,16 +51,32 @@ export function SignupSteps() {
     }
   };
 
-  const stepProps = {
-    formData,
-    handleInputChange,
-    nextStep: handleSignup,
-    loading,
-  };
-
   return (
-    <form className="space-y-6 w-full max-w-md animate-fade-in">
-      <Step1 {...stepProps} />
+    <form onSubmit={handleSignUp} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@company.com"
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <PasswordInput
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <PasswordRequirements password={password} />
+      </div>
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Creating Account..." : "Create Account"}
+      </Button>
     </form>
   );
 }
