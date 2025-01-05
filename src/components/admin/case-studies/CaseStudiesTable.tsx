@@ -32,12 +32,14 @@ export function CaseStudiesTable() {
       console.log("Fetched case studies:", data);
       return data;
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Error loading case studies",
-        description: error.message,
-        variant: "destructive",
-      });
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: "Error loading case studies",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
     },
   });
 
