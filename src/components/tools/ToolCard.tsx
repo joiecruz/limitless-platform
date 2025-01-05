@@ -1,33 +1,63 @@
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tool } from "@/types/tool";
 import { ArrowRight } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
 interface ToolCardProps {
   tool: Tool;
 }
 
+const CATEGORY_COLORS: { [key: string]: string } = {
+  "Stakeholder and Persona Mapping": "bg-[#FF69B4]",
+  "Ideation and Brainstorming": "bg-[#40E0D0]",
+  "Project Planning and Management": "bg-[#FFD700]",
+  "Innovation Process and Tools": "bg-[#4169E1]",
+  "Evaluation and Feedback": "bg-[#32CD32]",
+  "Strategy and Visioning": "bg-[#9370DB]",
+};
+
 export function ToolCard({ tool }: ToolCardProps) {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { toast } = useToast();
+
+  const bgColor = CATEGORY_COLORS[tool.category] || "bg-primary-500";
+
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden transition-all duration-200 hover:shadow-lg">
-      <div className="aspect-[4/3] relative">
-        <img
-          src={tool.cover_image || "/placeholder.svg"}
-          alt={tool.name}
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="p-6 space-y-4">
-        <div>
-          <p className="text-sm text-gray-500 mb-2">{tool.category}</p>
-          <h3 className="text-xl font-semibold text-gray-900">{tool.name}</h3>
+    <Card className="group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg">
+      <div className={`relative h-[240px] ${bgColor}`}>
+        <div className="absolute inset-x-0 bottom-0 translate-y-1/3">
+          <div className="mx-6 h-[180px] bg-white rounded-lg shadow-lg">
+            <div className="w-full h-full aspect-[16/9]">
+              <img
+                src={tool.cover_image || "/placeholder.svg"}
+                alt={tool.name}
+                className="w-full h-full rounded-lg object-contain p-4"
+              />
+            </div>
+          </div>
         </div>
+      </div>
+      <CardHeader className="pt-20">
+        <p className="text-sm font-medium text-gray-500 mb-1">{tool.category}</p>
+        <CardTitle className="text-2xl font-bold">{tool.name}</CardTitle>
+      </CardHeader>
+      <CardContent className="mt-auto">
         <Link 
           to={`/tools/${tool.id}`} 
-          className="inline-flex items-center text-primary-600 hover:underline group-hover:gap-2 transition-all"
+          className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium"
         >
-          Learn more <ArrowRight className="ml-2 h-4 w-4" />
+          Learn more
+          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Link>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
