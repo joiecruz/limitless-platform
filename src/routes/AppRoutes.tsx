@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
 import Tools from "@/pages/Tools";
 import DashboardToolDetail from "@/pages/DashboardToolDetail";
-import AdminLayout from "@/components/admin/AdminLayout";
+import { AdminLayout } from "@/layouts/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminTools from "@/pages/admin/AdminTools";
