@@ -8,6 +8,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { InviteStep1 } from "./steps/InviteStep1";
 import { useInviteSubmit } from "./hooks/useInviteSubmit";
 import { InvitedUserOnboardingModal } from "./InvitedUserOnboardingModal";
+import { verifyInvitation } from "./services/invitationService";
 
 interface InviteModalProps {
   open?: boolean;
@@ -19,6 +20,7 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
   const navigate = useNavigate();
   const token = searchParams.get("token");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [workspaceId, setWorkspaceId] = useState<string>();
 
   const [formData, setFormData] = useState({
     password: "",
@@ -29,10 +31,22 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
   const handleNext = async (stepData: { password: string }) => {
     const updatedData = { ...formData, ...stepData };
     setFormData(updatedData);
-    await submitInvite({
-      password: updatedData.password,
-    });
-    setShowOnboarding(true);
+
+    try {
+      // Verify invitation to get workspace ID
+      if (token) {
+        const { invitation } = await verifyInvitation(token);
+        setWorkspaceId(invitation.workspace_id);
+      }
+
+      await submitInvite({
+        password: updatedData.password,
+      });
+      
+      setShowOnboarding(true);
+    } catch (error) {
+      console.error("Error during invite process:", error);
+    }
   };
 
   if (showOnboarding) {
@@ -41,7 +55,8 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
         open={true} 
         onOpenChange={() => {
           navigate("/dashboard");
-        }} 
+        }}
+        workspaceId={workspaceId}
       />
     );
   }
