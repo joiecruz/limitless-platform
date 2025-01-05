@@ -58,16 +58,19 @@ export function useAuthRedirect() {
                                 !profile?.goals || 
                                 !profile?.referral_source;
 
-          if (needsOnboarding || isEmailConfirmation) {
-            console.log("SignIn - User needs onboarding, setting state");
+          // Always redirect to dashboard after email confirmation
+          if (isEmailConfirmation || needsOnboarding) {
+            console.log("SignIn - Email confirmed or needs onboarding, redirecting to dashboard");
             navigate("/dashboard", { 
               replace: true,
               state: { showOnboarding: true }
             });
-          } else {
-            console.log("SignIn - Active session found, redirecting to dashboard");
-            navigate("/dashboard", { replace: true });
+            return;
           }
+
+          // For all other cases, redirect to dashboard
+          console.log("SignIn - Active session found, redirecting to dashboard");
+          navigate("/dashboard", { replace: true });
         } else {
           console.log("SignIn - No active session found");
           // Store invite token if present
@@ -120,6 +123,7 @@ export function useAuthRedirect() {
                               !profile?.goals || 
                               !profile?.referral_source;
 
+        // Always redirect to dashboard after sign in
         if (needsOnboarding) {
           console.log("SignIn - User needs onboarding, setting state");
           navigate("/dashboard", { 
