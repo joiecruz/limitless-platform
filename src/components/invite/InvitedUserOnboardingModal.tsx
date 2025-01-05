@@ -11,6 +11,7 @@ import { OnboardingProgress } from "../onboarding/components/OnboardingProgress"
 import { OnboardingData } from "../onboarding/types";
 import { useOnboardingSubmit } from "../onboarding/hooks/useOnboardingSubmit";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface InvitedUserOnboardingModalProps {
   open?: boolean;
@@ -26,6 +27,7 @@ export function InvitedUserOnboardingModal({
   const [currentStep, setCurrentStep] = useState(1);
   const TOTAL_STEPS = 3;
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
@@ -42,8 +44,16 @@ export function InvitedUserOnboardingModal({
     workspaceId,
     onSuccess: () => {
       if (workspaceId) {
+        console.log("Onboarding completed, navigating to workspace:", workspaceId);
+        // Add workspace to localStorage to ensure it's selected on dashboard
+        localStorage.setItem('selectedWorkspace', workspaceId);
         navigate(`/dashboard?workspace=${workspaceId}`);
+        toast({
+          title: "Welcome!",
+          description: "Your profile has been set up successfully.",
+        });
       } else {
+        console.log("No workspace ID found, navigating to default dashboard");
         navigate('/dashboard');
       }
     }
@@ -54,6 +64,7 @@ export function InvitedUserOnboardingModal({
     setFormData(updatedData);
 
     if (currentStep === TOTAL_STEPS) {
+      console.log("Final step completed, submitting data");
       await handleSubmit(updatedData);
     } else {
       setCurrentStep(prev => prev + 1);
