@@ -1,17 +1,8 @@
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tool } from "@/pages/Tools";
-import { Download } from "lucide-react";
+import { Tool } from "@/types/tool";
+import { ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 interface ToolCardProps {
   tool: Tool;
@@ -20,72 +11,35 @@ interface ToolCardProps {
 export function ToolCard({ tool }: ToolCardProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
+  const location = useLocation();
 
-  const handleDownload = async () => {
-    if (!tool.downloadUrl) {
-      toast({
-        title: "Download not available",
-        description: "This tool is not available for download yet.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsDownloading(true);
-    try {
-      const response = await fetch(tool.downloadUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = tool.title;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      toast({
-        title: "Download started",
-        description: "Your download should begin shortly.",
-      });
-    } catch (error) {
-      toast({
-        title: "Download failed",
-        description: "There was an error downloading the file. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDownloading(false);
-    }
-  };
+  // Determine if we're in the dashboard or landing page
+  const isDashboard = location.pathname.startsWith('/dashboard');
+  const linkPath = isDashboard 
+    ? `/dashboard/tools/${tool.id}` 
+    : `/tools/${tool.id}`;
 
   return (
-    <Card className="flex flex-col h-full">
-      <div className="relative pt-[56.25%]"> {/* Changed to 56.25% for 16:9 aspect ratio */}
-        <div className="absolute inset-0">
-          <img
-            src={tool.imageUrl || "/placeholder.svg"}
-            alt={tool.title}
-            className="w-full h-full object-cover rounded-t-lg"
-          />
-        </div>
+    <div className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+      <div className="aspect-[16/9] relative">
+        <img
+          src={tool.cover_image || "/placeholder.svg"}
+          alt={tool.name}
+          className="w-full h-full object-cover"
+        />
       </div>
-      <CardHeader>
-        <CardTitle className="leading-tight">{tool.title}</CardTitle>
-        <CardDescription className="text-primary-600">
-          {tool.category}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-gray-500">{tool.description}</p>
-      </CardContent>
-      <CardFooter className="mt-auto">
-        <Link to={`/tools/${tool.id}`} className="w-full">
-          <Button className="w-full">
-            Learn more
-          </Button>
+      
+      <div className="p-8">
+        <p className="text-sm text-gray-600 mb-2">{tool.category}</p>
+        <h3 className="text-2xl font-bold mb-6">{tool.name}</h3>
+        <Link 
+          to={linkPath}
+          className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium group"
+        >
+          Learn more
+          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Link>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }

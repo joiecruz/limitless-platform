@@ -1,109 +1,164 @@
 import { useParams, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, Lock } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Tool } from "./Tools";
+import { Tool } from "@/types/tool";
 import { LoadingQuotes } from "@/components/common/LoadingQuotes";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const fetchTool = async (toolId: string) => {
   const { data, error } = await supabase
     .from('innovation_tools')
     .select('*')
     .eq('id', toolId)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
+  if (!data) throw new Error('Tool not found');
   
-  return {
-    id: data.id,
-    title: data.title,
-    subtitle: data.subtitle,
-    description: data.description,
-    imageUrl: data.image_url,
-    price: data.price,
-    downloadUrl: data.download_url
-  } as Tool;
+  return data as Tool;
 };
 
 export default function ToolDetails() {
-  const { toolId } = useParams();
+  const { id } = useParams();
+  const { toast } = useToast();
   const { data: tool, isLoading, error } = useQuery({
-    queryKey: ['tool', toolId],
-    queryFn: () => fetchTool(toolId!),
-    enabled: !!toolId,
+    queryKey: ['tool', id],
+    queryFn: () => fetchTool(id!),
+    enabled: !!id,
   });
+
+  const handleDownload = async () => {
+    if (!tool?.download_url) {
+      toast({
+        title: "Download not available",
+        description: "This tool is not available for download yet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    window.open(tool.download_url, '_blank');
+    toast({
+      title: "Download started",
+      description: "Your download should begin shortly.",
+    });
+  };
 
   if (isLoading) return <LoadingQuotes />;
 
   if (error || !tool) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-semibold">Tool not found</h2>
-        <Link to="/tools" className="text-primary hover:underline mt-4 inline-block">
-          Back to Tools
-        </Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-4">Tool not found</h2>
+          <Link 
+            to="/dashboard/tools" 
+            className="text-primary-600 hover:text-primary-700"
+          >
+            Back to Tools
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in space-y-8">
-      <div className="flex items-center gap-4">
-        <Link to="/tools">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{tool.title}</h1>
-          <p className="text-sm text-primary-600">{tool.subtitle}</p>
-        </div>
-      </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Link 
+        to="/dashboard/tools" 
+        className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to tools
+      </Link>
 
-      <Card className="overflow-hidden">
-        <div className="aspect-[2/1] relative">
-          <img
-            src={tool.imageUrl}
-            alt={tool.title}
-            className="object-cover w-full h-full"
-          />
-        </div>
-        <div className="p-6 space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Description</h2>
-            <p className="text-gray-600">{tool.description}</p>
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="bg-white border rounded-xl p-8 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold mb-4">{tool.name}</h1>
+              <p className="text-gray-600 mb-6">{tool.brief_description}</p>
+              <div className="flex items-center gap-4">
+                <Button 
+                  onClick={handleDownload}
+                  className="inline-flex items-center"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Tool
+                </Button>
+                <span className="text-sm text-gray-500">
+                  {tool.downloads_count || 0} downloads
+                </span>
+              </div>
+            </div>
+            <div className="w-full md:w-1/2">
+              <img
+                src={tool.cover_image || "/placeholder.svg"}
+                alt={tool.name}
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
           </div>
+        </div>
 
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Preview</h2>
-            <img
-              src="/lovable-uploads/5ee81b3e-851f-40a8-a4d9-16c05988a11f.png"
-              alt="Tool preview"
-              className="w-full rounded-lg border"
+        {/* Description Section */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">About this tool</h2>
+          <p className="text-gray-600">{tool.long_description}</p>
+        </div>
+
+        {/* Use Cases Section */}
+        {(tool.use_case_1 || tool.use_case_2 || tool.use_case_3) && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">Use Cases</h2>
+            <ul className="space-y-3">
+              {tool.use_case_1 && (
+                <li className="flex items-start">
+                  <span className="text-primary-600 mr-2">•</span>
+                  {tool.use_case_1}
+                </li>
+              )}
+              {tool.use_case_2 && (
+                <li className="flex items-start">
+                  <span className="text-primary-600 mr-2">•</span>
+                  {tool.use_case_2}
+                </li>
+              )}
+              {tool.use_case_3 && (
+                <li className="flex items-start">
+                  <span className="text-primary-600 mr-2">•</span>
+                  {tool.use_case_3}
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+
+        {/* How to Use Section */}
+        {tool.how_to_use && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">How to Use</h2>
+            <div 
+              className="prose max-w-none text-gray-600"
+              dangerouslySetInnerHTML={{ __html: tool.how_to_use }}
             />
           </div>
+        )}
 
-          <div className="flex justify-end">
-            {tool.price === null ? (
-              <Button 
-                size="lg" 
-                className="w-full sm:w-auto"
-                onClick={() => tool.downloadUrl && window.open(tool.downloadUrl, '_blank')}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download Now
-              </Button>
-            ) : (
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                <Lock className="w-4 h-4 mr-2" />
-                Unlock for ${tool.price.toFixed(2)}
-              </Button>
-            )}
+        {/* When to Use Section */}
+        {tool.when_to_use && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">When to Use</h2>
+            <div 
+              className="prose max-w-none text-gray-600"
+              dangerouslySetInnerHTML={{ __html: tool.when_to_use }}
+            />
           </div>
-        </div>
-      </Card>
+        )}
+      </div>
     </div>
   );
 }

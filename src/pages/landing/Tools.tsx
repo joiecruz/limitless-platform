@@ -89,17 +89,17 @@ export default function Tools() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredTools?.map((tool) => (
               <div key={tool.id} className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
-                <div className="aspect-[4/3] relative">
+                <div className="aspect-[16/9] relative">
                   <img
-                    src={tool.image_url || "/placeholder.svg"}
-                    alt={tool.title}
+                    src={tool.cover_image || "/placeholder.svg"}
+                    alt={tool.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-2xl font-semibold mb-3">{tool.title}</h3>
+                  <h3 className="text-2xl font-semibold mb-3">{tool.name}</h3>
                   <p className="text-gray-600 mb-4 line-clamp-2">
-                    {tool.description}
+                    {tool.brief_description}
                   </p>
                   <Link
                     to={`/tools/${tool.id}`}
