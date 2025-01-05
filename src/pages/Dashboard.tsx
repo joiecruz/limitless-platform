@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { ToolCard } from "@/components/tools/ToolCard";
+import { Card } from "@/components/ui/card";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -24,6 +25,20 @@ export default function Dashboard() {
         .eq("id", user.id)
         .single();
 
+      return data;
+    },
+  });
+
+  // Query to get featured tools
+  const { data: tools } = useQuery({
+    queryKey: ["featured_tools"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('innovation_tools')
+        .select('*')
+        .limit(4);
+      
+      if (error) throw error;
       return data;
     },
   });
@@ -109,6 +124,23 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
+
+      {/* Featured Tools Section */}
+      {tools && tools.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Featured Tools</h2>
+            <a href="/tools" className="text-primary hover:underline flex items-center gap-1">
+              View all tools <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {tools.map((tool) => (
+              <ToolCard key={tool.id} tool={tool} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Quick Links Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
