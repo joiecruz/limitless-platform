@@ -42,7 +42,9 @@ export function useAuthRedirect() {
             return;
           }
 
+          // Check if user needs onboarding
           const needsOnboarding = await checkUserProfile(session);
+          console.log("SignIn - Needs onboarding:", needsOnboarding);
 
           // Always redirect to dashboard after email confirmation
           if (isEmailConfirmation || needsOnboarding) {
@@ -96,6 +98,7 @@ export function useAuthRedirect() {
         }
 
         const needsOnboarding = await checkUserProfile(session);
+        console.log("SignIn - Needs onboarding after sign in:", needsOnboarding);
 
         // Always redirect to dashboard after sign in
         if (needsOnboarding) {
