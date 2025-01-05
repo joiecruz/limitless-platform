@@ -10,9 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Lock, Unlock } from "lucide-react";
+import { Lock, Unlock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CourseDetails from "./courses/CourseDetails";
+import { LoadingPage } from "@/components/common/LoadingPage";
 
 export default function AdminCourses() {
   const { toast } = useToast();
@@ -91,11 +92,7 @@ export default function AdminCourses() {
   }
 
   if (isLoadingCourses) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingPage />;
   }
 
   return (
