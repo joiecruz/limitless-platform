@@ -81,13 +81,18 @@ export default function ToolDetails() {
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-4">{tool.name}</h1>
               <p className="text-gray-600 mb-6">{tool.brief_description}</p>
-              <Button 
-                onClick={handleDownload}
-                className="inline-flex items-center"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download Tool
-              </Button>
+              <div className="flex items-center gap-4">
+                <Button 
+                  onClick={handleDownload}
+                  className="inline-flex items-center"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Tool
+                </Button>
+                <span className="text-sm text-gray-500">
+                  {tool.downloads_count || 0} downloads
+                </span>
+              </div>
             </div>
             <div className="w-full md:w-1/2">
               <img
