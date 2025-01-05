@@ -55,6 +55,15 @@ export default function AdminUsers() {
       
       if (error) throw error;
       return data;
+    },
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to fetch users",
+          variant: "destructive",
+        });
+      }
     }
   });
 
@@ -95,12 +104,18 @@ export default function AdminUsers() {
         return;
       }
 
-      const { error } = await supabase
+      // Delete from profiles table first (this will cascade to other tables)
+      const { error: profileError } = await supabase
         .from('profiles')
         .delete()
         .eq('id', userId);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Delete from auth.users
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      
+      if (authError) throw authError;
 
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
 
