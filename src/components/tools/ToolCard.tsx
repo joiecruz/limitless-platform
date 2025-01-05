@@ -20,11 +20,8 @@ export function ToolCard({ tool }: ToolCardProps) {
   const bgColor = CATEGORY_COLORS[tool.category] || "bg-primary-500";
 
   return (
-    <div 
-      className="group relative bg-white rounded-lg overflow-hidden transition-all duration-200 hover:shadow-lg"
-      style={{ background: bgColor }}
-    >
-      <div className="aspect-[4/3] relative p-8">
+    <div className="group relative bg-white rounded-lg overflow-hidden transition-all duration-200 hover:shadow-lg">
+      <div className="aspect-[4/3] relative p-8 bg-white">
         <div className="bg-white rounded-lg p-4 w-full h-full flex items-center justify-center">
           <img
             src={tool.cover_image || "/placeholder.svg"}
@@ -33,11 +30,13 @@ export function ToolCard({ tool }: ToolCardProps) {
           />
         </div>
       </div>
-      <div className="bg-white p-6 space-y-4">
+      <div 
+        className="p-6 space-y-4"
+        style={{ background: bgColor }}
+      >
         <div>
           <p className="text-sm text-gray-500 mb-2">{tool.category}</p>
           <h3 className="text-xl font-semibold text-gray-900">{tool.name}</h3>
-          <p className="mt-2 text-gray-600">{tool.brief_description}</p>
         </div>
         <Link 
           to={`/tools/${tool.id}`} 
