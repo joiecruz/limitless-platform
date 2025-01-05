@@ -20,7 +20,7 @@ interface Blog {
   updated_at: string;
 }
 
-export function BlogsTable() {
+export default function BlogsTable() {
   const { toast } = useToast();
   const { handleDelete, togglePublish } = useBlogOperations();
 
