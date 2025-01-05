@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { CaseStudyImagePreview } from "./components/CaseStudyImagePreview";
 
 interface CaseStudyFormProps {
   initialData?: {
@@ -157,6 +158,12 @@ export function CaseStudyForm({
           />
         </div>
 
+        <CaseStudyImagePreview
+          label="Cover Photo"
+          value={formData.cover_photo}
+          onChange={(value) => setFormData(prev => ({ ...prev, cover_photo: value }))}
+        />
+
         <div>
           <Label htmlFor="problem">Problem/Opportunity</Label>
           <Textarea
@@ -197,32 +204,17 @@ export function CaseStudyForm({
           />
         </div>
 
-        <div>
-          <Label htmlFor="coverPhoto">Cover Photo URL</Label>
-          <Input
-            id="coverPhoto"
-            value={formData.cover_photo}
-            onChange={(e) => setFormData(prev => ({ ...prev, cover_photo: e.target.value }))}
-          />
-        </div>
+        <CaseStudyImagePreview
+          label="Additional Photo 1"
+          value={formData.additional_photo1}
+          onChange={(value) => setFormData(prev => ({ ...prev, additional_photo1: value }))}
+        />
 
-        <div>
-          <Label htmlFor="photo1">Additional Photo 1 URL</Label>
-          <Input
-            id="photo1"
-            value={formData.additional_photo1}
-            onChange={(e) => setFormData(prev => ({ ...prev, additional_photo1: e.target.value }))}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="photo2">Additional Photo 2 URL</Label>
-          <Input
-            id="photo2"
-            value={formData.additional_photo2}
-            onChange={(e) => setFormData(prev => ({ ...prev, additional_photo2: e.target.value }))}
-          />
-        </div>
+        <CaseStudyImagePreview
+          label="Additional Photo 2"
+          value={formData.additional_photo2}
+          onChange={(value) => setFormData(prev => ({ ...prev, additional_photo2: value }))}
+        />
       </div>
 
       <Button type="submit" disabled={isLoading}>

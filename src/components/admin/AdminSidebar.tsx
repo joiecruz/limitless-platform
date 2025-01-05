@@ -5,10 +5,8 @@ import {
   Briefcase, 
   BookOpen,
   ArrowLeft,
-  Globe,
   FileText,
-  Database,
-  BookMarked
+  Database
 } from "lucide-react";
 import { UserProfile } from "@/components/layout/UserProfile";
 
@@ -74,13 +72,6 @@ export function AdminSidebar() {
             >
               <Database className="h-5 w-5" />
               Content
-            </Link>
-            <Link 
-              to="/admin/case-studies" 
-              className={`nav-item ${isActive('/admin/case-studies') ? 'active' : ''}`}
-            >
-              <BookMarked className="h-5 w-5" />
-              Case Studies
             </Link>
           </div>
         </div>

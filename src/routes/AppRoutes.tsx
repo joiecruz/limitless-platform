@@ -47,6 +47,7 @@ import AdminContent from "@/pages/admin/AdminContent";
 import CreateBlog from "@/pages/admin/blog/CreateBlog";
 import EditBlog from "@/pages/admin/blog/EditBlog";
 import AdminSettings from "@/pages/admin/AdminSettings";
+import EditCaseStudy from "@/pages/admin/case-studies/EditCaseStudy";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -107,6 +108,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/admin/content" element={<AdminContent />} />
         <Route path="/admin/content/blog/create" element={<CreateBlog />} />
         <Route path="/admin/content/blog/:id" element={<EditBlog />} />
+        <Route path="/admin/content/case-studies/:id" element={<EditCaseStudy />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
       </Route>
     </Routes>
