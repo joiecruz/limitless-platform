@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEmailConfirmation } from "@/hooks/useEmailConfirmation";
-import { useProfileCheck } from "@/hooks/useProfileCheck";
+import { checkUserProfile } from "@/hooks/useProfileCheck";
 
 export function useAuthRedirect() {
   const navigate = useNavigate();
@@ -42,7 +42,9 @@ export function useAuthRedirect() {
             return;
           }
 
-          const needsOnboarding = await useProfileCheck(session);
+          // Check if user needs onboarding
+          const needsOnboarding = await checkUserProfile(session);
+          console.log("SignIn - Needs onboarding:", needsOnboarding);
 
           // Always redirect to dashboard after email confirmation
           if (isEmailConfirmation || needsOnboarding) {
@@ -95,7 +97,8 @@ export function useAuthRedirect() {
           return;
         }
 
-        const needsOnboarding = await useProfileCheck(session);
+        const needsOnboarding = await checkUserProfile(session);
+        console.log("SignIn - Needs onboarding after sign in:", needsOnboarding);
 
         // Always redirect to dashboard after sign in
         if (needsOnboarding) {

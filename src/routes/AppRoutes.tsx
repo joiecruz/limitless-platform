@@ -47,6 +47,7 @@ import AdminContent from "@/pages/admin/AdminContent";
 import CreateBlog from "@/pages/admin/blog/CreateBlog";
 import EditBlog from "@/pages/admin/blog/EditBlog";
 import AdminSettings from "@/pages/admin/AdminSettings";
+import EditCaseStudy from "@/pages/admin/case-studies/EditCaseStudy";
 
 interface AppRoutesProps {
   session: Session | null;
@@ -55,8 +56,13 @@ interface AppRoutesProps {
 const AppRoutes = ({ session }: AppRoutesProps) => {
   return (
     <Routes>
+      {/* Root path redirect based on authentication */}
+      <Route
+        path="/"
+        element={session ? <Navigate to="/dashboard" replace /> : <Index />}
+      />
+
       {/* Public/Marketing pages */}
-      <Route path="/" element={<Index />} />
       <Route path="/product" element={<Product />} />
       <Route path="/services" element={<Services />} />
       <Route path="/courses" element={<CoursesLanding />} />
@@ -102,6 +108,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/admin/content" element={<AdminContent />} />
         <Route path="/admin/content/blog/create" element={<CreateBlog />} />
         <Route path="/admin/content/blog/:id" element={<EditBlog />} />
+        <Route path="/admin/content/case-studies/:id" element={<EditCaseStudy />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
       </Route>
     </Routes>

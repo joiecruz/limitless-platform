@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 
-export const useProfileCheck = async (session: Session | null) => {
+export const checkUserProfile = async (session: Session | null) => {
   if (!session?.user.id) return false;
 
   const { data: profile } = await supabase
