@@ -44,11 +44,11 @@ const LessonSidebar = ({
           <div className="p-4 border-b">
             <div className="flex items-center justify-between">
               <Link
-                to={`/courses/${courseId}/lessons`}
+                to={`/dashboard/courses/${courseId}/lessons`}
                 className="flex items-center text-sm text-gray-600 hover:text-gray-900"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Lessons
+                Back to Lessons
               </Link>
             </div>
           </div>
@@ -58,7 +58,7 @@ const LessonSidebar = ({
               return (
                 <Link
                   key={lesson.id}
-                  to={isLocked ? "#" : `/courses/${courseId}/lessons/${lesson.id}`}
+                  to={isLocked ? "#" : `/dashboard/courses/${courseId}/lessons/${lesson.id}`}
                   className={`flex items-center gap-3 px-4 py-3 text-sm ${
                     lesson.id === currentLessonId
                       ? "bg-primary-50 text-primary-600"

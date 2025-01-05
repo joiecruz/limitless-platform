@@ -94,7 +94,7 @@ const LessonNavigation = ({
 
       // Navigate to next lesson if available
       if (nextLesson) {
-        navigate(`/courses/${courseId}/lessons/${nextLesson.id}`);
+        navigate(`/dashboard/courses/${courseId}/lessons/${nextLesson.id}`);
       }
     } catch (error) {
       console.error("Error updating progress:", error);
@@ -113,7 +113,7 @@ const LessonNavigation = ({
           <Button
             variant="ghost"
             onClick={() =>
-              navigate(`/courses/${courseId}/lessons/${previousLesson.id}`)
+              navigate(`/dashboard/courses/${courseId}/lessons/${previousLesson.id}`)
             }
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
