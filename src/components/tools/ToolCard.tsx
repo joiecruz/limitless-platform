@@ -46,10 +46,8 @@ export function ToolCard({ tool }: ToolCardProps) {
         </div>
       </div>
       <CardHeader className="pt-20">
+        <p className="text-sm font-medium text-gray-500 mb-1">{tool.category}</p>
         <CardTitle className="text-2xl font-bold">{tool.name}</CardTitle>
-        <CardDescription className="text-base text-gray-600 mt-2">
-          {tool.brief_description}
-        </CardDescription>
       </CardHeader>
       <CardContent className="mt-auto">
         <Link 
