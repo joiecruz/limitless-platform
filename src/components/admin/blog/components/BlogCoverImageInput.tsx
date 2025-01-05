@@ -106,7 +106,6 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
 
   return (
     <div className="space-y-2">
-      <Label>Cover Image</Label>
       <div className="flex gap-2">
         <Input 
           value={value} 
