@@ -88,25 +88,37 @@ export function useMembers(workspaceId?: string) {
 
   const handleDeleteMember = async (member: Member) => {
     try {
+      if (!workspaceId) {
+        throw new Error('No workspace selected');
+      }
+
       if (member.status === 'Active') {
         const { error } = await supabase
           .from('workspace_members')
           .delete()
           .eq('workspace_id', workspaceId)
-          .eq('user_id', member.id);
+          .eq('user_id', member.id)
+          .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error deleting member:', error);
+          throw error;
+        }
       } else {
         const { error } = await supabase
           .from('workspace_invitations')
           .delete()
-          .eq('id', member.id);
+          .eq('id', member.id)
+          .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error cancelling invitation:', error);
+          throw error;
+        }
       }
 
       // Invalidate and refetch
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: ['workspace-members', workspaceId]
       });
 
