@@ -46,19 +46,15 @@ export function useAuthRedirect() {
           const needsOnboarding = await checkUserProfile(session);
           console.log("SignIn - Needs onboarding:", needsOnboarding);
 
-          // Always redirect to dashboard after email confirmation
-          if (isEmailConfirmation || needsOnboarding) {
-            console.log("SignIn - Email confirmed or needs onboarding, redirecting to dashboard");
-            navigate("/dashboard", { 
-              replace: true,
-              state: { showOnboarding: true }
-            });
-            return;
-          }
-
-          // For all other cases, redirect to dashboard
-          console.log("SignIn - Active session found, redirecting to dashboard");
-          navigate("/dashboard", { replace: true });
+          // Always redirect to dashboard, but set state based on profile status
+          console.log("SignIn - Redirecting to dashboard");
+          navigate("/dashboard", { 
+            replace: true,
+            state: { 
+              showOnboarding: needsOnboarding,
+              isIncompleteProfile: needsOnboarding && !isEmailConfirmation // New flag for incomplete profiles
+            }
+          });
         } else {
           console.log("SignIn - No active session found");
           // Store invite token if present
@@ -100,17 +96,15 @@ export function useAuthRedirect() {
         const needsOnboarding = await checkUserProfile(session);
         console.log("SignIn - Needs onboarding after sign in:", needsOnboarding);
 
-        // Always redirect to dashboard after sign in
-        if (needsOnboarding) {
-          console.log("SignIn - User needs onboarding, setting state");
-          navigate("/dashboard", { 
-            replace: true,
-            state: { showOnboarding: true }
-          });
-        } else {
-          console.log("SignIn - User signed in, redirecting to dashboard");
-          navigate("/dashboard", { replace: true });
-        }
+        // Redirect to dashboard with appropriate state
+        console.log("SignIn - Redirecting to dashboard");
+        navigate("/dashboard", { 
+          replace: true,
+          state: { 
+            showOnboarding: needsOnboarding,
+            isIncompleteProfile: needsOnboarding && event === 'SIGNED_IN' // Set flag for incomplete profiles
+          }
+        });
       }
 
       if (!session || event === 'SIGNED_OUT') {
