@@ -35,11 +35,13 @@ export function ToolCard({ tool }: ToolCardProps) {
       <div className={`relative h-[240px] ${bgColor}`}>
         <div className="absolute inset-x-0 bottom-0 translate-y-1/3">
           <div className="mx-6 h-[180px] bg-white rounded-lg shadow-lg">
-            <img
-              src={tool.imageUrl || "/placeholder.svg"}
-              alt={tool.title}
-              className="w-full h-full rounded-lg object-contain p-4"
-            />
+            <div className="w-full h-full aspect-[16/9]">
+              <img
+                src={tool.imageUrl || "/placeholder.svg"}
+                alt={tool.title}
+                className="w-full h-full rounded-lg object-contain p-4"
+              />
+            </div>
           </div>
         </div>
       </div>
