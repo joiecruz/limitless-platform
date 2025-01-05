@@ -4,10 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import LessonSidebar from "@/components/lessons/LessonSidebar";
-import VideoPlayer from "@/components/lessons/VideoPlayer";
+import LessonHeader from "@/components/lessons/LessonHeader";
 import LessonContent from "@/components/lessons/LessonContent";
 import LessonNavigation from "@/components/lessons/LessonNavigation";
-import LessonBodyContent from "@/components/lessons/LessonBodyContent";
 
 const Lesson = () => {
   const { courseId, lessonId } = useParams<{
@@ -89,37 +88,16 @@ const Lesson = () => {
         return;
       }
 
-      // First check if enrollment exists
-      const { data: existingEnrollment } = await supabase
+      // Update enrollment progress
+      const { error: updateError } = await supabase
         .from("enrollments")
-        .select("*")
+        .update({
+          progress: Math.round(((currentIndex + 1) / totalLessons) * 100),
+        })
         .eq("user_id", session.user.id)
-        .eq("course_id", courseId)
-        .single();
+        .eq("course_id", courseId);
 
-      if (existingEnrollment) {
-        // Update existing enrollment
-        const { error: updateError } = await supabase
-          .from("enrollments")
-          .update({
-            progress: Math.round(((currentIndex + 1) / totalLessons) * 100),
-          })
-          .eq("user_id", session.user.id)
-          .eq("course_id", courseId);
-
-        if (updateError) throw updateError;
-      } else {
-        // Create new enrollment
-        const { error: insertError } = await supabase
-          .from("enrollments")
-          .insert({
-            user_id: session.user.id,
-            course_id: courseId,
-            progress: Math.round(((currentIndex + 1) / totalLessons) * 100),
-          });
-
-        if (insertError) throw insertError;
-      }
+      if (updateError) throw updateError;
 
       toast({
         title: "Progress saved",
@@ -128,7 +106,7 @@ const Lesson = () => {
 
       // Navigate to next lesson if available
       if (nextLesson) {
-        navigate(`/courses/${courseId}/lessons/${nextLesson.id}`);
+        navigate(`/dashboard/courses/${courseId}/lessons/${nextLesson.id}`);
       }
     } catch (error) {
       console.error("Error updating progress:", error);
@@ -153,7 +131,7 @@ const Lesson = () => {
       <div className="flex">
         <LessonSidebar
           lessons={lessons}
-          currentLessonId={lessonId!}
+          currentLessonId={lessonId}
           courseId={courseId!}
           isOpen={isOpen}
           onOpenChange={setIsOpen}
@@ -164,28 +142,17 @@ const Lesson = () => {
         }`}>
           <div className="w-full">
             <div className="w-full max-w-4xl mx-auto py-8">
-              {/* Header and description */}
-              <div className="mb-8 px-6">
-                <div className="text-sm text-gray-500 mb-2">
-                  Lesson {currentIndex + 1} of {totalLessons}
-                </div>
-                <h1 className="text-3xl font-semibold text-gray-900">{lesson.title}</h1>
-                {lesson.description && (
-                  <div className="prose max-w-none mt-4">
-                    <p className="text-gray-600">{lesson.description}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Video player */}
-              {lesson.video_url && (
-                <div className="px-6">
-                  <VideoPlayer videoUrl={lesson.video_url} />
-                </div>
-              )}
+              <LessonHeader
+                title={lesson.title}
+                description={lesson.description}
+                currentIndex={currentIndex}
+                totalLessons={totalLessons}
+              />
               
-              {/* Lesson body content */}
-              <LessonBodyContent content={lesson.body_content} />
+              <LessonContent
+                videoUrl={lesson.video_url}
+                bodyContent={lesson.body_content}
+              />
 
               <div className="px-6">
                 <LessonNavigation

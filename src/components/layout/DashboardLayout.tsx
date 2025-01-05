@@ -4,6 +4,7 @@ import { WorkspaceSelector } from "./WorkspaceSelector";
 import { Navigation } from "./Navigation";
 import { MobileHeader } from "./MobileHeader";
 import { useLocation, useNavigate, Outlet } from "react-router-dom";
+import { LoadingPage } from "@/components/common/LoadingPage";
 
 interface Workspace {
   id: string;
@@ -52,10 +53,8 @@ export default function DashboardLayout() {
     <WorkspaceContext.Provider value={{ currentWorkspace, setCurrentWorkspace: handleWorkspaceChange }}>
       <div className="min-h-screen bg-gray-50">
         {isLoading && (
-          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="animate-pulse text-primary-600 text-lg font-medium">
-              Loading workspace data...
-            </div>
+          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50">
+            <LoadingPage />
           </div>
         )}
 
