@@ -290,40 +290,61 @@ export type Database = {
       }
       innovation_tools: {
         Row: {
+          brief_description: string | null
           category: string
+          cover_image: string | null
           created_at: string
-          description: string
           download_url: string | null
+          how_to_use: string | null
           id: string
-          image_url: string | null
+          long_description: string | null
+          name: string
           price: number | null
-          title: string
+          slug: string | null
           type: string
           updated_at: string
+          use_case_1: string | null
+          use_case_2: string | null
+          use_case_3: string | null
+          when_to_use: string | null
         }
         Insert: {
+          brief_description?: string | null
           category?: string
+          cover_image?: string | null
           created_at?: string
-          description: string
           download_url?: string | null
+          how_to_use?: string | null
           id?: string
-          image_url?: string | null
+          long_description?: string | null
+          name: string
           price?: number | null
-          title: string
+          slug?: string | null
           type?: string
           updated_at?: string
+          use_case_1?: string | null
+          use_case_2?: string | null
+          use_case_3?: string | null
+          when_to_use?: string | null
         }
         Update: {
+          brief_description?: string | null
           category?: string
+          cover_image?: string | null
           created_at?: string
-          description?: string
           download_url?: string | null
+          how_to_use?: string | null
           id?: string
-          image_url?: string | null
+          long_description?: string | null
+          name?: string
           price?: number | null
-          title?: string
+          slug?: string | null
           type?: string
           updated_at?: string
+          use_case_1?: string | null
+          use_case_2?: string | null
+          use_case_3?: string | null
+          when_to_use?: string | null
         }
         Relationships: []
       }

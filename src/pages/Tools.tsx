@@ -5,14 +5,19 @@ import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 
 export interface Tool {
   id: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  imageUrl: string;
-  price: number | null;
-  downloadUrl?: string;
-  type: 'free' | 'premium';
+  name: string;
+  slug: string;
+  cover_image: string;
+  brief_description: string;
   category: string;
+  long_description: string;
+  use_case_1: string;
+  use_case_2: string;
+  use_case_3: string;
+  how_to_use: string;
+  when_to_use: string;
+  type: 'free' | 'premium';
+  price: number | null;
 }
 
 const fetchTools = async () => {
@@ -24,14 +29,19 @@ const fetchTools = async () => {
 
   return data.map(tool => ({
     id: tool.id,
-    title: tool.title,
-    subtitle: tool.subtitle,
-    description: tool.description,
-    imageUrl: tool.image_url,
-    price: tool.price,
-    downloadUrl: tool.download_url,
+    name: tool.name,
+    slug: tool.slug,
+    cover_image: tool.cover_image,
+    brief_description: tool.brief_description,
+    category: tool.category,
+    long_description: tool.long_description,
+    use_case_1: tool.use_case_1,
+    use_case_2: tool.use_case_2,
+    use_case_3: tool.use_case_3,
+    how_to_use: tool.how_to_use,
+    when_to_use: tool.when_to_use,
     type: tool.type,
-    category: tool.category
+    price: tool.price
   }));
 };
 

@@ -37,8 +37,8 @@ export function ToolCard({ tool }: ToolCardProps) {
           <div className="mx-6 h-[180px] bg-white rounded-lg shadow-lg">
             <div className="w-full h-full aspect-[16/9]">
               <img
-                src={tool.imageUrl || "/placeholder.svg"}
-                alt={tool.title}
+                src={tool.cover_image || "/placeholder.svg"}
+                alt={tool.name}
                 className="w-full h-full rounded-lg object-contain p-4"
               />
             </div>
@@ -46,9 +46,9 @@ export function ToolCard({ tool }: ToolCardProps) {
         </div>
       </div>
       <CardHeader className="pt-20">
-        <CardTitle className="text-2xl font-bold">{tool.title}</CardTitle>
+        <CardTitle className="text-2xl font-bold">{tool.name}</CardTitle>
         <CardDescription className="text-base text-gray-600 mt-2">
-          {tool.description}
+          {tool.brief_description}
         </CardDescription>
       </CardHeader>
       <CardContent className="mt-auto">
