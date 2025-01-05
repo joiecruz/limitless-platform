@@ -2,23 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ToolCard } from "@/components/tools/ToolCard";
 import { LoadingQuotes } from "@/components/common/LoadingQuotes";
-
-export interface Tool {
-  id: string;
-  name: string;
-  slug: string;
-  cover_image: string;
-  brief_description: string;
-  category: string;
-  long_description: string;
-  use_case_1: string;
-  use_case_2: string;
-  use_case_3: string;
-  how_to_use: string;
-  when_to_use: string;
-  type: 'free' | 'premium';
-  price: number | null;
-}
+import { Tool } from "@/types/tool";
 
 const fetchTools = async () => {
   const { data, error } = await supabase
@@ -41,8 +25,11 @@ const fetchTools = async () => {
     how_to_use: tool.how_to_use,
     when_to_use: tool.when_to_use,
     type: tool.type,
-    price: tool.price
-  }));
+    price: tool.price,
+    download_url: tool.download_url,
+    created_at: tool.created_at,
+    updated_at: tool.updated_at
+  })) as Tool[];
 };
 
 export default function Tools() {
