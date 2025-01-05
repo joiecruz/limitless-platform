@@ -61,7 +61,7 @@ export function ToolCard({ tool }: ToolCardProps) {
 
   return (
     <Card className="flex flex-col h-full">
-      <div className="relative pt-[56.25%]"> {/* Changed to 56.25% for 16:9 aspect ratio */}
+      <div className="relative pt-[56.25%]"> {/* 16:9 aspect ratio (1080/1920 = 0.5625) */}
         <div className="absolute inset-0">
           <img
             src={tool.imageUrl || "/placeholder.svg"}

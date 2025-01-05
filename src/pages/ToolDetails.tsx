@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tool } from "./Tools";
 import { LoadingQuotes } from "@/components/common/LoadingQuotes";
+import { Badge } from "@/components/ui/badge";
 
 const fetchTool = async (toolId: string) => {
   const { data, error } = await supabase
@@ -23,7 +24,9 @@ const fetchTool = async (toolId: string) => {
     description: data.description,
     imageUrl: data.image_url,
     price: data.price,
-    downloadUrl: data.download_url
+    downloadUrl: data.download_url,
+    type: data.type,
+    category: data.category
   } as Tool;
 };
 
@@ -56,14 +59,19 @@ export default function ToolDetails() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-semibold text-gray-900">{tool.title}</h1>
-          <p className="text-sm text-primary-600">{tool.subtitle}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge variant="secondary">{tool.category}</Badge>
+            <Badge variant={tool.type === 'premium' ? 'default' : 'outline'}>
+              {tool.type === 'premium' ? 'Premium' : 'Free'}
+            </Badge>
+          </div>
         </div>
       </div>
 
       <Card className="overflow-hidden">
-        <div className="aspect-[2/1] relative">
+        <div className="aspect-video relative">
           <img
             src={tool.imageUrl}
             alt={tool.title}
@@ -74,15 +82,6 @@ export default function ToolDetails() {
           <div>
             <h2 className="text-xl font-semibold mb-2">Description</h2>
             <p className="text-gray-600">{tool.description}</p>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Preview</h2>
-            <img
-              src="/lovable-uploads/5ee81b3e-851f-40a8-a4d9-16c05988a11f.png"
-              alt="Tool preview"
-              className="w-full rounded-lg border"
-            />
           </div>
 
           <div className="flex justify-end">
