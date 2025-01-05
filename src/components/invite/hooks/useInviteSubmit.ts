@@ -54,9 +54,9 @@ export function useInviteSubmit(token?: string | null) {
         console.error("Error creating profile:", profileError);
         // Don't throw here - the user can still complete onboarding
         toast({
-          title: "Warning",
+          title: "Notice",
           description: "Profile creation incomplete. Please complete onboarding.",
-          variant: "warning",
+          variant: "default",
         });
       }
 
