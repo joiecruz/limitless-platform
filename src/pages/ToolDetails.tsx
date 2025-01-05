@@ -17,17 +17,7 @@ const fetchTool = async (toolId: string) => {
 
   if (error) throw error;
   
-  return {
-    id: data.id,
-    title: data.title,
-    subtitle: data.subtitle,
-    description: data.description,
-    imageUrl: data.image_url,
-    price: data.price,
-    downloadUrl: data.download_url,
-    type: data.type,
-    category: data.category
-  } as Tool;
+  return data as Tool;
 };
 
 export default function ToolDetails() {
@@ -60,7 +50,7 @@ export default function ToolDetails() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold text-gray-900">{tool.title}</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">{tool.name}</h1>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant="secondary">{tool.category}</Badge>
             <Badge variant={tool.type === 'premium' ? 'default' : 'outline'}>
@@ -73,15 +63,15 @@ export default function ToolDetails() {
       <Card className="overflow-hidden">
         <div className="aspect-video relative">
           <img
-            src={tool.imageUrl}
-            alt={tool.title}
+            src={tool.cover_image}
+            alt={tool.name}
             className="object-cover w-full h-full"
           />
         </div>
         <div className="p-6 space-y-6">
           <div>
             <h2 className="text-xl font-semibold mb-2">Description</h2>
-            <p className="text-gray-600">{tool.description}</p>
+            <p className="text-gray-600">{tool.brief_description}</p>
           </div>
 
           <div className="flex justify-end">
@@ -89,7 +79,7 @@ export default function ToolDetails() {
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto"
-                onClick={() => tool.downloadUrl && window.open(tool.downloadUrl, '_blank')}
+                onClick={() => tool.download_url && window.open(tool.download_url, '_blank')}
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download Now

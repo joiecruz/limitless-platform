@@ -293,6 +293,7 @@ export type Database = {
           brief_description: string | null
           category: string
           cover_image: string | null
+          created_at: string
           download_url: string | null
           how_to_use: string | null
           id: string
@@ -301,6 +302,7 @@ export type Database = {
           price: number | null
           slug: string | null
           type: string
+          updated_at: string
           use_case_1: string | null
           use_case_2: string | null
           use_case_3: string | null
@@ -310,6 +312,7 @@ export type Database = {
           brief_description?: string | null
           category?: string
           cover_image?: string | null
+          created_at?: string
           download_url?: string | null
           how_to_use?: string | null
           id?: string
@@ -318,6 +321,7 @@ export type Database = {
           price?: number | null
           slug?: string | null
           type: string
+          updated_at?: string
           use_case_1?: string | null
           use_case_2?: string | null
           use_case_3?: string | null
@@ -327,6 +331,7 @@ export type Database = {
           brief_description?: string | null
           category?: string
           cover_image?: string | null
+          created_at?: string
           download_url?: string | null
           how_to_use?: string | null
           id?: string
@@ -335,6 +340,7 @@ export type Database = {
           price?: number | null
           slug?: string | null
           type?: string
+          updated_at?: string
           use_case_1?: string | null
           use_case_2?: string | null
           use_case_3?: string | null

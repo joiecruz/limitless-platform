@@ -92,26 +92,28 @@ export default function ToolDetail() {
     );
   }
 
-  const howToUse = `Start by defining the objectives and key features of the app or device you want to develop. Create an interactive model using prototyping tools or software, including essential functionalities and user flows. Test the prototype with real users to gather feedback on its usability, design, and functionality. Based on the feedback, refine and iterate on the prototype to address any issues and improve the user experience. Document insights and adjustments to guide the final development process.`;
-
-  const whenToUse = `Use mobile prototyping to test and refine design concepts and functionalities in the early stages of app or device development. This approach is particularly useful for validating user experience, identifying potential issues, and gathering feedback before committing to full-scale production. By evaluating a preliminary model, you can make informed design decisions, address problems early, and ensure that the final product aligns with user needs and expectations.`;
-
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
       
       <ToolHeader
-        title={tool.title}
-        subtitle={tool.description}
+        title={tool.name}
+        subtitle={tool.brief_description}
         onDownload={handleDownload}
-        coverImage={tool.image_url}
+        coverImage={tool.cover_image}
       />
 
-      <ToolAbout description={tool.description} />
+      <ToolAbout 
+        description={tool.long_description}
+        category={tool.category}
+        use_case_1={tool.use_case_1}
+        use_case_2={tool.use_case_2}
+        use_case_3={tool.use_case_3}
+      />
       
       <ToolUsage
-        howToUse={howToUse}
-        whenToUse={whenToUse}
+        how_to_use={tool.how_to_use}
+        when_to_use={tool.when_to_use}
       />
 
       <ToolDownloadCTA onDownload={handleDownload} />
