@@ -3,8 +3,15 @@ import { BlogsTable } from "@/components/admin/blog/BlogsTable";
 import { CreateBlogDialog } from "@/components/admin/blog/CreateBlogDialog";
 import { CaseStudiesTable } from "@/components/admin/case-studies/CaseStudiesTable";
 import { CreateCaseStudyDialog } from "@/components/admin/case-studies/CreateCaseStudyDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function AdminContent() {
+  const queryClient = useQueryClient();
+
+  const handleBlogSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['articles'] });
+  };
+
   return (
     <div className="p-6">
       <Tabs defaultValue="articles" className="space-y-6">
@@ -16,7 +23,7 @@ export default function AdminContent() {
         <TabsContent value="articles" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Articles</h2>
-            <CreateBlogDialog />
+            <CreateBlogDialog onSuccess={handleBlogSuccess} />
           </div>
           <BlogsTable />
         </TabsContent>
