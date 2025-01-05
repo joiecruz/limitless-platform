@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { Session } from "@supabase/supabase-js";
