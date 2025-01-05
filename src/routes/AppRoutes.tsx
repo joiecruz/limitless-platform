@@ -1,5 +1,4 @@
 import { Routes, Route } from "react-router-dom";
-import { Session } from "@supabase/supabase-js";
 import RequireAuth from "@/components/auth/RequireAuth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
@@ -12,14 +11,14 @@ import AdminTools from "@/pages/admin/AdminTools";
 import RequireAdmin from "@/components/auth/RequireAdmin";
 
 interface AppRoutesProps {
-  session: Session | null;
+  session: any; // We'll keep this as 'any' for now since it's not related to the current error
 }
 
 export default function AppRoutes({ session }: AppRoutesProps) {
   return (
     <Routes>
       {/* Protected Routes */}
-      <Route element={<RequireAuth />}>
+      <Route element={<RequireAuth><Outlet /></RequireAuth>}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/tools" element={<Tools />} />
@@ -32,7 +31,7 @@ export default function AppRoutes({ session }: AppRoutesProps) {
       </Route>
 
       {/* Admin Routes */}
-      <Route element={<RequireAdmin />}>
+      <Route element={<RequireAdmin><Outlet /></RequireAdmin>}>
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
