@@ -89,12 +89,16 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/dashboard/projects" element={<Projects />} />
         <Route path="/dashboard/courses" element={<Courses />} />
         <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />
-        <Route path="/dashboard/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
         <Route path="/dashboard/tools" element={<Tools />} />
         <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
         <Route path="/dashboard/community" element={<Community />} />
         <Route path="/dashboard/settings" element={<Settings />} />
         <Route path="/dashboard/account-settings" element={<AccountSettings />} />
+      </Route>
+
+      {/* Lesson routes - separate from dashboard layout */}
+      <Route element={<RequireAuth>{session && <Outlet />}</RequireAuth>}>
+        <Route path="/dashboard/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
       </Route>
 
       {/* Protected admin routes */}
