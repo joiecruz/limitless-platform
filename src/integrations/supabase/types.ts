@@ -295,6 +295,7 @@ export type Database = {
           cover_image: string | null
           created_at: string
           download_url: string | null
+          downloads_count: number | null
           how_to_use: string | null
           id: string
           long_description: string | null
@@ -314,6 +315,7 @@ export type Database = {
           cover_image?: string | null
           created_at?: string
           download_url?: string | null
+          downloads_count?: number | null
           how_to_use?: string | null
           id?: string
           long_description?: string | null
@@ -333,6 +335,7 @@ export type Database = {
           cover_image?: string | null
           created_at?: string
           download_url?: string | null
+          downloads_count?: number | null
           how_to_use?: string | null
           id?: string
           long_description?: string | null

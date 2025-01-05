@@ -16,4 +16,5 @@ export interface Tool {
   cover_image: string | null;
   created_at: string;
   updated_at: string;
+  downloads_count: number | null;
 }
