@@ -2,10 +2,13 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useEmailConfirmation } from "@/hooks/useEmailConfirmation";
+import { useProfileCheck } from "@/hooks/useProfileCheck";
 
 export function useAuthRedirect() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isEmailConfirmation } = useEmailConfirmation();
 
   useEffect(() => {
     const checkSession = async () => {
@@ -29,11 +32,6 @@ export function useAuthRedirect() {
             email: session.user.email
           });
 
-          // Check if this is a new confirmation
-          const isEmailConfirmation = window.location.hash.includes('type=signup') || 
-                                    window.location.hash.includes('type=email_change') ||
-                                    new URLSearchParams(window.location.search).get('type') === 'signup';
-
           if (!session.user.email_confirmed_at) {
             console.log("SignIn - Email not confirmed, redirecting to verify-email");
             localStorage.setItem('verificationEmail', session.user.email || '');
@@ -44,30 +42,21 @@ export function useAuthRedirect() {
             return;
           }
 
-          // Get user profile to check if onboarding is needed
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, role, company_size, goals, referral_source')
-            .eq('id', session.user.id)
-            .single();
+          const needsOnboarding = await useProfileCheck(session);
 
-          const needsOnboarding = !profile?.first_name || 
-                                !profile?.last_name || 
-                                !profile?.role || 
-                                !profile?.company_size || 
-                                !profile?.goals || 
-                                !profile?.referral_source;
-
-          if (needsOnboarding || isEmailConfirmation) {
-            console.log("SignIn - User needs onboarding, setting state");
+          // Always redirect to dashboard after email confirmation
+          if (isEmailConfirmation || needsOnboarding) {
+            console.log("SignIn - Email confirmed or needs onboarding, redirecting to dashboard");
             navigate("/dashboard", { 
               replace: true,
               state: { showOnboarding: true }
             });
-          } else {
-            console.log("SignIn - Active session found, redirecting to dashboard");
-            navigate("/dashboard", { replace: true });
+            return;
           }
+
+          // For all other cases, redirect to dashboard
+          console.log("SignIn - Active session found, redirecting to dashboard");
+          navigate("/dashboard", { replace: true });
         } else {
           console.log("SignIn - No active session found");
           // Store invite token if present
@@ -106,20 +95,9 @@ export function useAuthRedirect() {
           return;
         }
 
-        // Get user profile to check if onboarding is needed
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name, last_name, role, company_size, goals, referral_source')
-          .eq('id', session.user.id)
-          .single();
+        const needsOnboarding = await useProfileCheck(session);
 
-        const needsOnboarding = !profile?.first_name || 
-                              !profile?.last_name || 
-                              !profile?.role || 
-                              !profile?.company_size || 
-                              !profile?.goals || 
-                              !profile?.referral_source;
-
+        // Always redirect to dashboard after sign in
         if (needsOnboarding) {
           console.log("SignIn - User needs onboarding, setting state");
           navigate("/dashboard", { 
@@ -141,5 +119,5 @@ export function useAuthRedirect() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, isEmailConfirmation]);
 }
