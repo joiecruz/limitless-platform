@@ -23,12 +23,69 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
     setLoading(true);
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      if (!user || userError) {
+        console.error('Error getting user:', userError);
+        throw new Error("No user found");
+      }
 
-      console.log('Updating profile for user:', user.id);
+      console.log('Got user:', user.id);
+
+      // First, check if profile exists
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profileCheckError) {
+        console.error('Error checking profile:', profileCheckError);
+        // If profile doesn't exist, create it
+        if (profileCheckError.code === 'PGRST116') {
+          console.log('Profile does not exist, creating new profile');
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert({
+              id: user.id,
+              email: user.email,
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              role: formData.role,
+              company_size: formData.companySize,
+              goals: formData.goals,
+              referral_source: formData.referralSource
+            });
+
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+            throw insertError;
+          }
+        } else {
+          throw profileCheckError;
+        }
+      } else {
+        console.log('Profile exists, updating');
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            role: formData.role,
+            company_size: formData.companySize,
+            goals: formData.goals,
+            referral_source: formData.referralSource
+          })
+          .eq("id", user.id);
+
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+          throw updateError;
+        }
+      }
 
       // If invited user, update password
       if (isInvitedUser && formData.password) {
+        console.log('Updating password for invited user');
         const { error: passwordError } = await supabase.auth.updateUser({
           password: formData.password
         });
@@ -38,26 +95,6 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
           throw passwordError;
         }
       }
-
-      // Update profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          role: formData.role,
-          company_size: formData.companySize,
-          goals: formData.goals,
-          referral_source: formData.referralSource
-        })
-        .eq("id", user.id);
-
-      if (profileError) {
-        console.error('Error updating profile:', profileError);
-        throw profileError;
-      }
-
-      console.log('Profile updated successfully');
 
       // Create workspace only if not an invited user
       if (!isInvitedUser && formData.workspaceName) {

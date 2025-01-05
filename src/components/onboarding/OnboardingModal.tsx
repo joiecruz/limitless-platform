@@ -16,13 +16,14 @@ import { useLocation } from "react-router-dom";
 interface OnboardingModalProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  isIncompleteProfile?: boolean;
 }
 
-export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalProps) {
+export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfile = false }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   const isInvitedUser = location.state?.isInvited;
-  const TOTAL_STEPS = isInvitedUser ? 3 : 4;
+  const TOTAL_STEPS = isIncompleteProfile ? 3 : (isInvitedUser ? 3 : 4);
 
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
@@ -31,7 +32,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
     companySize: "",
     goals: [],
     referralSource: "",
-    workspaceName: isInvitedUser ? undefined : "",
+    workspaceName: isIncompleteProfile ? undefined : (isInvitedUser ? undefined : ""),
     password: "",
   });
 
@@ -59,6 +60,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
       loading,
       data: formData,
       isInvitedUser,
+      isIncompleteProfile,
     };
 
     switch (currentStep) {
@@ -69,7 +71,7 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
       case 3:
         return <Step3 {...commonProps} />;
       case 4:
-        return !isInvitedUser ? <Step4 {...commonProps} /> : null;
+        return !isInvitedUser && !isIncompleteProfile ? <Step4 {...commonProps} /> : null;
       default:
         return null;
     }
@@ -77,8 +79,8 @@ export function OnboardingModal({ open = false, onOpenChange }: OnboardingModalP
 
   return (
     <Dialog open={open} onOpenChange={(value) => {
-      // Prevent closing the modal
-      if (!value) return;
+      // Prevent closing the modal if it's for an incomplete profile
+      if (!value && isIncompleteProfile) return;
       if (onOpenChange) onOpenChange(value);
     }}>
       <DialogContent className="sm:max-w-[600px] h-[500px] p-0 [&>button]:hidden">

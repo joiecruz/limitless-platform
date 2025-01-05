@@ -46,12 +46,13 @@ const WorkshopCard = ({ workshop }: WorkshopCardProps) => {
         <CardDescription>{workshop.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Link to={`/workshops/${workshop.id}`} className="block w-full">
-          <Button className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90">
-            Learn More
-            <ArrowRight className="ml-2" />
-          </Button>
-        </Link>
+        <Button 
+          className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90"
+          onClick={() => window.open('https://calendar.app.google/Sbztdtob1XHqj1gbA', '_blank')}
+        >
+          Book Exploratory Call
+          <ArrowRight className="ml-2" />
+        </Button>
       </CardContent>
     </Card>
   );

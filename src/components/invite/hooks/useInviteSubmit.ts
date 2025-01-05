@@ -1,86 +1,99 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { verifyInvitation, updateInvitationStatus } from "../services/invitationService";
-import { checkExistingUser, addUserToWorkspace, createNewUser } from "../services/userService";
-import { InviteFormData } from "../types";
 
-export function useInviteSubmit(token: string | null) {
+interface InviteSubmitProps {
+  token?: string | null;
+}
+
+export function useInviteSubmit(token?: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (data: InviteFormData) => {
-    if (!token) {
-      console.error("Missing required parameters:", { token });
-      toast({
-        title: "Error",
-        description: "Invalid invitation link",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleSubmit = async (data: { password: string }) => {
     setIsLoading(true);
-    
     try {
-      // Step 1: Verify the invitation
-      const { invitation } = await verifyInvitation(token);
-      console.log("Valid invitation found:", invitation);
+      // Get the invitation details first
+      if (!token) {
+        throw new Error("No invitation token provided");
+      }
 
-      // Step 2: Check if user exists
-      const { data: authData, error: signInError } = await checkExistingUser(invitation.email, data.password);
+      const { data: inviteData, error: inviteError } = await supabase
+        .from("workspace_invitations")
+        .select("*")
+        .eq("magic_link_token", token)
+        .single();
 
-      if (authData?.session) {
-        console.log("Existing user found:", authData.user.id);
-        
-        // Add existing user to workspace
-        await addUserToWorkspace(authData.user.id, invitation.workspace_id, invitation.role);
-        
-        // Update invitation status
-        await updateInvitationStatus(invitation.id, "accepted");
+      if (inviteError || !inviteData) {
+        console.error("Error fetching invitation:", inviteError);
+        throw new Error("Invalid or expired invitation");
+      }
 
-        toast({
-          title: "Success",
-          description: "You have successfully joined the workspace.",
+      // Sign up the user with their email and password
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: inviteData.email,
+        password: data.password,
+      });
+
+      if (signUpError || !authData.user) {
+        console.error("Error signing up:", signUpError);
+        throw signUpError;
+      }
+
+      // Create a basic profile immediately
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          id: authData.user.id,
+          email: inviteData.email,
+          // Set minimal profile data that we know from the invitation
+          role: inviteData.role || null,
         });
-        return;
+
+      if (profileError) {
+        console.error("Error creating profile:", profileError);
+        // Don't throw here - the user can still complete onboarding
+        toast({
+          title: "Notice",
+          description: "Profile creation incomplete. Please complete onboarding.",
+          variant: "default",
+        });
       }
 
-      // Step 3: Create new user with email confirmation disabled for invited users
-      const { data: newAuthData, error: signUpError } = await createNewUser(
-        invitation.email, 
-        data.password, 
-        { ...data, emailConfirm: false }
-      );
-      
-      if (signUpError || !newAuthData.user) {
-        throw new Error(signUpError?.message || "Failed to create user account");
+      // Update invitation status
+      const { error: updateError } = await supabase
+        .from("workspace_invitations")
+        .update({
+          status: "accepted",
+          accepted_at: new Date().toISOString(),
+        })
+        .eq("id", inviteData.id);
+
+      if (updateError) {
+        console.error("Error updating invitation:", updateError);
+        // Don't throw - not critical
       }
-      
-      console.log("Auth account created:", newAuthData.user.id);
-
-      // Step 4: Add new user to workspace
-      await addUserToWorkspace(newAuthData.user.id, invitation.workspace_id, invitation.role);
-      console.log("Added to workspace successfully");
-
-      // Step 5: Update invitation status
-      await updateInvitationStatus(invitation.id, "accepted");
-      console.log("Invitation status updated");
 
       toast({
         title: "Success",
-        description: "Your account has been created successfully.",
+        description: "Password set successfully. Please complete your profile setup.",
       });
+
     } catch (error: any) {
-      console.error("Invitation process failed:", error);
+      console.error("Error in invite submission:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to process invitation",
+        description: error.message || "Failed to set password",
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { handleSubmit, isLoading };
+  return {
+    handleSubmit,
+    isLoading,
+  };
 }

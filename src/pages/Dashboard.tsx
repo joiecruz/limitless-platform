@@ -10,6 +10,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const isIncompleteProfile = location.state?.isIncompleteProfile;
 
   // Query to get user profile data
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -147,6 +148,7 @@ export default function Dashboard() {
       <OnboardingModal 
         open={showOnboarding} 
         onOpenChange={setShowOnboarding}
+        isIncompleteProfile={isIncompleteProfile}
       />
     </div>
   );
