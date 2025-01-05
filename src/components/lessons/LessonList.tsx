@@ -63,7 +63,7 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
       return;
     }
 
-    navigate(`/courses/${courseId}/lessons/${lesson.id}`);
+    navigate(`/dashboard/courses/${courseId}/lessons/${lesson.id}`);
   };
 
   return (
