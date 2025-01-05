@@ -76,24 +76,26 @@ export default function ToolDetails() {
 
       <div className="space-y-8">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row gap-8 items-start">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-4">{tool.name}</h1>
-            <p className="text-gray-600 mb-6">{tool.brief_description}</p>
-            <Button 
-              onClick={handleDownload}
-              className="inline-flex items-center"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download Tool
-            </Button>
-          </div>
-          <div className="w-full md:w-1/2">
-            <img
-              src={tool.cover_image || "/placeholder.svg"}
-              alt={tool.name}
-              className="w-full h-auto rounded-lg"
-            />
+        <div className="bg-white border rounded-xl p-8 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold mb-4">{tool.name}</h1>
+              <p className="text-gray-600 mb-6">{tool.brief_description}</p>
+              <Button 
+                onClick={handleDownload}
+                className="inline-flex items-center"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download Tool
+              </Button>
+            </div>
+            <div className="w-full md:w-1/2">
+              <img
+                src={tool.cover_image || "/placeholder.svg"}
+                alt={tool.name}
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
           </div>
         </div>
 
