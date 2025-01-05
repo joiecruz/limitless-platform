@@ -58,13 +58,6 @@ export default function Dashboard() {
     }
   }, [profile, profileLoading, location.state]);
 
-  const getDisplayName = () => {
-    if (profile?.first_name || profile?.last_name) {
-      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-    }
-    return '';
-  };
-
   const quickLinks = [
     {
       title: "Explore online courses",
@@ -95,6 +88,13 @@ export default function Dashboard() {
       link: "/dashboard/projects"
     }
   ];
+
+  const getDisplayName = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return '';
+  };
 
   return (
     <div className="space-y-8 animate-fade-in">
