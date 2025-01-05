@@ -4,7 +4,7 @@ import { ArrowLeft, Download, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Tool } from "./Tools";
+import { Tool } from "@/types/tool";
 import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 import { Badge } from "@/components/ui/badge";
 
@@ -63,7 +63,7 @@ export default function ToolDetails() {
       <Card className="overflow-hidden">
         <div className="aspect-video relative">
           <img
-            src={tool.cover_image}
+            src={tool.cover_image || '/placeholder.svg'}
             alt={tool.name}
             className="object-cover w-full h-full"
           />
