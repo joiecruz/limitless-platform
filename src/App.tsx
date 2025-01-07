@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
+import { OutsetaChat } from "@/components/common/OutsetaChat";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -125,6 +126,7 @@ const App = () => {
         <BrowserRouter>
           <ScrollToTop />
           <AppRoutes session={session} />
+          <OutsetaChat />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
