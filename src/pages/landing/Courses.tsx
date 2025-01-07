@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { TestimonialsSection } from "@/components/site-config/TestimonialsSection";
 import { WorkshopsSection } from "@/components/site-config/WorkshopsSection";
 import { CTASection } from "@/components/site-config/CTASection";
-import { OutsetaChat } from "@/components/common/OutsetaChat";
 
 export default function Courses() {
   const { toast } = useToast();
@@ -59,7 +58,6 @@ export default function Courses() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
-      <OutsetaChat />
       
       {/* Hero Section */}
       <div className="bg-[#40E0D0] py-32">

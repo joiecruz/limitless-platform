@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
-import { OutsetaChat } from "@/components/common/OutsetaChat";
 
 const categories = [
   "All tools",
@@ -41,7 +40,6 @@ export default function Tools() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
-      <OutsetaChat />
       
       {/* Hero Section */}
       <div className="bg-[#393CA0] py-32">

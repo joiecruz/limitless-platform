@@ -10,7 +10,6 @@ import { LoadingPage } from "@/components/common/LoadingPage";
 import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { OutsetaChat } from "@/components/common/OutsetaChat";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -35,7 +34,6 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
-      <OutsetaChat />
       
       {/* Hero Section */}
       <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
