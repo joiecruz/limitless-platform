@@ -18,6 +18,7 @@ import CaseStudy from "@/pages/CaseStudy";
 import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
+import NotFound from "@/pages/NotFound";
 
 // App pages
 import Dashboard from "@/pages/Dashboard";
@@ -115,6 +116,9 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/admin/content/case-studies/:id" element={<EditCaseStudy />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
       </Route>
+
+      {/* 404 catch-all route */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
