@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import { CoDesignProcess } from "@/components/services/CoDesignProcess";
 import { useState } from "react";
+import { OutsetaChat } from "@/components/common/OutsetaChat";
 
 const services = [
   {
@@ -65,6 +66,7 @@ export default function Services() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
+      <OutsetaChat />
       
       {/* Hero Section */}
       <section className="pt-20 lg:pt-32 pb-16 px-4 sm:px-6 lg:px-8">
