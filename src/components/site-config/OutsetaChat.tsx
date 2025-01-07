@@ -9,7 +9,10 @@ export function OutsetaChat() {
       optionsScript.text = `
         var o_options = {
           domain: 'limitlesslab.outseta.com',
-          load: 'chat'
+          load: 'chat',
+          defaultStyles: {
+            fontFamily: 'Inter, sans-serif'
+          }
         };
       `;
       document.head.appendChild(optionsScript);
