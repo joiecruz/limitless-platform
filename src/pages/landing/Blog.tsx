@@ -7,6 +7,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { OutsetaChat } from "@/components/site-config/OutsetaChat";
 
 const categories = [
   "All",
@@ -54,6 +55,7 @@ export default function Blog() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
+      <OutsetaChat />
       <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-12">

@@ -1,10 +1,13 @@
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
+import { OutsetaChat } from "@/components/site-config/OutsetaChat";
 
 export default function About() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
+      <OutsetaChat />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
@@ -33,6 +36,7 @@ export default function About() {
           </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );

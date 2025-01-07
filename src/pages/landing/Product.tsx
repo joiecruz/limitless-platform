@@ -5,6 +5,7 @@ import { CTASection } from "@/components/site-config/CTASection";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { OutsetaChat } from "@/components/site-config/OutsetaChat";
 
 export default function Product() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export default function Product() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
+      <OutsetaChat />
       
       {/* Hero Section */}
       <section className="pt-20 lg:pt-32 pb-16 px-4 sm:px-6 lg:px-8">
