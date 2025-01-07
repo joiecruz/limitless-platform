@@ -7,7 +7,6 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { SEO } from "@/components/common/SEO";
 
 const categories = [
   "All",
@@ -54,11 +53,6 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
-        title="Blog & Updates | Limitless Lab"
-        description="Discover insights, stories, and the latest in innovation from Limitless Lab's expert community."
-        type="blog"
-      />
       <MainNav />
       <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
