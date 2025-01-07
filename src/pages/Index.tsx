@@ -7,7 +7,6 @@ import { Features } from "@/components/site-config/Features";
 import { BlogSection } from "@/components/site-config/BlogSection";
 import { CTASection } from "@/components/site-config/CTASection";
 import { LoadingPage } from "@/components/common/LoadingPage";
-import { OutsetaChat } from "@/components/site-config/OutsetaChat";
 import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,13 +34,12 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-white">
       <MainNav />
-      <OutsetaChat />
       
       {/* Hero Section */}
       <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-8">
               The all-in-one platform<br />
               empowering innovators to turn<br />
               ideas into real impact
