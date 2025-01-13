@@ -12,10 +12,9 @@ export function OutsetaChat() {
     style.textContent = `
       #outseta-chat-container {
         position: fixed;
-        z-index: 9999;
         bottom: 0;
         right: 0;
-        all: initial;
+        z-index: 9999;
       }
 
       #outseta-chat-container * {
@@ -39,10 +38,20 @@ export function OutsetaChat() {
     `;
     document.head.appendChild(style);
 
-    // Initialize Outseta chat
+    // Create and inject Outseta options script
+    const optionsScript = document.createElement('script');
+    optionsScript.text = `
+      var o_options = {
+        domain: 'limitlesslab.outseta.com',
+        load: 'chat'
+      };
+    `;
+    container.appendChild(optionsScript);
+
+    // Create and inject Outseta main script
     const script = document.createElement('script');
-    script.src = 'https://cdn.outseta.com/chat.min.js';
-    script.dataset.peopleId = 'eW91ci1wZW9wbGUtaWQ=';
+    script.src = 'https://cdn.outseta.com/outseta.min.js';
+    script.setAttribute('data-options', 'o_options');
     container.appendChild(script);
 
     return () => {
