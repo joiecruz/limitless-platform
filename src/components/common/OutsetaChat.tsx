@@ -7,7 +7,7 @@ export function OutsetaChat() {
     container.id = 'outseta-chat-container';
     document.body.appendChild(container);
 
-    // Create and inject style with stronger heading styles
+    // Create and inject style with stronger specificity and proper isolation
     const style = document.createElement('style');
     style.textContent = `
       #outseta-chat-container {
@@ -17,28 +17,30 @@ export function OutsetaChat() {
         z-index: 9999;
       }
 
+      /* Reset only Outseta's own styles */
       #outseta-chat-container * {
-        all: revert;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       }
 
-      /* Enforce bold headings globally with high specificity */
-      body h1:not(#outseta-chat-container h1),
-      body h2:not(#outseta-chat-container h2),
-      body h3:not(#outseta-chat-container h3),
-      body h4:not(#outseta-chat-container h4),
-      body h5:not(#outseta-chat-container h5),
-      body h6:not(#outseta-chat-container h6) {
+      /* Enforce bold headings globally with maximum specificity */
+      html body h1:not([class*="outseta"]):not(#outseta-chat-container h1),
+      html body h2:not([class*="outseta"]):not(#outseta-chat-container h2),
+      html body h3:not([class*="outseta"]):not(#outseta-chat-container h3),
+      html body h4:not([class*="outseta"]):not(#outseta-chat-container h4),
+      html body h5:not([class*="outseta"]):not(#outseta-chat-container h5),
+      html body h6:not([class*="outseta"]):not(#outseta-chat-container h6) {
         font-weight: 700 !important;
       }
 
-      /* Reset Outseta's own headings if needed */
+      /* Ensure Outseta headings maintain their styles */
       #outseta-chat-container h1,
       #outseta-chat-container h2,
       #outseta-chat-container h3,
       #outseta-chat-container h4,
       #outseta-chat-container h5,
       #outseta-chat-container h6 {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+        font-family: inherit;
+        font-weight: inherit;
       }
     `;
     document.head.appendChild(style);
@@ -48,7 +50,8 @@ export function OutsetaChat() {
     optionsScript.text = `
       var o_options = {
         domain: 'limitlesslab.outseta.com',
-        load: 'chat'
+        load: 'chat',
+        defaultWidget: 'chat'
       };
     `;
     container.appendChild(optionsScript);
