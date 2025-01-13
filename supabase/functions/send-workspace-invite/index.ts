@@ -21,23 +21,38 @@ interface InviteRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("Starting invite handler");
+
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     if (!RESEND_API_KEY || !FROM_EMAIL || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("Missing required environment variables");
       throw new Error("Server configuration error");
     }
 
     const { emails, workspaceId, workspaceName, inviterName, role, inviterId } = await req.json() as InviteRequest;
 
+    console.log("Received invite request:", { 
+      emails, 
+      workspaceId, 
+      workspaceName, 
+      inviterName, 
+      role 
+    });
+
     if (!emails?.length || !workspaceId || !workspaceName || !inviterName || !role || !inviterId) {
+      console.error("Missing required fields:", { emails, workspaceId, workspaceName, inviterName, role, inviterId });
       throw new Error("Missing required fields in invitation request");
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const batchId = crypto.randomUUID();
+
+    console.log("Creating invitations in database");
 
     // Create invitations for all emails
     const { data: invitations, error: inviteError } = await supabase
@@ -56,13 +71,21 @@ const handler = async (req: Request): Promise<Response> => {
       .select();
 
     if (inviteError) {
+      console.error("Error creating invitations:", inviteError);
       throw inviteError;
     }
+
+    console.log("Successfully created invitations:", invitations);
 
     // Send emails for each invitation
     const emailPromises = invitations.map(async (invitation) => {
       const inviteUrl = `${req.headers.get("origin")}/invite?token=${invitation.magic_link_token}`;
       
+      console.log("Sending email for invitation:", { 
+        email: invitation.email, 
+        token: invitation.magic_link_token 
+      });
+
       return fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -88,7 +111,9 @@ const handler = async (req: Request): Promise<Response> => {
       });
     });
 
+    console.log("Sending invitation emails");
     await Promise.all(emailPromises);
+    console.log("Successfully sent all invitation emails");
 
     return new Response(
       JSON.stringify({ success: true, count: emails.length }),

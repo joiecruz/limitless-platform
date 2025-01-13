@@ -42,7 +42,16 @@ export function InviteMemberDialog({
         ? `${profileData.first_name} ${profileData.last_name}`
         : 'A team member';
 
-      const { error } = await supabase.functions.invoke('send-workspace-invite', {
+      console.log("Sending invite with data:", {
+        emails,
+        workspaceId,
+        workspaceName,
+        inviterName,
+        role: selectedRole,
+        inviterId: userData.user.id,
+      });
+
+      const { data, error } = await supabase.functions.invoke('send-workspace-invite', {
         body: {
           emails,
           workspaceId,
@@ -53,7 +62,15 @@ export function InviteMemberDialog({
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || "Failed to send invitations");
+      }
+
+      if (!data?.success) {
+        console.error('Invitation response error:', data);
+        throw new Error("Failed to process invitations");
+      }
 
       toast({
         title: "Invitations Sent",
