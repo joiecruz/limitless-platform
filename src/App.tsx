@@ -77,14 +77,14 @@ const App = () => {
       
       if (!mounted) return;
 
-      if (event === 'SIGNED_OUT') {
-        console.log("User signed out - Clearing session and cache");
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !currentSession) {
+        console.log("User signed out or token refresh failed - Clearing session and cache");
         setSession(null);
         queryClient.clear();
         localStorage.clear();
         toast({
-          title: "Signed out",
-          description: "You have been signed out successfully.",
+          title: "Session Expired",
+          description: "Please sign in again to continue.",
         });
         return;
       }

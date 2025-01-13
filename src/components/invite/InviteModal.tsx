@@ -9,6 +9,7 @@ import { InviteStep1 } from "./steps/InviteStep1";
 import { useInviteSubmit } from "./hooks/useInviteSubmit";
 import { InvitedUserOnboardingModal } from "./InvitedUserOnboardingModal";
 import { verifyInvitation } from "./services/invitationService";
+import { useToast } from "@/hooks/use-toast";
 
 interface InviteModalProps {
   open?: boolean;
@@ -18,6 +19,7 @@ interface InviteModalProps {
 export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const token = searchParams.get("token");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [workspaceId, setWorkspaceId] = useState<string>();
@@ -33,19 +35,34 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
     setFormData(updatedData);
 
     try {
-      // Verify invitation to get workspace ID
-      if (token) {
-        const { invitation } = await verifyInvitation(token);
-        setWorkspaceId(invitation.workspace_id);
+      if (!token) {
+        throw new Error("No invitation token provided");
       }
 
+      // Verify invitation first to get workspace ID and email
+      const { invitation } = await verifyInvitation(token);
+      console.log("Verified invitation:", invitation);
+      
+      if (!invitation) {
+        throw new Error("Invalid invitation");
+      }
+
+      setWorkspaceId(invitation.workspace_id);
+
+      // Submit the invite with the verified invitation data
       await submitInvite({
         password: updatedData.password,
+        email: invitation.email, // Pass the email from the invitation
       });
       
       setShowOnboarding(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during invite process:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process invitation",
+        variant: "destructive",
+      });
     }
   };
 

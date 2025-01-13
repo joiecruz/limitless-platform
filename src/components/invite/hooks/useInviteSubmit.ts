@@ -10,29 +10,38 @@ export function useInviteSubmit(token?: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (data: { password: string }) => {
+  const handleSubmit = async (data: { password: string; email: string }) => {
+    console.log("Starting invite submission process");
     setIsLoading(true);
+    
     try {
-      // Get the invitation details first
       if (!token) {
         throw new Error("No invitation token provided");
       }
 
+      // Get the invitation details first
       const { data: inviteData, error: inviteError } = await supabase
         .from("workspace_invitations")
         .select("*")
         .eq("magic_link_token", token)
-        .single();
+        .maybeSingle();
 
       if (inviteError || !inviteData) {
         console.error("Error fetching invitation:", inviteError);
         throw new Error("Invalid or expired invitation");
       }
 
+      console.log("Found invitation:", inviteData);
+
       // Sign up the user with their email and password
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: inviteData.email,
+        email: data.email,
         password: data.password,
+        options: {
+          data: {
+            email_confirm: true // Mark as confirmed since this is an invited user
+          }
+        }
       });
 
       if (signUpError || !authData.user) {
@@ -40,13 +49,14 @@ export function useInviteSubmit(token?: string | null) {
         throw signUpError;
       }
 
+      console.log("User signed up successfully:", authData.user.id);
+
       // Create a basic profile immediately
       const { error: profileError } = await supabase
         .from("profiles")
         .insert({
           id: authData.user.id,
-          email: inviteData.email,
-          // Set minimal profile data that we know from the invitation
+          email: data.email,
           role: inviteData.role || null,
         });
 
@@ -71,6 +81,16 @@ export function useInviteSubmit(token?: string | null) {
 
       if (updateError) {
         console.error("Error updating invitation:", updateError);
+        // Don't throw - not critical
+      }
+
+      // Confirm the email using the Edge Function
+      const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user', {
+        body: { user_id: authData.user.id }
+      });
+
+      if (confirmError) {
+        console.error("Error confirming email:", confirmError);
         // Don't throw - not critical
       }
 
