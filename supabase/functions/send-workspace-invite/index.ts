@@ -8,7 +8,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface InviteRequest {
@@ -29,36 +30,29 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Check environment variables
+    // Validate environment variables
     if (!RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY is not configured");
+      console.error("RESEND_API_KEY is not configured");
+      throw new Error("Email service configuration is missing");
     }
     if (!FROM_EMAIL) {
-      throw new Error("FROM_EMAIL is not configured");
+      console.error("FROM_EMAIL is not configured");
+      throw new Error("Sender email configuration is missing");
     }
-    if (!SUPABASE_URL) {
-      throw new Error("SUPABASE_URL is not configured");
-    }
-    if (!SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("Supabase configuration is missing");
+      throw new Error("Database configuration is missing");
     }
 
     // Parse and validate request body
     const requestBody = await req.json().catch(error => {
       console.error("Failed to parse request body:", error);
-      throw new Error("Invalid request body");
+      throw new Error("Invalid request format");
     });
+
+    console.log("Request body:", JSON.stringify(requestBody, null, 2));
 
     const { emails, workspaceId, workspaceName, inviterName, role, inviterId } = requestBody as InviteRequest;
-
-    console.log("Received invite request:", { 
-      emails, 
-      workspaceId, 
-      workspaceName, 
-      inviterName, 
-      role,
-      inviterId
-    });
 
     // Validate required fields
     if (!emails?.length) {
@@ -119,7 +113,8 @@ const handler = async (req: Request): Promise<Response> => {
         
         console.log("Sending email for invitation:", { 
           email: invitation.email, 
-          token: invitation.magic_link_token 
+          token: invitation.magic_link_token,
+          inviteUrl 
         });
 
         const response = await fetch("https://api.resend.com/emails", {
@@ -146,9 +141,14 @@ const handler = async (req: Request): Promise<Response> => {
           }),
         });
 
+        const responseData = await response.text();
+        console.log("Resend API response:", {
+          status: response.status,
+          data: responseData
+        });
+
         if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(`Resend API error: ${errorData}`);
+          throw new Error(`Resend API error: ${responseData}`);
         }
 
         return response;
