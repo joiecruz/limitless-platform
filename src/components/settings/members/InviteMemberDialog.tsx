@@ -69,12 +69,12 @@ export function InviteMemberDialog({
 
       if (!data?.success) {
         console.error('Invitation response error:', data);
-        throw new Error("Failed to process invitations");
+        throw new Error(data?.error || "Failed to process invitations");
       }
 
       toast({
-        title: "Invitations Sent",
-        description: `Invitations have been sent to ${emails.length} email${emails.length === 1 ? '' : 's'}`,
+        title: "Invitations Processed",
+        description: data.message || `Invitations have been sent to ${data.invitedCount} email${data.invitedCount === 1 ? '' : 's'}`,
       });
       
       queryClient.invalidateQueries({

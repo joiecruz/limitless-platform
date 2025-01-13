@@ -79,18 +79,48 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Creating invitations in database");
 
-    // Create invitations for all emails
+    // Check for existing invitations
+    const { data: existingInvitations, error: checkError } = await supabase
+      .from('workspace_invitations')
+      .select('email')
+      .in('email', emails.map(email => email.toLowerCase()))
+      .eq('workspace_id', workspaceId)
+      .eq('status', 'pending');
+
+    if (checkError) {
+      console.error("Error checking existing invitations:", checkError);
+      throw new Error(`Failed to check existing invitations: ${checkError.message}`);
+    }
+
+    // Filter out emails that already have pending invitations
+    const existingEmails = new Set(existingInvitations?.map(inv => inv.email.toLowerCase()) || []);
+    const newEmails = emails.filter(email => !existingEmails.has(email.toLowerCase()));
+
+    if (newEmails.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "All provided emails already have pending invitations"
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
+    }
+
+    // Create invitations only for new emails
     const { data: invitations, error: inviteError } = await supabase
       .from('workspace_invitations')
       .insert(
-        emails.map(email => ({
+        newEmails.map(email => ({
           workspace_id: workspaceId,
           email: email.toLowerCase(),
           role,
           invited_by: inviterId,
           status: 'pending',
           batch_id: batchId,
-          emails: emails
+          emails: newEmails
         }))
       )
       .select();
@@ -168,8 +198,18 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Failed to send some invitation emails");
     }
 
+    const skippedCount = existingEmails.size;
+    const invitedCount = newEmails.length;
+
     return new Response(
-      JSON.stringify({ success: true, count: emails.length }),
+      JSON.stringify({ 
+        success: true, 
+        invitedCount,
+        skippedCount,
+        message: skippedCount > 0 
+          ? `Sent ${invitedCount} new invitation(s). Skipped ${skippedCount} existing invitation(s).`
+          : `Successfully sent ${invitedCount} invitation(s).`
+      }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
