@@ -42,17 +42,31 @@ export function useAuthRedirect() {
             return;
           }
 
-          // Check if user needs onboarding
+          // Check if user was invited (has workspace_members entry)
+          const { data: memberData } = await supabase
+            .from('workspace_members')
+            .select('workspace_id')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+
+          if (memberData?.workspace_id) {
+            // User was invited, redirect to dashboard with workspace
+            console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
+            localStorage.setItem('selectedWorkspace', memberData.workspace_id);
+            navigate(`/dashboard?workspace=${memberData.workspace_id}`, { replace: true });
+            return;
+          }
+
+          // Regular signup flow
           const needsOnboarding = await checkUserProfile(session);
           console.log("SignIn - Needs onboarding:", needsOnboarding);
 
-          // Always redirect to dashboard, but set state based on profile status
           console.log("SignIn - Redirecting to dashboard");
           navigate("/dashboard", { 
             replace: true,
             state: { 
               showOnboarding: needsOnboarding,
-              isIncompleteProfile: needsOnboarding && !isEmailConfirmation // New flag for incomplete profiles
+              isIncompleteProfile: needsOnboarding && !isEmailConfirmation
             }
           });
         } else {
@@ -93,16 +107,31 @@ export function useAuthRedirect() {
           return;
         }
 
+        // Check if user was invited
+        const { data: memberData } = await supabase
+          .from('workspace_members')
+          .select('workspace_id')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+
+        if (memberData?.workspace_id) {
+          // User was invited, redirect to dashboard with workspace
+          console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
+          localStorage.setItem('selectedWorkspace', memberData.workspace_id);
+          navigate(`/dashboard?workspace=${memberData.workspace_id}`, { replace: true });
+          return;
+        }
+
+        // Regular signup flow
         const needsOnboarding = await checkUserProfile(session);
         console.log("SignIn - Needs onboarding after sign in:", needsOnboarding);
 
-        // Redirect to dashboard with appropriate state
         console.log("SignIn - Redirecting to dashboard");
         navigate("/dashboard", { 
           replace: true,
           state: { 
             showOnboarding: needsOnboarding,
-            isIncompleteProfile: needsOnboarding && event === 'SIGNED_IN' // Set flag for incomplete profiles
+            isIncompleteProfile: needsOnboarding && event === 'SIGNED_IN'
           }
         });
       }

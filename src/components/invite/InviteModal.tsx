@@ -7,7 +7,6 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { InviteStep1 } from "./steps/InviteStep1";
 import { useInviteSubmit } from "./hooks/useInviteSubmit";
-import { InvitedUserOnboardingModal } from "./InvitedUserOnboardingModal";
 import { verifyInvitation } from "./services/invitationService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -21,8 +20,6 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const token = searchParams.get("token");
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [workspaceId, setWorkspaceId] = useState<string>();
 
   const [formData, setFormData] = useState({
     password: "",
@@ -47,15 +44,19 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
         throw new Error("Invalid invitation");
       }
 
-      setWorkspaceId(invitation.workspace_id);
-
       // Submit the invite with the verified invitation data
       await submitInvite({
         password: updatedData.password,
-        email: invitation.email, // Pass the email from the invitation
+        email: invitation.email,
       });
       
-      setShowOnboarding(true);
+      // Redirect to sign in page with success message
+      toast({
+        title: "Account Created",
+        description: "Your account has been created. Please sign in with your email and password.",
+      });
+      navigate("/signin");
+      
     } catch (error: any) {
       console.error("Error during invite process:", error);
       toast({
@@ -65,18 +66,6 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
       });
     }
   };
-
-  if (showOnboarding) {
-    return (
-      <InvitedUserOnboardingModal 
-        open={true} 
-        onOpenChange={() => {
-          navigate("/dashboard");
-        }}
-        workspaceId={workspaceId}
-      />
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={(value) => {
