@@ -34,9 +34,21 @@ export const OutsetaChat = () => {
     style.textContent = `
       #outseta-chat-container {
         isolation: isolate;
+        all: initial;
       }
       #outseta-chat-container * {
-        font-weight: initial;
+        all: revert;
+        font-weight: initial !important;
+      }
+      #outseta-chat-container h1,
+      #outseta-chat-container h2,
+      #outseta-chat-container h3,
+      #outseta-chat-container h4,
+      #outseta-chat-container h5,
+      #outseta-chat-container h6 {
+        font-weight: initial !important;
+        font-family: initial !important;
+        line-height: initial !important;
       }
     `;
     document.head.appendChild(style);
