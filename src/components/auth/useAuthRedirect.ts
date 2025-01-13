@@ -45,7 +45,7 @@ export function useAuthRedirect() {
           // Check if user was invited (has workspace_members entry)
           const { data: memberData } = await supabase
             .from('workspace_members')
-            .select('workspace_id')
+            .select('workspace_id, role')
             .eq('user_id', session.user.id)
             .maybeSingle();
 
@@ -53,7 +53,12 @@ export function useAuthRedirect() {
             // User was invited, redirect to dashboard with workspace
             console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
             localStorage.setItem('selectedWorkspace', memberData.workspace_id);
-            navigate(`/dashboard?workspace=${memberData.workspace_id}`, { replace: true });
+            navigate(`/dashboard?workspace=${memberData.workspace_id}`, { 
+              replace: true,
+              state: { 
+                showOnboarding: false // Never show onboarding for invited users
+              }
+            });
             return;
           }
 
@@ -110,7 +115,7 @@ export function useAuthRedirect() {
         // Check if user was invited
         const { data: memberData } = await supabase
           .from('workspace_members')
-          .select('workspace_id')
+          .select('workspace_id, role')
           .eq('user_id', session.user.id)
           .maybeSingle();
 
@@ -118,7 +123,12 @@ export function useAuthRedirect() {
           // User was invited, redirect to dashboard with workspace
           console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
           localStorage.setItem('selectedWorkspace', memberData.workspace_id);
-          navigate(`/dashboard?workspace=${memberData.workspace_id}`, { replace: true });
+          navigate(`/dashboard?workspace=${memberData.workspace_id}`, { 
+            replace: true,
+            state: { 
+              showOnboarding: false // Never show onboarding for invited users
+            }
+          });
           return;
         }
 
