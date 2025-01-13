@@ -29,24 +29,55 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    if (!RESEND_API_KEY || !FROM_EMAIL || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      console.error("Missing required environment variables");
-      throw new Error("Server configuration error");
+    // Check environment variables
+    if (!RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+    if (!FROM_EMAIL) {
+      throw new Error("FROM_EMAIL is not configured");
+    }
+    if (!SUPABASE_URL) {
+      throw new Error("SUPABASE_URL is not configured");
+    }
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
     }
 
-    const { emails, workspaceId, workspaceName, inviterName, role, inviterId } = await req.json() as InviteRequest;
+    // Parse and validate request body
+    const requestBody = await req.json().catch(error => {
+      console.error("Failed to parse request body:", error);
+      throw new Error("Invalid request body");
+    });
+
+    const { emails, workspaceId, workspaceName, inviterName, role, inviterId } = requestBody as InviteRequest;
 
     console.log("Received invite request:", { 
       emails, 
       workspaceId, 
       workspaceName, 
       inviterName, 
-      role 
+      role,
+      inviterId
     });
 
-    if (!emails?.length || !workspaceId || !workspaceName || !inviterName || !role || !inviterId) {
-      console.error("Missing required fields:", { emails, workspaceId, workspaceName, inviterName, role, inviterId });
-      throw new Error("Missing required fields in invitation request");
+    // Validate required fields
+    if (!emails?.length) {
+      throw new Error("No email addresses provided");
+    }
+    if (!workspaceId) {
+      throw new Error("Workspace ID is required");
+    }
+    if (!workspaceName) {
+      throw new Error("Workspace name is required");
+    }
+    if (!inviterName) {
+      throw new Error("Inviter name is required");
+    }
+    if (!role) {
+      throw new Error("Role is required");
+    }
+    if (!inviterId) {
+      throw new Error("Inviter ID is required");
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -72,48 +103,70 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (inviteError) {
       console.error("Error creating invitations:", inviteError);
-      throw inviteError;
+      throw new Error(`Failed to create invitations: ${inviteError.message}`);
+    }
+
+    if (!invitations || invitations.length === 0) {
+      throw new Error("No invitations were created");
     }
 
     console.log("Successfully created invitations:", invitations);
 
     // Send emails for each invitation
     const emailPromises = invitations.map(async (invitation) => {
-      const inviteUrl = `${req.headers.get("origin")}/invite?token=${invitation.magic_link_token}`;
-      
-      console.log("Sending email for invitation:", { 
-        email: invitation.email, 
-        token: invitation.magic_link_token 
-      });
+      try {
+        const inviteUrl = `${req.headers.get("origin")}/invite?token=${invitation.magic_link_token}`;
+        
+        console.log("Sending email for invitation:", { 
+          email: invitation.email, 
+          token: invitation.magic_link_token 
+        });
 
-      return fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: FROM_EMAIL,
-          to: [invitation.email],
-          subject: `Join ${workspaceName} on our platform`,
-          html: `
-            <!DOCTYPE html>
-            <html>
-              <body>
-                <h2>You've been invited!</h2>
-                <p>${inviterName} has invited you to join ${workspaceName} as a ${role}.</p>
-                <p>Click the link below to accept the invitation:</p>
-                <a href="${inviteUrl}">Accept Invitation</a>
-              </body>
-            </html>
-          `,
-        }),
-      });
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: FROM_EMAIL,
+            to: [invitation.email],
+            subject: `Join ${workspaceName} on our platform`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+                <body>
+                  <h2>You've been invited!</h2>
+                  <p>${inviterName} has invited you to join ${workspaceName} as a ${role}.</p>
+                  <p>Click the link below to accept the invitation:</p>
+                  <a href="${inviteUrl}">Accept Invitation</a>
+                </body>
+              </html>
+            `,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(`Resend API error: ${errorData}`);
+        }
+
+        return response;
+      } catch (error) {
+        console.error(`Failed to send email to ${invitation.email}:`, error);
+        throw error;
+      }
     });
 
     console.log("Sending invitation emails");
-    await Promise.all(emailPromises);
-    console.log("Successfully sent all invitation emails");
+    
+    try {
+      await Promise.all(emailPromises);
+      console.log("Successfully sent all invitation emails");
+    } catch (error) {
+      console.error("Error sending invitation emails:", error);
+      throw new Error("Failed to send some invitation emails");
+    }
 
     return new Response(
       JSON.stringify({ success: true, count: emails.length }),
@@ -124,9 +177,11 @@ const handler = async (req: Request): Promise<Response> => {
     );
   } catch (error: any) {
     console.error("Error in send-workspace-invite function:", error);
+    
     return new Response(
       JSON.stringify({ 
-        error: error.message || "An error occurred while processing your request",
+        success: false,
+        error: error.message || "An unexpected error occurred",
         details: error.toString()
       }),
       {
