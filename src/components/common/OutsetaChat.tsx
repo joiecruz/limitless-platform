@@ -21,8 +21,13 @@ export function OutsetaChat() {
         all: revert;
       }
 
-      /* Enforce bold headings globally */
-      h1, h2, h3, h4, h5, h6 {
+      /* Enforce bold headings globally with high specificity */
+      body h1:not(#outseta-chat-container h1),
+      body h2:not(#outseta-chat-container h2),
+      body h3:not(#outseta-chat-container h3),
+      body h4:not(#outseta-chat-container h4),
+      body h5:not(#outseta-chat-container h5),
+      body h6:not(#outseta-chat-container h6) {
         font-weight: 700 !important;
       }
 
