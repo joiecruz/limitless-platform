@@ -1,13 +1,13 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
-export const OutsetaChat = () => {
+export function OutsetaChat() {
   useEffect(() => {
-    // Create container
+    // Create container for Outseta chat
     const container = document.createElement('div');
     container.id = 'outseta-chat-container';
     document.body.appendChild(container);
 
-    // Create and inject style with stronger isolation
+    // Create and inject style with stronger heading styles
     const style = document.createElement('style');
     style.textContent = `
       #outseta-chat-container {
@@ -22,52 +22,34 @@ export const OutsetaChat = () => {
         all: revert;
       }
 
-      /* Explicitly prevent Outseta styles from affecting page headings */
-      body > *:not(#outseta-chat-container) h1,
-      body > *:not(#outseta-chat-container) h2,
-      body > *:not(#outseta-chat-container) h3,
-      body > *:not(#outseta-chat-container) h4,
-      body > *:not(#outseta-chat-container) h5,
-      body > *:not(#outseta-chat-container) h6 {
-        font-weight: bold !important;
-        font-family: inherit !important;
+      /* Enforce bold headings globally */
+      h1, h2, h3, h4, h5, h6 {
+        font-weight: 700 !important;
       }
 
-      /* Reset Outseta's own headings */
+      /* Reset Outseta's own headings if needed */
       #outseta-chat-container h1,
       #outseta-chat-container h2,
       #outseta-chat-container h3,
       #outseta-chat-container h4,
       #outseta-chat-container h5,
       #outseta-chat-container h6 {
-        all: revert;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
       }
     `;
     document.head.appendChild(style);
 
-    // Create and inject Outseta options script
-    const optionsScript = document.createElement('script');
-    optionsScript.text = `
-      var o_options = {
-        domain: 'limitlesslab.outseta.com',
-        load: 'chat'
-      };
-    `;
-    container.appendChild(optionsScript);
-
-    // Create and inject Outseta main script
+    // Initialize Outseta chat
     const script = document.createElement('script');
-    script.src = 'https://cdn.outseta.com/outseta.min.js';
-    script.setAttribute('data-options', 'o_options');
+    script.src = 'https://cdn.outseta.com/chat.min.js';
+    script.dataset.peopleId = 'eW91ci1wZW9wbGUtaWQ=';
     container.appendChild(script);
 
-    // Cleanup function
     return () => {
-      document.body.removeChild(container);
       document.head.removeChild(style);
+      document.body.removeChild(container);
     };
   }, []);
 
   return null;
-};
+}
