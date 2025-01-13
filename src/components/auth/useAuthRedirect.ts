@@ -53,10 +53,11 @@ export function useAuthRedirect() {
             // User was invited, redirect to dashboard with workspace
             console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
             localStorage.setItem('selectedWorkspace', memberData.workspace_id);
-            navigate(`/dashboard?workspace=${memberData.workspace_id}`, { 
+            navigate("/dashboard", { 
               replace: true,
               state: { 
-                showOnboarding: false // Never show onboarding for invited users
+                showOnboarding: false, // Never show onboarding for invited users
+                workspace: memberData.workspace_id
               }
             });
             return;
@@ -123,10 +124,11 @@ export function useAuthRedirect() {
           // User was invited, redirect to dashboard with workspace
           console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
           localStorage.setItem('selectedWorkspace', memberData.workspace_id);
-          navigate(`/dashboard?workspace=${memberData.workspace_id}`, { 
+          navigate("/dashboard", { 
             replace: true,
             state: { 
-              showOnboarding: false // Never show onboarding for invited users
+              showOnboarding: false, // Never show onboarding for invited users
+              workspace: memberData.workspace_id
             }
           });
           return;
