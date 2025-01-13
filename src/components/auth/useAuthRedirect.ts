@@ -43,15 +43,20 @@ export function useAuthRedirect() {
           }
 
           // Check if user was invited (has workspace_members entry)
-          const { data: memberData } = await supabase
+          const { data: memberData, error: memberError } = await supabase
             .from('workspace_members')
-            .select('workspace_id, role')
+            .select('workspace_id, role, workspaces(name)')
             .eq('user_id', session.user.id)
             .maybeSingle();
 
+          if (memberError) {
+            console.error("SignIn - Error fetching workspace membership:", memberError);
+            throw new Error("Failed to check workspace membership");
+          }
+
           if (memberData?.workspace_id) {
             // User was invited, redirect to dashboard with workspace
-            console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
+            console.log("SignIn - Invited user, redirecting to workspace:", memberData);
             localStorage.setItem('selectedWorkspace', memberData.workspace_id);
             navigate("/dashboard", { 
               replace: true,
@@ -59,6 +64,10 @@ export function useAuthRedirect() {
                 showOnboarding: false, // Never show onboarding for invited users
                 workspace: memberData.workspace_id
               }
+            });
+            toast({
+              title: "Welcome!",
+              description: `You've been added to ${memberData.workspaces?.name || 'your workspace'}.`,
             });
             return;
           }
@@ -84,8 +93,13 @@ export function useAuthRedirect() {
             localStorage.setItem('inviteToken', inviteToken);
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("SignIn - Error checking session:", error);
+        toast({
+          title: "Error",
+          description: error.message || "An error occurred while checking your session",
+          variant: "destructive",
+        });
         localStorage.clear();
         await supabase.auth.signOut();
       }
@@ -113,39 +127,57 @@ export function useAuthRedirect() {
           return;
         }
 
-        // Check if user was invited
-        const { data: memberData } = await supabase
-          .from('workspace_members')
-          .select('workspace_id, role')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
+        try {
+          // Check if user was invited
+          const { data: memberData, error: memberError } = await supabase
+            .from('workspace_members')
+            .select('workspace_id, role, workspaces(name)')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
 
-        if (memberData?.workspace_id) {
-          // User was invited, redirect to dashboard with workspace
-          console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
-          localStorage.setItem('selectedWorkspace', memberData.workspace_id);
+          if (memberError) {
+            console.error("SignIn - Error fetching workspace membership:", memberError);
+            throw new Error("Failed to check workspace membership");
+          }
+
+          if (memberData?.workspace_id) {
+            // User was invited, redirect to dashboard with workspace
+            console.log("SignIn - Invited user, redirecting to workspace:", memberData);
+            localStorage.setItem('selectedWorkspace', memberData.workspace_id);
+            navigate("/dashboard", { 
+              replace: true,
+              state: { 
+                showOnboarding: false, // Never show onboarding for invited users
+                workspace: memberData.workspace_id
+              }
+            });
+            toast({
+              title: "Welcome!",
+              description: `You've been added to ${memberData.workspaces?.name || 'your workspace'}.`,
+            });
+            return;
+          }
+
+          // Regular signup flow
+          const needsOnboarding = await checkUserProfile(session);
+          console.log("SignIn - Needs onboarding after sign in:", needsOnboarding);
+
+          console.log("SignIn - Redirecting to dashboard");
           navigate("/dashboard", { 
             replace: true,
             state: { 
-              showOnboarding: false, // Never show onboarding for invited users
-              workspace: memberData.workspace_id
+              showOnboarding: needsOnboarding,
+              isIncompleteProfile: needsOnboarding && event === 'SIGNED_IN'
             }
           });
-          return;
+        } catch (error: any) {
+          console.error("SignIn - Error handling sign in:", error);
+          toast({
+            title: "Error",
+            description: error.message || "An error occurred while signing you in",
+            variant: "destructive",
+          });
         }
-
-        // Regular signup flow
-        const needsOnboarding = await checkUserProfile(session);
-        console.log("SignIn - Needs onboarding after sign in:", needsOnboarding);
-
-        console.log("SignIn - Redirecting to dashboard");
-        navigate("/dashboard", { 
-          replace: true,
-          state: { 
-            showOnboarding: needsOnboarding,
-            isIncompleteProfile: needsOnboarding && event === 'SIGNED_IN'
-          }
-        });
       }
 
       if (!session || event === 'SIGNED_OUT') {

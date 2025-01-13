@@ -24,17 +24,8 @@ export default function InvitePage() {
 
         console.log("Handling invitation with token:", token);
         
-        // Set the token in the request headers for RLS policy
-        const { data: invitation, error: inviteError } = await supabase
-          .from("workspace_invitations")
-          .select("*")
-          .eq('magic_link_token', token)
-          .single();
-
-        if (inviteError) {
-          console.error("Error verifying invitation:", inviteError);
-          throw new Error("Invalid or expired invitation link");
-        }
+        // Verify the invitation first
+        const { invitation } = await verifyInvitation(token);
 
         if (!invitation) {
           console.error("No invitation found for token:", token);
@@ -57,15 +48,21 @@ export default function InvitePage() {
                   workspace_id: invitation.workspace_id,
                   user_id: session.user.id,
                   role: invitation.role
-                });
+                })
+                .select()
+                .single();
 
               if (memberError) {
                 if (memberError.code === '23505') { // Unique violation
-                  toast({
-                    title: "Already a member",
-                    description: "You are already a member of this workspace.",
+                  console.log("User is already a member of this workspace");
+                  localStorage.setItem('selectedWorkspace', invitation.workspace_id);
+                  navigate("/dashboard", { 
+                    replace: true,
+                    state: { 
+                      showOnboarding: false,
+                      workspace: invitation.workspace_id
+                    }
                   });
-                  navigate("/dashboard");
                   return;
                 }
                 throw memberError;
@@ -78,19 +75,25 @@ export default function InvitePage() {
                   status: "accepted",
                   accepted_at: new Date().toISOString()
                 })
-                .eq("id", invitation.id)
-                .eq('magic_link_token', token); // Add token check for RLS
+                .eq("id", invitation.id);
 
               if (updateError) {
                 console.error("Error updating invitation status:", updateError);
                 throw updateError;
               }
 
+              localStorage.setItem('selectedWorkspace', invitation.workspace_id);
               toast({
                 title: "Welcome!",
                 description: "You have successfully joined the workspace.",
               });
-              navigate("/dashboard");
+              navigate("/dashboard", { 
+                replace: true,
+                state: { 
+                  showOnboarding: false,
+                  workspace: invitation.workspace_id
+                }
+              });
             } catch (error: any) {
               console.error("Error processing workspace join:", error);
               throw new Error("Failed to join workspace. Please try again.");
