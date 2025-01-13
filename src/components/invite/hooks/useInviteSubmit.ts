@@ -62,12 +62,26 @@ export function useInviteSubmit(token?: string | null) {
 
       if (profileError) {
         console.error("Error creating profile:", profileError);
-        // Don't throw here - the user can still complete onboarding
+        // Don't throw here - the user can still complete their profile later
         toast({
           title: "Notice",
-          description: "Profile creation incomplete. Please complete onboarding.",
+          description: "Profile creation incomplete. You can complete it later in settings.",
           variant: "default",
         });
+      }
+
+      // Add user to workspace immediately
+      const { error: memberError } = await supabase
+        .from("workspace_members")
+        .insert({
+          workspace_id: inviteData.workspace_id,
+          user_id: authData.user.id,
+          role: inviteData.role
+        });
+
+      if (memberError) {
+        console.error("Error adding to workspace:", memberError);
+        // Don't throw - not critical at this point
       }
 
       // Update invitation status
@@ -94,9 +108,12 @@ export function useInviteSubmit(token?: string | null) {
         // Don't throw - not critical
       }
 
+      // Sign out the user so they can sign in fresh
+      await supabase.auth.signOut();
+
       toast({
         title: "Success",
-        description: "Password set successfully. Please complete your profile setup.",
+        description: "Your account has been created. Please sign in with your email and password.",
       });
 
     } catch (error: any) {
