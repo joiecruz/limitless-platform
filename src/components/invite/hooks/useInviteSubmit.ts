@@ -70,18 +70,34 @@ export function useInviteSubmit(token?: string | null) {
         });
       }
 
-      // Add user to workspace immediately
+      // Add user to workspace with the role from the invitation
+      console.log("Adding user to workspace with role:", inviteData.role);
       const { error: memberError } = await supabase
         .from("workspace_members")
         .insert({
           workspace_id: inviteData.workspace_id,
           user_id: authData.user.id,
-          role: inviteData.role
+          role: inviteData.role // Explicitly set the role from the invitation
         });
 
       if (memberError) {
         console.error("Error adding to workspace:", memberError);
-        // Don't throw - not critical at this point
+        if (memberError.code === '23505') { // Unique violation
+          console.log("User is already a member of this workspace");
+          // Update the role instead
+          const { error: updateError } = await supabase
+            .from("workspace_members")
+            .update({ role: inviteData.role })
+            .eq('workspace_id', inviteData.workspace_id)
+            .eq('user_id', authData.user.id);
+            
+          if (updateError) {
+            console.error("Error updating member role:", updateError);
+            throw updateError;
+          }
+        } else {
+          throw memberError;
+        }
       }
 
       // Update invitation status
@@ -94,7 +110,7 @@ export function useInviteSubmit(token?: string | null) {
         .eq("id", inviteData.id);
 
       if (updateError) {
-        console.error("Error updating invitation:", updateError);
+        console.error("Error updating invitation status:", updateError);
         // Don't throw - not critical
       }
 
