@@ -45,7 +45,7 @@ export function useAuthRedirect() {
           // Check if user was invited (has workspace_members entry)
           const { data: memberData, error: memberError } = await supabase
             .from('workspace_members')
-            .select('workspace_id, role, workspaces:workspaces(name)')
+            .select('workspace_id, role, workspaces(id, name)')
             .eq('user_id', session.user.id)
             .maybeSingle();
 
@@ -131,7 +131,7 @@ export function useAuthRedirect() {
           // Check if user was invited
           const { data: memberData, error: memberError } = await supabase
             .from('workspace_members')
-            .select('workspace_id, role, workspaces:workspaces(name)')
+            .select('workspace_id, role, workspaces(id, name)')
             .eq('user_id', session.user.id)
             .maybeSingle();
 
