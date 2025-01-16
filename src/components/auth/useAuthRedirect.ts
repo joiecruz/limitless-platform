@@ -43,48 +43,58 @@ export function useAuthRedirect() {
             return;
           }
 
-          // Check if user was invited (has workspace_members entry)
-          const { data: memberData, error: memberError } = await supabase
-            .from('workspace_members')
-            .select('workspace_id, role, workspaces(id, name)')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
+          try {
+            // Check if user was invited (has workspace_members entry)
+            const { data: memberData, error: memberError } = await supabase
+              .from('workspace_members')
+              .select('workspace_id, role, workspaces(id, name)')
+              .eq('user_id', session.user.id)
+              .single();
 
-          if (memberError) {
-            console.error("SignIn - Error fetching workspace membership:", memberError);
-            throw new Error("Failed to check workspace membership");
-          }
+            if (memberError) {
+              if (memberError.code === 'PGRST116') {
+                // No membership found - continue with regular signup flow
+                console.log("SignIn - No workspace membership found");
+              } else {
+                console.error("SignIn - Error fetching workspace membership:", memberError);
+                throw new Error("Failed to check workspace membership");
+              }
+            }
 
-          if (memberData?.workspace_id) {
-            // User was invited, redirect to dashboard with workspace
-            console.log("SignIn - Invited user, redirecting to workspace:", memberData);
-            localStorage.setItem('selectedWorkspace', memberData.workspace_id);
+            if (memberData?.workspace_id) {
+              // User was invited, redirect to dashboard with workspace
+              console.log("SignIn - Invited user, redirecting to workspace:", memberData);
+              localStorage.setItem('selectedWorkspace', memberData.workspace_id);
+              navigate("/dashboard", { 
+                replace: true,
+                state: { 
+                  showOnboarding: false, // Never show onboarding for invited users
+                  workspace: memberData.workspace_id
+                }
+              });
+              toast({
+                title: "Welcome!",
+                description: `You've been added to ${memberData.workspaces?.name || 'your workspace'}.`,
+              });
+              return;
+            }
+
+            // Regular signup flow
+            const needsOnboarding = await checkUserProfile(session);
+            console.log("SignIn - Needs onboarding:", needsOnboarding);
+
+            console.log("SignIn - Redirecting to dashboard");
             navigate("/dashboard", { 
               replace: true,
               state: { 
-                showOnboarding: false, // Never show onboarding for invited users
-                workspace: memberData.workspace_id
+                showOnboarding: needsOnboarding,
+                isIncompleteProfile: needsOnboarding && !isEmailConfirmation
               }
             });
-            toast({
-              title: "Welcome!",
-              description: `You've been added to ${memberData.workspaces?.name || 'your workspace'}.`,
-            });
-            return;
+          } catch (error: any) {
+            console.error("SignIn - Error checking workspace membership:", error);
+            throw error;
           }
-
-          // Regular signup flow
-          const needsOnboarding = await checkUserProfile(session);
-          console.log("SignIn - Needs onboarding:", needsOnboarding);
-
-          console.log("SignIn - Redirecting to dashboard");
-          navigate("/dashboard", { 
-            replace: true,
-            state: { 
-              showOnboarding: needsOnboarding,
-              isIncompleteProfile: needsOnboarding && !isEmailConfirmation
-            }
-          });
         } else {
           console.log("SignIn - No active session found");
           // Store invite token if present
@@ -134,11 +144,16 @@ export function useAuthRedirect() {
             .from('workspace_members')
             .select('workspace_id, role, workspaces(id, name)')
             .eq('user_id', session.user.id)
-            .maybeSingle();
+            .single();
 
           if (memberError) {
-            console.error("SignIn - Error fetching workspace membership:", memberError);
-            throw new Error("Failed to check workspace membership");
+            if (memberError.code === 'PGRST116') {
+              // No membership found - continue with regular signup flow
+              console.log("SignIn - No workspace membership found");
+            } else {
+              console.error("SignIn - Error fetching workspace membership:", memberError);
+              throw new Error("Failed to check workspace membership");
+            }
           }
 
           if (memberData?.workspace_id) {
