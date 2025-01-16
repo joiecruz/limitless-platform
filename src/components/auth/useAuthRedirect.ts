@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEmailConfirmation } from "@/hooks/useEmailConfirmation";
 import { checkUserProfile } from "@/hooks/useProfileCheck";
+import { WorkspaceMemberWithWorkspace } from "@/components/workspace/types";
 
 export function useAuthRedirect() {
   const navigate = useNavigate();
