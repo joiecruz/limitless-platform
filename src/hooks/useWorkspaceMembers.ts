@@ -12,7 +12,7 @@ export function useWorkspaceMembers(workspaceId: string) {
           user_id,
           role,
           created_at,
-          profiles:user_id (
+          profiles!inner (
             first_name,
             last_name,
             email
@@ -29,7 +29,11 @@ export function useWorkspaceMembers(workspaceId: string) {
         user_id: member.user_id,
         role: member.role,
         created_at: member.created_at,
-        profiles: member.profiles
+        profiles: {
+          first_name: member.profiles.first_name,
+          last_name: member.profiles.last_name,
+          email: member.profiles.email
+        }
       }));
     }
   });
