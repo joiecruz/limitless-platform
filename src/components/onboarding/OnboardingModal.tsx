@@ -24,7 +24,8 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   const location = useLocation();
   const isInvitedUser = location.state?.isInvited;
   const showOnboarding = location.state?.showOnboarding ?? true;
-  const TOTAL_STEPS = isIncompleteProfile ? 3 : (isInvitedUser ? 3 : 4);
+  // Only show workspace creation step if user is not invited and not completing an incomplete profile
+  const TOTAL_STEPS = isIncompleteProfile || isInvitedUser ? 3 : 4;
 
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
