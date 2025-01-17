@@ -5,11 +5,15 @@ import { AuthLinks } from "@/components/auth/AuthLinks";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { LoadingPage } from "@/components/common/LoadingPage";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignIn() {
   useAuthRedirect();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Query to check if user is authenticated
   const { data: session } = useQuery({
@@ -20,34 +24,105 @@ export default function SignIn() {
     }
   });
 
-  // Immediate redirect if session exists
   useEffect(() => {
-    const checkAndRedirect = async () => {
-      if (session) {
-        const { data: memberData } = await supabase
-          .from('workspace_members')
-          .select(`
-            workspace_id,
-            workspaces:workspace_id (
-              id,
-              name
-            )
-          `)
-          .eq('user_id', session.user.id)
-          .single();
+    const handleAuthChange = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        if (currentSession?.user) {
+          setIsLoading(true);
+          console.log("User authenticated, checking workspace membership...");
+          
+          const { data: memberData, error: memberError } = await supabase
+            .from('workspace_members')
+            .select(`
+              workspace_id,
+              workspaces:workspace_id (
+                id,
+                name
+              )
+            `)
+            .eq('user_id', currentSession.user.id)
+            .single();
 
-        if (memberData) {
-          const workspace = memberData.workspaces as unknown as { id: string; name: string };
-          localStorage.setItem('selectedWorkspace', workspace.id);
-          navigate('/dashboard', { replace: true });
-        } else {
-          navigate('/onboarding', { replace: true });
+          if (memberError) {
+            if (memberError.code === 'PGRST116') {
+              console.log("No workspace found, redirecting to onboarding...");
+              navigate('/onboarding', { replace: true });
+              return;
+            }
+            throw memberError;
+          }
+
+          if (memberData) {
+            console.log("Workspace found, redirecting to dashboard...");
+            const workspace = memberData.workspaces as unknown as { id: string; name: string };
+            localStorage.setItem('selectedWorkspace', workspace.id);
+            navigate('/dashboard', { replace: true });
+          }
         }
+      } catch (error) {
+        console.error("Error in auth change handler:", error);
+        toast({
+          title: "Error",
+          description: "There was a problem signing you in. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    checkAndRedirect();
-  }, [session, navigate]);
+    handleAuthChange();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session);
+      
+      if (event === 'SIGNED_IN' && session) {
+        setIsLoading(true);
+        try {
+          const { data: memberData, error: memberError } = await supabase
+            .from('workspace_members')
+            .select(`
+              workspace_id,
+              workspaces:workspace_id (
+                id,
+                name
+              )
+            `)
+            .eq('user_id', session.user.id)
+            .single();
+
+          if (memberError) {
+            if (memberError.code === 'PGRST116') {
+              navigate('/onboarding', { replace: true });
+              return;
+            }
+            throw memberError;
+          }
+
+          if (memberData) {
+            const workspace = memberData.workspaces as unknown as { id: string; name: string };
+            localStorage.setItem('selectedWorkspace', workspace.id);
+            navigate('/dashboard', { replace: true });
+          }
+        } catch (error) {
+          console.error("Error handling sign in:", error);
+          toast({
+            title: "Error",
+            description: "There was a problem signing you in. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   const handleLogoClick = () => {
     if (session) {
@@ -56,6 +131,10 @@ export default function SignIn() {
       navigate('/');
     }
   };
+
+  if (isLoading) {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
