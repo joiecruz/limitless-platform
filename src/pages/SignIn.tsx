@@ -42,24 +42,29 @@ export default function SignIn() {
                 name
               )
             `)
-            .eq('user_id', currentSession.user.id)
-            .single();
+            .eq('user_id', currentSession.user.id);
 
           if (memberError) {
-            if (memberError.code === 'PGRST116') {
-              console.log("No workspace found, redirecting to onboarding...");
-              navigate('/onboarding', { replace: true });
-              return;
-            }
-            throw memberError;
+            console.error("Error checking workspace membership:", memberError);
+            toast({
+              title: "Error",
+              description: "There was a problem signing you in. Please try again.",
+              variant: "destructive",
+            });
+            return;
           }
 
-          if (memberData) {
-            console.log("Workspace found, redirecting to dashboard...");
-            const workspace = memberData.workspaces as unknown as { id: string; name: string };
-            localStorage.setItem('selectedWorkspace', workspace.id);
-            navigate('/dashboard', { replace: true });
+          if (!memberData || memberData.length === 0) {
+            console.log("No workspace found, redirecting to onboarding...");
+            navigate('/onboarding', { replace: true });
+            return;
           }
+
+          // Use the first workspace as default
+          const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
+          console.log("Workspace found, redirecting to dashboard...", workspace);
+          localStorage.setItem('selectedWorkspace', workspace.id);
+          navigate('/dashboard', { replace: true });
         }
       } catch (error) {
         console.error("Error in auth change handler:", error);
@@ -90,22 +95,21 @@ export default function SignIn() {
                 name
               )
             `)
-            .eq('user_id', session.user.id)
-            .single();
+            .eq('user_id', session.user.id);
 
           if (memberError) {
-            if (memberError.code === 'PGRST116') {
-              navigate('/onboarding', { replace: true });
-              return;
-            }
+            console.error("Error handling sign in:", memberError);
             throw memberError;
           }
 
-          if (memberData) {
-            const workspace = memberData.workspaces as unknown as { id: string; name: string };
-            localStorage.setItem('selectedWorkspace', workspace.id);
-            navigate('/dashboard', { replace: true });
+          if (!memberData || memberData.length === 0) {
+            navigate('/onboarding', { replace: true });
+            return;
           }
+
+          const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
+          localStorage.setItem('selectedWorkspace', workspace.id);
+          navigate('/dashboard', { replace: true });
         } catch (error) {
           console.error("Error handling sign in:", error);
           toast({
@@ -124,6 +128,10 @@ export default function SignIn() {
     };
   }, [navigate, toast]);
 
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
   const handleLogoClick = () => {
     if (session) {
       navigate('/dashboard');
@@ -131,10 +139,6 @@ export default function SignIn() {
       navigate('/');
     }
   };
-
-  if (isLoading) {
-    return <LoadingPage />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
