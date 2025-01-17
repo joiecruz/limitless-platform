@@ -30,7 +30,7 @@ export function useWorkspaceMembers(workspaceId: string) {
       console.log('Raw workspace members data:', data);
 
       // Transform the data to match our WorkspaceMember type
-      const transformedData = data.map((member) => ({
+      const transformedData = data.map((member: any) => ({
         user_id: member.user_id,
         role: member.role,
         created_at: member.created_at,
