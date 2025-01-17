@@ -1,149 +1,125 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useEmailConfirmation } from "@/hooks/useEmailConfirmation";
 import { checkUserProfile } from "@/hooks/useProfileCheck";
 
 export function useAuthRedirect() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
-  const { isEmailConfirmation } = useEmailConfirmation();
 
   useEffect(() => {
-    const checkSession = async () => {
+    const handleAuthChange = async () => {
       try {
-        console.log("SignIn - Starting session check");
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        console.log("SignIn - Session data:", { session, error });
-        
-        if (error) {
-          console.error("SignIn - Session error:", error);
-          localStorage.clear();
-          await supabase.auth.signOut();
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session) {
+          // If no session and not on auth pages, redirect to signin
+          if (!location.pathname.includes('/signin') && 
+              !location.pathname.includes('/signup') && 
+              !location.pathname.includes('/reset-password') &&
+              !location.pathname.includes('/verify-email')) {
+            navigate('/signin');
+          }
           return;
         }
 
-        if (session) {
-          console.log("SignIn - Session found:", {
-            user: session.user,
-            emailConfirmed: session.user.email_confirmed_at,
-            email: session.user.email
-          });
+        // Check if user needs to complete onboarding
+        const needsOnboarding = await checkUserProfile(session);
+        
+        if (needsOnboarding && 
+            !location.pathname.includes('/onboarding') && 
+            !location.pathname.includes('/invite')) {
+          navigate('/onboarding');
+          return;
+        }
 
-          if (!session.user.email_confirmed_at) {
-            console.log("SignIn - Email not confirmed, redirecting to verify-email");
-            localStorage.setItem('verificationEmail', session.user.email || '');
-            navigate("/verify-email", { replace: true });
+        // If user is authenticated and on auth pages, redirect to dashboard
+        if (location.pathname.includes('/signin') || 
+            location.pathname.includes('/signup') || 
+            location.pathname.includes('/reset-password')) {
+          
+          // Check workspace membership
+          const { data: memberData, error: memberError } = await supabase
+            .from('workspace_members')
+            .select(`
+              workspace_id,
+              workspaces:workspace_id (
+                id,
+                name
+              )
+            `)
+            .eq('user_id', session.user.id)
+            .single();
+
+          if (memberError) {
+            if (memberError.code === 'PGRST116') {
+              // No workspace membership found
+              toast({
+                title: "Welcome!",
+                description: "Let's create your first workspace",
+              });
+              navigate('/onboarding');
+              return;
+            }
+            console.error('Error checking workspace membership:', memberError);
             toast({
-              description: "Please confirm your email to log in. Check your inbox, and if you don't see it, look in your spam or junk folder for the confirmation link.",
+              title: "Error",
+              description: "Failed to check membership. Please try again.",
+              variant: "destructive",
             });
             return;
           }
 
-          // Check if user was invited (has workspace_members entry)
-          const { data: memberData } = await supabase
+          if (memberData?.workspaces) {
+            toast({
+              title: "Welcome back!",
+              description: `You've been redirected to ${memberData.workspaces?.name || 'your workspace'}`,
+            });
+            navigate('/dashboard');
+          } else {
+            navigate('/onboarding');
+          }
+          return;
+        }
+
+        // Handle email verification success
+        const isEmailVerificationSuccess = new URLSearchParams(location.search).get('emailVerified') === 'true';
+        if (isEmailVerificationSuccess) {
+          const { data: memberData, error: memberError } = await supabase
             .from('workspace_members')
-            .select('workspace_id')
+            .select(`
+              workspace_id,
+              workspaces:workspace_id (
+                id,
+                name
+              )
+            `)
             .eq('user_id', session.user.id)
-            .maybeSingle();
+            .single();
 
-          if (memberData?.workspace_id) {
-            // User was invited, redirect to dashboard with workspace
-            console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
-            localStorage.setItem('selectedWorkspace', memberData.workspace_id);
-            navigate(`/dashboard?workspace=${memberData.workspace_id}`, { replace: true });
-            return;
-          }
-
-          // Regular signup flow
-          const needsOnboarding = await checkUserProfile(session);
-          console.log("SignIn - Needs onboarding:", needsOnboarding);
-
-          console.log("SignIn - Redirecting to dashboard");
-          navigate("/dashboard", { 
-            replace: true,
-            state: { 
-              showOnboarding: needsOnboarding,
-              isIncompleteProfile: needsOnboarding && !isEmailConfirmation
-            }
-          });
-        } else {
-          console.log("SignIn - No active session found");
-          // Store invite token if present
-          const params = new URLSearchParams(window.location.search);
-          const inviteToken = params.get('token');
-          if (inviteToken) {
-            localStorage.setItem('inviteToken', inviteToken);
+          if (!memberError && memberData?.workspaces) {
+            toast({
+              title: "Email verified!",
+              description: `Welcome to ${memberData.workspaces?.name || 'your workspace'}`,
+            });
+            navigate('/dashboard');
+          } else {
+            navigate('/onboarding');
           }
         }
+
       } catch (error) {
-        console.error("SignIn - Error checking session:", error);
-        localStorage.clear();
-        await supabase.auth.signOut();
+        console.error('Auth redirect error:', error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
       }
     };
 
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("SignIn - Auth state changed:", { event, session });
-
-      if (event === 'SIGNED_IN' && session) {
-        console.log("SignIn - Sign in event detected:", {
-          user: session.user,
-          emailConfirmed: session.user.email_confirmed_at,
-          email: session.user.email
-        });
-
-        if (!session.user.email_confirmed_at) {
-          console.log("SignIn - Email not confirmed, redirecting to verify-email");
-          localStorage.setItem('verificationEmail', session.user.email || '');
-          navigate("/verify-email", { replace: true });
-          toast({
-            description: "Please confirm your email to log in. Check your inbox, and if you don't see it, look in your spam or junk folder for the confirmation link.",
-          });
-          return;
-        }
-
-        // Check if user was invited
-        const { data: memberData } = await supabase
-          .from('workspace_members')
-          .select('workspace_id')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-
-        if (memberData?.workspace_id) {
-          // User was invited, redirect to dashboard with workspace
-          console.log("SignIn - Invited user, redirecting to workspace:", memberData.workspace_id);
-          localStorage.setItem('selectedWorkspace', memberData.workspace_id);
-          navigate(`/dashboard?workspace=${memberData.workspace_id}`, { replace: true });
-          return;
-        }
-
-        // Regular signup flow
-        const needsOnboarding = await checkUserProfile(session);
-        console.log("SignIn - Needs onboarding after sign in:", needsOnboarding);
-
-        console.log("SignIn - Redirecting to dashboard");
-        navigate("/dashboard", { 
-          replace: true,
-          state: { 
-            showOnboarding: needsOnboarding,
-            isIncompleteProfile: needsOnboarding && event === 'SIGNED_IN'
-          }
-        });
-      }
-
-      if (!session || event === 'SIGNED_OUT') {
-        console.log("SignIn - Session lost or signed out");
-        localStorage.clear();
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast, isEmailConfirmation]);
+    handleAuthChange();
+  }, [navigate, location, toast]);
 }

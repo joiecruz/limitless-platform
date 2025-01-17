@@ -23,6 +23,7 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   const isInvitedUser = location.state?.isInvited;
+  const showOnboarding = location.state?.showOnboarding ?? true;
   const TOTAL_STEPS = isIncompleteProfile ? 3 : (isInvitedUser ? 3 : 4);
 
   const [formData, setFormData] = useState<OnboardingData>({
@@ -76,6 +77,11 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
         return null;
     }
   };
+
+  // Don't show modal if showOnboarding is false
+  if (!showOnboarding) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={(value) => {

@@ -76,7 +76,7 @@ export function ProfileMenu({ children }: ProfileMenuProps) {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate('/account-settings')}>
+          <DropdownMenuItem onClick={() => navigate('/dashboard/account-settings')}>
             Profile Settings
           </DropdownMenuItem>
           {profile?.is_superadmin && (
