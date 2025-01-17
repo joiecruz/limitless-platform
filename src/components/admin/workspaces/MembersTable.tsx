@@ -69,6 +69,7 @@ export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
                 <DeleteMemberButton 
                   member={{
                     id: member.user_id,
+                    workspace_id: member.workspace_id,
                     email: member.profiles.email,
                     role: member.role,
                     status: 'Active',
