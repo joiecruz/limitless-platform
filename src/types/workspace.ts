@@ -17,3 +17,9 @@ export interface WorkspaceMember {
   created_at: string;
   profiles: ProfileData;
 }
+
+export interface Workspace {
+  id: string;
+  name: string;
+  slug: string;
+}
