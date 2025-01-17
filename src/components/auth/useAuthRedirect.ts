@@ -4,6 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { checkUserProfile } from "@/hooks/useProfileCheck";
 
+interface WorkspaceMemberData {
+  workspace_id: string;
+  workspaces: {
+    id: string;
+    name: string;
+  };
+}
+
 export function useAuthRedirect() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,7 +83,7 @@ export function useAuthRedirect() {
           if (memberData?.workspaces) {
             toast({
               title: "Welcome back!",
-              description: `You've been redirected to ${memberData.workspaces.name || 'your workspace'}`,
+              description: `You've been redirected to ${(memberData as WorkspaceMemberData).workspaces.name || 'your workspace'}`,
             });
             navigate('/dashboard');
           } else {
@@ -102,7 +110,7 @@ export function useAuthRedirect() {
           if (!memberError && memberData?.workspaces) {
             toast({
               title: "Email verified!",
-              description: `Welcome to ${memberData.workspaces.name || 'your workspace'}`,
+              description: `Welcome to ${(memberData as WorkspaceMemberData).workspaces.name || 'your workspace'}`,
             });
             navigate('/dashboard');
           } else {
