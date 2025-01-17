@@ -8,9 +8,11 @@ interface Step4Props {
   onBack: () => void;
   data: OnboardingData;
   loading?: boolean;
+  isInvitedUser?: boolean;
+  isIncompleteProfile?: boolean;
 }
 
-export function Step4({ onNext, onBack, data, loading }: Step4Props) {
+export function Step4({ onNext, onBack, data, loading, isInvitedUser, isIncompleteProfile }: Step4Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -22,8 +24,14 @@ export function Step4({ onNext, onBack, data, loading }: Step4Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-2xl font-semibold leading-tight">Name your workspace</h2>
-        <p className="text-muted-foreground">This will be your team's home for innovation</p>
+        <h2 className="text-2xl font-semibold leading-tight">
+          {isInvitedUser ? "Workspace Information" : "Name your workspace"}
+        </h2>
+        <p className="text-muted-foreground">
+          {isInvitedUser 
+            ? "You've been invited to join an existing workspace" 
+            : "This will be your team's home for innovation"}
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -33,7 +41,9 @@ export function Step4({ onNext, onBack, data, loading }: Step4Props) {
           name="workspaceName"
           placeholder="e.g. Acme Innovation Hub"
           defaultValue={data.workspaceName}
-          required
+          required={!isInvitedUser}
+          disabled={isInvitedUser}
+          className={isInvitedUser ? "bg-gray-100" : ""}
         />
       </div>
 
