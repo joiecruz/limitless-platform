@@ -75,7 +75,7 @@ export function useAuthRedirect() {
           if (memberData?.workspaces) {
             toast({
               title: "Welcome back!",
-              description: `You've been redirected to ${memberData.workspaces.name || 'your workspace'}`,
+              description: `You've been redirected to ${memberData.workspaces?.name || 'your workspace'}`,
             });
             navigate('/dashboard');
           } else {
@@ -102,7 +102,7 @@ export function useAuthRedirect() {
           if (!memberError && memberData?.workspaces) {
             toast({
               title: "Email verified!",
-              description: `Welcome to ${memberData.workspaces.name || 'your workspace'}`,
+              description: `Welcome to ${memberData.workspaces?.name || 'your workspace'}`,
             });
             navigate('/dashboard');
           } else {
