@@ -21,6 +21,96 @@ interface InviteRequest {
   inviterId: string;
 }
 
+const generateEmailTemplate = (
+  workspaceName: string,
+  inviterName: string,
+  role: string,
+  inviteUrl: string
+) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Workspace Invitation</title>
+  <style>
+    .email-wrapper {
+      background-color: #f6f9fc;
+      padding: 40px 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      color: #333;
+    }
+    .email-content {
+      background-color: white;
+      border-radius: 8px;
+      padding: 32px;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      color: #111827;
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .button {
+      display: inline-block;
+      background-color: #2563eb;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      margin: 24px 0;
+    }
+    .footer {
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+      margin-top: 32px;
+    }
+    .highlight {
+      font-weight: 600;
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="email-content">
+      <div class="header">
+        <h1>Join ${workspaceName} on our platform</h1>
+      </div>
+      
+      <p>Hello,</p>
+      
+      <p><span class="highlight">${inviterName}</span> has invited you to join <span class="highlight">${workspaceName}</span> as a <span class="highlight">${role}</span>.</p>
+      
+      <p>Click the button below to accept the invitation and set up your account:</p>
+      
+      <div style="text-align: center;">
+        <a href="${inviteUrl}" class="button">Accept Invitation</a>
+      </div>
+      
+      <p>If you're having trouble clicking the button, copy and paste this URL into your web browser:</p>
+      <p style="word-break: break-all; font-size: 14px; color: #6b7280;">${inviteUrl}</p>
+      
+      <div class="footer">
+        <p>This invitation will expire in 7 days.</p>
+        <p>If you didn't expect this invitation, you can safely ignore this email.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
 const handler = async (req: Request): Promise<Response> => {
   console.log("Starting invite handler");
 
@@ -147,6 +237,13 @@ const handler = async (req: Request): Promise<Response> => {
           inviteUrl 
         });
 
+        const emailHtml = generateEmailTemplate(
+          workspaceName,
+          inviterName,
+          role,
+          inviteUrl
+        );
+
         const response = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
@@ -157,17 +254,7 @@ const handler = async (req: Request): Promise<Response> => {
             from: FROM_EMAIL,
             to: [invitation.email],
             subject: `Join ${workspaceName} on our platform`,
-            html: `
-              <!DOCTYPE html>
-              <html>
-                <body>
-                  <h2>You've been invited!</h2>
-                  <p>${inviterName} has invited you to join ${workspaceName} as a ${role}.</p>
-                  <p>Click the link below to accept the invitation:</p>
-                  <a href="${inviteUrl}">Accept Invitation</a>
-                </body>
-              </html>
-            `,
+            html: emailHtml,
           }),
         });
 
