@@ -8,9 +8,10 @@ interface MemberRowProps {
   member: TableMember;
   isCurrentUser: boolean;
   onDelete: (member: TableMember) => void;
+  canDelete: boolean;
 }
 
-export function MemberRow({ member, isCurrentUser, onDelete }: MemberRowProps) {
+export function MemberRow({ member, isCurrentUser, onDelete, canDelete }: MemberRowProps) {
   return (
     <TableRow>
       <TableCell>
@@ -19,7 +20,7 @@ export function MemberRow({ member, isCurrentUser, onDelete }: MemberRowProps) {
           : 'Pending Member'}
       </TableCell>
       <TableCell>
-        {member.email || 'Email not available'}
+        {member.profiles?.email || 'Email not available'}
       </TableCell>
       <TableCell className="capitalize">{member.role}</TableCell>
       <TableCell>
@@ -31,11 +32,13 @@ export function MemberRow({ member, isCurrentUser, onDelete }: MemberRowProps) {
         {formatDistanceToNow(new Date(member.last_active), { addSuffix: true })}
       </TableCell>
       <TableCell>
-        <DeleteMemberButton
-          member={member}
-          isCurrentUser={isCurrentUser}
-          onDelete={() => onDelete(member)}
-        />
+        {canDelete && !isCurrentUser && (
+          <DeleteMemberButton
+            member={member}
+            isCurrentUser={isCurrentUser}
+            onDelete={() => onDelete(member)}
+          />
+        )}
       </TableCell>
     </TableRow>
   );

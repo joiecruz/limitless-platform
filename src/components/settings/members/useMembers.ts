@@ -21,9 +21,11 @@ export function useMembers(workspaceId?: string) {
           user_id,
           role,
           last_active,
+          workspace_id,
           profiles!inner (
             first_name,
             last_name,
+            email,
             id
           )
         `)
@@ -35,6 +37,8 @@ export function useMembers(workspaceId?: string) {
         throw activeMembersError;
       }
 
+      console.log('Active members data:', activeMembers);
+
       // Fetch pending invitations
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
         .from('workspace_invitations')
@@ -43,7 +47,8 @@ export function useMembers(workspaceId?: string) {
           email,
           role,
           status,
-          created_at
+          created_at,
+          workspace_id
         `)
         .eq('workspace_id', workspaceId)
         .eq('status', 'pending');
@@ -57,19 +62,22 @@ export function useMembers(workspaceId?: string) {
       const members: Member[] = activeMembers.map(member => ({
         id: member.user_id,
         user_id: member.user_id,
-        email: null,
+        workspace_id: member.workspace_id,
+        email: member.profiles.email,
         role: member.role,
         last_active: member.last_active,
         status: 'Active' as const,
         profiles: {
           first_name: member.profiles.first_name || null,
           last_name: member.profiles.last_name || null,
+          email: member.profiles.email
         }
       }));
 
       // Transform pending invites data
       const pendingMembers: Member[] = pendingInvites.map(invite => ({
         id: invite.id,
+        workspace_id: invite.workspace_id,
         email: invite.email,
         role: invite.role,
         last_active: invite.created_at,
@@ -77,10 +85,10 @@ export function useMembers(workspaceId?: string) {
         profiles: {
           first_name: null,
           last_name: null,
+          email: invite.email
         }
       }));
 
-      // Combine and return all members
       return [...members, ...pendingMembers];
     },
     enabled: !!workspaceId,
