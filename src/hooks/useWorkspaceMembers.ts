@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { SupabaseWorkspaceMember, WorkspaceMember } from "@/types/workspace";
+import { WorkspaceMember } from "@/types/workspace";
 
 export function useWorkspaceMembers(workspaceId: string) {
   return useQuery({
     queryKey: ["workspace-members", workspaceId],
     queryFn: async () => {
+      console.log('Fetching members for workspace:', workspaceId);
+      
       const { data, error } = await supabase
         .from("workspace_members")
         .select(`
@@ -21,11 +23,14 @@ export function useWorkspaceMembers(workspaceId: string) {
         .eq("workspace_id", workspaceId);
 
       if (error) {
+        console.error('Error fetching workspace members:', error);
         throw error;
       }
 
+      console.log('Raw workspace members data:', data);
+
       // Transform the data to match our WorkspaceMember type
-      return (data as SupabaseWorkspaceMember[]).map((member) => ({
+      const transformedData = data.map((member) => ({
         user_id: member.user_id,
         role: member.role,
         created_at: member.created_at,
@@ -35,6 +40,9 @@ export function useWorkspaceMembers(workspaceId: string) {
           email: member.profiles.email
         }
       }));
+
+      console.log('Transformed workspace members data:', transformedData);
+      return transformedData as WorkspaceMember[];
     },
     enabled: !!workspaceId,
   });
