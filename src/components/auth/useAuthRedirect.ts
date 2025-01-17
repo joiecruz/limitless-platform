@@ -80,10 +80,12 @@ export function useAuthRedirect() {
             return;
           }
 
-          if (memberData?.workspaces) {
+          if (memberData) {
+            const workspace = memberData.workspaces as unknown as { id: string; name: string };
+            localStorage.setItem('selectedWorkspace', workspace.id);
             toast({
               title: "Welcome back!",
-              description: `You've been redirected to ${(memberData as WorkspaceMemberData).workspaces.name || 'your workspace'}`,
+              description: `You've been redirected to ${workspace.name || 'your workspace'}`,
             });
             navigate('/dashboard');
           } else {
@@ -107,10 +109,12 @@ export function useAuthRedirect() {
             .eq('user_id', session.user.id)
             .single();
 
-          if (!memberError && memberData?.workspaces) {
+          if (!memberError && memberData) {
+            const workspace = memberData.workspaces as unknown as { id: string; name: string };
+            localStorage.setItem('selectedWorkspace', workspace.id);
             toast({
               title: "Email verified!",
-              description: `Welcome to ${(memberData as WorkspaceMemberData).workspaces.name || 'your workspace'}`,
+              description: `Welcome to ${workspace.name || 'your workspace'}`,
             });
             navigate('/dashboard');
           } else {
