@@ -87,7 +87,35 @@ export function useAuthRedirect() {
               title: "Welcome back!",
               description: `You've been redirected to ${workspace.name || 'your workspace'}`,
             });
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
+            return;
+          }
+
+          navigate('/onboarding');
+          return;
+        }
+
+        // Force redirect to dashboard if authenticated and not in special routes
+        if (session && 
+            !location.pathname.includes('/dashboard') && 
+            !location.pathname.includes('/onboarding') && 
+            !location.pathname.includes('/invite')) {
+          const { data: memberData } = await supabase
+            .from('workspace_members')
+            .select(`
+              workspace_id,
+              workspaces:workspace_id (
+                id,
+                name
+              )
+            `)
+            .eq('user_id', session.user.id)
+            .single();
+
+          if (memberData) {
+            const workspace = memberData.workspaces as unknown as { id: string; name: string };
+            localStorage.setItem('selectedWorkspace', workspace.id);
+            navigate('/dashboard', { replace: true });
           } else {
             navigate('/onboarding');
           }
@@ -116,7 +144,7 @@ export function useAuthRedirect() {
               title: "Email verified!",
               description: `Welcome to ${workspace.name || 'your workspace'}`,
             });
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
           } else {
             navigate('/onboarding');
           }
