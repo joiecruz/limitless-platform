@@ -10,9 +10,18 @@ interface Step4Props {
   loading?: boolean;
   isInvitedUser?: boolean;
   isIncompleteProfile?: boolean;
+  workspaceName?: string; // Add this prop to receive the workspace name
 }
 
-export function Step4({ onNext, onBack, data, loading, isInvitedUser, isIncompleteProfile }: Step4Props) {
+export function Step4({ 
+  onNext, 
+  onBack, 
+  data, 
+  loading, 
+  isInvitedUser, 
+  isIncompleteProfile,
+  workspaceName // Destructure the new prop
+}: Step4Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -40,7 +49,7 @@ export function Step4({ onNext, onBack, data, loading, isInvitedUser, isIncomple
           id="workspaceName"
           name="workspaceName"
           placeholder="e.g. Acme Innovation Hub"
-          defaultValue={data.workspaceName}
+          defaultValue={isInvitedUser ? workspaceName : data.workspaceName}
           required={!isInvitedUser}
           disabled={isInvitedUser}
           className={isInvitedUser ? "bg-gray-100" : ""}

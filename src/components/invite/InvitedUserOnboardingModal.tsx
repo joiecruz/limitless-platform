@@ -7,11 +7,14 @@ import { useState } from "react";
 import { Step1 } from "../onboarding/steps/Step1";
 import { Step2 } from "../onboarding/steps/Step2";
 import { Step3 } from "../onboarding/steps/Step3";
+import { Step4 } from "../onboarding/steps/Step4";
 import { OnboardingProgress } from "../onboarding/components/OnboardingProgress";
 import { OnboardingData } from "../onboarding/types";
 import { useOnboardingSubmit } from "../onboarding/hooks/useOnboardingSubmit";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InvitedUserOnboardingModalProps {
   open?: boolean;
@@ -25,7 +28,8 @@ export function InvitedUserOnboardingModal({
   workspaceId 
 }: InvitedUserOnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const TOTAL_STEPS = 3;
+  const [workspaceName, setWorkspaceName] = useState<string>("");
+  const TOTAL_STEPS = 4;
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -39,13 +43,35 @@ export function InvitedUserOnboardingModal({
     workspaceName: undefined,
   });
 
+  useEffect(() => {
+    const fetchWorkspaceName = async () => {
+      if (workspaceId) {
+        const { data: workspace, error } = await supabase
+          .from('workspaces')
+          .select('name')
+          .eq('id', workspaceId)
+          .single();
+
+        if (error) {
+          console.error('Error fetching workspace:', error);
+          return;
+        }
+
+        if (workspace) {
+          setWorkspaceName(workspace.name);
+        }
+      }
+    };
+
+    fetchWorkspaceName();
+  }, [workspaceId]);
+
   const { handleSubmit, loading } = useOnboardingSubmit({ 
     onOpenChange,
     workspaceId,
     onSuccess: () => {
       if (workspaceId) {
         console.log("Onboarding completed, navigating to workspace:", workspaceId);
-        // Add workspace to localStorage to ensure it's selected on dashboard
         localStorage.setItem('selectedWorkspace', workspaceId);
         navigate(`/dashboard?workspace=${workspaceId}`);
         toast({
@@ -81,6 +107,7 @@ export function InvitedUserOnboardingModal({
       onBack: handleBack,
       loading,
       data: formData,
+      isInvitedUser: true,
     };
 
     switch (currentStep) {
@@ -90,6 +117,8 @@ export function InvitedUserOnboardingModal({
         return <Step2 {...commonProps} />;
       case 3:
         return <Step3 {...commonProps} />;
+      case 4:
+        return <Step4 {...commonProps} workspaceName={workspaceName} />;
       default:
         return null;
     }
