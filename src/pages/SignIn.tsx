@@ -5,6 +5,7 @@ import { AuthLinks } from "@/components/auth/AuthLinks";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 export default function SignIn() {
   useAuthRedirect();
@@ -18,6 +19,35 @@ export default function SignIn() {
       return session;
     }
   });
+
+  // Immediate redirect if session exists
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      if (session) {
+        const { data: memberData } = await supabase
+          .from('workspace_members')
+          .select(`
+            workspace_id,
+            workspaces:workspace_id (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (memberData) {
+          const workspace = memberData.workspaces as unknown as { id: string; name: string };
+          localStorage.setItem('selectedWorkspace', workspace.id);
+          navigate('/dashboard', { replace: true });
+        } else {
+          navigate('/onboarding', { replace: true });
+        }
+      }
+    };
+
+    checkAndRedirect();
+  }, [session, navigate]);
 
   const handleLogoClick = () => {
     if (session) {
