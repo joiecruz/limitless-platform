@@ -21,6 +21,7 @@ export function useAuthRedirect() {
     const handleAuthChange = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        console.log("useAuthRedirect - Current session:", session);
 
         if (!session) {
           // If no session and not on auth pages, redirect to signin
@@ -35,6 +36,7 @@ export function useAuthRedirect() {
 
         // Check if user needs to complete onboarding
         const needsOnboarding = await checkUserProfile(session);
+        console.log("useAuthRedirect - Needs onboarding:", needsOnboarding);
         
         if (needsOnboarding && 
             !location.pathname.includes('/onboarding') && 
@@ -58,19 +60,9 @@ export function useAuthRedirect() {
                 name
               )
             `)
-            .eq('user_id', session.user.id)
-            .single();
+            .eq('user_id', session.user.id);
 
           if (memberError) {
-            if (memberError.code === 'PGRST116') {
-              // No workspace membership found
-              toast({
-                title: "Welcome!",
-                description: "Let's create your first workspace",
-              });
-              navigate('/onboarding');
-              return;
-            }
             console.error('Error checking workspace membership:', memberError);
             toast({
               title: "Error",
@@ -80,18 +72,25 @@ export function useAuthRedirect() {
             return;
           }
 
-          if (memberData) {
-            const workspace = memberData.workspaces as unknown as { id: string; name: string };
-            localStorage.setItem('selectedWorkspace', workspace.id);
+          if (!memberData || memberData.length === 0) {
+            console.log("useAuthRedirect - No workspace found, redirecting to onboarding");
             toast({
-              title: "Welcome back!",
-              description: `You've been redirected to ${workspace.name || 'your workspace'}`,
+              title: "Welcome!",
+              description: "Let's create your first workspace",
             });
-            navigate('/dashboard', { replace: true });
+            navigate('/onboarding', { replace: true });
             return;
           }
 
-          navigate('/onboarding');
+          // Use the first workspace as default
+          const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
+          localStorage.setItem('selectedWorkspace', workspace.id);
+          console.log("useAuthRedirect - Setting workspace and redirecting to dashboard:", workspace);
+          toast({
+            title: "Welcome back!",
+            description: `You've been redirected to ${workspace.name || 'your workspace'}`,
+          });
+          navigate('/dashboard', { replace: true });
           return;
         }
 
@@ -109,15 +108,14 @@ export function useAuthRedirect() {
                 name
               )
             `)
-            .eq('user_id', session.user.id)
-            .single();
+            .eq('user_id', session.user.id);
 
-          if (memberData) {
-            const workspace = memberData.workspaces as unknown as { id: string; name: string };
+          if (memberData && memberData.length > 0) {
+            const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
             localStorage.setItem('selectedWorkspace', workspace.id);
             navigate('/dashboard', { replace: true });
           } else {
-            navigate('/onboarding');
+            navigate('/onboarding', { replace: true });
           }
           return;
         }
@@ -134,11 +132,10 @@ export function useAuthRedirect() {
                 name
               )
             `)
-            .eq('user_id', session.user.id)
-            .single();
+            .eq('user_id', session.user.id);
 
-          if (!memberError && memberData) {
-            const workspace = memberData.workspaces as unknown as { id: string; name: string };
+          if (!memberError && memberData && memberData.length > 0) {
+            const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
             localStorage.setItem('selectedWorkspace', workspace.id);
             toast({
               title: "Email verified!",
@@ -146,7 +143,7 @@ export function useAuthRedirect() {
             });
             navigate('/dashboard', { replace: true });
           } else {
-            navigate('/onboarding');
+            navigate('/onboarding', { replace: true });
           }
         }
 
