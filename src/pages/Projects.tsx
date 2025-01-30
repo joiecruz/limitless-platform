@@ -1,67 +1,77 @@
 import { Button } from "@/components/ui/button";
-import { Construction, Sparkles, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { ProjectCard } from "@/components/projects/ProjectCard";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Project } from "@/types/project";
+import { useContext } from "react";
+import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 
 export default function Projects() {
-  const navigate = useNavigate();
+  const { currentWorkspace } = useContext(WorkspaceContext);
+
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ['projects', currentWorkspace?.id],
+    queryFn: async () => {
+      if (!currentWorkspace) return [];
+      
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('workspace_id', currentWorkspace.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Project[];
+    },
+    enabled: !!currentWorkspace,
+  });
+
+  if (!currentWorkspace) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <p className="text-muted-foreground">Please select a workspace to view projects</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="container max-w-4xl py-8 space-y-8 animate-fade-in">
-      <div className="text-center space-y-6">
-        <div className="flex justify-center">
-          <Construction className="h-16 w-16 text-primary" />
-        </div>
-        
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">
-            🚧 Oops – You Caught Us Early!
-          </h1>
-          
-          <p className="text-xl text-muted-foreground">
-            You're ahead of the curve! Our Project Dashboard Module is currently under construction, 
-            but as a valued Limitless Lab member, you'll be the first to experience it when it launches.
-          </p>
-        </div>
-
-        <div className="bg-muted/50 rounded-lg p-8 space-y-4">
-          <div className="flex items-center gap-2 text-lg font-semibold text-primary">
-            <Sparkles className="h-5 w-5" />
-            <h2>What to Expect:</h2>
-          </div>
-          
-          <ul className="space-y-2 text-left list-disc list-inside text-muted-foreground">
-            <li>A streamlined, intuitive, and AI-powered way to manage your innovation projects</li>
-            <li>Tried and tested innovation workflows to increase your chances of success</li>
-            <li>Collaborative tools designed to bring ideas to life faster</li>
-            <li>Insights and analytics to help you measure the impact for your projects</li>
-          </ul>
-          
-          <p className="text-sm italic">
-            We're building something exciting – and you'll get exclusive early access once it's ready!
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            👉 In the meantime, why not dive into our existing modules and keep your innovation journey going strong?
-          </p>
-
-          <div className="flex justify-center gap-4">
-            <Button onClick={() => navigate("/dashboard/courses")}>
-              Explore Courses
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/dashboard/tools")}>
-              Browse Tools
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <p className="text-sm text-muted-foreground pt-4">
-          Thanks for being part of our Limitless community – we can't wait to show you what's next!
-        </p>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+        <Button className="gap-2">
+          <Plus className="h-4 w-4" />
+          Create new project
+        </Button>
       </div>
+
+      {projects?.length === 0 && !isLoading ? (
+        <div className="relative space-y-6 rounded-lg border border-dashed p-10">
+          <div className="max-w-2xl space-y-4">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Create more impactful projects using design thinking and AI
+            </h2>
+            <p className="text-muted-foreground">
+              Design people-centered projects with the help of AI
+            </p>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create new project
+            </Button>
+          </div>
+          <img
+            src="/lovable-uploads/dad9b9e5-bacc-4cc3-a739-5e78e6753d55.png"
+            alt="Projects illustration"
+            className="absolute bottom-0 right-8 h-48 w-auto"
+          />
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {projects?.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
