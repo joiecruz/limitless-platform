@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -54,7 +55,6 @@ export default function Dashboard() {
                             !profile.goals || 
                             !profile.referral_source;
       
-      // Show onboarding if needed or if coming from email confirmation
       setShowOnboarding(needsOnboarding || location.state?.showOnboarding);
     }
   }, [profile, profileLoading, location.state]);
@@ -98,46 +98,44 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header Section */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 animate-fade-in max-w-[1400px] mx-auto px-4">
+      {/* Header Section - Reduced vertical spacing */}
+      <div className="flex items-center justify-between py-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight">
             Welcome{getDisplayName() ? `, ${getDisplayName()}` : ''}!
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground text-sm">
             Here's an overview of your innovation journey
           </p>
         </div>
       </div>
 
-      {/* Quick Links Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {/* Quick Links Grid - Optimized for smaller screens */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {quickLinks.map((link, index) => (
           <Card 
             key={index} 
             className="overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
             onClick={() => navigate(link.link)}
           >
-            <div className="aspect-[4/3] relative overflow-hidden">
+            <div className="aspect-[16/9] relative overflow-hidden">
               <img
                 src={link.image}
                 alt={link.title}
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
               />
             </div>
-            <div className="p-6 space-y-4">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-lg leading-tight">{link.title}</h3>
-                <p className="text-sm text-muted-foreground">
+            <div className="p-4 space-y-2">
+              <div className="space-y-1">
+                <h3 className="font-semibold text-base leading-tight">{link.title}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {link.description}
                 </p>
               </div>
-              <div
-                className="inline-flex items-center text-primary hover:gap-2 transition-all group/link"
-              >
+              <div className="inline-flex items-center text-primary text-sm hover:gap-1 transition-all group/link">
                 {link.action}
-                <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0" />
+                <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0" />
               </div>
             </div>
           </Card>
