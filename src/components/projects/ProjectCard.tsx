@@ -2,7 +2,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Project } from "@/types/project";
-import { Briefcase, Code, Database, FileText, Folder, LucideIcon } from "lucide-react";
+import { Briefcase, Code, Database, FileText, Folder, LucideIcon, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProjectCardProps {
   project: Project;
@@ -10,7 +18,7 @@ interface ProjectCardProps {
 
 const defaultIcon = {
   icon: Briefcase,
-  color: "rgba(255, 222, 226, 0.8)" // Soft Pink
+  color: "rgba(255, 165, 150, 0.8)" // Soft Pink
 };
 
 const iconMap: Record<string, LucideIcon> = {
@@ -21,13 +29,50 @@ const iconMap: Record<string, LucideIcon> = {
   'folder': Folder
 };
 
+const backgroundColors = {
+  yellow: "#FFC500",
+  purple: "#7E7DC9",
+  turquoise: "#2FD5C8",
+  pink: "#FF5A96"
+};
+
 export function ProjectCard({ project }: ProjectCardProps) {
-  // Use stored values or defaults
-  const bgColor = project.background_color || defaultIcon.color;
+  // Use stored values or defaults, ensuring only allowed colors are used
+  const bgColor = project.background_color && Object.values(backgroundColors).includes(project.background_color)
+    ? project.background_color
+    : backgroundColors.yellow;
   const IconComponent = project.icon_name ? iconMap[project.icon_name] : defaultIcon.icon;
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
+    <Card className="group relative overflow-hidden transition-all hover:shadow-md">
+      {/* Settings Menu - Only visible on hover */}
+      <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="rounded-full p-2 hover:bg-black/5">
+              <MoreVertical className="h-5 w-5 text-gray-600" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>Project Settings</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              Change Background Color
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              Change Icon
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              Edit Project Details
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-red-600">
+              Archive Project
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       <div 
         className="relative h-48 w-full overflow-hidden flex items-center justify-center"
         style={{ backgroundColor: bgColor }}
