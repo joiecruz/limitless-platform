@@ -8,14 +8,14 @@ interface ProjectCardProps {
   project: Project;
 }
 
-// Function to get a random icon
+// Function to get a random icon with matching background color
 const getProjectIcon = () => {
   const icons = [
-    { icon: Briefcase, color: "#8E9196" },
-    { icon: Code, color: "#F1F0FB" },
-    { icon: Database, color: "#F1F1F1" },
-    { icon: FileText, color: "#eee" },
-    { icon: Folder, color: "#FFFFFF" }
+    { icon: Briefcase, color: "rgba(255, 222, 226, 0.8)" },  // Soft Pink
+    { icon: Code, color: "rgba(211, 228, 253, 0.8)" },      // Soft Blue
+    { icon: Database, color: "rgba(253, 225, 211, 0.8)" },  // Soft Peach
+    { icon: FileText, color: "rgba(214, 188, 250, 0.8)" },  // Light Purple
+    { icon: Folder, color: "rgba(242, 252, 226, 0.8)" }     // Soft Green
   ];
   return icons[Math.floor(Math.random() * icons.length)];
 };
