@@ -78,7 +78,6 @@ export function CreateProjectDialog() {
         setLoading(false);
       }
     } else {
-      // Show the ideation form instead of creating project immediately
       setShowIdeationForm(true);
     }
   };
@@ -97,14 +96,19 @@ export function CreateProjectDialog() {
 
     setLoading(true);
     try {
-      // Get workflow template id
-      const { data: workflowTemplate, error: templateError } = await supabase
+      // First get the Simple Ideation workflow template
+      const { data: workflowTemplates, error: templateError } = await supabase
         .from("workflow_templates")
         .select("id")
         .eq("name", "Simple Ideation")
-        .single();
+        .limit(1);
 
       if (templateError) throw templateError;
+      if (!workflowTemplates || workflowTemplates.length === 0) {
+        throw new Error("Simple Ideation workflow template not found");
+      }
+
+      const workflowTemplateId = workflowTemplates[0].id;
 
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -119,7 +123,7 @@ export function CreateProjectDialog() {
         owner_id: session.user.id,
         status: "draft",
         current_phase: "collect-ideas",
-        workflow_template_id: workflowTemplate.id
+        workflow_template_id: workflowTemplateId
       }).select().single();
 
       if (error) throw error;
