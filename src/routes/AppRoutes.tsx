@@ -36,6 +36,7 @@ import VerifyEmail from "@/pages/VerifyEmail";
 import InvitePage from "@/pages/InvitePage";
 import Lessons from "@/pages/Lessons";
 import Lesson from "@/pages/Lesson";
+import ChallengeSetup from "@/pages/ChallengeSetup";
 
 // Admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -88,6 +89,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/projects" element={<Projects />} />
+        <Route path="/dashboard/projects/:projectId/challenge" element={<ChallengeSetup />} />
         <Route path="/dashboard/courses" element={<Courses />} />
         <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />
         <Route path="/dashboard/tools" element={<Tools />} />

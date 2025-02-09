@@ -738,7 +738,10 @@ export type Database = {
       projects: {
         Row: {
           archived: boolean | null
+          challenge_description: string | null
+          challenge_statement: string | null
           created_at: string
+          current_phase: string | null
           description: string | null
           due_date: string | null
           id: string
@@ -752,7 +755,10 @@ export type Database = {
         }
         Insert: {
           archived?: boolean | null
+          challenge_description?: string | null
+          challenge_statement?: string | null
           created_at?: string
+          current_phase?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -766,7 +772,10 @@ export type Database = {
         }
         Update: {
           archived?: boolean | null
+          challenge_description?: string | null
+          challenge_statement?: string | null
           created_at?: string
+          current_phase?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
