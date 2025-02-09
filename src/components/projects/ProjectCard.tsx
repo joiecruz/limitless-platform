@@ -23,8 +23,8 @@ const iconMap: Record<string, LucideIcon> = {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   // Use stored values or defaults
-  const bgColor = project.backgroundColor || defaultIcon.color;
-  const IconComponent = project.iconName ? iconMap[project.iconName] : defaultIcon.icon;
+  const bgColor = project.background_color || defaultIcon.color;
+  const IconComponent = project.icon_name ? iconMap[project.icon_name] : defaultIcon.icon;
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">

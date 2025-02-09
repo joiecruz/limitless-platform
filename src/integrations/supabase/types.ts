@@ -738,6 +738,7 @@ export type Database = {
       projects: {
         Row: {
           archived: boolean | null
+          background_color: string | null
           challenge_description: string | null
           challenge_statement: string | null
           cover_image: string | null
@@ -745,6 +746,7 @@ export type Database = {
           current_phase: string | null
           description: string | null
           due_date: string | null
+          icon_name: string | null
           id: string
           metadata: Json | null
           name: string
@@ -756,6 +758,7 @@ export type Database = {
         }
         Insert: {
           archived?: boolean | null
+          background_color?: string | null
           challenge_description?: string | null
           challenge_statement?: string | null
           cover_image?: string | null
@@ -763,6 +766,7 @@ export type Database = {
           current_phase?: string | null
           description?: string | null
           due_date?: string | null
+          icon_name?: string | null
           id?: string
           metadata?: Json | null
           name: string
@@ -774,6 +778,7 @@ export type Database = {
         }
         Update: {
           archived?: boolean | null
+          background_color?: string | null
           challenge_description?: string | null
           challenge_statement?: string | null
           cover_image?: string | null
@@ -781,6 +786,7 @@ export type Database = {
           current_phase?: string | null
           description?: string | null
           due_date?: string | null
+          icon_name?: string | null
           id?: string
           metadata?: Json | null
           name?: string
