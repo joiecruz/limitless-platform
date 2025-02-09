@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ProjectCard } from "@/components/projects/ProjectCard";
@@ -46,7 +47,7 @@ export default function Projects() {
       </div>
 
       {projects?.length === 0 && !isLoading ? (
-        <div className="relative space-y-6 rounded-lg border border-dashed p-10">
+        <div className="relative space-y-6 rounded-xl border border-dashed p-10 bg-white">
           <div className="max-w-2xl space-y-4">
             <h2 className="text-2xl font-semibold tracking-tight">
               Create more impactful projects using design thinking and AI
@@ -60,7 +61,7 @@ export default function Projects() {
             </Button>
           </div>
           <img
-            src="/lovable-uploads/dad9b9e5-bacc-4cc3-a739-5e78e6753d55.png"
+            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets//projects-banner.png"
             alt="Projects illustration"
             className="absolute bottom-0 right-8 h-48 w-auto"
           />
