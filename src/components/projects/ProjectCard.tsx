@@ -2,26 +2,29 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Project } from "@/types/project";
-import { Briefcase, Code, Database, FileText, Folder } from "lucide-react";
+import { Briefcase, Code, Database, FileText, Folder, LucideIcon } from "lucide-react";
 
 interface ProjectCardProps {
   project: Project;
 }
 
-// Function to get a random icon with matching background color
-const getProjectIcon = () => {
-  const icons = [
-    { icon: Briefcase, color: "rgba(255, 222, 226, 0.8)" },  // Soft Pink
-    { icon: Code, color: "rgba(211, 228, 253, 0.8)" },      // Soft Blue
-    { icon: Database, color: "rgba(253, 225, 211, 0.8)" },  // Soft Peach
-    { icon: FileText, color: "rgba(214, 188, 250, 0.8)" },  // Light Purple
-    { icon: Folder, color: "rgba(242, 252, 226, 0.8)" }     // Soft Green
-  ];
-  return icons[Math.floor(Math.random() * icons.length)];
+const defaultIcon = {
+  icon: Briefcase,
+  color: "rgba(255, 222, 226, 0.8)" // Soft Pink
+};
+
+const iconMap: Record<string, LucideIcon> = {
+  'briefcase': Briefcase,
+  'code': Code,
+  'database': Database,
+  'file-text': FileText,
+  'folder': Folder
 };
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const { icon: IconComponent, color: bgColor } = getProjectIcon();
+  // Use stored values or defaults
+  const bgColor = project.backgroundColor || defaultIcon.color;
+  const IconComponent = project.iconName ? iconMap[project.iconName] : defaultIcon.icon;
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
