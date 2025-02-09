@@ -36,12 +36,20 @@ export function CreateProjectDialog() {
 
     setLoading(true);
     try {
+      // Get the current user's session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No authenticated session found");
+      }
+
       const { data, error } = await supabase.from("projects").insert({
         name: type === 'design-thinking' ? 'Design Thinking Project' : 'Ideas Collection Project',
         description: type === 'design-thinking' 
           ? 'Project started with design thinking methodology'
           : 'Project started with ideas collection',
         workspace_id: currentWorkspace.id,
+        owner_id: session.user.id,  // Set the owner_id to the current user's ID
         status: "draft",
         current_phase: type,
       }).select().single();
