@@ -8,22 +8,35 @@ import { Project } from "@/types/project";
 import { useContext } from "react";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Projects() {
   const { currentWorkspace } = useContext(WorkspaceContext);
+  const { toast } = useToast();
 
-  const { data: projects, isLoading } = useQuery({
+  const { data: projects, isLoading, error } = useQuery({
     queryKey: ['projects', currentWorkspace?.id],
     queryFn: async () => {
       if (!currentWorkspace) return [];
       
+      console.log('Fetching projects for workspace:', currentWorkspace.id);
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('workspace_id', currentWorkspace.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching projects:', error);
+        toast({
+          title: "Error fetching projects",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      console.log('Fetched projects:', data);
       return data as Project[];
     },
     enabled: !!currentWorkspace,
@@ -43,6 +56,12 @@ export default function Projects() {
         <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
         <CreateProjectDialog />
       </div>
+
+      {error && (
+        <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
+          <p>Error loading projects. Please try again.</p>
+        </div>
+      )}
 
       {projects?.length === 0 && !isLoading ? (
         <div className="relative space-y-6 rounded-xl border border-dashed p-10 bg-white">
