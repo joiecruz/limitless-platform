@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 export function CreateProjectDialog() {
   const [open, setOpen] = useState(false);
@@ -21,6 +22,7 @@ export function CreateProjectDialog() {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const handleOptionSelect = async (type: 'design-thinking' | 'collect-ideas') => {
     if (!currentWorkspace) {
@@ -34,7 +36,7 @@ export function CreateProjectDialog() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("projects").insert({
+      const { data, error } = await supabase.from("projects").insert({
         name: type === 'design-thinking' ? 'Design Thinking Project' : 'Ideas Collection Project',
         description: type === 'design-thinking' 
           ? 'Project started with design thinking methodology'
@@ -42,7 +44,7 @@ export function CreateProjectDialog() {
         workspace_id: currentWorkspace.id,
         status: "draft",
         current_phase: type,
-      });
+      }).select().single();
 
       if (error) throw error;
 
@@ -53,6 +55,11 @@ export function CreateProjectDialog() {
 
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["projects"] });
+      
+      // Navigate to challenge setup if it's a collect-ideas project
+      if (type === 'collect-ideas' && data) {
+        navigate(`/dashboard/projects/${data.id}/challenge`);
+      }
     } catch (error: any) {
       console.error("Error creating project:", error);
       toast({
