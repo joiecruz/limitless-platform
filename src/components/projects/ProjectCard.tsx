@@ -30,10 +30,10 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 const backgroundColors = {
-  yellow: "#FFC50080", // 50% transparency
-  purple: "#7E7DC980",
-  turquoise: "#2FD5C880",
-  pink: "#FF5A9680"
+  yellow: "#FFC500CC", // 80% transparency
+  purple: "#7E7DC9CC",
+  turquoise: "#2FD5C8CC",
+  pink: "#FF5A96CC"
 };
 
 export function ProjectCard({ project }: ProjectCardProps) {
@@ -99,3 +99,4 @@ export function ProjectCard({ project }: ProjectCardProps) {
     </Card>
   );
 }
+
