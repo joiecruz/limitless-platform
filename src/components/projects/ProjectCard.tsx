@@ -30,10 +30,10 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 const backgroundColors = {
-  yellow: "#FFC500",
-  purple: "#7E7DC9",
-  turquoise: "#2FD5C8",
-  pink: "#FF5A96"
+  yellow: "#FFC50080", // 50% transparency
+  purple: "#7E7DC980",
+  turquoise: "#2FD5C880",
+  pink: "#FF5A9680"
 };
 
 export function ProjectCard({ project }: ProjectCardProps) {
@@ -50,7 +50,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="rounded-full p-2 hover:bg-black/5">
-              <MoreVertical className="h-5 w-5 text-gray-600" />
+              <MoreVertical className="h-5 w-5 text-white" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -78,7 +78,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         style={{ backgroundColor: bgColor }}
       >
         <IconComponent 
-          className="h-16 w-16 text-gray-600" 
+          className="h-16 w-16 text-white" 
           strokeWidth={1.5}
         />
       </div>
