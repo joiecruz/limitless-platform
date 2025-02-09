@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Project } from "@/types/project";
@@ -9,15 +10,19 @@ interface ProjectCardProps {
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
-      {project.coverImage && (
-        <div className="relative h-48 w-full overflow-hidden">
+      <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+        {project.coverImage ? (
           <img
             src={project.coverImage}
             alt={project.name}
             className="h-full w-full object-cover"
           />
-        </div>
-      )}
+        ) : (
+          <div className="flex h-full items-center justify-center text-gray-400">
+            No cover image
+          </div>
+        )}
+      </div>
       <div className="p-6">
         <h3 className="text-xl font-semibold">{project.name}</h3>
         <p className="mt-2 text-sm text-gray-600 line-clamp-2">{project.description}</p>

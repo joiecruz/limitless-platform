@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useContext } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { generateProjectCoverImage } from "@/services/imageGeneration";
 
 export function CreateProjectDialog() {
   const [open, setOpen] = useState(false);
@@ -96,6 +96,9 @@ export function CreateProjectDialog() {
 
     setLoading(true);
     try {
+      // Generate cover image
+      const coverImage = await generateProjectCoverImage(projectName, projectDescription);
+
       // First get the Simple Ideation workflow template
       const { data: workflowTemplates, error: templateError } = await supabase
         .from("workflow_templates")
@@ -123,7 +126,8 @@ export function CreateProjectDialog() {
         owner_id: session.user.id,
         status: "draft",
         current_phase: "collect-ideas",
-        workflow_template_id: workflowTemplateId
+        workflow_template_id: workflowTemplateId,
+        cover_image: coverImage
       }).select().single();
 
       if (error) throw error;

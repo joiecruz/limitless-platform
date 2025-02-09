@@ -740,6 +740,7 @@ export type Database = {
           archived: boolean | null
           challenge_description: string | null
           challenge_statement: string | null
+          cover_image: string | null
           created_at: string
           current_phase: string | null
           description: string | null
@@ -757,6 +758,7 @@ export type Database = {
           archived?: boolean | null
           challenge_description?: string | null
           challenge_statement?: string | null
+          cover_image?: string | null
           created_at?: string
           current_phase?: string | null
           description?: string | null
@@ -774,6 +776,7 @@ export type Database = {
           archived?: boolean | null
           challenge_description?: string | null
           challenge_statement?: string | null
+          cover_image?: string | null
           created_at?: string
           current_phase?: string | null
           description?: string | null
