@@ -140,10 +140,10 @@ export function CreateProjectDialog() {
         navigate(`/dashboard/projects/${data.id}/challenge`);
       }
     } catch (error: any) {
-      console.error("Error creating project:", error);
+      console.error("Error in onboarding:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create project",
+        description: error.message || "Failed to complete setup",
         variant: "destructive",
       });
     } finally {
