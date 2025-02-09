@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/project";
 import { useContext } from "react";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
+import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 
 export default function Projects() {
   const { currentWorkspace } = useContext(WorkspaceContext);
@@ -40,10 +41,7 @@ export default function Projects() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Create new project
-        </Button>
+        <CreateProjectDialog />
       </div>
 
       {projects?.length === 0 && !isLoading ? (
@@ -55,10 +53,7 @@ export default function Projects() {
             <p className="text-muted-foreground">
               Design people-centered projects with the help of AI
             </p>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create new project
-            </Button>
+            <CreateProjectDialog />
           </div>
           <img
             src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets//projects-banner.png"
