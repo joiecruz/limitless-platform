@@ -5,14 +5,32 @@ import { ProjectCard } from "@/components/projects/ProjectCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/project";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Projects() {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to view projects",
+          variant: "destructive",
+        });
+        navigate("/signin");
+      }
+    };
+    checkAuth();
+  }, [navigate, toast]);
 
   const { data: projects, isLoading, error } = useQuery({
     queryKey: ['projects', currentWorkspace?.id],
@@ -28,11 +46,19 @@ export default function Projects() {
 
       if (error) {
         console.error('Error fetching projects:', error);
-        toast({
-          title: "Error fetching projects",
-          description: error.message,
-          variant: "destructive",
-        });
+        if (error.code === '42501') {
+          toast({
+            title: "Access denied",
+            description: "You don't have permission to view projects in this workspace",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error fetching projects",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
         throw error;
       }
 
