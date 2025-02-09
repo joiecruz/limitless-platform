@@ -1,6 +1,4 @@
 
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,32 +81,32 @@ export default function Projects() {
         <CreateProjectDialog />
       </div>
 
+      <div className="relative space-y-6 rounded-xl border border-dashed p-10 bg-white">
+        <div className="max-w-2xl space-y-4">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            Create more impactful projects using design thinking and AI
+          </h2>
+          <p className="text-muted-foreground">
+            Design people-centered projects with the help of AI
+          </p>
+          <CreateProjectDialog />
+        </div>
+        <img
+          src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets//projects-banner.png"
+          alt="Projects illustration"
+          className="absolute bottom-0 right-8 h-48 w-auto"
+        />
+      </div>
+
       {error && (
         <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           <p>Error loading projects. Please try again.</p>
         </div>
       )}
 
-      {projects?.length === 0 && !isLoading ? (
-        <div className="relative space-y-6 rounded-xl border border-dashed p-10 bg-white">
-          <div className="max-w-2xl space-y-4">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Create more impactful projects using design thinking and AI
-            </h2>
-            <p className="text-muted-foreground">
-              Design people-centered projects with the help of AI
-            </p>
-            <CreateProjectDialog />
-          </div>
-          <img
-            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets//projects-banner.png"
-            alt="Projects illustration"
-            className="absolute bottom-0 right-8 h-48 w-auto"
-          />
-        </div>
-      ) : (
+      {!isLoading && projects && projects.length > 0 && (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {projects?.map((project) => (
+          {projects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
         </div>
