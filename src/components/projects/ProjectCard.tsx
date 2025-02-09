@@ -47,7 +47,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const IconComponent = project.icon_name ? iconMap[project.icon_name] : defaultIcon.icon;
 
   const handleCardClick = () => {
-    if (project.current_phase === 'collect-ideas') {
+    if (project.currentPhase === 'collect-ideas') {
       navigate(`/dashboard/projects/${project.id}/collect-ideas`);
     } else {
       navigate(`/dashboard/projects/${project.id}/challenge`);

@@ -677,8 +677,44 @@ export type Database = {
           },
         ]
       }
+      project_step_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          step_content_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          step_content_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          step_content_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_step_comments_step_content_id_fkey"
+            columns: ["step_content_id"]
+            isOneToOne: false
+            referencedRelation: "project_step_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_step_content: {
         Row: {
+          comments_count: number | null
           content: Json
           created_at: string
           created_by: string | null
@@ -688,8 +724,10 @@ export type Database = {
           project_id: string | null
           updated_at: string
           version: number | null
+          votes: number | null
         }
         Insert: {
+          comments_count?: number | null
           content?: Json
           created_at?: string
           created_by?: string | null
@@ -699,8 +737,10 @@ export type Database = {
           project_id?: string | null
           updated_at?: string
           version?: number | null
+          votes?: number | null
         }
         Update: {
+          comments_count?: number | null
           content?: Json
           created_at?: string
           created_by?: string | null
@@ -710,6 +750,7 @@ export type Database = {
           project_id?: string | null
           updated_at?: string
           version?: number | null
+          votes?: number | null
         }
         Relationships: [
           {
@@ -731,6 +772,35 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_step_votes: {
+        Row: {
+          created_at: string
+          id: string
+          step_content_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          step_content_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          step_content_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_step_votes_step_content_id_fkey"
+            columns: ["step_content_id"]
+            isOneToOne: false
+            referencedRelation: "project_step_content"
             referencedColumns: ["id"]
           },
         ]
