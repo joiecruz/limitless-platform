@@ -51,6 +51,8 @@ import EditBlog from "@/pages/admin/blog/EditBlog";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import EditCaseStudy from "@/pages/admin/case-studies/EditCaseStudy";
 
+import CollectIdeas from "@/pages/CollectIdeas";
+
 interface AppRoutesProps {
   session: Session | null;
 }
@@ -89,6 +91,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/projects" element={<Projects />} />
+        <Route path="/dashboard/projects/:projectId/collect-ideas" element={<CollectIdeas />} />
         <Route path="/dashboard/projects/:projectId/challenge" element={<ChallengeSetup />} />
         <Route path="/dashboard/courses" element={<Courses />} />
         <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />

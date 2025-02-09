@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
 interface ProjectCardProps {
   project: Project;
@@ -37,16 +38,26 @@ const backgroundColors = {
 };
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const navigate = useNavigate();
+  
   // Use stored values or defaults, ensuring only allowed colors are used
   const bgColor = project.background_color && Object.values(backgroundColors).includes(project.background_color)
     ? project.background_color
     : backgroundColors.yellow;
   const IconComponent = project.icon_name ? iconMap[project.icon_name] : defaultIcon.icon;
 
+  const handleCardClick = () => {
+    if (project.current_phase === 'collect-ideas') {
+      navigate(`/dashboard/projects/${project.id}/collect-ideas`);
+    } else {
+      navigate(`/dashboard/projects/${project.id}/challenge`);
+    }
+  };
+
   return (
-    <Card className="group relative overflow-hidden transition-all hover:shadow-md">
+    <Card className="group relative overflow-hidden transition-all hover:shadow-md cursor-pointer" onClick={handleCardClick}>
       {/* Settings Menu - Only visible on hover */}
-      <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="rounded-full p-2 hover:bg-black/5">
@@ -99,4 +110,3 @@ export function ProjectCard({ project }: ProjectCardProps) {
     </Card>
   );
 }
-
