@@ -81,7 +81,7 @@ export function CreateProjectDialog() {
           <button
             onClick={() => handleOptionSelect('design-thinking')}
             disabled={loading}
-            className="group relative flex flex-col items-center rounded-lg bg-cream-50 p-6 text-left transition-colors hover:bg-cream-100"
+            className="group relative flex flex-col items-center rounded-lg border border-gray-200 bg-cream-50 p-6 text-left transition-colors hover:bg-cream-100 hover:border-gray-300"
           >
             <div className="mb-4 flex h-12 w-12 items-center justify-center">
               <Rocket className="h-8 w-8 text-blue-500" />
@@ -95,7 +95,7 @@ export function CreateProjectDialog() {
           <button
             onClick={() => handleOptionSelect('collect-ideas')}
             disabled={loading}
-            className="group relative flex flex-col items-center rounded-lg bg-pink-50 p-6 text-left transition-colors hover:bg-pink-100"
+            className="group relative flex flex-col items-center rounded-lg border border-gray-200 bg-white p-6 text-left transition-colors hover:bg-gray-50 hover:border-gray-300"
           >
             <div className="mb-4 flex h-12 w-12 items-center justify-center">
               <Lightbulb className="h-8 w-8 text-yellow-500" />
