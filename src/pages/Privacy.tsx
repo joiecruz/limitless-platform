@@ -1,8 +1,10 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingPage } from "@/components/common/LoadingPage";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
+import { SEO } from "@/components/common/SEO";
 
 export default function Privacy() {
   const { data: page, isLoading, error } = useQuery({
@@ -31,6 +33,10 @@ export default function Privacy() {
   if (!page) {
     return (
       <>
+        <SEO 
+          title="Privacy Policy"
+          description="Limitless Lab's privacy policy details how we collect, use, and protect your personal information."
+        />
         <MainNav />
         <div className="container mx-auto px-4 py-16">
           <h1 className="text-4xl font-bold text-center mb-4">Privacy Policy</h1>
@@ -47,6 +53,10 @@ export default function Privacy() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <SEO 
+        title="Privacy Policy"
+        description={page.meta_description || "Limitless Lab's privacy policy details how we collect, use, and protect your personal information."}
+      />
       <MainNav />
       <div className="flex-grow">
         <div className="container mx-auto px-4 pt-32 pb-16">

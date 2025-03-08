@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { RichTextEditor } from "@/components/admin/blog/RichTextEditor";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface PageEditorProps {
     slug: string;
     content: any;
     meta_description?: string;
+    meta_image?: string;
     published?: boolean;
   };
   onSuccess?: () => void;
@@ -31,6 +33,7 @@ export function PageEditor({ pageId, initialData, onSuccess }: PageEditorProps) 
     slug: initialData?.slug || "",
     content: initialData?.content || { html: "" },
     meta_description: initialData?.meta_description || "",
+    meta_image: initialData?.meta_image || "",
     published: initialData?.published || false,
   });
 
@@ -95,10 +98,26 @@ export function PageEditor({ pageId, initialData, onSuccess }: PageEditorProps) 
           onChange={(slug) => setFormData(prev => ({ ...prev, slug }))}
         />
 
-        <PageMetaDescription
-          value={formData.meta_description}
-          onChange={(meta_description) => setFormData(prev => ({ ...prev, meta_description }))}
-        />
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">SEO Settings</h3>
+          
+          <PageMetaDescription
+            value={formData.meta_description}
+            onChange={(meta_description) => setFormData(prev => ({ ...prev, meta_description }))}
+          />
+
+          <div>
+            <Label htmlFor="meta_image">Meta Image URL</Label>
+            <input 
+              id="meta_image"
+              type="text"
+              className="w-full p-2 border rounded mt-1"
+              value={formData.meta_image}
+              onChange={(e) => setFormData(prev => ({ ...prev, meta_image: e.target.value }))}
+              placeholder="Enter image URL for social sharing"
+            />
+          </div>
+        </div>
 
         <div>
           <Label>Content</Label>

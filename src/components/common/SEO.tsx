@@ -23,7 +23,7 @@ export function SEO({
   const fullTitle = title === "Limitless Lab" ? title : `${title} | Limitless Lab`;
   
   // Ensure image is an absolute URL
-  const absoluteImage = image.startsWith('http') ? image : `${window.location.origin}${image}`;
+  const absoluteImage = image.startsWith('http') ? image : `${typeof window !== 'undefined' ? window.location.origin : ''}${image}`;
   
   // Add canonical URL to help search engines identify the original content
   useEffect(() => {
