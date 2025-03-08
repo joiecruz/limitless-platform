@@ -70,7 +70,7 @@ export default function BlogPost() {
   const title = post.title || "Blog Post";
   const description = post.meta_description || getMetaDescription(post.content);
   const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
-  const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
+  const canonicalUrl = `${window.location.origin}/blog/${slug}`;
 
   return (
     <div className="min-h-screen bg-white">

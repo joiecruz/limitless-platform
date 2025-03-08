@@ -10,11 +10,16 @@ import { ToolAbout } from "@/components/tools/detail/ToolAbout";
 import { ToolUsage } from "@/components/tools/detail/ToolUsage";
 import { ToolDownloadCTA } from "@/components/tools/detail/ToolDownloadCTA";
 import { SEO } from "@/components/common/SEO";
+import { useEffect } from "react";
 
 export default function ToolDetail() {
   const { id } = useParams();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const { data: tool, isLoading } = useQuery({
     queryKey: ["tool", id],
@@ -94,13 +99,29 @@ export default function ToolDetail() {
     );
   }
 
+  // Create a robust meta description
+  const metaDescription = tool.brief_description || 
+    (tool.long_description && tool.long_description.length > 160 
+      ? tool.long_description.substring(0, 157) + "..."
+      : tool.long_description) || 
+    `${tool.name} - Innovation tool by Limitless Lab`;
+
+  // Ensure we have a valid image URL
+  const imageUrl = tool.cover_image && tool.cover_image.trim() !== ""
+    ? tool.cover_image
+    : "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
+
+  // Get canonical URL for the tool
+  const canonicalUrl = `${window.location.origin}/tools/${id}`;
+
   return (
     <div className="min-h-screen bg-white">
       <SEO
         title={tool.name}
-        description={tool.brief_description || "Innovation tool by Limitless Lab"}
-        image={tool.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png"}
-        url={`${window.location.origin}/tools/${id}`}
+        description={metaDescription}
+        image={imageUrl}
+        url={canonicalUrl}
+        type="website"
       />
       
       <MainNav />

@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,9 +47,9 @@ export default function CaseStudy() {
   }
 
   const title = caseStudy.name || "Case Study";
-  const description = caseStudy.description || "";
+  const description = caseStudy.description || "Limitless Lab case study showcasing innovation in action.";
   const imageUrl = caseStudy.cover_photo || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
-  const canonicalUrl = `${window.location.origin}/case-studies/${caseStudy.slug}`;
+  const canonicalUrl = `${window.location.origin}/case-studies/${slug}`;
 
   return (
     <div className="min-h-screen bg-white">
