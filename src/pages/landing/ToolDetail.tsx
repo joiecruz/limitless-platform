@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,7 @@ import { ToolHeader } from "@/components/tools/detail/ToolHeader";
 import { ToolAbout } from "@/components/tools/detail/ToolAbout";
 import { ToolUsage } from "@/components/tools/detail/ToolUsage";
 import { ToolDownloadCTA } from "@/components/tools/detail/ToolDownloadCTA";
+import { SEO } from "@/components/common/SEO";
 
 export default function ToolDetail() {
   const { id } = useParams();
@@ -94,6 +96,13 @@ export default function ToolDetail() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title={tool.name}
+        description={tool.brief_description || "Innovation tool by Limitless Lab"}
+        image={tool.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png"}
+        url={`${window.location.origin}/tools/${id}`}
+      />
+      
       <MainNav />
       
       <ToolHeader
