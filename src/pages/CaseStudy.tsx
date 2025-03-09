@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +7,7 @@ import { Footer } from "@/components/site-config/Footer";
 import { CTASection } from "@/components/site-config/CTASection";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { Helmet } from "react-helmet";
+import { SEO } from "@/components/common/SEO";
 import { CaseStudyContent } from "@/components/case-studies/CaseStudyContent";
 import { CaseStudyHeader } from "@/components/case-studies/CaseStudyHeader";
 import { CaseStudyMeta } from "@/components/case-studies/CaseStudyMeta";
@@ -52,23 +53,15 @@ export default function CaseStudy() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet defer={false}>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <link rel="canonical" href={canonicalUrl} />
-        <meta property="og:type" content="article" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:image" content={imageUrl} />
-        <meta property="og:site_name" content="Limitless Lab" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={imageUrl} />
-        <meta property="article:published_time" content={caseStudy.created_at} />
-        <meta property="article:modified_time" content={caseStudy.updated_at} />
-      </Helmet>
+      <SEO
+        title={title}
+        description={description}
+        image={imageUrl}
+        canonical={canonicalUrl}
+        type="article"
+        published={caseStudy.created_at}
+        modified={caseStudy.updated_at}
+      />
       
       <MainNav />
       

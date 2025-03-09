@@ -590,6 +590,306 @@ export type Database = {
         }
         Relationships: []
       }
+      project_members: {
+        Row: {
+          created_at: string
+          project_id: string
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          project_id: string
+          role: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          project_id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_phases: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          project_id: string | null
+          started_at: string | null
+          status: string | null
+          updated_at: string
+          workflow_phase_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string
+          workflow_phase_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string
+          workflow_phase_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_phases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_phases_workflow_phase_id_fkey"
+            columns: ["workflow_phase_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_phases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_step_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          step_content_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          step_content_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          step_content_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_step_comments_step_content_id_fkey"
+            columns: ["step_content_id"]
+            isOneToOne: false
+            referencedRelation: "project_step_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_step_content: {
+        Row: {
+          comments_count: number | null
+          content: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          is_latest: boolean | null
+          phase_step_id: string | null
+          project_id: string | null
+          updated_at: string
+          version: number | null
+          votes: number | null
+        }
+        Insert: {
+          comments_count?: number | null
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_latest?: boolean | null
+          phase_step_id?: string | null
+          project_id?: string | null
+          updated_at?: string
+          version?: number | null
+          votes?: number | null
+        }
+        Update: {
+          comments_count?: number | null
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_latest?: boolean | null
+          phase_step_id?: string | null
+          project_id?: string | null
+          updated_at?: string
+          version?: number | null
+          votes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_step_content_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_step_content_phase_step_id_fkey"
+            columns: ["phase_step_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_phase_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_step_content_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_step_votes: {
+        Row: {
+          created_at: string
+          id: string
+          step_content_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          step_content_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          step_content_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_step_votes_step_content_id_fkey"
+            columns: ["step_content_id"]
+            isOneToOne: false
+            referencedRelation: "project_step_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          archived: boolean | null
+          background_color: string | null
+          challenge_description: string | null
+          challenge_statement: string | null
+          cover_image: string | null
+          created_at: string
+          current_phase: string | null
+          description: string | null
+          due_date: string | null
+          icon_name: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          owner_id: string | null
+          status: string | null
+          updated_at: string
+          workflow_template_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          archived?: boolean | null
+          background_color?: string | null
+          challenge_description?: string | null
+          challenge_statement?: string | null
+          cover_image?: string | null
+          created_at?: string
+          current_phase?: string | null
+          description?: string | null
+          due_date?: string | null
+          icon_name?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          owner_id?: string | null
+          status?: string | null
+          updated_at?: string
+          workflow_template_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          archived?: boolean | null
+          background_color?: string | null
+          challenge_description?: string | null
+          challenge_statement?: string | null
+          cover_image?: string | null
+          created_at?: string
+          current_phase?: string | null
+          description?: string | null
+          due_date?: string | null
+          icon_name?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          owner_id?: string | null
+          status?: string | null
+          updated_at?: string
+          workflow_template_id?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_workflow_template_id_fkey"
+            columns: ["workflow_template_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       secrets: {
         Row: {
           created_at: string
@@ -611,6 +911,36 @@ export type Database = {
           name?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      step_templates: {
+        Row: {
+          config: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -677,6 +1007,142 @@ export type Database = {
           {
             foreignKeyName: "user_course_access_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_phase_steps: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_required: boolean | null
+          metadata: Json | null
+          name: string
+          order_index: number
+          phase_id: string | null
+          step_template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_required?: boolean | null
+          metadata?: Json | null
+          name: string
+          order_index: number
+          phase_id?: string | null
+          step_template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_required?: boolean | null
+          metadata?: Json | null
+          name?: string
+          order_index?: number
+          phase_id?: string | null
+          step_template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_phase_steps_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_phase_steps_step_template_id_fkey"
+            columns: ["step_template_id"]
+            isOneToOne: false
+            referencedRelation: "step_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_phases: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          order_index: number
+          updated_at: string
+          workflow_template_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          order_index: number
+          updated_at?: string
+          workflow_template_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          order_index?: number
+          updated_at?: string
+          workflow_template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_phases_workflow_template_id_fkey"
+            columns: ["workflow_template_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_templates_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

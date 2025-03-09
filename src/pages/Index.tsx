@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MainNav } from "@/components/site-config/MainNav";
@@ -10,6 +11,7 @@ import { LoadingPage } from "@/components/common/LoadingPage";
 import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO } from "@/components/common/SEO";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -33,6 +35,12 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO 
+        title="Limitless Lab: All-in-One Innovation Platform"
+        description="Transform your innovation journey with Limitless Lab's comprehensive platform for learning, tools, and community."
+        image="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png"
+      />
+      
       <MainNav />
       
       {/* Hero Section */}

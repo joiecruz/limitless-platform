@@ -1,3 +1,4 @@
+
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +7,7 @@ import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { SEO } from "@/components/common/SEO";
 
 const fetchTool = async (toolId: string) => {
   const { data, error } = await supabase
@@ -51,6 +53,10 @@ export default function ToolDetails() {
   if (error || !tool) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <SEO
+          title="Tool Not Found"
+          description="Sorry, the requested tool could not be found."
+        />
         <div className="text-center">
           <h2 className="text-2xl font-semibold mb-4">Tool not found</h2>
           <Link 
@@ -66,6 +72,12 @@ export default function ToolDetails() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <SEO
+        title={`${tool.name} | Innovation Tool`}
+        description={tool.brief_description || ""}
+        image={tool.cover_image || ""}
+      />
+      
       <Link 
         to="/dashboard/tools" 
         className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8"

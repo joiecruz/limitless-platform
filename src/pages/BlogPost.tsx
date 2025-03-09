@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +8,7 @@ import { CTASection } from "@/components/site-config/CTASection";
 import { format } from "date-fns";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { Helmet } from "react-helmet";
+import { SEO } from "@/components/common/SEO";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -74,33 +75,16 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet defer={false}>
-        {/* Basic metadata */}
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <link rel="canonical" href={canonicalUrl} />
-
-        {/* Open Graph metadata */}
-        <meta property="og:type" content="article" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:image" content={imageUrl} />
-        <meta property="og:site_name" content="Limitless Lab" />
-        
-        {/* Twitter Card metadata */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={imageUrl} />
-        
-        {/* Article specific metadata */}
-        <meta property="article:published_time" content={post.created_at} />
-        <meta property="article:modified_time" content={post.updated_at} />
-        {post.categories && post.categories.map((category: string) => (
-          <meta property="article:tag" content={category} key={category} />
-        ))}
-      </Helmet>
+      <SEO
+        title={title}
+        description={description}
+        image={imageUrl}
+        canonical={canonicalUrl}
+        type="article"
+        published={post.created_at}
+        modified={post.updated_at}
+        tags={post.categories}
+      />
       
       <MainNav />
       
