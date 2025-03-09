@@ -32,6 +32,44 @@ export default function BlogPost() {
     }
   });
 
+  useEffect(() => {
+    // Dynamically update the document's Open Graph metadata
+    if (post && typeof document !== 'undefined') {
+      // Update base URL for absolute URLs
+      const baseUrl = window.location.origin;
+      const canonicalUrl = `${baseUrl}/blog/${post.slug}`;
+      const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
+      
+      // Update the canonical link
+      let canonicalLink = document.querySelector('link[rel="canonical"]');
+      if (!canonicalLink) {
+        canonicalLink = document.createElement('link');
+        canonicalLink.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonicalLink);
+      }
+      canonicalLink.setAttribute('href', canonicalUrl);
+      
+      // Update Open Graph metadata
+      const ogTags = {
+        'og:title': post.title,
+        'og:description': post.meta_description || getMetaDescription(post.content),
+        'og:image': imageUrl,
+        'og:url': canonicalUrl,
+        'og:type': 'article'
+      };
+      
+      Object.entries(ogTags).forEach(([property, content]) => {
+        let metaTag = document.querySelector(`meta[property="${property}"]`);
+        if (!metaTag) {
+          metaTag = document.createElement('meta');
+          metaTag.setAttribute('property', property);
+          document.head.appendChild(metaTag);
+        }
+        metaTag.setAttribute('content', content);
+      });
+    }
+  }, [post]);
+
   const getMetaDescription = (content: string | null | undefined): string => {
     if (!content) return '';
     
