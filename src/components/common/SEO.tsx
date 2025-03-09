@@ -1,5 +1,6 @@
 
 import { Helmet } from "react-helmet";
+import { useEffect } from "react";
 
 interface SEOProps {
   title: string;
@@ -28,12 +29,46 @@ export function SEO({
     : `${title} | Limitless Lab`;
   
   // Use current URL as canonical if not provided
-  const canonicalUrl = canonical || window.location.href;
+  const canonicalUrl = canonical || (typeof window !== 'undefined' ? window.location.href : '');
   
   // Ensure image is an absolute URL
   const absoluteImage = image.startsWith('http') 
     ? image 
-    : `${window.location.origin}${image}`;
+    : (typeof window !== 'undefined' ? `${window.location.origin}${image}` : image);
+
+  // Update the document title directly to ensure it's available for crawlers
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = fullTitle;
+      
+      // Update meta tags that might be read before Helmet executes
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', description);
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'description';
+        meta.content = description;
+        document.head.appendChild(meta);
+      }
+
+      // Ensure OG meta tags exist early for crawlers
+      const ogMetas = ['og:title', 'og:description', 'og:image', 'og:url', 'og:type'];
+      const ogValues = [fullTitle, description, absoluteImage, canonicalUrl, type];
+
+      ogMetas.forEach((name, index) => {
+        const ogMeta = document.querySelector(`meta[property="${name}"]`);
+        if (ogMeta) {
+          ogMeta.setAttribute('content', ogValues[index]);
+        } else {
+          const meta = document.createElement('meta');
+          meta.setAttribute('property', name);
+          meta.setAttribute('content', ogValues[index]);
+          document.head.appendChild(meta);
+        }
+      });
+    }
+  }, [fullTitle, description, absoluteImage, canonicalUrl, type]);
 
   return (
     <Helmet defer={false}>
