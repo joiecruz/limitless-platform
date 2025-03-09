@@ -1,9 +1,17 @@
+
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
+import { SEO } from "@/components/common/SEO";
 
 export default function About() {
   return (
     <div className="min-h-screen bg-white">
+      <SEO 
+        title="About Limitless Lab"
+        description="Limitless Lab is a global social innovation company that uses creativity, design, and technology to drive positive change."
+        image="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/About%20photo.png"
+      />
+      
       <MainNav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

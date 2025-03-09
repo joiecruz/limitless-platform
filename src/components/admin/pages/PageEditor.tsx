@@ -1,15 +1,18 @@
+
 import { useState } from "react";
 import { RichTextEditor } from "@/components/admin/blog/RichTextEditor";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, Image } from "lucide-react";
 import { PageTitleInput } from "./components/PageTitleInput";
 import { PageSlugInput } from "./components/PageSlugInput";
 import { PageMetaDescription } from "./components/PageMetaDescription";
 import { PagePublishToggle } from "./components/PagePublishToggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
 interface PageEditorProps {
   pageId?: string;
@@ -19,6 +22,7 @@ interface PageEditorProps {
     content: any;
     meta_description?: string;
     published?: boolean;
+    meta_image?: string;
   };
   onSuccess?: () => void;
 }
@@ -32,6 +36,7 @@ export function PageEditor({ pageId, initialData, onSuccess }: PageEditorProps) 
     content: initialData?.content || { html: "" },
     meta_description: initialData?.meta_description || "",
     published: initialData?.published || false,
+    meta_image: initialData?.meta_image || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,6 +104,34 @@ export function PageEditor({ pageId, initialData, onSuccess }: PageEditorProps) 
           value={formData.meta_description}
           onChange={(meta_description) => setFormData(prev => ({ ...prev, meta_description }))}
         />
+
+        <div>
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="meta_image">SEO Image</Label>
+            <span className="text-xs text-muted-foreground">(Used when page is shared on social media)</span>
+          </div>
+          <Input
+            id="meta_image"
+            placeholder="Enter image URL for social media sharing"
+            value={formData.meta_image}
+            onChange={(e) => setFormData(prev => ({ ...prev, meta_image: e.target.value }))}
+            className="mt-1"
+          />
+          {formData.meta_image && (
+            <div className="mt-2 relative w-full max-w-md h-32 rounded-md overflow-hidden border border-gray-200">
+              <img
+                src={formData.meta_image}
+                alt="SEO Preview"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png";
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        <Separator className="my-4" />
 
         <div>
           <Label>Content</Label>
