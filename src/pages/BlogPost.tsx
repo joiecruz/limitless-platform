@@ -32,61 +32,34 @@ export default function BlogPost() {
     }
   });
 
-  useEffect(() => {
-    // Dynamically update the document's Open Graph metadata
-    if (post && typeof document !== 'undefined') {
-      // Update base URL for absolute URLs
-      const baseUrl = window.location.origin;
-      const canonicalUrl = `${baseUrl}/blog/${post.slug}`;
-      const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
-      
-      // Update the canonical link
-      let canonicalLink = document.querySelector('link[rel="canonical"]');
-      if (!canonicalLink) {
-        canonicalLink = document.createElement('link');
-        canonicalLink.setAttribute('rel', 'canonical');
-        document.head.appendChild(canonicalLink);
-      }
-      canonicalLink.setAttribute('href', canonicalUrl);
-      
-      // Update Open Graph metadata
-      const ogTags = {
-        'og:title': post.title,
-        'og:description': post.meta_description || getMetaDescription(post.content),
-        'og:image': imageUrl,
-        'og:url': canonicalUrl,
-        'og:type': 'article'
-      };
-      
-      Object.entries(ogTags).forEach(([property, content]) => {
-        let metaTag = document.querySelector(`meta[property="${property}"]`);
-        if (!metaTag) {
-          metaTag = document.createElement('meta');
-          metaTag.setAttribute('property', property);
-          document.head.appendChild(metaTag);
-        }
-        metaTag.setAttribute('content', content);
-      });
-    }
-  }, [post]);
-
+  // Extract first paragraph text for meta description
   const getMetaDescription = (content: string | null | undefined): string => {
     if (!content) return '';
     
     try {
       // Remove any HTML tags and get clean text
       const cleanText = content.replace(/<[^>]*>/g, '');
-      // Get first two sentences or 160 characters
+      
+      // Get first 2-3 sentences for description (better than just 160 characters)
       const sentences = cleanText.split(/[.!?]+/).filter(sentence => 
         sentence && sentence.trim().length > 0
       );
-      const description = sentences.slice(0, 2).join('. ').trim();
-      // Ensure it's not too long for meta description
+      
+      let description = '';
+      // Try to get 2-3 sentences depending on length
+      if (sentences.length >= 2) {
+        description = sentences.slice(0, sentences[0].length < 80 ? 3 : 2).join('. ').trim();
+      } else {
+        description = sentences[0] || '';
+      }
+      
+      // Ensure it's not too long for meta description (120-160 chars is ideal)
       return description.length > 160 
         ? description.substring(0, 157) + '...' 
         : description;
-    } catch {
-      return '';
+    } catch (e) {
+      console.error('Error extracting meta description:', e);
+      return post?.meta_description || '';
     }
   };
 
@@ -105,11 +78,57 @@ export default function BlogPost() {
   const wordCount = post.content.split(/\s+/).length;
   const readTime = Math.ceil(wordCount / 200);
 
-  // Prepare metadata values
+  // Prepare metadata values prioritizing custom meta description if available
   const title = post.title || "Blog Post";
   const description = post.meta_description || getMetaDescription(post.content);
   const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
   const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
+
+  // Add structured metadata for article
+  useEffect(() => {
+    if (post) {
+      // Create JSON-LD structured data for the article
+      const articleSchema = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": post.title,
+        "image": post.cover_image,
+        "datePublished": post.created_at,
+        "dateModified": post.updated_at,
+        "author": {
+          "@type": "Organization",
+          "name": "Limitless Lab"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Limitless Lab",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png"
+          }
+        },
+        "description": description
+      };
+
+      // Add structured data to the page
+      let script = document.getElementById('article-schema');
+      if (!script) {
+        script = document.createElement('script');
+        script.id = 'article-schema';
+        script.type = 'application/ld+json';
+        document.head.appendChild(script);
+      }
+      script.textContent = JSON.stringify(articleSchema);
+
+      // Clean up when component unmounts
+      return () => {
+        const scriptToRemove = document.getElementById('article-schema');
+        if (scriptToRemove) {
+          scriptToRemove.remove();
+        }
+      };
+    }
+  }, [post, description]);
 
   return (
     <div className="min-h-screen bg-white">
