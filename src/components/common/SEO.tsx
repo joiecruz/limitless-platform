@@ -13,6 +13,10 @@ interface SEOProps {
   tags?: string[];
 }
 
+type MetaTag = 
+  | { property: string; content: string }
+  | { name: string; content: string };
+
 export function SEO({
   title,
   description = "Transform your innovation journey with Limitless Lab's comprehensive platform for learning, tools, and community.",
@@ -54,7 +58,7 @@ export function SEO({
       }
 
       // Ensure OG meta tags exist early for crawlers
-      const ogTags = [
+      const ogTags: MetaTag[] = [
         { property: 'og:title', content: fullTitle },
         { property: 'og:description', content: description },
         { property: 'og:image', content: absoluteImage },
@@ -64,7 +68,7 @@ export function SEO({
       ];
 
       // Add Twitter card tags
-      const twitterTags = [
+      const twitterTags: MetaTag[] = [
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: fullTitle },
         { name: 'twitter:description', content: description },
@@ -73,7 +77,7 @@ export function SEO({
 
       // Update or create all OG tags
       [...ogTags, ...twitterTags].forEach(tag => {
-        const selector = tag.property 
+        const selector = 'property' in tag 
           ? `meta[property="${tag.property}"]` 
           : `meta[name="${tag.name}"]`;
         
@@ -82,7 +86,7 @@ export function SEO({
           metaTag.setAttribute('content', tag.content);
         } else {
           const meta = document.createElement('meta');
-          if (tag.property) {
+          if ('property' in tag) {
             meta.setAttribute('property', tag.property);
           } else {
             meta.setAttribute('name', tag.name);
