@@ -36,9 +36,10 @@ export function SEO({
     ? image 
     : (typeof window !== 'undefined' ? `${window.location.origin}${image}` : image);
 
-  // Update the document title directly to ensure it's available for crawlers
+  // Update the document title and meta tags directly to ensure they're available for crawlers
   useEffect(() => {
     if (typeof document !== 'undefined') {
+      // Set document title
       document.title = fullTitle;
       
       // Update meta tags that might be read before Helmet executes
@@ -53,22 +54,86 @@ export function SEO({
       }
 
       // Ensure OG meta tags exist early for crawlers
-      const ogMetas = ['og:title', 'og:description', 'og:image', 'og:url', 'og:type'];
-      const ogValues = [fullTitle, description, absoluteImage, canonicalUrl, type];
+      const ogTags = [
+        { property: 'og:title', content: fullTitle },
+        { property: 'og:description', content: description },
+        { property: 'og:image', content: absoluteImage },
+        { property: 'og:url', content: canonicalUrl },
+        { property: 'og:type', content: type },
+        { property: 'og:site_name', content: 'Limitless Lab' }
+      ];
 
-      ogMetas.forEach((name, index) => {
-        const ogMeta = document.querySelector(`meta[property="${name}"]`);
-        if (ogMeta) {
-          ogMeta.setAttribute('content', ogValues[index]);
+      // Add Twitter card tags
+      const twitterTags = [
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: fullTitle },
+        { name: 'twitter:description', content: description },
+        { name: 'twitter:image', content: absoluteImage }
+      ];
+
+      // Update or create all OG tags
+      [...ogTags, ...twitterTags].forEach(tag => {
+        const selector = tag.property 
+          ? `meta[property="${tag.property}"]` 
+          : `meta[name="${tag.name}"]`;
+        
+        const metaTag = document.querySelector(selector);
+        if (metaTag) {
+          metaTag.setAttribute('content', tag.content);
         } else {
           const meta = document.createElement('meta');
-          meta.setAttribute('property', name);
-          meta.setAttribute('content', ogValues[index]);
+          if (tag.property) {
+            meta.setAttribute('property', tag.property);
+          } else {
+            meta.setAttribute('name', tag.name);
+          }
+          meta.setAttribute('content', tag.content);
           document.head.appendChild(meta);
         }
       });
+
+      // Handle article specific tags
+      if (type === 'article') {
+        if (published) {
+          const metaPublished = document.querySelector('meta[property="article:published_time"]');
+          if (metaPublished) {
+            metaPublished.setAttribute('content', published);
+          } else {
+            const meta = document.createElement('meta');
+            meta.setAttribute('property', 'article:published_time');
+            meta.setAttribute('content', published);
+            document.head.appendChild(meta);
+          }
+        }
+
+        if (modified) {
+          const metaModified = document.querySelector('meta[property="article:modified_time"]');
+          if (metaModified) {
+            metaModified.setAttribute('content', modified);
+          } else {
+            const meta = document.createElement('meta');
+            meta.setAttribute('property', 'article:modified_time');
+            meta.setAttribute('content', modified);
+            document.head.appendChild(meta);
+          }
+        }
+        
+        // Add tags for article
+        if (tags && tags.length > 0) {
+          // Remove existing article tags first
+          document.querySelectorAll('meta[property="article:tag"]').forEach(el => el.remove());
+          
+          // Add new tags
+          tags.forEach(tag => {
+            const meta = document.createElement('meta');
+            meta.setAttribute('property', 'article:tag');
+            meta.setAttribute('content', tag);
+            document.head.appendChild(meta);
+          });
+        }
+      }
     }
-  }, [fullTitle, description, absoluteImage, canonicalUrl, type]);
+  }, [fullTitle, description, absoluteImage, canonicalUrl, type, published, modified, tags]);
 
   return (
     <Helmet defer={false}>
@@ -76,6 +141,9 @@ export function SEO({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
+      
+      {/* Preconnect to important resources */}
+      <link rel="preconnect" href="https://crllgygjuqpluvdpwayi.supabase.co" />
 
       {/* Open Graph metadata */}
       <meta property="og:type" content={type} />
