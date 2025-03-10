@@ -115,7 +115,7 @@ export default function BlogPost() {
       if (!script) {
         script = document.createElement('script');
         script.id = 'article-schema';
-        script.type = 'application/ld+json';
+        script.setAttribute('type', 'application/ld+json');
         document.head.appendChild(script);
       }
       script.textContent = JSON.stringify(articleSchema);
