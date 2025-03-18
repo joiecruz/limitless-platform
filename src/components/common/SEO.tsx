@@ -13,10 +13,6 @@ interface SEOProps {
   tags?: string[];
 }
 
-type MetaTag = 
-  | { property: string; content: string }
-  | { name: string; content: string };
-
 export function SEO({
   title,
   description = "Transform your innovation journey with Limitless Lab's comprehensive platform for learning, tools, and community.",
@@ -50,99 +46,88 @@ export function SEO({
         title: fullTitle,
         description,
         image: absoluteImage,
+        url: canonicalUrl,
         type
       });
       
       // Remove all existing meta tags that we're going to replace
-      // This ensures our dynamic tags take precedence over static ones in index.html
       const removeMetaTags = (selector: string) => {
         document.querySelectorAll(selector).forEach(el => {
-          if (el.getAttribute('data-rh') !== 'true') {
-            if (el.parentNode) {
-              console.log('Removing meta tag:', el.outerHTML);
-              el.parentNode.removeChild(el);
-            }
+          if (el.parentNode) {
+            console.log('Removing meta tag:', el.outerHTML);
+            el.parentNode.removeChild(el);
           }
         });
       };
       
       // Remove standard description and OG meta tags
-      removeMetaTags('meta[name="description"]');
-      removeMetaTags('meta[property^="og:"]');
-      removeMetaTags('meta[name^="twitter:"]');
-      removeMetaTags('meta[property^="article:"]');
+      removeMetaTags('meta[name="description"]:not([data-rh="true"])');
+      removeMetaTags('meta[property^="og:"]:not([data-rh="true"])');
+      removeMetaTags('meta[name^="twitter:"]:not([data-rh="true"])');
+      removeMetaTags('meta[property^="article:"]:not([data-rh="true"])');
       
-      // Create a new meta description tag
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = description;
-      meta.setAttribute('data-rh', 'true');
-      document.head.appendChild(meta);
-      console.log('Added description meta tag:', meta.outerHTML);
-
-      // Ensure OG meta tags exist early for crawlers
-      const ogTags: MetaTag[] = [
-        { property: 'og:title', content: fullTitle },
-        { property: 'og:description', content: description },
-        { property: 'og:image', content: absoluteImage },
-        { property: 'og:url', content: canonicalUrl },
-        { property: 'og:type', content: type },
-        { property: 'og:site_name', content: 'Limitless Lab' }
-      ];
-
-      // Add Twitter card tags
-      const twitterTags: MetaTag[] = [
-        { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:title', content: fullTitle },
-        { name: 'twitter:description', content: description },
-        { name: 'twitter:image', content: absoluteImage }
-      ];
-
-      // Update or create all OG tags
-      [...ogTags, ...twitterTags].forEach(tag => {
-        const meta = document.createElement('meta');
-        if ('property' in tag) {
-          meta.setAttribute('property', tag.property);
-        } else {
-          meta.setAttribute('name', tag.name);
-        }
-        meta.setAttribute('content', tag.content);
-        meta.setAttribute('data-rh', 'true');
-        document.head.appendChild(meta);
-        console.log('Added meta tag:', meta.outerHTML);
-      });
-
-      // Handle article specific tags
-      if (type === 'article') {
-        if (published) {
-          const meta = document.createElement('meta');
-          meta.setAttribute('property', 'article:published_time');
-          meta.setAttribute('content', published);
-          meta.setAttribute('data-rh', 'true');
-          document.head.appendChild(meta);
-        }
-
-        if (modified) {
-          const meta = document.createElement('meta');
-          meta.setAttribute('property', 'article:modified_time');
-          meta.setAttribute('content', modified);
-          meta.setAttribute('data-rh', 'true');
+      // Force a new cache version in image URL to help social media platforms refresh their cache
+      const timeStamp = new Date().getTime();
+      const imageWithCacheBuster = absoluteImage.includes('?') 
+        ? `${absoluteImage}&_t=${timeStamp}` 
+        : `${absoluteImage}?_t=${timeStamp}`;
+        
+      // Dynamically update Open Graph meta tags
+      const updateOrCreateMetaTag = (name: string, content: string, isProperty = false) => {
+        let meta = document.querySelector(isProperty 
+          ? `meta[property="${name}"]` 
+          : `meta[name="${name}"]`);
+          
+        if (!meta) {
+          meta = document.createElement('meta');
+          if (isProperty) {
+            meta.setAttribute('property', name);
+          } else {
+            meta.setAttribute('name', name);
+          }
           document.head.appendChild(meta);
         }
         
-        // Add tags for article
+        meta.setAttribute('content', content);
+        console.log(`Updated meta tag: ${isProperty ? 'property' : 'name'}="${name}" content="${content}"`);
+      };
+      
+      // Set basic meta tags
+      updateOrCreateMetaTag('description', description);
+      
+      // Set Open Graph meta tags
+      updateOrCreateMetaTag('og:title', fullTitle, true);
+      updateOrCreateMetaTag('og:description', description, true);
+      updateOrCreateMetaTag('og:image', imageWithCacheBuster, true);
+      updateOrCreateMetaTag('og:url', canonicalUrl, true);
+      updateOrCreateMetaTag('og:type', type, true);
+      updateOrCreateMetaTag('og:site_name', 'Limitless Lab', true);
+      
+      // Set Twitter meta tags
+      updateOrCreateMetaTag('twitter:card', 'summary_large_image');
+      updateOrCreateMetaTag('twitter:title', fullTitle);
+      updateOrCreateMetaTag('twitter:description', description);
+      updateOrCreateMetaTag('twitter:image', imageWithCacheBuster);
+      
+      // Handle article specific tags
+      if (type === 'article') {
+        if (published) {
+          updateOrCreateMetaTag('article:published_time', published, true);
+        }
+        if (modified) {
+          updateOrCreateMetaTag('article:modified_time', modified, true);
+        }
         if (tags && tags.length > 0) {
           tags.forEach(tag => {
-            const meta = document.createElement('meta');
-            meta.setAttribute('property', 'article:tag');
-            meta.setAttribute('content', tag);
-            meta.setAttribute('data-rh', 'true');
-            document.head.appendChild(meta);
+            const metaTag = document.createElement('meta');
+            metaTag.setAttribute('property', 'article:tag');
+            metaTag.setAttribute('content', tag);
+            document.head.appendChild(metaTag);
           });
         }
       }
       
-      // Ensure canonical link is set
+      // Update canonical link
       let canonicalLink = document.querySelector('link[rel="canonical"]');
       if (canonicalLink) {
         canonicalLink.setAttribute('href', canonicalUrl);

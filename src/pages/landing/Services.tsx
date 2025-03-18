@@ -1,3 +1,4 @@
+
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link } from "react-router-dom";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import { CoDesignProcess } from "@/components/services/CoDesignProcess";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { SEO } from "@/components/common/SEO";
 
 const services = [
   {
@@ -43,6 +45,11 @@ const ITEMS_PER_PAGE = 6;
 export default function Services() {
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const { data: caseStudies, isLoading } = useQuery({
     queryKey: ['case-studies'],
     queryFn: async () => {
@@ -62,8 +69,19 @@ export default function Services() {
     currentPage * ITEMS_PER_PAGE
   );
 
+  // Custom metadata for services page
+  const servicesImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design.png";
+  const servicesDescription = "Get hands-on, customized guidance to turn your organization challenges into innovation projects that are measurable and impactful.";
+
   return (
     <div className="min-h-screen bg-white">
+      <SEO 
+        title="Innovation Services | Limitless Lab"
+        description={servicesDescription}
+        image={servicesImage}
+        canonical="https://limitlesslab.org/services"
+      />
+      
       <MainNav />
       
       {/* Hero Section */}
@@ -72,7 +90,7 @@ export default function Services() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design.png"
+                src={servicesImage}
                 alt="Co-design Process"
                 className="w-full rounded-lg"
               />
@@ -82,7 +100,7 @@ export default function Services() {
                 Accelerate your innovation journey with expert support
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 mb-6">
-                Get hands-on, customized guidance to turn your organization challenges into innovation projects that are measurable and impactful.
+                {servicesDescription}
               </p>
               <Button 
                 variant="default"
