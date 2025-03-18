@@ -130,6 +130,22 @@ export default function BlogPost() {
     }
   }, [post, description]);
 
+  // Log metadata for debugging
+  useEffect(() => {
+    if (post) {
+      console.log('Blog post metadata:', {
+        title,
+        description,
+        imageUrl,
+        canonicalUrl,
+        type: 'article',
+        published: post.created_at,
+        modified: post.updated_at,
+        tags: post.categories
+      });
+    }
+  }, [post, title, description, imageUrl, canonicalUrl]);
+
   return (
     <div className="min-h-screen bg-white">
       <SEO
