@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,7 +74,7 @@ export default function BlogPost() {
     return <div>Post not found</div>;
   }
 
-  const wordCount = post.content.split(/\s+/).length;
+  const wordCount = post.content ? post.content.split(/\s+/).length : 0;
   const readTime = Math.ceil(wordCount / 200);
 
   // Prepare metadata values prioritizing custom meta description if available
@@ -83,6 +82,17 @@ export default function BlogPost() {
   const description = post.meta_description || getMetaDescription(post.content);
   const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
   const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
+
+  console.log('BlogPost: Preparing SEO metadata', {
+    title,
+    description,
+    imageUrl,
+    canonicalUrl,
+    type: 'article',
+    published: post.created_at,
+    modified: post.updated_at,
+    tags: post.categories
+  });
 
   // Add structured metadata for article
   useEffect(() => {
@@ -110,6 +120,8 @@ export default function BlogPost() {
         "description": description
       };
 
+      console.log('Adding structured data (JSON-LD):', articleSchema);
+
       // Add structured data to the page
       let script = document.getElementById('article-schema');
       if (!script) {
@@ -129,22 +141,6 @@ export default function BlogPost() {
       };
     }
   }, [post, description]);
-
-  // Log metadata for debugging
-  useEffect(() => {
-    if (post) {
-      console.log('Blog post metadata:', {
-        title,
-        description,
-        imageUrl,
-        canonicalUrl,
-        type: 'article',
-        published: post.created_at,
-        modified: post.updated_at,
-        tags: post.categories
-      });
-    }
-  }, [post, title, description, imageUrl, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">

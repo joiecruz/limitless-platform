@@ -46,12 +46,22 @@ export function SEO({
       // Set document title
       document.title = fullTitle;
       
+      console.log('SEO Component updating meta tags for:', {
+        title: fullTitle,
+        description,
+        image: absoluteImage,
+        type
+      });
+      
       // Remove all existing meta tags that we're going to replace
       // This ensures our dynamic tags take precedence over static ones in index.html
       const removeMetaTags = (selector: string) => {
         document.querySelectorAll(selector).forEach(el => {
-          if (el.parentNode) {
-            el.parentNode.removeChild(el);
+          if (el.getAttribute('data-rh') !== 'true') {
+            if (el.parentNode) {
+              console.log('Removing meta tag:', el.outerHTML);
+              el.parentNode.removeChild(el);
+            }
           }
         });
       };
@@ -66,7 +76,9 @@ export function SEO({
       const meta = document.createElement('meta');
       meta.name = 'description';
       meta.content = description;
+      meta.setAttribute('data-rh', 'true');
       document.head.appendChild(meta);
+      console.log('Added description meta tag:', meta.outerHTML);
 
       // Ensure OG meta tags exist early for crawlers
       const ogTags: MetaTag[] = [
@@ -95,7 +107,9 @@ export function SEO({
           meta.setAttribute('name', tag.name);
         }
         meta.setAttribute('content', tag.content);
+        meta.setAttribute('data-rh', 'true');
         document.head.appendChild(meta);
+        console.log('Added meta tag:', meta.outerHTML);
       });
 
       // Handle article specific tags
@@ -104,6 +118,7 @@ export function SEO({
           const meta = document.createElement('meta');
           meta.setAttribute('property', 'article:published_time');
           meta.setAttribute('content', published);
+          meta.setAttribute('data-rh', 'true');
           document.head.appendChild(meta);
         }
 
@@ -111,6 +126,7 @@ export function SEO({
           const meta = document.createElement('meta');
           meta.setAttribute('property', 'article:modified_time');
           meta.setAttribute('content', modified);
+          meta.setAttribute('data-rh', 'true');
           document.head.appendChild(meta);
         }
         
@@ -120,6 +136,7 @@ export function SEO({
             const meta = document.createElement('meta');
             meta.setAttribute('property', 'article:tag');
             meta.setAttribute('content', tag);
+            meta.setAttribute('data-rh', 'true');
             document.head.appendChild(meta);
           });
         }
@@ -142,35 +159,35 @@ export function SEO({
     <Helmet defer={false} prioritizeSeoTags>
       {/* Basic metadata */}
       <title>{fullTitle}</title>
-      <meta name="description" content={description} />
+      <meta name="description" content={description} data-rh="true" />
       <link rel="canonical" href={canonicalUrl} />
       
       {/* Preconnect to important resources */}
       <link rel="preconnect" href="https://crllgygjuqpluvdpwayi.supabase.co" />
 
       {/* Open Graph metadata */}
-      <meta property="og:type" content={type} />
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:image" content={absoluteImage} />
-      <meta property="og:site_name" content="Limitless Lab" />
+      <meta property="og:type" content={type} data-rh="true" />
+      <meta property="og:title" content={fullTitle} data-rh="true" />
+      <meta property="og:description" content={description} data-rh="true" />
+      <meta property="og:url" content={canonicalUrl} data-rh="true" />
+      <meta property="og:image" content={absoluteImage} data-rh="true" />
+      <meta property="og:site_name" content="Limitless Lab" data-rh="true" />
       
       {/* Twitter Card metadata */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={absoluteImage} />
+      <meta name="twitter:card" content="summary_large_image" data-rh="true" />
+      <meta name="twitter:title" content={fullTitle} data-rh="true" />
+      <meta name="twitter:description" content={description} data-rh="true" />
+      <meta name="twitter:image" content={absoluteImage} data-rh="true" />
       
       {/* Article specific metadata */}
       {type === 'article' && published && (
-        <meta property="article:published_time" content={published} />
+        <meta property="article:published_time" content={published} data-rh="true" />
       )}
       {type === 'article' && modified && (
-        <meta property="article:modified_time" content={modified} />
+        <meta property="article:modified_time" content={modified} data-rh="true" />
       )}
       {type === 'article' && tags && tags.map((tag) => (
-        <meta property="article:tag" content={tag} key={tag} />
+        <meta property="article:tag" content={tag} key={tag} data-rh="true" />
       ))}
     </Helmet>
   );
