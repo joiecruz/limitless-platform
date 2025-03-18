@@ -36,143 +36,128 @@ export function SEO({
     ? image 
     : (typeof window !== 'undefined' ? `${window.location.origin}${image}` : image);
 
-  // Update the document title and meta tags directly to ensure they're available for crawlers
+  // Force a new cache version in image URL to help social media platforms refresh their cache
+  const timeStamp = Date.now();
+  const imageWithCacheBuster = absoluteImage.includes('?') 
+    ? `${absoluteImage}&_t=${timeStamp}` 
+    : `${absoluteImage}?_t=${timeStamp}`;
+
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      // Set document title
-      document.title = fullTitle;
+    // Log for debugging
+    console.log('SEO Component - useEffect fired for:', {
+      title: fullTitle,
+      description,
+      image: imageWithCacheBuster,
+      url: canonicalUrl,
+      type
+    });
+    
+    // Update document title directly (for search engines and browser tabs)
+    document.title = fullTitle;
+    
+    // This function helps create a meta tag if it doesn't exist or update it if it does
+    const setMetaTag = (name: string, content: string, isProperty = false) => {
+      const selector = isProperty ? `meta[property="${name}"]` : `meta[name="${name}"]`;
+      let meta = document.querySelector(selector) as HTMLMetaElement;
       
-      console.log('SEO Component updating meta tags for:', {
-        title: fullTitle,
-        description,
-        image: absoluteImage,
-        url: canonicalUrl,
-        type
-      });
-      
-      // Remove all existing meta tags that we're going to replace
-      const removeMetaTags = (selector: string) => {
-        document.querySelectorAll(selector).forEach(el => {
-          if (el.parentNode) {
-            console.log('Removing meta tag:', el.outerHTML);
-            el.parentNode.removeChild(el);
-          }
-        });
-      };
-      
-      // Remove standard description and OG meta tags
-      removeMetaTags('meta[name="description"]:not([data-rh="true"])');
-      removeMetaTags('meta[property^="og:"]:not([data-rh="true"])');
-      removeMetaTags('meta[name^="twitter:"]:not([data-rh="true"])');
-      removeMetaTags('meta[property^="article:"]:not([data-rh="true"])');
-      
-      // Force a new cache version in image URL to help social media platforms refresh their cache
-      const timeStamp = new Date().getTime();
-      const imageWithCacheBuster = absoluteImage.includes('?') 
-        ? `${absoluteImage}&_t=${timeStamp}` 
-        : `${absoluteImage}?_t=${timeStamp}`;
-        
-      // Dynamically update Open Graph meta tags
-      const updateOrCreateMetaTag = (name: string, content: string, isProperty = false) => {
-        let meta = document.querySelector(isProperty 
-          ? `meta[property="${name}"]` 
-          : `meta[name="${name}"]`);
-          
-        if (!meta) {
-          meta = document.createElement('meta');
-          if (isProperty) {
-            meta.setAttribute('property', name);
-          } else {
-            meta.setAttribute('name', name);
-          }
-          document.head.appendChild(meta);
+      if (!meta) {
+        meta = document.createElement('meta');
+        if (isProperty) {
+          meta.setAttribute('property', name);
+        } else {
+          meta.setAttribute('name', name);
         }
-        
-        meta.setAttribute('content', content);
-        console.log(`Updated meta tag: ${isProperty ? 'property' : 'name'}="${name}" content="${content}"`);
-      };
-      
-      // Set basic meta tags
-      updateOrCreateMetaTag('description', description);
-      
-      // Set Open Graph meta tags
-      updateOrCreateMetaTag('og:title', fullTitle, true);
-      updateOrCreateMetaTag('og:description', description, true);
-      updateOrCreateMetaTag('og:image', imageWithCacheBuster, true);
-      updateOrCreateMetaTag('og:url', canonicalUrl, true);
-      updateOrCreateMetaTag('og:type', type, true);
-      updateOrCreateMetaTag('og:site_name', 'Limitless Lab', true);
-      
-      // Set Twitter meta tags
-      updateOrCreateMetaTag('twitter:card', 'summary_large_image');
-      updateOrCreateMetaTag('twitter:title', fullTitle);
-      updateOrCreateMetaTag('twitter:description', description);
-      updateOrCreateMetaTag('twitter:image', imageWithCacheBuster);
-      
-      // Handle article specific tags
-      if (type === 'article') {
-        if (published) {
-          updateOrCreateMetaTag('article:published_time', published, true);
-        }
-        if (modified) {
-          updateOrCreateMetaTag('article:modified_time', modified, true);
-        }
-        if (tags && tags.length > 0) {
-          tags.forEach(tag => {
-            const metaTag = document.createElement('meta');
-            metaTag.setAttribute('property', 'article:tag');
-            metaTag.setAttribute('content', tag);
-            document.head.appendChild(metaTag);
-          });
-        }
+        document.head.appendChild(meta);
       }
       
-      // Update canonical link
-      let canonicalLink = document.querySelector('link[rel="canonical"]');
-      if (canonicalLink) {
-        canonicalLink.setAttribute('href', canonicalUrl);
-      } else {
-        canonicalLink = document.createElement('link');
-        canonicalLink.setAttribute('rel', 'canonical');
-        canonicalLink.setAttribute('href', canonicalUrl);
-        document.head.appendChild(canonicalLink);
+      meta.setAttribute('content', content);
+      console.log(`Updated meta tag: ${isProperty ? 'property' : 'name'}="${name}" content="${content}"`);
+    };
+    
+    // Basic meta tags
+    setMetaTag('description', description);
+    
+    // Open Graph meta tags
+    setMetaTag('og:title', fullTitle, true);
+    setMetaTag('og:description', description, true);
+    setMetaTag('og:image', imageWithCacheBuster, true);
+    setMetaTag('og:url', canonicalUrl, true);
+    setMetaTag('og:type', type, true);
+    setMetaTag('og:site_name', 'Limitless Lab', true);
+    
+    // Twitter meta tags
+    setMetaTag('twitter:card', 'summary_large_image');
+    setMetaTag('twitter:title', fullTitle);
+    setMetaTag('twitter:description', description);
+    setMetaTag('twitter:image', imageWithCacheBuster);
+    
+    // Create canonical link
+    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', canonicalUrl);
+    
+    // Article-specific meta tags
+    if (type === 'article') {
+      if (published) {
+        setMetaTag('article:published_time', published, true);
+      }
+      if (modified) {
+        setMetaTag('article:modified_time', modified, true);
+      }
+      if (tags && tags.length > 0) {
+        // Remove old article tags
+        document.querySelectorAll('meta[property="article:tag"]').forEach(el => {
+          el.parentNode?.removeChild(el);
+        });
+        
+        // Add new article tags
+        tags.forEach(tag => {
+          const tagMeta = document.createElement('meta');
+          tagMeta.setAttribute('property', 'article:tag');
+          tagMeta.setAttribute('content', tag);
+          document.head.appendChild(tagMeta);
+        });
       }
     }
-  }, [fullTitle, description, absoluteImage, canonicalUrl, type, published, modified, tags]);
+  }, [fullTitle, description, imageWithCacheBuster, canonicalUrl, type, published, modified, tags]);
 
   return (
-    <Helmet defer={false} prioritizeSeoTags>
+    <Helmet prioritizeSeoTags>
       {/* Basic metadata */}
       <title>{fullTitle}</title>
-      <meta name="description" content={description} data-rh="true" />
+      <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
       
       {/* Preconnect to important resources */}
       <link rel="preconnect" href="https://crllgygjuqpluvdpwayi.supabase.co" />
 
       {/* Open Graph metadata */}
-      <meta property="og:type" content={type} data-rh="true" />
-      <meta property="og:title" content={fullTitle} data-rh="true" />
-      <meta property="og:description" content={description} data-rh="true" />
-      <meta property="og:url" content={canonicalUrl} data-rh="true" />
-      <meta property="og:image" content={absoluteImage} data-rh="true" />
-      <meta property="og:site_name" content="Limitless Lab" data-rh="true" />
+      <meta property="og:type" content={type} />
+      <meta property="og:title" content={fullTitle} />
+      <meta property="og:description" content={description} />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:image" content={imageWithCacheBuster} />
+      <meta property="og:site_name" content="Limitless Lab" />
       
       {/* Twitter Card metadata */}
-      <meta name="twitter:card" content="summary_large_image" data-rh="true" />
-      <meta name="twitter:title" content={fullTitle} data-rh="true" />
-      <meta name="twitter:description" content={description} data-rh="true" />
-      <meta name="twitter:image" content={absoluteImage} data-rh="true" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={fullTitle} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={imageWithCacheBuster} />
       
       {/* Article specific metadata */}
       {type === 'article' && published && (
-        <meta property="article:published_time" content={published} data-rh="true" />
+        <meta property="article:published_time" content={published} />
       )}
       {type === 'article' && modified && (
-        <meta property="article:modified_time" content={modified} data-rh="true" />
+        <meta property="article:modified_time" content={modified} />
       )}
       {type === 'article' && tags && tags.map((tag) => (
-        <meta property="article:tag" content={tag} key={tag} data-rh="true" />
+        <meta property="article:tag" content={tag} key={tag} />
       ))}
     </Helmet>
   );
