@@ -31,27 +31,23 @@ export function SEO({
   // Use current URL as canonical if not provided
   const canonicalUrl = canonical || (typeof window !== 'undefined' ? window.location.href : '');
   
-  // Ensure image is an absolute URL
-  const absoluteImage = image.startsWith('http') 
-    ? image 
-    : (typeof window !== 'undefined' ? `${window.location.origin}${image}` : image);
+  // Force a new cache version in image URL to prevent social media caching
+  const currentDate = new Date().toISOString().split('T')[0]; // Use date only: YYYY-MM-DD
+  const imageWithCacheBuster = image.includes('?') 
+    ? `${image}&_t=${currentDate}` 
+    : `${image}?_t=${currentDate}`;
 
-  // Force a new cache version in image URL to help social media platforms refresh their cache
-  const timeStamp = Date.now();
-  const imageWithCacheBuster = absoluteImage.includes('?') 
-    ? `${absoluteImage}&_t=${timeStamp}` 
-    : `${absoluteImage}?_t=${timeStamp}`;
-
+  // Direct DOM manipulation for instant effect (in addition to Helmet)
   useEffect(() => {
     // Log for debugging
-    console.log('SEO Component - useEffect fired for:', {
+    console.log('SEO Component - Applying meta tags for:', {
       title: fullTitle,
       description,
       image: imageWithCacheBuster,
       url: canonicalUrl,
       type
     });
-    
+
     // Update document title directly (for search engines and browser tabs)
     document.title = fullTitle;
     
@@ -71,11 +67,15 @@ export function SEO({
       }
       
       meta.setAttribute('content', content);
-      console.log(`Updated meta tag: ${isProperty ? 'property' : 'name'}="${name}" content="${content}"`);
     };
     
     // Basic meta tags
     setMetaTag('description', description);
+    
+    // Prevent caching
+    setMetaTag('Cache-Control', 'no-cache, no-store, must-revalidate');
+    setMetaTag('Pragma', 'no-cache');
+    setMetaTag('Expires', '0');
     
     // Open Graph meta tags
     setMetaTag('og:title', fullTitle, true);
@@ -90,6 +90,7 @@ export function SEO({
     setMetaTag('twitter:title', fullTitle);
     setMetaTag('twitter:description', description);
     setMetaTag('twitter:image', imageWithCacheBuster);
+    setMetaTag('twitter:url', canonicalUrl);
     
     // Create canonical link
     let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -132,6 +133,11 @@ export function SEO({
       <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
       
+      {/* Prevent caching */}
+      <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+      <meta http-equiv="Pragma" content="no-cache" />
+      <meta http-equiv="Expires" content="0" />
+      
       {/* Preconnect to important resources */}
       <link rel="preconnect" href="https://crllgygjuqpluvdpwayi.supabase.co" />
 
@@ -148,6 +154,7 @@ export function SEO({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={imageWithCacheBuster} />
+      <meta name="twitter:url" content={canonicalUrl} />
       
       {/* Article specific metadata */}
       {type === 'article' && published && (
