@@ -1,6 +1,6 @@
-
 import { Helmet } from "react-helmet";
 import { useEffect, useRef } from "react";
+import { usePageSEO } from "@/hooks/usePageSEO";
 
 interface SEOProps {
   title: string;
@@ -34,6 +34,18 @@ export function SEO({
   // Use current URL as canonical if not provided
   const canonicalUrl = canonical || (typeof window !== 'undefined' ? window.location.href : '');
   
+  // Force update meta tags using our enhanced hook
+  usePageSEO({
+    title: fullTitle,
+    description,
+    imageUrl: image,
+    canonicalUrl,
+    type,
+    published,
+    modified,
+    tags
+  });
+
   // Force a new cache version in image URL to prevent social media caching
   const currentDate = new Date().toISOString().split('T')[0]; // Use date only: YYYY-MM-DD
   const imageWithCacheBuster = image.includes('?') 

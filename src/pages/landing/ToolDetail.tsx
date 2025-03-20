@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,9 +30,28 @@ export default function ToolDetail() {
     },
   });
 
-  // Log SEO data for debugging
+  // Force refresh meta tags when tool data is loaded
   useEffect(() => {
     if (tool) {
+      // Manually force refresh meta tags to handle potential caching issues
+      const metaRefresh = () => {
+        const ogImageTag = document.querySelector('meta[property="og:image"]');
+        const twitterImageTag = document.querySelector('meta[name="twitter:image"]');
+        
+        if (ogImageTag) {
+          const currentUrl = ogImageTag.getAttribute('content') || '';
+          ogImageTag.setAttribute('content', currentUrl.split('?')[0] + '?_t=' + new Date().toISOString());
+        }
+        
+        if (twitterImageTag) {
+          const currentUrl = twitterImageTag.getAttribute('content') || '';
+          twitterImageTag.setAttribute('content', currentUrl.split('?')[0] + '?_t=' + new Date().toISOString());
+        }
+      };
+      
+      // Call the refresh function after a short delay to ensure React has updated the DOM
+      setTimeout(metaRefresh, 300);
+      
       console.log("Tool page SEO data:", {
         title: tool.name,
         description: tool.brief_description,
@@ -102,6 +120,7 @@ export default function ToolDetail() {
         <SEO
           title="Tool Not Found"
           description="Sorry, we couldn't find the tool you're looking for."
+          canonical={`${window.location.origin}/tools/not-found`}
         />
         <MainNav />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
@@ -113,7 +132,7 @@ export default function ToolDetail() {
 
   // Prepare image URL with cache buster
   const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-  const imageUrl = tool.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png";
+  const imageUrl = tool.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/tools-og-image.png";
   const imageWithCacheBuster = imageUrl.includes('?') 
     ? `${imageUrl}&_t=${timestamp}` 
     : `${imageUrl}?_t=${timestamp}`;
