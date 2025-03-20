@@ -1,12 +1,14 @@
+
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { SEO } from "@/components/common/SEO";
 
 const categories = [
   "All",
@@ -23,6 +25,11 @@ export default function Blog() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const postsPerPage = 9;
+  
+  // Scroll to top when component mounts or when page/category changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage, selectedCategory]);
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ['blog-posts', currentPage, selectedCategory],
@@ -45,14 +52,25 @@ export default function Blog() {
 
       return { posts, totalCount: count };
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const totalPages = posts?.totalCount 
     ? Math.ceil(posts.totalCount / postsPerPage) 
     : 0;
 
+  const handlePostClick = (slug: string) => {
+    navigate(`/blog/${slug}`);
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      <SEO 
+        title="Blog & Updates | Limitless Lab"
+        description="Discover insights, stories, and the latest news in innovation from Limitless Lab."
+        canonical={`${window.location.origin}/blog`}
+      />
+      
       <MainNav />
       <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -92,7 +110,7 @@ export default function Blog() {
                   <div 
                     key={post.id} 
                     className="bg-white rounded-lg overflow-hidden cursor-pointer border border-gray-100 hover:border-[#393CA0]/20 transition-all duration-200 hover:shadow-md"
-                    onClick={() => navigate(`/blog/${post.slug}`)}
+                    onClick={() => handlePostClick(post.slug)}
                   >
                     {post.cover_image && (
                       <div className="aspect-video w-full overflow-hidden">

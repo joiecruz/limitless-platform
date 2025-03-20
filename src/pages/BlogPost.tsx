@@ -1,4 +1,5 @@
-import { useParams } from "react-router-dom";
+
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
@@ -8,15 +9,18 @@ import { format } from "date-fns";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { SEO } from "@/components/common/SEO";
+import { Button } from "@/components/ui/button";
 
 export default function BlogPost() {
   const { slug } = useParams();
+  const navigate = useNavigate();
 
+  // Scroll to top when the component mounts or slug changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [slug]);
 
-  const { data: post, isLoading } = useQuery({
+  const { data: post, isLoading, error } = useQuery({
     queryKey: ['blog-post', slug],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -28,8 +32,18 @@ export default function BlogPost() {
 
       if (error) throw error;
       return data;
-    }
+    },
+    // Ensure the query doesn't retry too aggressively
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Handle error state
+  useEffect(() => {
+    if (error) {
+      console.error("Error loading blog post:", error);
+    }
+  }, [error]);
 
   // Extract first paragraph text for meta description
   const getMetaDescription = (content: string | null | undefined): string => {
@@ -71,7 +85,19 @@ export default function BlogPost() {
   }
 
   if (!post) {
-    return <div>Post not found</div>;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <h1 className="text-2xl font-semibold">Post not found</h1>
+        <p className="text-gray-600">The blog post you're looking for doesn't exist or has been removed.</p>
+        <Button 
+          variant="default" 
+          onClick={() => navigate('/blog')}
+          className="mt-4"
+        >
+          Back to Blog
+        </Button>
+      </div>
+    );
   }
 
   const wordCount = post.content ? post.content.split(/\s+/).length : 0;
@@ -83,63 +109,50 @@ export default function BlogPost() {
   const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
   const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
 
-  console.log('BlogPost: Preparing SEO metadata', {
-    title,
-    description,
-    imageUrl,
-    canonicalUrl,
-    type: 'article',
-    published: post.created_at,
-    modified: post.updated_at,
-    tags: post.categories
-  });
-
   // Add structured metadata for article
   useEffect(() => {
-    if (post) {
-      // Create JSON-LD structured data for the article
-      const articleSchema = {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": post.title,
-        "image": post.cover_image,
-        "datePublished": post.created_at,
-        "dateModified": post.updated_at,
-        "author": {
-          "@type": "Organization",
-          "name": "Limitless Lab"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "Limitless Lab",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png"
-          }
-        },
-        "description": description
-      };
-
-      console.log('Adding structured data (JSON-LD):', articleSchema);
-
-      // Add structured data to the page
-      let script = document.getElementById('article-schema');
-      if (!script) {
-        script = document.createElement('script');
-        script.id = 'article-schema';
-        script.setAttribute('type', 'application/ld+json');
-        document.head.appendChild(script);
-      }
-      script.textContent = JSON.stringify(articleSchema);
-
-      // Clean up when component unmounts
-      return () => {
-        const scriptToRemove = document.getElementById('article-schema');
-        if (scriptToRemove) {
-          scriptToRemove.remove();
+    if (!post) return;
+    
+    // Create JSON-LD structured data for the article
+    const articleSchema = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": post.title,
+      "image": post.cover_image,
+      "datePublished": post.created_at,
+      "dateModified": post.updated_at,
+      "author": {
+        "@type": "Organization",
+        "name": "Limitless Lab"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Limitless Lab",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png"
         }
-      };
+      },
+      "description": description
+    };
+
+    // Add structured data to the page
+    let script = document.getElementById('article-schema');
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'article-schema';
+      script.setAttribute('type', 'application/ld+json');
+      document.head.appendChild(script);
     }
+    script.textContent = JSON.stringify(articleSchema);
+
+    // Clean up when component unmounts
+    return () => {
+      const scriptToRemove = document.getElementById('article-schema');
+      if (scriptToRemove) {
+        scriptToRemove.remove();
+      }
+    };
   }, [post, description]);
 
   return (
@@ -158,6 +171,16 @@ export default function BlogPost() {
       <MainNav />
       
       <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+        <div className="mb-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/blog')}
+            className="mb-6 text-gray-600 hover:text-gray-900"
+          >
+            ← Back to all posts
+          </Button>
+        </div>
+        
         <div className="flex flex-wrap items-center gap-4 mb-8 text-sm text-gray-600">
           <time dateTime={post.created_at}>
             {format(new Date(post.created_at), 'MMMM d, yyyy')}
