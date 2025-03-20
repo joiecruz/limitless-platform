@@ -1,5 +1,5 @@
 
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
@@ -13,7 +13,7 @@ import { BlogContent } from "@/components/blog/BlogContent";
 import { BlogNotFound } from "@/components/blog/BlogNotFound";
 import { BlogLoading } from "@/components/blog/BlogLoading";
 import { BlogSchemaGenerator } from "@/components/blog/BlogSchemaGenerator";
-import { extractMetaDescription } from "@/components/blog/MetaDescriptionExtractor";
+import { useBlogPostSEO } from "@/hooks/useBlogPostSEO";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -48,6 +48,9 @@ export default function BlogPost() {
     }
   }, [error]);
 
+  // Get SEO data from our custom hook
+  const seoData = useBlogPostSEO(post);
+
   if (isLoading) {
     return <BlogLoading />;
   }
@@ -59,26 +62,27 @@ export default function BlogPost() {
   const wordCount = post.content ? post.content.split(/\s+/).length : 0;
   const readTime = Math.ceil(wordCount / 200);
 
-  // Prepare metadata values prioritizing custom meta description if available
-  const title = post.title || "Blog Post";
-  const description = post.meta_description || extractMetaDescription(post.content);
-  const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
-  const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
-
   return (
     <div className="min-h-screen bg-white">
-      <SEO
-        title={title}
-        description={description}
-        image={imageUrl}
-        canonical={canonicalUrl}
-        type="article"
-        published={post.created_at}
-        modified={post.updated_at}
-        tags={post.categories}
-      />
-      
-      <BlogSchemaGenerator post={post} description={description} />
+      {seoData && (
+        <>
+          <SEO
+            title={seoData.title}
+            description={seoData.description}
+            image={seoData.imageUrl}
+            canonical={seoData.canonicalUrl}
+            type="article"
+            published={seoData.published}
+            modified={seoData.modified}
+            tags={seoData.tags}
+          />
+          
+          <BlogSchemaGenerator 
+            post={post} 
+            description={seoData.description} 
+          />
+        </>
+      )}
       
       <MainNav />
       
