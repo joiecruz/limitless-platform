@@ -47,10 +47,11 @@ export function SEO({
   });
 
   // Force a new cache version in image URL to prevent social media caching
-  const currentDate = new Date().toISOString().split('T')[0]; // Use date only: YYYY-MM-DD
+  // Use a unique identifier - milliseconds + random string
+  const uniqueId = new Date().getTime() + Math.random().toString(36).substring(2, 15);
   const imageWithCacheBuster = image.includes('?') 
-    ? `${image}&_t=${currentDate}` 
-    : `${image}?_t=${currentDate}`;
+    ? `${image}&_t=${uniqueId}` 
+    : `${image}?_t=${uniqueId}`;
 
   // Set up cleanup function for meta tags and tracking
   useEffect(() => {
@@ -85,6 +86,18 @@ export function SEO({
       
       meta.setAttribute('content', content);
     };
+    
+    // Remove any conflicting meta tags (to avoid duplicates)
+    if (isMounted.current) {
+      // Look for any og:url tags that might be conflicting
+      const ogUrlTags = document.querySelectorAll('meta[property="og:url"]');
+      if (ogUrlTags.length > 1) {
+        // Keep only one, remove the rest
+        for (let i = 1; i < ogUrlTags.length; i++) {
+          ogUrlTags[i].parentNode?.removeChild(ogUrlTags[i]);
+        }
+      }
+    }
     
     // Update document title
     if (isMounted.current) {
@@ -164,9 +177,9 @@ export function SEO({
       <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
       
-      <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+      <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
       <meta http-equiv="Pragma" content="no-cache" />
-      <meta http-equiv="Expires" content="0" />
+      <meta http-equiv="Expires" content="-1" />
       
       <link rel="preconnect" href="https://crllgygjuqpluvdpwayi.supabase.co" />
 
