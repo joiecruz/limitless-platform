@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,8 @@ import { ToolHeader } from "@/components/tools/detail/ToolHeader";
 import { ToolAbout } from "@/components/tools/detail/ToolAbout";
 import { ToolUsage } from "@/components/tools/detail/ToolUsage";
 import { ToolDownloadCTA } from "@/components/tools/detail/ToolDownloadCTA";
+import { SEO } from "@/components/common/SEO";
+import { useEffect } from "react";
 
 export default function ToolDetail() {
   const { id } = useParams();
@@ -27,6 +30,18 @@ export default function ToolDetail() {
       return data;
     },
   });
+
+  // Log SEO data for debugging
+  useEffect(() => {
+    if (tool) {
+      console.log("Tool page SEO data:", {
+        title: tool.name,
+        description: tool.brief_description,
+        image: tool.cover_image,
+        canonicalUrl: `${window.location.origin}/tools/${id}`
+      });
+    }
+  }, [tool, id]);
 
   const handleDownload = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -84,6 +99,10 @@ export default function ToolDetail() {
   if (!tool) {
     return (
       <div className="min-h-screen bg-white">
+        <SEO
+          title="Tool Not Found"
+          description="Sorry, we couldn't find the tool you're looking for."
+        />
         <MainNav />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <h2 className="text-2xl font-semibold">Tool not found</h2>
@@ -92,8 +111,23 @@ export default function ToolDetail() {
     );
   }
 
+  // Prepare image URL with cache buster
+  const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const imageUrl = tool.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png";
+  const imageWithCacheBuster = imageUrl.includes('?') 
+    ? `${imageUrl}&_t=${timestamp}` 
+    : `${imageUrl}?_t=${timestamp}`;
+
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title={`${tool.name} | Limitless Lab Tools`}
+        description={tool.brief_description || "Explore this innovation tool from Limitless Lab"}
+        image={imageWithCacheBuster}
+        canonical={`${window.location.origin}/tools/${id}`}
+        type="article"
+      />
+      
       <MainNav />
       
       <ToolHeader

@@ -13,6 +13,7 @@ export default function NotFound() {
       <SEO
         title="404 - Page Not Found"
         description="Sorry, we couldn't find the page you're looking for."
+        canonical={`${window.location.origin}/404`}
       />
 
       <MainNav />
