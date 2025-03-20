@@ -34,13 +34,19 @@ export default function Terms() {
   const pageDescription = page?.meta_description || "Terms of Service for Limitless Lab - Please read these terms carefully before using our platform.";
   const pageImage = page?.meta_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png";
 
+  // Add cache buster to prevent social media caching
+  const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const imageWithCacheBuster = pageImage.includes('?') 
+    ? `${pageImage}&_t=${timestamp}` 
+    : `${pageImage}?_t=${timestamp}`;
+
   if (!page) {
     return (
       <>
         <SEO 
           title={pageTitle}
           description={pageDescription}
-          image={pageImage}
+          image={imageWithCacheBuster}
         />
         <MainNav />
         <div className="container mx-auto px-4 py-16">
@@ -61,7 +67,8 @@ export default function Terms() {
       <SEO 
         title={page.title}
         description={page.meta_description || pageDescription}
-        image={page.meta_image || pageImage}
+        image={imageWithCacheBuster}
+        canonical={`${window.location.origin}/terms`}
         type="article"
       />
       <MainNav />

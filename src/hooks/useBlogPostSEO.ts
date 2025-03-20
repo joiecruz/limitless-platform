@@ -20,7 +20,16 @@ export function useBlogPostSEO(post: BlogPostData | null | undefined) {
     // Calculate metadata values
     const title = post.title || "Blog Post";
     const description = post.meta_description || extractMetaDescription(post.content);
-    const imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
+    
+    // Ensure image URL is absolute
+    let imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
+    
+    // Add cache buster to prevent social media caching
+    const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    imageUrl = imageUrl.includes('?') 
+      ? `${imageUrl}&_t=${timestamp}` 
+      : `${imageUrl}?_t=${timestamp}`;
+      
     const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
     
     return {

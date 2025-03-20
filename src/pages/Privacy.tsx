@@ -33,6 +33,12 @@ export default function Privacy() {
   const pageTitle = page ? page.title : "Privacy Policy";
   const pageDescription = page?.meta_description || "Privacy Policy for Limitless Lab - Learn how we collect, use, and protect your personal information.";
   const pageImage = page?.meta_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png";
+  
+  // Add cache buster to prevent social media caching
+  const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const imageWithCacheBuster = pageImage.includes('?') 
+    ? `${pageImage}&_t=${timestamp}` 
+    : `${pageImage}?_t=${timestamp}`;
 
   if (!page) {
     return (
@@ -40,7 +46,7 @@ export default function Privacy() {
         <SEO 
           title={pageTitle}
           description={pageDescription}
-          image={pageImage}
+          image={imageWithCacheBuster}
         />
         <MainNav />
         <div className="container mx-auto px-4 py-16">
@@ -61,7 +67,8 @@ export default function Privacy() {
       <SEO 
         title={page.title}
         description={page.meta_description || pageDescription}
-        image={page.meta_image || pageImage}
+        image={imageWithCacheBuster}
+        canonical={`${window.location.origin}/privacy`}
         type="article"
       />
       <MainNav />

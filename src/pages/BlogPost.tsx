@@ -50,6 +50,18 @@ export default function BlogPost() {
 
   // Get SEO data from our custom hook
   const seoData = useBlogPostSEO(post);
+  
+  // Log SEO data for debugging
+  useEffect(() => {
+    if (seoData) {
+      console.log("Blog post SEO data:", {
+        title: seoData.title,
+        description: seoData.description,
+        imageUrl: seoData.imageUrl,
+        canonicalUrl: seoData.canonicalUrl
+      });
+    }
+  }, [seoData]);
 
   if (isLoading) {
     return <BlogLoading />;
