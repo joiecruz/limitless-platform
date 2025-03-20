@@ -1,11 +1,13 @@
+
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
+import { SEO } from "@/components/common/SEO";
 
 const categories = [
   "All tools",
@@ -19,6 +21,21 @@ const categories = [
 
 export default function Tools() {
   const [selectedCategory, setSelectedCategory] = useState("All tools");
+
+  // Page metadata
+  const pageTitle = "Innovation Tools | Limitless Lab";
+  const pageDescription = "Empower your creative process with our collection of free worksheets, canvases, and downloadable resources for innovation.";
+  const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/tools-og-image.png";
+  
+  // Log SEO data for debugging
+  useEffect(() => {
+    console.log("Tools page SEO data:", {
+      title: pageTitle,
+      description: pageDescription,
+      image: pageImage,
+      canonicalUrl: `${window.location.origin}/tools`
+    });
+  }, []);
 
   const { data: tools } = useQuery({
     queryKey: ["innovation_tools"],
@@ -39,6 +56,14 @@ export default function Tools() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO 
+        title={pageTitle}
+        description={pageDescription}
+        image={pageImage}
+        canonical={`${window.location.origin}/tools`}
+        type="website"
+      />
+      
       <MainNav />
       
       {/* Hero Section */}
