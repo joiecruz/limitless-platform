@@ -1,6 +1,6 @@
 
 import { Helmet } from "react-helmet";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface SEOProps {
   title: string;
@@ -23,6 +23,9 @@ export function SEO({
   modified,
   tags,
 }: SEOProps) {
+  // Track mounted state to prevent memory leaks
+  const isMounted = useRef(true);
+  
   // Ensure title has the brand name
   const fullTitle = title.includes("Limitless Lab") 
     ? title 
@@ -37,8 +40,11 @@ export function SEO({
     ? `${image}&_t=${currentDate}` 
     : `${image}?_t=${currentDate}`;
 
-  // Direct DOM manipulation for instant effect (in addition to Helmet)
+  // Set up cleanup function for meta tags and tracking
   useEffect(() => {
+    // Mark component as mounted
+    isMounted.current = true;
+    
     // Log for debugging
     console.log('SEO Component - Applying meta tags for:', {
       title: fullTitle,
@@ -48,11 +54,10 @@ export function SEO({
       type
     });
 
-    // Update document title directly (for search engines and browser tabs)
-    document.title = fullTitle;
-    
     // This function helps create a meta tag if it doesn't exist or update it if it does
     const setMetaTag = (name: string, content: string, isProperty = false) => {
+      if (!isMounted.current) return;
+      
       const selector = isProperty ? `meta[property="${name}"]` : `meta[name="${name}"]`;
       let meta = document.querySelector(selector) as HTMLMetaElement;
       
@@ -69,10 +74,13 @@ export function SEO({
       meta.setAttribute('content', content);
     };
     
-    // Basic meta tags
-    setMetaTag('description', description);
+    // Update document title
+    if (isMounted.current) {
+      document.title = fullTitle;
+    }
     
-    // Prevent caching
+    // Set all meta tags
+    setMetaTag('description', description);
     setMetaTag('Cache-Control', 'no-cache, no-store, must-revalidate');
     setMetaTag('Pragma', 'no-cache');
     setMetaTag('Expires', '0');
@@ -93,13 +101,15 @@ export function SEO({
     setMetaTag('twitter:url', canonicalUrl);
     
     // Create canonical link
-    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
+    if (isMounted.current) {
+      let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+      if (!canonicalLink) {
+        canonicalLink = document.createElement('link');
+        canonicalLink.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonicalLink);
+      }
+      canonicalLink.setAttribute('href', canonicalUrl);
     }
-    canonicalLink.setAttribute('href', canonicalUrl);
     
     // Article-specific meta tags
     if (type === 'article') {
@@ -112,36 +122,42 @@ export function SEO({
       if (tags && tags.length > 0) {
         // Remove old article tags
         document.querySelectorAll('meta[property="article:tag"]').forEach(el => {
-          el.parentNode?.removeChild(el);
+          if (isMounted.current) {
+            el.parentNode?.removeChild(el);
+          }
         });
         
         // Add new article tags
         tags.forEach(tag => {
-          const tagMeta = document.createElement('meta');
-          tagMeta.setAttribute('property', 'article:tag');
-          tagMeta.setAttribute('content', tag);
-          document.head.appendChild(tagMeta);
+          if (isMounted.current) {
+            const tagMeta = document.createElement('meta');
+            tagMeta.setAttribute('property', 'article:tag');
+            tagMeta.setAttribute('content', tag);
+            document.head.appendChild(tagMeta);
+          }
         });
       }
     }
+    
+    // Clean up function to run when component unmounts
+    return () => {
+      isMounted.current = false;
+      console.log('SEO Component - Cleaning up meta tags for:', fullTitle);
+    };
   }, [fullTitle, description, imageWithCacheBuster, canonicalUrl, type, published, modified, tags]);
 
   return (
     <Helmet prioritizeSeoTags>
-      {/* Basic metadata */}
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
       
-      {/* Prevent caching */}
       <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
       <meta http-equiv="Pragma" content="no-cache" />
       <meta http-equiv="Expires" content="0" />
       
-      {/* Preconnect to important resources */}
       <link rel="preconnect" href="https://crllgygjuqpluvdpwayi.supabase.co" />
 
-      {/* Open Graph metadata */}
       <meta property="og:type" content={type} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
@@ -149,14 +165,12 @@ export function SEO({
       <meta property="og:image" content={imageWithCacheBuster} />
       <meta property="og:site_name" content="Limitless Lab" />
       
-      {/* Twitter Card metadata */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={imageWithCacheBuster} />
       <meta name="twitter:url" content={canonicalUrl} />
       
-      {/* Article specific metadata */}
       {type === 'article' && published && (
         <meta property="article:published_time" content={published} />
       )}

@@ -35,5 +35,14 @@ const forceRefreshMetaTags = () => {
 // Run on document load to force refresh meta tags
 document.addEventListener('DOMContentLoaded', forceRefreshMetaTags);
 
+// Also run after navigation events for single-page apps
+if ('navigation' in window) {
+  // @ts-ignore - Navigation API might not be fully supported in TypeScript yet
+  window.navigation.addEventListener('navigate', () => {
+    setTimeout(forceRefreshMetaTags, 500); // Small delay to ensure page has loaded
+  });
+}
+
 // Mount React application
-createRoot(document.getElementById("root")!).render(<App />);
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);
