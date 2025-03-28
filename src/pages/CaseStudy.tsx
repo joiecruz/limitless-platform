@@ -62,9 +62,9 @@ export default function CaseStudy() {
     );
   }
 
-  const pageTitle = `${caseStudy.title} | Limitless Lab Case Studies`;
-  const pageDescription = caseStudy.summary || "Explore this case study from Limitless Lab";
-  const pageImage = caseStudy.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  const pageTitle = `${caseStudy.name} | Limitless Lab Case Studies`;
+  const pageDescription = caseStudy.description || "Explore this case study from Limitless Lab";
+  const pageImage = caseStudy.cover_photo || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   const canonicalUrl = `${window.location.origin}/case-studies/${caseStudy.slug}`;
 
   return (
@@ -75,7 +75,7 @@ export default function CaseStudy() {
         <link rel="canonical" href={canonicalUrl} />
         
         {/* OpenGraph tags */}
-        <meta property="og:title" content={caseStudy.title} />
+        <meta property="og:title" content={caseStudy.name} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:image" content={pageImage} />
         <meta property="og:type" content="article" />
@@ -84,7 +84,7 @@ export default function CaseStudy() {
         
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={caseStudy.title} />
+        <meta name="twitter:title" content={caseStudy.name} />
         <meta name="twitter:description" content={pageDescription} />
         <meta name="twitter:image" content={pageImage} />
       </Helmet>
@@ -93,21 +93,29 @@ export default function CaseStudy() {
       
       <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <CaseStudyHeader 
-          title={caseStudy.title} 
-          coverImage={caseStudy.cover_image}
+          name={caseStudy.name} 
+          description={caseStudy.description || ""}
         />
         
         <CaseStudyMeta 
           client={caseStudy.client} 
-          year={caseStudy.year} 
-          services={caseStudy.services} 
-          industry={caseStudy.industry}
+          sdgs={caseStudy.sdgs} 
+          services={caseStudy.services}
         />
         
-        <CaseStudyContent content={caseStudy.content} />
+        <CaseStudyContent 
+          problem={caseStudy.problem_opportunity}
+          approach={caseStudy.approach}
+          impact={caseStudy.impact}
+        />
         
-        {caseStudy.additional_images && (
-          <CaseStudyImages images={caseStudy.additional_images} />
+        {(caseStudy.cover_photo || caseStudy.additional_photo1 || caseStudy.additional_photo2) && (
+          <CaseStudyImages 
+            coverPhoto={caseStudy.cover_photo}
+            name={caseStudy.name}
+            additionalPhoto1={caseStudy.additional_photo1}
+            additionalPhoto2={caseStudy.additional_photo2}
+          />
         )}
       </article>
 

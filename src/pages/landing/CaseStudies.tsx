@@ -7,20 +7,42 @@ import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
 import { ArrowRight } from "lucide-react";
 import { Helmet } from "react-helmet";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CaseStudies() {
-  const { data: caseStudies, isLoading } = useQuery({
+  const { toast } = useToast();
+  
+  const { data, isLoading, error } = useQuery({
     queryKey: ["case-studies"],
     queryFn: async () => {
+      console.log("Fetching case studies...");
       const { data, error } = await supabase
         .from('case_studies')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error("Error fetching case studies:", error);
+        throw error;
+      }
+      
+      console.log("Case studies data:", data);
+      return data || [];
+    },
+    meta: {
+      onError: (error: Error) => {
+        console.error("Query error:", error);
+        toast({
+          title: "Error loading case studies",
+          description: "Failed to load case studies. Please try again later.",
+          variant: "destructive",
+        });
+      },
     },
   });
+
+  // Ensure we always have an array to work with
+  const caseStudies = Array.isArray(data) ? data : [];
 
   const pageTitle = "Case Studies | Limitless Lab";
   const pageDescription = "Explore our portfolio of impactful projects and success stories across various industries and social innovation challenges.";
@@ -79,34 +101,41 @@ export default function CaseStudies() {
                 </div>
               ))}
             </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <h3 className="text-xl text-gray-600">Failed to load case studies</h3>
+              <p className="mt-2 text-gray-500">Please try again later</p>
+            </div>
+          ) : caseStudies.length === 0 ? (
+            <div className="text-center py-12">
+              <h3 className="text-xl text-gray-600">No case studies found</h3>
+              <p className="mt-2 text-gray-500">Check back later for new content</p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {caseStudies?.map((study) => (
+              {caseStudies.map((study) => (
                 <Link key={study.id} to={`/case-studies/${study.slug}`} className="group">
                   <div className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
                     <div className="aspect-video relative">
                       <img
-                        src={study.cover_image || "/placeholder.svg"}
-                        alt={study.title}
+                        src={study.cover_photo || "/placeholder.svg"}
+                        alt={study.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="p-6">
                       <div className="flex items-center mb-3">
-                        <span className="text-sm font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">
-                          {study.industry}
-                        </span>
-                        {study.year && (
-                          <span className="text-sm text-gray-500 ml-3">
-                            {study.year}
+                        {study.services && study.services.length > 0 && (
+                          <span className="text-sm font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">
+                            {Array.isArray(study.services) ? study.services[0] : "Service"}
                           </span>
                         )}
                       </div>
                       <h3 className="text-2xl font-semibold mb-3 group-hover:text-[#393CA0] transition-colors">
-                        {study.title}
+                        {study.name}
                       </h3>
                       <p className="text-gray-600 mb-4 line-clamp-3">
-                        {study.summary}
+                        {study.description}
                       </p>
                       <div className="inline-flex items-center text-[#393CA0] font-medium">
                         View case study <ArrowRight className="ml-2 h-4 w-4" />
