@@ -1,10 +1,19 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import BlogsTable from "@/components/admin/blog/BlogsTable";
 import { CaseStudiesTable } from "@/components/admin/case-studies/CaseStudiesTable";
 import { LogosTable } from "@/components/admin/logos/LogosTable";
 import { ToolsTable } from "@/components/admin/tools/ToolsTable";
+import { useNavigate } from "react-router-dom";
+import { CreateCaseStudyDialog } from "@/components/admin/case-studies/CreateCaseStudyDialog";
+import { AddLogoDialog } from "@/components/admin/logos/AddLogoDialog";
+import { CreateBlogDialog } from "@/components/admin/blog/CreateBlogDialog";
+import { Book, Briefcase, Image, Plus } from "lucide-react";
 
 export default function AdminContent() {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
       <div>
@@ -23,10 +32,19 @@ export default function AdminContent() {
         </TabsList>
         
         <TabsContent value="blog" className="space-y-4">
+          <div className="flex justify-end mb-4">
+            <CreateBlogDialog onSuccess={() => {
+              // Refresh the blogs table
+              window.location.reload();
+            }} />
+          </div>
           <BlogsTable />
         </TabsContent>
         
         <TabsContent value="case-studies" className="space-y-4">
+          <div className="flex justify-end mb-4">
+            <CreateCaseStudyDialog />
+          </div>
           <CaseStudiesTable />
         </TabsContent>
         
@@ -35,6 +53,9 @@ export default function AdminContent() {
         </TabsContent>
         
         <TabsContent value="logos" className="space-y-4">
+          <div className="flex justify-end mb-4">
+            <AddLogoDialog />
+          </div>
           <LogosTable />
         </TabsContent>
       </Tabs>

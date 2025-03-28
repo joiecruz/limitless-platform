@@ -25,9 +25,10 @@ export function useBlogPostSEO(post: BlogPostData | null | undefined) {
     let imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
     
     // Add cache buster to prevent social media caching
-    const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    // Generate a unique timestamp for each render to force cache refresh
+    const timestamp = Date.now().toString() + Math.random().toString(36).substring(2, 8);
     imageUrl = imageUrl.includes('?') 
-      ? `${imageUrl}&_t=${timestamp}` 
+      ? `${imageUrl.split('?')[0]}?_t=${timestamp}` 
       : `${imageUrl}?_t=${timestamp}`;
       
     const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;

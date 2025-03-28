@@ -23,7 +23,7 @@ export function useStructuredData({ type, data }: StructuredDataProps) {
     if (!scriptTag) {
       scriptTag = document.createElement('script');
       scriptTag.id = `structured-data-${type.toLowerCase()}`;
-      scriptTag.type = 'application/ld+json';
+      scriptTag.setAttribute('type', 'application/ld+json');
       document.head.appendChild(scriptTag);
     }
     
@@ -31,8 +31,9 @@ export function useStructuredData({ type, data }: StructuredDataProps) {
     
     // Clean up function
     return () => {
-      if (scriptTag && scriptTag.parentNode) {
-        scriptTag.parentNode.removeChild(scriptTag);
+      const scriptToRemove = document.getElementById(`structured-data-${type.toLowerCase()}`);
+      if (scriptToRemove && scriptToRemove.parentNode) {
+        scriptToRemove.parentNode.removeChild(scriptToRemove);
       }
     };
   }, [type, data]);

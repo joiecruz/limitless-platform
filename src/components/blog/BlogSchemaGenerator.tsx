@@ -7,6 +7,7 @@ interface BlogSchemaGeneratorProps {
     cover_image?: string | null;
     created_at: string;
     updated_at: string;
+    slug: string;
   };
   description: string;
 }
@@ -15,12 +16,27 @@ export function BlogSchemaGenerator({ post, description }: BlogSchemaGeneratorPr
   useEffect(() => {
     if (!post) return;
     
+    // Add unique cache-busting parameter to image URL
+    const timestamp = Date.now().toString() + Math.random().toString(36).substring(2, 8);
+    const imageUrl = post.cover_image 
+      ? (post.cover_image.includes('?') 
+          ? `${post.cover_image.split('?')[0]}?_t=${timestamp}` 
+          : `${post.cover_image}?_t=${timestamp}`)
+      : null;
+    
+    // Current canonical URL
+    const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
+    
     // Create JSON-LD structured data for the article
     const articleSchema = {
       "@context": "https://schema.org",
       "@type": "Article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": canonicalUrl
+      },
       "headline": post.title,
-      "image": post.cover_image,
+      "image": imageUrl,
       "datePublished": post.created_at,
       "dateModified": post.updated_at,
       "author": {
