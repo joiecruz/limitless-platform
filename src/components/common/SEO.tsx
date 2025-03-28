@@ -1,6 +1,8 @@
+
 import { Helmet } from "react-helmet";
 import { useEffect, useRef } from "react";
 import { usePageSEO } from "@/hooks/usePageSEO";
+import { useStructuredData } from "@/hooks/useStructuredData";
 
 interface SEOProps {
   title: string;
@@ -46,156 +48,146 @@ export function SEO({
     tags
   });
 
-  // Force a new cache version in image URL to prevent social media caching
-  // Use a unique identifier - milliseconds + random string
-  const uniqueId = new Date().getTime() + Math.random().toString(36).substring(2, 15);
-  const imageWithCacheBuster = image.includes('?') 
-    ? `${image}&_t=${uniqueId}` 
-    : `${image}?_t=${uniqueId}`;
+  // Generate structured data based on page type
+  const structuredData = type === 'article' 
+    ? {
+        headline: title,
+        description,
+        image,
+        url: canonicalUrl,
+        datePublished: published || new Date().toISOString(),
+        dateModified: modified || new Date().toISOString(),
+        author: {
+          "@type": "Organization",
+          "name": "Limitless Lab"
+        },
+        publisher: {
+          "@type": "Organization",
+          "name": "Limitless Lab",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png"
+          }
+        }
+      }
+    : {
+        name: "Limitless Lab",
+        description,
+        url: canonicalUrl,
+        image
+      };
+  
+  // Apply structured data
+  useStructuredData({
+    type: type === 'article' ? 'Article' : 'WebPage',
+    data: structuredData
+  });
 
-  // Set up cleanup function for meta tags and tracking
+  // Log for debugging
   useEffect(() => {
-    // Mark component as mounted
-    isMounted.current = true;
-    
-    // Log for debugging
-    console.log('SEO Component - Applying meta tags for:', {
+    console.log('SEO Component Initialized for:', {
       title: fullTitle,
       description,
-      image: imageWithCacheBuster,
+      image,
       url: canonicalUrl,
       type
     });
-
-    // This function helps create a meta tag if it doesn't exist or update it if it does
-    const setMetaTag = (name: string, content: string, isProperty = false) => {
-      if (!isMounted.current) return;
-      
-      const selector = isProperty ? `meta[property="${name}"]` : `meta[name="${name}"]`;
-      let meta = document.querySelector(selector) as HTMLMetaElement;
-      
-      if (!meta) {
-        meta = document.createElement('meta');
-        if (isProperty) {
-          meta.setAttribute('property', name);
-        } else {
-          meta.setAttribute('name', name);
-        }
-        document.head.appendChild(meta);
-      }
-      
-      meta.setAttribute('content', content);
-    };
     
-    // Remove any conflicting meta tags (to avoid duplicates)
-    if (isMounted.current) {
-      // Look for any og:url tags that might be conflicting
-      const ogUrlTags = document.querySelectorAll('meta[property="og:url"]');
-      if (ogUrlTags.length > 1) {
-        // Keep only one, remove the rest
-        for (let i = 1; i < ogUrlTags.length; i++) {
-          ogUrlTags[i].parentNode?.removeChild(ogUrlTags[i]);
-        }
-      }
-    }
-    
-    // Update document title
-    if (isMounted.current) {
-      document.title = fullTitle;
-    }
-    
-    // Set all meta tags
-    setMetaTag('description', description);
-    setMetaTag('Cache-Control', 'no-cache, no-store, must-revalidate');
-    setMetaTag('Pragma', 'no-cache');
-    setMetaTag('Expires', '0');
-    
-    // Open Graph meta tags
-    setMetaTag('og:title', fullTitle, true);
-    setMetaTag('og:description', description, true);
-    setMetaTag('og:image', imageWithCacheBuster, true);
-    setMetaTag('og:url', canonicalUrl, true);
-    setMetaTag('og:type', type, true);
-    setMetaTag('og:site_name', 'Limitless Lab', true);
-    
-    // Twitter meta tags
-    setMetaTag('twitter:card', 'summary_large_image');
-    setMetaTag('twitter:title', fullTitle);
-    setMetaTag('twitter:description', description);
-    setMetaTag('twitter:image', imageWithCacheBuster);
-    setMetaTag('twitter:url', canonicalUrl);
-    
-    // Create canonical link
-    if (isMounted.current) {
-      let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-      if (!canonicalLink) {
-        canonicalLink = document.createElement('link');
-        canonicalLink.setAttribute('rel', 'canonical');
-        document.head.appendChild(canonicalLink);
-      }
-      canonicalLink.setAttribute('href', canonicalUrl);
-    }
-    
-    // Article-specific meta tags
-    if (type === 'article') {
-      if (published) {
-        setMetaTag('article:published_time', published, true);
-      }
-      if (modified) {
-        setMetaTag('article:modified_time', modified, true);
-      }
-      if (tags && tags.length > 0) {
-        // Remove old article tags
-        document.querySelectorAll('meta[property="article:tag"]').forEach(el => {
-          if (isMounted.current) {
-            el.parentNode?.removeChild(el);
-          }
-        });
-        
-        // Add new article tags
-        tags.forEach(tag => {
-          if (isMounted.current) {
-            const tagMeta = document.createElement('meta');
-            tagMeta.setAttribute('property', 'article:tag');
-            tagMeta.setAttribute('content', tag);
-            document.head.appendChild(tagMeta);
-          }
-        });
-      }
-    }
-    
-    // Clean up function to run when component unmounts
+    // Cleanup function
     return () => {
       isMounted.current = false;
-      console.log('SEO Component - Cleaning up meta tags for:', fullTitle);
     };
-  }, [fullTitle, description, imageWithCacheBuster, canonicalUrl, type, published, modified, tags]);
+  }, [fullTitle, description, image, canonicalUrl, type]);
 
+  // Force meta refresh on route change
+  useEffect(() => {
+    // This helps with SPA routing issues where meta tags don't update
+    const refreshMetaTags = () => {
+      if (!isMounted.current) return;
+      
+      // Add timestamp to image URLs to bust cache
+      const timestamp = new Date().getTime() + Math.random().toString(36).substring(2);
+      
+      document.querySelectorAll('meta[property="og:image"], meta[name="twitter:image"]').forEach((el) => {
+        const content = el.getAttribute('content') || '';
+        if (content) {
+          const newContent = content.includes('?') 
+            ? content.split('?')[0] + `?_t=${timestamp}` 
+            : content + `?_t=${timestamp}`;
+          el.setAttribute('content', newContent);
+        }
+      });
+      
+      // Make sure canonical URLs are correct
+      document.querySelectorAll('meta[property="og:url"], meta[name="twitter:url"]').forEach((el) => {
+        el.setAttribute('content', canonicalUrl);
+      });
+      
+      console.log('Meta tags refreshed after navigation');
+    };
+    
+    // Set up navigation observation for SPAs
+    if (typeof window !== 'undefined') {
+      window.addEventListener('popstate', refreshMetaTags);
+      
+      // For modern browsers with Navigation API
+      if ('navigation' in window) {
+        // @ts-ignore - Navigation API might not be fully typed
+        window.navigation?.addEventListener('navigate', refreshMetaTags);
+      }
+    }
+    
+    // Force an initial refresh
+    refreshMetaTags();
+    
+    // Set additional timeouts to handle delayed rendering
+    const timeouts = [
+      setTimeout(refreshMetaTags, 500),
+      setTimeout(refreshMetaTags, 1500)
+    ];
+    
+    return () => {
+      timeouts.forEach(clearTimeout);
+      window.removeEventListener('popstate', refreshMetaTags);
+      if ('navigation' in window) {
+        // @ts-ignore
+        window.navigation?.removeEventListener('navigate', refreshMetaTags);
+      }
+    };
+  }, [canonicalUrl]);
+
+  // The Helmet component manages document head tags
   return (
     <Helmet prioritizeSeoTags>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
       
+      {/* Force cache busting */}
       <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
       <meta http-equiv="Pragma" content="no-cache" />
       <meta http-equiv="Expires" content="-1" />
       
+      {/* Performance optimization */}
       <link rel="preconnect" href="https://crllgygjuqpluvdpwayi.supabase.co" />
 
+      {/* OpenGraph / Facebook */}
       <meta property="og:type" content={type} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:image" content={imageWithCacheBuster} />
+      <meta property="og:image" content={image} />
       <meta property="og:site_name" content="Limitless Lab" />
+      <meta property="og:updated_time" content={new Date().toISOString()} />
       
+      {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={imageWithCacheBuster} />
+      <meta name="twitter:image" content={image} />
       <meta name="twitter:url" content={canonicalUrl} />
       
+      {/* Article-specific meta tags */}
       {type === 'article' && published && (
         <meta property="article:published_time" content={published} />
       )}
