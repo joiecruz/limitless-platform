@@ -13,6 +13,8 @@ interface UsePageSEOProps {
   published?: string;
   modified?: string;
   tags?: string[];
+  imageWidth?: number;
+  imageHeight?: number;
 }
 
 /**

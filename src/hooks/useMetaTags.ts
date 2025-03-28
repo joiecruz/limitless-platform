@@ -10,6 +10,8 @@ interface UseMetaTagsProps {
   published?: string;
   modified?: string;
   tags?: string[];
+  imageWidth?: number;
+  imageHeight?: number;
 }
 
 /**
@@ -23,16 +25,24 @@ export function useMetaTags({
   type = 'website',
   published,
   modified,
-  tags
+  tags,
+  imageWidth = 1200,
+  imageHeight = 630
 }: UseMetaTagsProps) {
   useEffect(() => {
     // Generate a unique timestamp for cache busting
     const uniqueTimestamp = new Date().getTime() + Math.random().toString(36).substring(2, 15);
     
+    // Ensure image URL is absolute
+    let absoluteImageUrl = imageUrl;
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      absoluteImageUrl = new URL(imageUrl, window.location.origin).toString();
+    }
+    
     // Add cache buster to image URL - critical for social media platforms
-    const imageWithTimestamp = imageUrl.includes('?') 
-      ? `${imageUrl.split('?')[0]}?_t=${uniqueTimestamp}` 
-      : `${imageUrl}?_t=${uniqueTimestamp}`;
+    const imageWithTimestamp = absoluteImageUrl.includes('?') 
+      ? `${absoluteImageUrl.split('?')[0]}?_t=${uniqueTimestamp}` 
+      : `${absoluteImageUrl}?_t=${uniqueTimestamp}`;
     
     // Function to create or update meta tags
     const setMetaTag = (name: string, content: string, isProperty = false) => {
@@ -61,10 +71,20 @@ export function useMetaTags({
     setMetaTag('Pragma', 'no-cache');
     setMetaTag('Expires', '0');
     
+    // Remove any existing og:image tags to prevent conflicts
+    document.querySelectorAll('meta[property="og:image"]').forEach(el => {
+      if (el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
+    });
+    
     // Open Graph meta tags - critical for Facebook, LinkedIn, etc.
     setMetaTag('og:title', title, true);
     setMetaTag('og:description', description, true);
     setMetaTag('og:image', imageWithTimestamp, true);
+    setMetaTag('og:image:width', imageWidth.toString(), true);
+    setMetaTag('og:image:height', imageHeight.toString(), true);
+    setMetaTag('og:image:secure_url', imageWithTimestamp, true);
     setMetaTag('og:url', canonicalUrl, true);
     setMetaTag('og:type', type, true);
     setMetaTag('og:site_name', 'Limitless Lab', true);
@@ -115,10 +135,11 @@ export function useMetaTags({
       description,
       image: imageWithTimestamp,
       url: canonicalUrl,
-      type
+      type,
+      dimensions: `${imageWidth}x${imageHeight}`
     });
     
-  }, [title, description, imageUrl, canonicalUrl, type, published, modified, tags]);
+  }, [title, description, imageUrl, canonicalUrl, type, published, modified, tags, imageWidth, imageHeight]);
   
   return null;
 }

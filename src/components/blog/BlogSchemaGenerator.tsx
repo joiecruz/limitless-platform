@@ -18,11 +18,24 @@ export function BlogSchemaGenerator({ post, description }: BlogSchemaGeneratorPr
     
     // Add unique cache-busting parameter to image URL
     const timestamp = Date.now().toString() + Math.random().toString(36).substring(2, 8);
-    const imageUrl = post.cover_image 
-      ? (post.cover_image.includes('?') 
-          ? `${post.cover_image.split('?')[0]}?_t=${timestamp}` 
-          : `${post.cover_image}?_t=${timestamp}`)
-      : null;
+    
+    // Ensure image URL is absolute
+    let imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
+    
+    // Force https for image URLs
+    if (imageUrl && imageUrl.startsWith('http:')) {
+      imageUrl = imageUrl.replace('http:', 'https:');
+    }
+    
+    // If URL is relative, make it absolute
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      imageUrl = new URL(imageUrl, window.location.origin).toString();
+    }
+    
+    // Add cache buster
+    imageUrl = imageUrl.includes('?') 
+      ? `${imageUrl.split('?')[0]}?_t=${timestamp}` 
+      : `${imageUrl}?_t=${timestamp}`;
     
     // Current canonical URL
     const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
@@ -36,7 +49,12 @@ export function BlogSchemaGenerator({ post, description }: BlogSchemaGeneratorPr
         "@id": canonicalUrl
       },
       "headline": post.title,
-      "image": imageUrl,
+      "image": {
+        "@type": "ImageObject",
+        "url": imageUrl,
+        "width": 1200,
+        "height": 630
+      },
       "datePublished": post.created_at,
       "dateModified": post.updated_at,
       "author": {
@@ -48,7 +66,9 @@ export function BlogSchemaGenerator({ post, description }: BlogSchemaGeneratorPr
         "name": "Limitless Lab",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png"
+          "url": "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png",
+          "width": 600,
+          "height": 60
         }
       },
       "description": description
