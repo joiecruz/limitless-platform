@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,6 @@ import { ToolHeader } from "@/components/tools/detail/ToolHeader";
 import { ToolAbout } from "@/components/tools/detail/ToolAbout";
 import { ToolUsage } from "@/components/tools/detail/ToolUsage";
 import { ToolDownloadCTA } from "@/components/tools/detail/ToolDownloadCTA";
-import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 
 export default function ToolDetail() {
@@ -29,18 +29,6 @@ export default function ToolDetail() {
       return data;
     },
   });
-
-  // Force refresh meta tags when tool data is loaded
-  useEffect(() => {
-    if (tool) {
-      console.log("Tool page SEO data:", {
-        title: tool.name,
-        description: tool.brief_description,
-        image: tool.cover_image,
-        canonicalUrl: `${window.location.origin}/tools/${id}`
-      });
-    }
-  }, [tool, id]);
 
   const handleDownload = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -101,7 +89,6 @@ export default function ToolDetail() {
         <Helmet>
           <title>Tool Not Found</title>
           <meta name="description" content="Sorry, we couldn't find the tool you're looking for." />
-          <link rel="canonical" href={`${window.location.origin}/tools/not-found`} />
         </Helmet>
         <MainNav />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
@@ -111,21 +98,11 @@ export default function ToolDetail() {
     );
   }
 
-  // Prepare image URL with cache buster
-  const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-  const imageUrl = tool.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/tools-og-image.png";
-  const imageWithCacheBuster = imageUrl.includes('?') 
-    ? `${imageUrl}&_t=${timestamp}` 
-    : `${imageUrl}?_t=${timestamp}`;
-
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
         <title>{`${tool.name} | Limitless Lab Tools`}</title>
         <meta name="description" content={tool.brief_description || "Explore this innovation tool from Limitless Lab"} />
-        <meta property="og:image" content={imageWithCacheBuster} />
-        <meta property="og:type" content="article" />
-        <link rel="canonical" href={`${window.location.origin}/tools/${id}`} />
       </Helmet>
       
       <MainNav />

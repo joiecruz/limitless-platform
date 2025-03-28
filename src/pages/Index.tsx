@@ -11,6 +11,7 @@ import { LoadingPage } from "@/components/common/LoadingPage";
 import { Suspense, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -34,6 +35,11 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>Limitless Lab: All-in-One Innovation Platform</title>
+        <meta name="description" content="Transform your innovation journey with Limitless Lab's comprehensive platform for learning, tools, and community." />
+      </Helmet>
+      
       <MainNav />
       
       {/* Hero Section */}

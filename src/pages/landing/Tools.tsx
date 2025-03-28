@@ -25,18 +25,7 @@ export default function Tools() {
   // Page metadata
   const pageTitle = "Innovation Tools | Limitless Lab";
   const pageDescription = "Empower your creative process with our collection of free worksheets, canvases, and downloadable resources for innovation.";
-  const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/tools-og-image.png";
   
-  // Log SEO data for debugging
-  useEffect(() => {
-    console.log("Tools page SEO data:", {
-      title: pageTitle,
-      description: pageDescription,
-      image: pageImage,
-      canonicalUrl: `${window.location.origin}/tools`
-    });
-  }, []);
-
   const { data: tools } = useQuery({
     queryKey: ["innovation_tools"],
     queryFn: async () => {
@@ -59,9 +48,6 @@ export default function Tools() {
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
-        <meta property="og:image" content={pageImage} />
-        <link rel="canonical" href={`${window.location.origin}/tools`} />
-        <meta property="og:type" content="website" />
       </Helmet>
       
       <MainNav />
