@@ -13,6 +13,8 @@ interface SEOProps {
   published?: string;
   modified?: string;
   tags?: string[];
+  imageWidth?: number;
+  imageHeight?: number;
 }
 
 export function SEO({
@@ -24,6 +26,8 @@ export function SEO({
   published,
   modified,
   tags,
+  imageWidth = 1200,
+  imageHeight = 630
 }: SEOProps) {
   // Track mounted state to prevent memory leaks
   const isMounted = useRef(true);
@@ -45,7 +49,9 @@ export function SEO({
     type,
     published,
     modified,
-    tags
+    tags,
+    imageWidth,
+    imageHeight
   });
 
   // Generate structured data based on page type
@@ -177,6 +183,8 @@ export function SEO({
       <meta property="og:description" content={description} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:image" content={image} />
+      <meta property="og:image:width" content={imageWidth.toString()} />
+      <meta property="og:image:height" content={imageHeight.toString()} />
       <meta property="og:site_name" content="Limitless Lab" />
       <meta property="og:updated_time" content={new Date().toISOString()} />
       

@@ -24,8 +24,17 @@ export function useBlogPostSEO(post: BlogPostData | null | undefined) {
     // Ensure image URL is absolute
     let imageUrl = post.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
     
+    // Force https for image URLs
+    if (imageUrl.startsWith('http:')) {
+      imageUrl = imageUrl.replace('http:', 'https:');
+    }
+    
+    // If URL is relative, make it absolute
+    if (!imageUrl.startsWith('http')) {
+      imageUrl = new URL(imageUrl, window.location.origin).toString();
+    }
+    
     // Add cache buster to prevent social media caching
-    // Generate a unique timestamp for each render to force cache refresh
     const timestamp = Date.now().toString() + Math.random().toString(36).substring(2, 8);
     imageUrl = imageUrl.includes('?') 
       ? `${imageUrl.split('?')[0]}?_t=${timestamp}` 
@@ -40,7 +49,10 @@ export function useBlogPostSEO(post: BlogPostData | null | undefined) {
       canonicalUrl,
       published: post.created_at,
       modified: post.updated_at,
-      tags: post.categories
+      tags: post.categories,
+      // Add image dimensions if known, or use standard OG image dimensions
+      imageWidth: 1200,
+      imageHeight: 630
     };
   }, [post]);
   
