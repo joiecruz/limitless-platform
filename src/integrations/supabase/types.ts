@@ -18,7 +18,6 @@ export type Database = {
           created_by: string | null
           excerpt: string | null
           id: string
-          meta_description: string | null
           published: boolean | null
           slug: string
           tags: string[] | null
@@ -33,7 +32,6 @@ export type Database = {
           created_by?: string | null
           excerpt?: string | null
           id?: string
-          meta_description?: string | null
           published?: boolean | null
           slug: string
           tags?: string[] | null
@@ -48,7 +46,6 @@ export type Database = {
           created_by?: string | null
           excerpt?: string | null
           id?: string
-          meta_description?: string | null
           published?: boolean | null
           slug?: string
           tags?: string[] | null
