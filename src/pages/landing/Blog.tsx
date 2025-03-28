@@ -25,26 +25,29 @@ export default function Blog() {
 
   const pageTitle = "Blog | Limitless Lab";
   const pageDescription = "Explore insights, ideas, and innovations from Limitless Lab's experts on social innovation, design thinking, and sustainable development.";
+  const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  const canonicalUrl = `${window.location.origin}/blog`;
 
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonicalUrl} />
         
         {/* OpenGraph tags */}
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${window.location.origin}/blog`} />
+        <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Limitless Lab" />
-        <meta property="og:image" content="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png" />
+        <meta property="og:image" content={pageImage} />
         
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
-        <meta name="twitter:image" content="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png" />
+        <meta name="twitter:image" content={pageImage} />
       </Helmet>
       
       <MainNav />

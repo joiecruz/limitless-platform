@@ -25,6 +25,8 @@ export default function Tools() {
   // Page metadata
   const pageTitle = "Innovation Tools | Limitless Lab";
   const pageDescription = "Empower your creative process with our collection of free worksheets, canvases, and downloadable resources for innovation.";
+  const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  const canonicalUrl = `${window.location.origin}/tools`;
   
   const { data: tools } = useQuery({
     queryKey: ["innovation_tools"],
@@ -48,6 +50,21 @@ export default function Tools() {
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        
+        {/* OpenGraph tags */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:image" content={pageImage} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:site_name" content="Limitless Lab" />
+        
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={pageImage} />
       </Helmet>
       
       <MainNav />
