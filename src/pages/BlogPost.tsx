@@ -16,6 +16,11 @@ import { Helmet } from "react-helmet";
 export default function BlogPost() {
   const { slug } = useParams();
   
+  // Log the slug value to help with debugging
+  useEffect(() => {
+    console.log("Blog post slug:", slug);
+  }, [slug]);
+
   // Scroll to top when the component mounts or slug changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -24,6 +29,7 @@ export default function BlogPost() {
   const { data: post, isLoading, error } = useQuery({
     queryKey: ['blog-post', slug],
     queryFn: async () => {
+      console.log("Fetching blog post with slug:", slug);
       const { data, error } = await supabase
         .from('articles')
         .select('*')
@@ -31,7 +37,12 @@ export default function BlogPost() {
         .eq('published', true)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error loading blog post:", error);
+        throw error;
+      }
+      
+      console.log("Blog post data:", data);
       return data;
     },
     retry: 1,
@@ -61,6 +72,15 @@ export default function BlogPost() {
   
   // Get the canonical URL for this post
   const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
+
+  // Add additional console logs to debug OpenGraph tags
+  useEffect(() => {
+    console.log("Setting blog OpenGraph tags:");
+    console.log("- Title:", post.title);
+    console.log("- Description:", post.excerpt || post.meta_description);
+    console.log("- Image:", post.cover_image || defaultImage);
+    console.log("- URL:", canonicalUrl);
+  }, [post.title, post.excerpt, post.meta_description, post.cover_image, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">
