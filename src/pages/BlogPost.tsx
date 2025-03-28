@@ -55,26 +55,33 @@ export default function BlogPost() {
 
   const wordCount = post.content ? post.content.split(/\s+/).length : 0;
   const readTime = Math.ceil(wordCount / 200);
+  
+  // Default image if post doesn't have a cover image
+  const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  
+  // Get the canonical URL for this post
+  const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
 
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
         <title>{post.title} | Limitless Lab Blog</title>
         <meta name="description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
+        <link rel="canonical" href={canonicalUrl} />
         
         {/* OpenGraph tags for social sharing */}
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
-        {post.cover_image && <meta property="og:image" content={post.cover_image} />}
+        <meta property="og:image" content={post.cover_image || defaultImage} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`${window.location.origin}/blog/${post.slug}`} />
+        <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Limitless Lab" />
         
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
-        {post.cover_image && <meta name="twitter:image" content={post.cover_image} />}
+        <meta name="twitter:image" content={post.cover_image || defaultImage} />
       </Helmet>
       
       <MainNav />

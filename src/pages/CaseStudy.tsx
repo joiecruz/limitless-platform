@@ -4,20 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import { CTASection } from "@/components/site-config/CTASection";
-import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
-import { CaseStudyContent } from "@/components/case-studies/CaseStudyContent";
 import { CaseStudyHeader } from "@/components/case-studies/CaseStudyHeader";
 import { CaseStudyMeta } from "@/components/case-studies/CaseStudyMeta";
+import { CaseStudyContent } from "@/components/case-studies/CaseStudyContent";
 import { CaseStudyImages } from "@/components/case-studies/CaseStudyImages";
+import { CTASection } from "@/components/site-config/CTASection";
+import { Helmet } from "react-helmet";
 
 export default function CaseStudy() {
   const { slug } = useParams();
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
 
   const { data: caseStudy, isLoading } = useQuery({
     queryKey: ['case-study', slug],
@@ -30,83 +25,91 @@ export default function CaseStudy() {
 
       if (error) throw error;
       return data;
-    }
+    },
   });
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+      <div className="min-h-screen bg-white">
+        <MainNav />
+        <div className="animate-pulse space-y-8 max-w-7xl mx-auto px-4 py-16">
+          <div className="h-8 bg-gray-200 rounded w-1/4" />
+          <div className="h-64 bg-gray-200 rounded" />
+          <div className="space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!caseStudy) {
-    return <div>Case study not found</div>;
+    return (
+      <div className="min-h-screen bg-white">
+        <Helmet>
+          <title>Case Study Not Found</title>
+          <meta name="description" content="Sorry, we couldn't find the case study you're looking for." />
+          <meta property="og:title" content="Case Study Not Found" />
+          <meta property="og:description" content="Sorry, we couldn't find the case study you're looking for." />
+          <meta property="og:type" content="website" />
+        </Helmet>
+        <MainNav />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <h2 className="text-2xl font-semibold">Case study not found</h2>
+        </div>
+      </div>
+    );
   }
+
+  const pageTitle = `${caseStudy.title} | Limitless Lab Case Studies`;
+  const pageDescription = caseStudy.summary || "Explore this case study from Limitless Lab";
+  const pageImage = caseStudy.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  const canonicalUrl = `${window.location.origin}/case-studies/${caseStudy.slug}`;
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        
+        {/* OpenGraph tags */}
+        <meta property="og:title" content={caseStudy.title} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:image" content={pageImage} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:site_name" content="Limitless Lab" />
+        
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={caseStudy.title} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={pageImage} />
+      </Helmet>
+      
       <MainNav />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-          <div className="lg:col-span-8">
-            <CaseStudyHeader 
-              name={caseStudy.name}
-              description={caseStudy.description}
-            />
-          </div>
-          <div className="lg:col-span-4">
-            <CaseStudyMeta 
-              client={caseStudy.client}
-              sdgs={caseStudy.sdgs}
-              services={caseStudy.services}
-            />
-          </div>
-        </div>
-
-        {caseStudy.cover_photo && (
-          <div className="w-full mb-12">
-            <div className="aspect-video w-full rounded-lg overflow-hidden">
-              <img
-                src={caseStudy.cover_photo}
-                alt={caseStudy.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        )}
-
-        <CaseStudyContent
-          problem={caseStudy.problem_opportunity}
-          approach={caseStudy.approach}
-          impact={caseStudy.impact}
+      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <CaseStudyHeader 
+          title={caseStudy.title} 
+          coverImage={caseStudy.cover_image}
         />
-
-        {(caseStudy.additional_photo1 || caseStudy.additional_photo2) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-            {caseStudy.additional_photo1 && (
-              <div className="aspect-video rounded-lg overflow-hidden">
-                <img
-                  src={caseStudy.additional_photo1}
-                  alt="Additional case study photo 1"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            {caseStudy.additional_photo2 && (
-              <div className="aspect-video rounded-lg overflow-hidden">
-                <img
-                  src={caseStudy.additional_photo2}
-                  alt="Additional case study photo 2"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-          </div>
+        
+        <CaseStudyMeta 
+          client={caseStudy.client} 
+          year={caseStudy.year} 
+          services={caseStudy.services} 
+          industry={caseStudy.industry}
+        />
+        
+        <CaseStudyContent content={caseStudy.content} />
+        
+        {caseStudy.additional_images && (
+          <CaseStudyImages images={caseStudy.additional_images} />
         )}
-      </div>
+      </article>
 
       <CTASection />
       <Footer />
