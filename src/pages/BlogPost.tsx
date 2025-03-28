@@ -11,6 +11,7 @@ import { BlogMeta } from "@/components/blog/BlogMeta";
 import { BlogContent } from "@/components/blog/BlogContent";
 import { BlogNotFound } from "@/components/blog/BlogNotFound";
 import { BlogLoading } from "@/components/blog/BlogLoading";
+import { Helmet } from "react-helmet";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -57,6 +58,25 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>{post.title} | Limitless Lab Blog</title>
+        <meta name="description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
+        
+        {/* OpenGraph tags for social sharing */}
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
+        {post.cover_image && <meta property="og:image" content={post.cover_image} />}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`${window.location.origin}/blog/${post.slug}`} />
+        <meta property="og:site_name" content="Limitless Lab" />
+        
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
+        {post.cover_image && <meta name="twitter:image" content={post.cover_image} />}
+      </Helmet>
+      
       <MainNav />
       
       <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">

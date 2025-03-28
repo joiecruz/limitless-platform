@@ -1,171 +1,121 @@
 
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { CTASection } from "@/components/site-config/CTASection";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import { Helmet } from "react-helmet";
 
-const categories = [
-  "All",
-  "Design",
-  "Innovation",
-  "News and Updates",
-  "Featured Stories",
-  "Digital Literacy",
-  "Artificial Intelligence"
-];
-
 export default function Blog() {
-  const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const postsPerPage = 9;
-  
-  // Scroll to top when component mounts or when page/category changes
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage, selectedCategory]);
-
   const { data: posts, isLoading } = useQuery({
-    queryKey: ['blog-posts', currentPage, selectedCategory],
+    queryKey: ["published-blog-posts"],
     queryFn: async () => {
-      const startRange = (currentPage - 1) * postsPerPage;
-      const endRange = startRange + postsPerPage - 1;
-
-      let query = supabase
+      const { data, error } = await supabase
         .from('articles')
-        .select('*', { count: 'exact' })
+        .select('*')
         .eq('published', true)
         .order('created_at', { ascending: false });
-
-      if (selectedCategory !== "All") {
-        query = query.contains('categories', [selectedCategory]);
-      }
-
-      const { data: posts, count } = await query
-        .range(startRange, endRange);
-
-      return { posts, totalCount: count };
+      
+      if (error) throw error;
+      return data;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const totalPages = posts?.totalCount 
-    ? Math.ceil(posts.totalCount / postsPerPage) 
-    : 0;
-
-  const handlePostClick = (slug: string) => {
-    navigate(`/blog/${slug}`);
-  };
+  const pageTitle = "Blog | Limitless Lab";
+  const pageDescription = "Explore insights, ideas, and innovations from Limitless Lab's experts on social innovation, design thinking, and sustainable development.";
 
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>Blog & Updates | Limitless Lab</title>
-        <meta name="description" content="Discover insights, stories, and the latest news in innovation from Limitless Lab." />
-        <link rel="canonical" href={`${window.location.origin}/blog`} />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        
+        {/* OpenGraph tags */}
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${window.location.origin}/blog`} />
+        <meta property="og:site_name" content="Limitless Lab" />
+        <meta property="og:image" content="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png" />
+        
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png" />
       </Helmet>
       
       <MainNav />
-      <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4 mb-12">
-            <h1 className="text-4xl font-bold text-gray-900">
-              Blog & Updates
-            </h1>
-            <p className="text-lg text-gray-600">
-              Discover insights, stories, and the latest in innovation
+      
+      {/* Hero Section */}
+      <div className="bg-[#393CA0] py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-6xl font-bold text-white mb-8">Blog</h1>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">
+              Explore insights, ideas, and innovations from our experts on
+              social innovation, design thinking, and sustainable development.
             </p>
           </div>
-          
-          <div className="flex justify-center mb-12 gap-2 flex-wrap">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                onClick={() => {
-                  setSelectedCategory(category);
-                  setCurrentPage(1);
-                }}
-                className="rounded-full"
-              >
-                {category}
-              </Button>
-            ))}
-          </div>
-          
+        </div>
+      </div>
+
+      {/* Blog Grid */}
+      <div className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           {isLoading ? (
-            <div className="flex justify-center items-center min-h-[400px]">
-              <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                  <div className="bg-gray-200 h-6 w-3/4 rounded mb-2"></div>
+                  <div className="bg-gray-200 h-4 w-1/2 rounded"></div>
+                </div>
+              ))}
             </div>
           ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {posts?.posts?.map((post) => (
-                  <div 
-                    key={post.id} 
-                    className="bg-white rounded-lg overflow-hidden cursor-pointer border border-gray-100 hover:border-[#393CA0]/20 transition-all duration-200 hover:shadow-md"
-                    onClick={() => handlePostClick(post.slug)}
-                  >
-                    {post.cover_image && (
-                      <div className="aspect-video w-full overflow-hidden">
-                        <img
-                          src={post.cover_image}
-                          alt={post.title}
-                          className="w-full h-full object-cover"
-                        />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {posts?.map((post) => (
+                <Link 
+                  key={post.id} 
+                  to={`/blog/${post.slug}`}
+                  className="group"
+                >
+                  <div className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow h-full flex flex-col">
+                    <div className="aspect-[16/9] relative">
+                      <img
+                        src={post.cover_image || "/placeholder.svg"}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="p-6 flex-1 flex flex-col">
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-500 mb-2">
+                          {post.created_at && format(new Date(post.created_at), 'MMMM d, yyyy')}
+                        </p>
+                        <h3 className="text-xl font-semibold mb-3 group-hover:text-[#393CA0] transition-colors">
+                          {post.title}
+                        </h3>
+                        <p className="text-gray-600 mb-4 line-clamp-3">
+                          {post.excerpt}
+                        </p>
                       </div>
-                    )}
-                    <div className="p-6 space-y-4">
-                      <h3 className="text-2xl font-semibold text-gray-900 hover:text-[#393CA0] transition-colors">
-                        {post.title}
-                      </h3>
-                      <div className="text-sm text-gray-600">
-                        {format(new Date(post.created_at), 'MMMM d, yyyy')}
-                      </div>
+                      <div className="text-[#393CA0] font-medium">Read more</div>
                     </div>
                   </div>
-                ))}
-              </div>
-
-              {totalPages > 1 && (
-                <div className="mt-12 flex justify-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  
-                  {[...Array(totalPages)].map((_, i) => (
-                    <Button
-                      key={i}
-                      variant={currentPage === i + 1 ? "default" : "outline"}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </Button>
-                  ))}
-
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
-            </>
+                </Link>
+              ))}
+            </div>
           )}
         </div>
       </div>
+
+      {/* CTA Section */}
+      <CTASection />
+
       <Footer />
     </div>
   );
