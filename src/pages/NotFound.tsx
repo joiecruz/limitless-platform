@@ -5,16 +5,14 @@ import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
 import { Home, Mail } from "lucide-react";
-import { SEO } from "@/components/common/SEO";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO
-        title="404 - Page Not Found"
-        description="Sorry, we couldn't find the page you're looking for."
-        canonical={`${window.location.origin}/404`}
-      />
+      <Helmet>
+        <title>404 - Page Not Found</title>
+        <meta name="description" content="Sorry, we couldn't find the page you're looking for." />
+      </Helmet>
 
       <MainNav />
 

@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +6,7 @@ import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { SEO } from "@/components/common/SEO";
+import { Helmet } from "react-helmet";
 
 const fetchTool = async (toolId: string) => {
   const { data, error } = await supabase
@@ -53,10 +52,10 @@ export default function ToolDetails() {
   if (error || !tool) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <SEO
-          title="Tool Not Found"
-          description="Sorry, the requested tool could not be found."
-        />
+        <Helmet>
+          <title>Tool Not Found</title>
+          <meta name="description" content="Sorry, the requested tool could not be found." />
+        </Helmet>
         <div className="text-center">
           <h2 className="text-2xl font-semibold mb-4">Tool not found</h2>
           <Link 
@@ -72,11 +71,10 @@ export default function ToolDetails() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <SEO
-        title={`${tool.name} | Innovation Tool`}
-        description={tool.brief_description || ""}
-        image={tool.cover_image || ""}
-      />
+      <Helmet>
+        <title>{`${tool.name} | Innovation Tool`}</title>
+        <meta name="description" content={tool.brief_description || ""} />
+      </Helmet>
       
       <Link 
         to="/dashboard/tools" 
@@ -87,7 +85,6 @@ export default function ToolDetails() {
       </Link>
 
       <div className="space-y-8">
-        {/* Header Section */}
         <div className="bg-white border rounded-xl p-8 shadow-sm">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             <div className="flex-1">
@@ -116,13 +113,11 @@ export default function ToolDetails() {
           </div>
         </div>
 
-        {/* Description Section */}
         <div>
           <h2 className="text-2xl font-semibold mb-4">About this tool</h2>
           <p className="text-gray-600">{tool.long_description}</p>
         </div>
 
-        {/* Use Cases Section */}
         {(tool.use_case_1 || tool.use_case_2 || tool.use_case_3) && (
           <div>
             <h2 className="text-2xl font-semibold mb-4">Use Cases</h2>
@@ -149,7 +144,6 @@ export default function ToolDetails() {
           </div>
         )}
 
-        {/* How to Use Section */}
         {tool.how_to_use && (
           <div>
             <h2 className="text-2xl font-semibold mb-4">How to Use</h2>
@@ -160,7 +154,6 @@ export default function ToolDetails() {
           </div>
         )}
 
-        {/* When to Use Section */}
         {tool.when_to_use && (
           <div>
             <h2 className="text-2xl font-semibold mb-4">When to Use</h2>

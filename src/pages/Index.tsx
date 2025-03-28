@@ -11,44 +11,10 @@ import { LoadingPage } from "@/components/common/LoadingPage";
 import { Suspense, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { SEO } from "@/components/common/SEO";
-import { useSEODebugger } from "@/hooks/useSEODebugger";
-import { useMetaTagCleanup } from "@/hooks/useMetaTagCleanup";
 
 export default function Index() {
   const navigate = useNavigate();
-
-  // Force clean up any static meta tags
-  useMetaTagCleanup();
   
-  // Add SEO debugger to help diagnose issues
-  useSEODebugger("Homepage");
-  
-  // Extra cleanup for homepage
-  useEffect(() => {
-    // Remove static meta tags from index.html that might interfere
-    const metaCleanup = () => {
-      document.querySelectorAll('meta[property^="og:"]').forEach(el => {
-        if (el.parentElement?.tagName === 'HEAD' && el.getAttribute('data-react-helmet') !== 'true') {
-          console.log("Removing static OG tag:", el.getAttribute('property'));
-          el.parentNode?.removeChild(el);
-        }
-      });
-      
-      document.querySelectorAll('meta[name^="twitter:"]').forEach(el => {
-        if (el.parentElement?.tagName === 'HEAD' && el.getAttribute('data-react-helmet') !== 'true') {
-          console.log("Removing static Twitter tag:", el.getAttribute('name'));
-          el.parentNode?.removeChild(el);
-        }
-      });
-    };
-    
-    metaCleanup();
-    const timeoutId = setTimeout(metaCleanup, 300);
-    
-    return () => clearTimeout(timeoutId);
-  }, []);
-
   // Query to check if user is authenticated
   const { data: session } = useQuery({
     queryKey: ['session'],
@@ -68,12 +34,6 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
-        title="Limitless Lab: All-in-One Innovation Platform"
-        description="Transform your innovation journey with Limitless Lab's comprehensive platform for learning, tools, and community."
-        image="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png"
-      />
-      
       <MainNav />
       
       {/* Hero Section */}

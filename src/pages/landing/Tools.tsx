@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
-import { SEO } from "@/components/common/SEO";
+import { Helmet } from "react-helmet";
 
 const categories = [
   "All tools",
@@ -56,13 +56,13 @@ export default function Tools() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
-        title={pageTitle}
-        description={pageDescription}
-        image={pageImage}
-        canonical={`${window.location.origin}/tools`}
-        type="website"
-      />
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta property="og:image" content={pageImage} />
+        <link rel="canonical" href={`${window.location.origin}/tools`} />
+        <meta property="og:type" content="website" />
+      </Helmet>
       
       <MainNav />
       

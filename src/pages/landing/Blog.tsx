@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { SEO } from "@/components/common/SEO";
+import { Helmet } from "react-helmet";
 
 const categories = [
   "All",
@@ -65,11 +65,11 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
-        title="Blog & Updates | Limitless Lab"
-        description="Discover insights, stories, and the latest news in innovation from Limitless Lab."
-        canonical={`${window.location.origin}/blog`}
-      />
+      <Helmet>
+        <title>Blog & Updates | Limitless Lab</title>
+        <meta name="description" content="Discover insights, stories, and the latest news in innovation from Limitless Lab." />
+        <link rel="canonical" href={`${window.location.origin}/blog`} />
+      </Helmet>
       
       <MainNav />
       <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
