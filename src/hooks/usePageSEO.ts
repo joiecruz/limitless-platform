@@ -136,7 +136,7 @@ export function usePageSEO({
     if (!scriptTag) {
       scriptTag = document.createElement('script');
       scriptTag.id = 'structured-data-script';
-      scriptTag.type = 'application/ld+json';
+      scriptTag.setAttribute('type', 'application/ld+json');
       document.head.appendChild(scriptTag);
     }
     scriptTag.textContent = JSON.stringify(structuredData);
