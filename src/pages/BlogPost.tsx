@@ -12,10 +12,17 @@ import { BlogContent } from "@/components/blog/BlogContent";
 import { BlogNotFound } from "@/components/blog/BlogNotFound";
 import { BlogLoading } from "@/components/blog/BlogLoading";
 import { Helmet } from "react-helmet";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BlogPost() {
   const { slug } = useParams();
+  const { toast } = useToast();
   
+  // Log the slug value to help with debugging
+  useEffect(() => {
+    console.log("Blog post slug:", slug);
+  }, [slug]);
+
   // Scroll to top when the component mounts or slug changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -24,6 +31,7 @@ export default function BlogPost() {
   const { data: post, isLoading, error } = useQuery({
     queryKey: ['blog-post', slug],
     queryFn: async () => {
+      console.log("Fetching blog post with slug:", slug);
       const { data, error } = await supabase
         .from('articles')
         .select('*')
@@ -31,7 +39,17 @@ export default function BlogPost() {
         .eq('published', true)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error loading blog post:", error);
+        toast({
+          title: "Error loading blog post",
+          description: "Unable to load the blog post. Please try again later.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+      
+      console.log("Blog post data:", data);
       return data;
     },
     retry: 1,
@@ -56,11 +74,20 @@ export default function BlogPost() {
   const wordCount = post.content ? post.content.split(/\s+/).length : 0;
   const readTime = Math.ceil(wordCount / 200);
   
-  // Default image if post doesn't have a cover image
+  // Define a default image to use if post doesn't have a cover image
   const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   
   // Get the canonical URL for this post
   const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
+
+  // Add additional console logs to debug OpenGraph tags
+  useEffect(() => {
+    console.log("Setting blog OpenGraph tags:");
+    console.log("- Title:", post.title);
+    console.log("- Description:", post.excerpt || post.meta_description);
+    console.log("- Image:", post.cover_image || defaultImage);
+    console.log("- URL:", canonicalUrl);
+  }, [post.title, post.excerpt, post.meta_description, post.cover_image, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">

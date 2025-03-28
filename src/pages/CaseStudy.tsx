@@ -10,20 +10,32 @@ import { CaseStudyContent } from "@/components/case-studies/CaseStudyContent";
 import { CaseStudyImages } from "@/components/case-studies/CaseStudyImages";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Helmet } from "react-helmet";
+import { useEffect } from "react";
 
 export default function CaseStudy() {
   const { slug } = useParams();
 
+  // Log the slug value to help with debugging
+  useEffect(() => {
+    console.log("Case study slug:", slug);
+  }, [slug]);
+
   const { data: caseStudy, isLoading } = useQuery({
     queryKey: ['case-study', slug],
     queryFn: async () => {
+      console.log("Fetching case study with slug:", slug);
       const { data, error } = await supabase
         .from('case_studies')
         .select('*')
         .eq('slug', slug)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching case study:", error);
+        throw error;
+      }
+      
+      console.log("Case study data:", data);
       return data;
     },
   });
@@ -66,6 +78,15 @@ export default function CaseStudy() {
   const pageDescription = caseStudy.description || "Explore this case study from Limitless Lab";
   const pageImage = caseStudy.cover_photo || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   const canonicalUrl = `${window.location.origin}/case-studies/${caseStudy.slug}`;
+
+  // Add additional console logs to debug OpenGraph tags
+  useEffect(() => {
+    console.log("Setting OpenGraph tags:");
+    console.log("- Title:", pageTitle);
+    console.log("- Description:", pageDescription);
+    console.log("- Image:", pageImage);
+    console.log("- URL:", canonicalUrl);
+  }, [pageTitle, pageDescription, pageImage, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">
