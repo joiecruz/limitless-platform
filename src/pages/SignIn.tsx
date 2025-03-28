@@ -9,17 +9,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { LoadingPage } from "@/components/common/LoadingPage";
 import { useToast } from "@/hooks/use-toast";
-import { useSignInPageSEO } from "@/hooks/useSignInPageSEO";
-import { SEO } from "@/components/common/SEO";
 
 export default function SignIn() {
   useAuthRedirect();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Apply Sign In page-specific SEO
-  useSignInPageSEO();
 
   // Query to check if user is authenticated
   const { data: session } = useQuery({
@@ -148,13 +143,6 @@ export default function SignIn() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <SEO
-        title="Sign in to Limitless Lab"
-        description="Sign in to access Limitless Lab's comprehensive platform for learning, tools, and community."
-        image="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/SEO%20-%20Metafata.png"
-        canonical={`${window.location.origin}/signin`}
-      />
-      
       <div className="w-full max-w-md">
         <div onClick={handleLogoClick} className="cursor-pointer">
           <AuthLogo />

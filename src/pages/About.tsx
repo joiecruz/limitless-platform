@@ -1,41 +1,10 @@
 
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import { SEO } from "@/components/common/SEO";
-import { useEffect } from "react";
 
 export default function About() {
-  // Page metadata
-  const pageTitle = "About Limitless Lab";
-  const pageDescription = "Limitless Lab is a global social innovation company that uses creativity, design, and technology to drive positive change.";
-  const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/About%20photo.png";
-  
-  // Add cache buster to prevent social media caching
-  const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-  const imageWithCacheBuster = pageImage.includes('?') 
-    ? `${pageImage}&_t=${timestamp}` 
-    : `${pageImage}?_t=${timestamp}`;
-  
-  // Log SEO data for debugging
-  useEffect(() => {
-    console.log("About page SEO data:", {
-      title: pageTitle,
-      description: pageDescription,
-      image: imageWithCacheBuster,
-      canonicalUrl: `${window.location.origin}/about`
-    });
-  }, [imageWithCacheBuster]);
-
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
-        title={pageTitle}
-        description={pageDescription}
-        image={imageWithCacheBuster}
-        canonical={`${window.location.origin}/about`}
-        type="website"
-      />
-      
       <MainNav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

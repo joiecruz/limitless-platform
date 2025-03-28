@@ -7,7 +7,6 @@ import { Footer } from "@/components/site-config/Footer";
 import { CTASection } from "@/components/site-config/CTASection";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { SEO } from "@/components/common/SEO";
 import { CaseStudyContent } from "@/components/case-studies/CaseStudyContent";
 import { CaseStudyHeader } from "@/components/case-studies/CaseStudyHeader";
 import { CaseStudyMeta } from "@/components/case-studies/CaseStudyMeta";
@@ -46,23 +45,8 @@ export default function CaseStudy() {
     return <div>Case study not found</div>;
   }
 
-  const title = caseStudy.name || "Case Study";
-  const description = caseStudy.description || "";
-  const imageUrl = caseStudy.cover_photo || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/og-image.png";
-  const canonicalUrl = `${window.location.origin}/case-studies/${caseStudy.slug}`;
-
   return (
     <div className="min-h-screen bg-white">
-      <SEO
-        title={title}
-        description={description}
-        image={imageUrl}
-        canonical={canonicalUrl}
-        type="article"
-        published={caseStudy.created_at}
-        modified={caseStudy.updated_at}
-      />
-      
       <MainNav />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">

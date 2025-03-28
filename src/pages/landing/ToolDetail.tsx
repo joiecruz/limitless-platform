@@ -8,8 +8,8 @@ import { ToolHeader } from "@/components/tools/detail/ToolHeader";
 import { ToolAbout } from "@/components/tools/detail/ToolAbout";
 import { ToolUsage } from "@/components/tools/detail/ToolUsage";
 import { ToolDownloadCTA } from "@/components/tools/detail/ToolDownloadCTA";
-import { SEO } from "@/components/common/SEO";
 import { useEffect } from "react";
+import { Helmet } from "react-helmet";
 
 export default function ToolDetail() {
   const { id } = useParams();
@@ -33,25 +33,6 @@ export default function ToolDetail() {
   // Force refresh meta tags when tool data is loaded
   useEffect(() => {
     if (tool) {
-      // Manually force refresh meta tags to handle potential caching issues
-      const metaRefresh = () => {
-        const ogImageTag = document.querySelector('meta[property="og:image"]');
-        const twitterImageTag = document.querySelector('meta[name="twitter:image"]');
-        
-        if (ogImageTag) {
-          const currentUrl = ogImageTag.getAttribute('content') || '';
-          ogImageTag.setAttribute('content', currentUrl.split('?')[0] + '?_t=' + new Date().toISOString());
-        }
-        
-        if (twitterImageTag) {
-          const currentUrl = twitterImageTag.getAttribute('content') || '';
-          twitterImageTag.setAttribute('content', currentUrl.split('?')[0] + '?_t=' + new Date().toISOString());
-        }
-      };
-      
-      // Call the refresh function after a short delay to ensure React has updated the DOM
-      setTimeout(metaRefresh, 300);
-      
       console.log("Tool page SEO data:", {
         title: tool.name,
         description: tool.brief_description,
@@ -117,11 +98,11 @@ export default function ToolDetail() {
   if (!tool) {
     return (
       <div className="min-h-screen bg-white">
-        <SEO
-          title="Tool Not Found"
-          description="Sorry, we couldn't find the tool you're looking for."
-          canonical={`${window.location.origin}/tools/not-found`}
-        />
+        <Helmet>
+          <title>Tool Not Found</title>
+          <meta name="description" content="Sorry, we couldn't find the tool you're looking for." />
+          <link rel="canonical" href={`${window.location.origin}/tools/not-found`} />
+        </Helmet>
         <MainNav />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <h2 className="text-2xl font-semibold">Tool not found</h2>
@@ -139,13 +120,13 @@ export default function ToolDetail() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO
-        title={`${tool.name} | Limitless Lab Tools`}
-        description={tool.brief_description || "Explore this innovation tool from Limitless Lab"}
-        image={imageWithCacheBuster}
-        canonical={`${window.location.origin}/tools/${id}`}
-        type="article"
-      />
+      <Helmet>
+        <title>{`${tool.name} | Limitless Lab Tools`}</title>
+        <meta name="description" content={tool.brief_description || "Explore this innovation tool from Limitless Lab"} />
+        <meta property="og:image" content={imageWithCacheBuster} />
+        <meta property="og:type" content="article" />
+        <link rel="canonical" href={`${window.location.origin}/tools/${id}`} />
+      </Helmet>
       
       <MainNav />
       

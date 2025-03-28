@@ -1,4 +1,3 @@
-
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { Link } from "react-router-dom";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import { CoDesignProcess } from "@/components/services/CoDesignProcess";
 import { useState, useEffect } from "react";
-import { SEO } from "@/components/common/SEO";
+import { Helmet } from "react-helmet";
 
 const services = [
   {
@@ -45,7 +44,6 @@ const ITEMS_PER_PAGE = 6;
 export default function Services() {
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -69,22 +67,20 @@ export default function Services() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Custom metadata for services page
   const servicesImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design.png";
   const servicesDescription = "Get hands-on, customized guidance to turn your organization challenges into innovation projects that are measurable and impactful.";
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO 
-        title="Innovation Services | Limitless Lab"
-        description={servicesDescription}
-        image={servicesImage}
-        canonical="https://limitlesslab.org/services"
-      />
+      <Helmet>
+        <title>Innovation Services | Limitless Lab</title>
+        <meta name="description" content={servicesDescription} />
+        <meta property="og:image" content={servicesImage} />
+        <link rel="canonical" href="https://limitlesslab.org/services" />
+      </Helmet>
       
       <MainNav />
       
-      {/* Hero Section */}
       <section className="pt-20 lg:pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
@@ -115,7 +111,6 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Services Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Our Services</h2>
@@ -132,10 +127,8 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Co-Design Process Section */}
       <CoDesignProcess />
 
-      {/* Case Studies Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
@@ -173,7 +166,6 @@ export default function Services() {
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="mt-8 flex justify-center gap-2">
               <Button
@@ -206,7 +198,6 @@ export default function Services() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[#393CA0] text-white">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Start Your Innovation Journey?</h2>
