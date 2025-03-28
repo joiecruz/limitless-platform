@@ -12,9 +12,11 @@ import { BlogContent } from "@/components/blog/BlogContent";
 import { BlogNotFound } from "@/components/blog/BlogNotFound";
 import { BlogLoading } from "@/components/blog/BlogLoading";
 import { Helmet } from "react-helmet";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BlogPost() {
   const { slug } = useParams();
+  const { toast } = useToast();
   
   // Log the slug value to help with debugging
   useEffect(() => {
@@ -39,6 +41,11 @@ export default function BlogPost() {
 
       if (error) {
         console.error("Error loading blog post:", error);
+        toast({
+          title: "Error loading blog post",
+          description: "Unable to load the blog post. Please try again later.",
+          variant: "destructive",
+        });
         throw error;
       }
       
@@ -67,7 +74,7 @@ export default function BlogPost() {
   const wordCount = post.content ? post.content.split(/\s+/).length : 0;
   const readTime = Math.ceil(wordCount / 200);
   
-  // Default image if post doesn't have a cover image
+  // Define a default image to use if post doesn't have a cover image
   const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   
   // Get the canonical URL for this post

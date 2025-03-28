@@ -7,26 +7,57 @@ import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export default function Blog() {
-  const { data: posts, isLoading } = useQuery({
+  const { toast } = useToast();
+
+  const { data: posts, isLoading, error } = useQuery({
     queryKey: ["published-blog-posts"],
     queryFn: async () => {
+      console.log("Fetching published blog posts");
       const { data, error } = await supabase
         .from('articles')
         .select('*')
         .eq('published', true)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error("Error fetching blog posts:", error);
+        toast({
+          title: "Error loading blog posts",
+          description: "Unable to load blog posts. Please try again later.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+      
+      console.log("Blog posts data:", data);
+      return data || [];
     },
   });
+
+  // Log any errors for debugging
+  useEffect(() => {
+    if (error) {
+      console.error("Error in blog listing query:", error);
+    }
+  }, [error]);
 
   const pageTitle = "Blog | Limitless Lab";
   const pageDescription = "Explore insights, ideas, and innovations from Limitless Lab's experts on social innovation, design thinking, and sustainable development.";
   const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   const canonicalUrl = `${window.location.origin}/blog`;
+
+  // Add additional console logs to debug OpenGraph tags
+  useEffect(() => {
+    console.log("Setting blog listing OpenGraph tags:");
+    console.log("- Title:", pageTitle);
+    console.log("- Description:", pageDescription);
+    console.log("- Image:", pageImage);
+    console.log("- URL:", canonicalUrl);
+  }, [pageTitle, pageDescription, pageImage, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -78,9 +109,14 @@ export default function Blog() {
                 </div>
               ))}
             </div>
-          ) : (
+          ) : error ? (
+            <div className="text-center py-12">
+              <h3 className="text-xl text-gray-600">Failed to load blog posts</h3>
+              <p className="mt-2 text-gray-500">Please try again later</p>
+            </div>
+          ) : (posts && posts.length > 0) ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts?.map((post) => (
+              {posts.map((post) => (
                 <Link 
                   key={post.id} 
                   to={`/blog/${post.slug}`}
@@ -111,6 +147,11 @@ export default function Blog() {
                   </div>
                 </Link>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <h3 className="text-xl text-gray-600">No blog posts found</h3>
+              <p className="mt-2 text-gray-500">Check back later for new content</p>
             </div>
           )}
         </div>
