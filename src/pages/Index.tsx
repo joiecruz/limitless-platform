@@ -8,13 +8,46 @@ import { Features } from "@/components/site-config/Features";
 import { BlogSection } from "@/components/site-config/BlogSection";
 import { CTASection } from "@/components/site-config/CTASection";
 import { LoadingPage } from "@/components/common/LoadingPage";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/common/SEO";
+import { useSEODebugger } from "@/hooks/useSEODebugger";
+import { useMetaTagCleanup } from "@/hooks/useMetaTagCleanup";
 
 export default function Index() {
   const navigate = useNavigate();
+
+  // Force clean up any static meta tags
+  useMetaTagCleanup();
+  
+  // Add SEO debugger to help diagnose issues
+  useSEODebugger("Homepage");
+  
+  // Extra cleanup for homepage
+  useEffect(() => {
+    // Remove static meta tags from index.html that might interfere
+    const metaCleanup = () => {
+      document.querySelectorAll('meta[property^="og:"]').forEach(el => {
+        if (el.parentElement?.tagName === 'HEAD' && el.getAttribute('data-react-helmet') !== 'true') {
+          console.log("Removing static OG tag:", el.getAttribute('property'));
+          el.parentNode?.removeChild(el);
+        }
+      });
+      
+      document.querySelectorAll('meta[name^="twitter:"]').forEach(el => {
+        if (el.parentElement?.tagName === 'HEAD' && el.getAttribute('data-react-helmet') !== 'true') {
+          console.log("Removing static Twitter tag:", el.getAttribute('name'));
+          el.parentNode?.removeChild(el);
+        }
+      });
+    };
+    
+    metaCleanup();
+    const timeoutId = setTimeout(metaCleanup, 300);
+    
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   // Query to check if user is authenticated
   const { data: session } = useQuery({

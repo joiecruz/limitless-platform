@@ -44,6 +44,8 @@ export function useMetaTags({
       ? `${absoluteImageUrl.split('?')[0]}?_t=${uniqueTimestamp}` 
       : `${absoluteImageUrl}?_t=${uniqueTimestamp}`;
     
+    console.log('Setting meta tags with image:', imageWithTimestamp);
+    
     // Function to create or update meta tags
     const setMetaTag = (name: string, content: string, isProperty = false) => {
       const selector = isProperty ? `meta[property="${name}"]` : `meta[name="${name}"]`;
@@ -72,10 +74,13 @@ export function useMetaTags({
     setMetaTag('Expires', '0');
     
     // Remove any existing og:image tags to prevent conflicts
-    document.querySelectorAll('meta[property="og:image"]').forEach(el => {
-      if (el.parentNode) {
-        el.parentNode.removeChild(el);
-      }
+    document.querySelectorAll('meta[property^="og:"]').forEach(el => {
+      el.parentNode?.removeChild(el);
+    });
+    
+    // Remove any existing twitter tags to prevent conflicts
+    document.querySelectorAll('meta[name^="twitter:"]').forEach(el => {
+      el.parentNode?.removeChild(el);
     });
     
     // Open Graph meta tags - critical for Facebook, LinkedIn, etc.
