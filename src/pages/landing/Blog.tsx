@@ -16,7 +16,6 @@ export default function Blog() {
   const { data: posts, isLoading, error } = useQuery({
     queryKey: ["published-blog-posts"],
     queryFn: async () => {
-      console.log("Fetching published blog posts");
       const { data, error } = await supabase
         .from('articles')
         .select('*')
@@ -33,7 +32,6 @@ export default function Blog() {
         throw error;
       }
       
-      console.log("Blog posts data:", data);
       return data || [];
     },
   });
@@ -45,42 +43,25 @@ export default function Blog() {
     }
   }, [error]);
 
+  // Metadata for the blog listing page
+  const baseUrl = window.location.origin;
+  const canonicalUrl = `${baseUrl}/blog`;
   const pageTitle = "Blog | Limitless Lab";
   const pageDescription = "Explore insights, ideas, and innovations from Limitless Lab's experts on social innovation, design thinking, and sustainable development.";
   const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
-  const canonicalUrl = `${window.location.origin}/blog`;
-
-  // Add additional console logs to debug OpenGraph tags
-  useEffect(() => {
-    console.log("Current URL:", window.location.href);
-    console.log("Setting blog listing OpenGraph tags:");
-    console.log("- Title:", pageTitle);
-    console.log("- Description:", pageDescription);
-    console.log("- Image:", pageImage);
-    console.log("- URL:", canonicalUrl);
-    
-    // Force checking what's actually in the document
-    setTimeout(() => {
-      const ogTags = {
-        title: document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
-        description: document.querySelector('meta[property="og:description"]')?.getAttribute('content'),
-        image: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
-        url: document.querySelector('meta[property="og:url"]')?.getAttribute('content'),
-        type: document.querySelector('meta[property="og:type"]')?.getAttribute('content'),
-      };
-      
-      console.log("DOCUMENT HEAD CONTAINS THESE OG TAGS:", ogTags);
-    }, 1000);
-  }, [pageTitle, pageDescription, pageImage, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet prioritizeSeoTags={true}>
+      <Helmet>
+        {/* Clear any existing meta tags */}
+        <meta name="robots" content="index, follow" />
+        
+        {/* Primary meta tags */}
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonicalUrl} />
         
-        {/* Force override any existing tags with these explicit OpenGraph tags */}
+        {/* OpenGraph tags */}
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="website" />
