@@ -18,20 +18,15 @@ export default function BlogPost() {
   const { slug } = useParams();
   const { toast } = useToast();
   
-  // Log the slug value to help with debugging
-  useEffect(() => {
-    console.log("Blog post slug:", slug);
-  }, [slug]);
-
-  // Scroll to top when the component mounts or slug changes
+  // Ensure we start at the top of the page when navigating to a blog post
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [slug]);
 
+  // Fetch the blog post data
   const { data: post, isLoading, error } = useQuery({
     queryKey: ['blog-post', slug],
     queryFn: async () => {
-      console.log("Fetching blog post with slug:", slug);
       const { data, error } = await supabase
         .from('articles')
         .select('*')
@@ -49,76 +44,45 @@ export default function BlogPost() {
         throw error;
       }
       
-      console.log("Blog post data:", data);
       return data;
     },
     retry: 1,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Handle error state
+  // Log any errors
   useEffect(() => {
     if (error) {
       console.error("Error loading blog post:", error);
     }
   }, [error]);
   
-  // Define all variables outside conditional rendering blocks
-  const canonicalUrl = `${window.location.origin}/blog/${slug}`;
-  
-  // Define meta data variables based on post availability
-  const metaTitle = post ? `${post.title} | Limitless Lab Blog` : "Loading Blog Post | Limitless Lab";
-  const metaDescription = post 
-    ? (post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`).substring(0, 160) 
-    : "Loading blog post from Limitless Lab";
-  
-  const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
-  const ogImage = post?.cover_image || defaultImage;
-  
-  // Calculate read time
+  // Calculate read time based on word count
   const wordCount = post ? (post.content ? post.content.split(/\s+/).length : 0) : 0;
   const readTime = Math.ceil(wordCount / 200);
   
-  // Debug OpenGraph tags
-  useEffect(() => {
-    console.log("Current URL:", window.location.href);
-    console.log("Setting blog OpenGraph tags for:", slug);
-    console.log("- Title:", metaTitle);
-    console.log("- Description:", metaDescription);
-    console.log("- Image:", ogImage);
-    console.log("- URL:", canonicalUrl);
-    
-    // Force checking what's actually in the document
-    setTimeout(() => {
-      const ogTags = {
-        title: document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
-        description: document.querySelector('meta[property="og:description"]')?.getAttribute('content'),
-        image: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
-        url: document.querySelector('meta[property="og:url"]')?.getAttribute('content'),
-        type: document.querySelector('meta[property="og:type"]')?.getAttribute('content'),
-      };
-      
-      console.log("DOCUMENT HEAD CONTAINS THESE OG TAGS:", ogTags);
-    }, 1000);
-  }, [slug, metaTitle, metaDescription, ogImage, canonicalUrl]);
-
+  // Base URL for canonical and OpenGraph
+  const baseUrl = window.location.origin;
+  const canonicalUrl = `${baseUrl}/blog/${slug}`;
+  
+  // Default image to use when post image is not available
+  const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet prioritizeSeoTags={true}>
+        <Helmet>
           <title>Loading Blog Post | Limitless Lab</title>
           <meta name="description" content="Loading blog post from Limitless Lab" />
           <link rel="canonical" href={canonicalUrl} />
-          
-          {/* OpenGraph tags for social sharing */}
           <meta property="og:title" content="Loading Blog Post | Limitless Lab" />
           <meta property="og:description" content="Loading blog post from Limitless Lab" />
           <meta property="og:image" content={defaultImage} />
           <meta property="og:type" content="article" />
           <meta property="og:url" content={canonicalUrl} />
           <meta property="og:site_name" content="Limitless Lab" />
-          
-          {/* Twitter Card tags */}
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content="Loading Blog Post | Limitless Lab" />
           <meta name="twitter:description" content="Loading blog post from Limitless Lab" />
@@ -132,20 +96,18 @@ export default function BlogPost() {
   if (!post) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet prioritizeSeoTags={true}>
+        <Helmet>
           <title>Blog Post Not Found | Limitless Lab</title>
           <meta name="description" content="The blog post you're looking for couldn't be found." />
           <link rel="canonical" href={canonicalUrl} />
-          
-          {/* OpenGraph tags for social sharing */}
           <meta property="og:title" content="Blog Post Not Found | Limitless Lab" />
           <meta property="og:description" content="The blog post you're looking for couldn't be found." />
           <meta property="og:image" content={defaultImage} />
           <meta property="og:type" content="article" />
           <meta property="og:url" content={canonicalUrl} />
           <meta property="og:site_name" content="Limitless Lab" />
-          
-          {/* Twitter Card tags */}
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content="Blog Post Not Found | Limitless Lab" />
           <meta name="twitter:description" content="The blog post you're looking for couldn't be found." />
@@ -156,20 +118,29 @@ export default function BlogPost() {
     );
   }
 
+  // Metadata for the current post
+  const metaTitle = `${post.title} | Limitless Lab Blog`;
+  const metaDescription = (post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`).substring(0, 160);
+  const ogImage = post.cover_image || defaultImage;
+
   return (
     <div className="min-h-screen bg-white">
-      <Helmet prioritizeSeoTags={true}>
+      <Helmet>
+        {/* Clear any existing meta tags */}
+        <meta name="robots" content="index, follow" />
+        
+        {/* Primary meta tags */}
         <title>{metaTitle}</title>
         <meta name="description" content={metaDescription} />
         <link rel="canonical" href={canonicalUrl} />
         
-        {/* Force override any existing tags with these explicit OpenGraph tags */}
+        {/* OpenGraph tags */}
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={metaDescription} />
-        <meta property="og:image" content={ogImage} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Limitless Lab" />
+        <meta property="og:image" content={ogImage} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="article:published_time" content={post.created_at} />
