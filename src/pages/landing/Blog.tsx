@@ -6,9 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
 import { format } from "date-fns";
-import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 
 export default function Blog() {
   const { toast } = useToast();
@@ -52,31 +52,13 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet>
-        {/* Clear any existing meta tags */}
-        <meta name="robots" content="index, follow" />
-        
-        {/* Primary meta tags */}
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        <link rel="canonical" href={canonicalUrl} />
-        
-        {/* OpenGraph tags */}
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:site_name" content="Limitless Lab" />
-        <meta property="og:image" content={pageImage} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        
-        {/* Twitter Card tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={pageTitle} />
-        <meta name="twitter:description" content={pageDescription} />
-        <meta name="twitter:image" content={pageImage} />
-      </Helmet>
+      <OpenGraphTags
+        title={pageTitle}
+        description={pageDescription}
+        imageUrl={pageImage}
+        url={canonicalUrl}
+        type="website"
+      />
       
       <MainNav />
       

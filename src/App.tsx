@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
+import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,6 +20,9 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Create a new helmet context
+const helmetContext = {};
 
 const App = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -118,16 +123,18 @@ const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ScrollToTop />
-          <AppRoutes session={session} />
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <HelmetProvider context={helmetContext}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ScrollToTop />
+            <AppRoutes session={session} />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 };
 

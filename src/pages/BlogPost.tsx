@@ -11,8 +11,8 @@ import { BlogMeta } from "@/components/blog/BlogMeta";
 import { BlogContent } from "@/components/blog/BlogContent";
 import { BlogNotFound } from "@/components/blog/BlogNotFound";
 import { BlogLoading } from "@/components/blog/BlogLoading";
-import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -68,26 +68,25 @@ export default function BlogPost() {
   // Default image to use when post image is not available
   const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   
+  // Log debugging info
+  useEffect(() => {
+    console.log("Blog Post Debug Info:");
+    console.log("- URL:", canonicalUrl);
+    console.log("- Slug:", slug);
+    console.log("- Post loaded:", !!post);
+    console.log("- Image:", post?.cover_image || defaultImage);
+  }, [canonicalUrl, slug, post]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet>
-          <title>Loading Blog Post | Limitless Lab</title>
-          <meta name="description" content="Loading blog post from Limitless Lab" />
-          <link rel="canonical" href={canonicalUrl} />
-          <meta property="og:title" content="Loading Blog Post | Limitless Lab" />
-          <meta property="og:description" content="Loading blog post from Limitless Lab" />
-          <meta property="og:image" content={defaultImage} />
-          <meta property="og:type" content="article" />
-          <meta property="og:url" content={canonicalUrl} />
-          <meta property="og:site_name" content="Limitless Lab" />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="630" />
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:title" content="Loading Blog Post | Limitless Lab" />
-          <meta name="twitter:description" content="Loading blog post from Limitless Lab" />
-          <meta name="twitter:image" content={defaultImage} />
-        </Helmet>
+        <OpenGraphTags 
+          title="Loading Blog Post | Limitless Lab"
+          description="Loading blog post from Limitless Lab"
+          imageUrl={defaultImage}
+          url={canonicalUrl}
+          type="article"
+        />
         <BlogLoading />
       </div>
     );
@@ -96,23 +95,13 @@ export default function BlogPost() {
   if (!post) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet>
-          <title>Blog Post Not Found | Limitless Lab</title>
-          <meta name="description" content="The blog post you're looking for couldn't be found." />
-          <link rel="canonical" href={canonicalUrl} />
-          <meta property="og:title" content="Blog Post Not Found | Limitless Lab" />
-          <meta property="og:description" content="The blog post you're looking for couldn't be found." />
-          <meta property="og:image" content={defaultImage} />
-          <meta property="og:type" content="article" />
-          <meta property="og:url" content={canonicalUrl} />
-          <meta property="og:site_name" content="Limitless Lab" />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="630" />
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:title" content="Blog Post Not Found | Limitless Lab" />
-          <meta name="twitter:description" content="The blog post you're looking for couldn't be found." />
-          <meta name="twitter:image" content={defaultImage} />
-        </Helmet>
+        <OpenGraphTags 
+          title="Blog Post Not Found | Limitless Lab"
+          description="The blog post you're looking for couldn't be found."
+          imageUrl={defaultImage}
+          url={canonicalUrl}
+          type="article"
+        />
         <BlogNotFound />
       </div>
     );
@@ -125,32 +114,14 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet>
-        {/* Clear any existing meta tags */}
-        <meta name="robots" content="index, follow" />
-        
-        {/* Primary meta tags */}
-        <title>{metaTitle}</title>
-        <meta name="description" content={metaDescription} />
-        <link rel="canonical" href={canonicalUrl} />
-        
-        {/* OpenGraph tags */}
-        <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={metaDescription} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:site_name" content="Limitless Lab" />
-        <meta property="og:image" content={ogImage} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="article:published_time" content={post.created_at} />
-        
-        {/* Twitter Card tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={post.title} />
-        <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:image" content={ogImage} />
-      </Helmet>
+      <OpenGraphTags 
+        title={metaTitle}
+        description={metaDescription}
+        imageUrl={ogImage}
+        url={canonicalUrl}
+        type="article"
+        publishedTime={post.created_at}
+      />
       
       <MainNav />
       
