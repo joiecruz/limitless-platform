@@ -9,9 +9,9 @@ import { CaseStudyMeta } from "@/components/case-studies/CaseStudyMeta";
 import { CaseStudyContent } from "@/components/case-studies/CaseStudyContent";
 import { CaseStudyImages } from "@/components/case-studies/CaseStudyImages";
 import { CTASection } from "@/components/site-config/CTASection";
-import { Helmet } from "react-helmet";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 
 export default function CaseStudy() {
   const { slug } = useParams();
@@ -77,51 +77,23 @@ export default function CaseStudy() {
 
   // Debug OpenGraph tags
   useEffect(() => {
-    console.log("Current URL:", window.location.href);
-    console.log("Setting OpenGraph tags for case study:", slug);
-    console.log("- Title:", pageTitle);
-    console.log("- Description:", pageDescription);
-    console.log("- Image:", pageImage);
+    console.log("Case Study Debug Info:");
     console.log("- URL:", canonicalUrl);
-    
-    // Force checking what's actually in the document
-    setTimeout(() => {
-      const ogTags = {
-        title: document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
-        description: document.querySelector('meta[property="og:description"]')?.getAttribute('content'),
-        image: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
-        url: document.querySelector('meta[property="og:url"]')?.getAttribute('content'),
-        type: document.querySelector('meta[property="og:type"]')?.getAttribute('content'),
-      };
-      
-      console.log("DOCUMENT HEAD CONTAINS THESE OG TAGS:", ogTags);
-    }, 1000);
-  }, [slug, pageTitle, pageDescription, pageImage, canonicalUrl]);
+    console.log("- Slug:", slug);
+    console.log("- Case Study loaded:", !!caseStudy);
+    console.log("- Image:", pageImage);
+  }, [canonicalUrl, slug, caseStudy, pageImage]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet prioritizeSeoTags={true}>
-          <title>Loading Case Study | Limitless Lab</title>
-          <meta name="description" content="Loading case study from Limitless Lab" />
-          <link rel="canonical" href={canonicalUrl} />
-          
-          {/* OpenGraph tags for social sharing */}
-          <meta property="og:title" content="Loading Case Study | Limitless Lab" />
-          <meta property="og:description" content="Loading case study from Limitless Lab" />
-          <meta property="og:image" content={defaultImage} />
-          <meta property="og:type" content="article" />
-          <meta property="og:url" content={canonicalUrl} />
-          <meta property="og:site_name" content="Limitless Lab" />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="630" />
-          
-          {/* Twitter Card tags */}
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:title" content="Loading Case Study | Limitless Lab" />
-          <meta name="twitter:description" content="Loading case study from Limitless Lab" />
-          <meta name="twitter:image" content={defaultImage} />
-        </Helmet>
+        <OpenGraphTags
+          title="Loading Case Study | Limitless Lab"
+          description="Loading case study from Limitless Lab"
+          imageUrl={defaultImage}
+          url={canonicalUrl}
+          type="article"
+        />
         <MainNav />
         <div className="animate-pulse space-y-8 max-w-7xl mx-auto px-4 py-16">
           <div className="h-8 bg-gray-200 rounded w-1/4" />
@@ -138,27 +110,13 @@ export default function CaseStudy() {
   if (!caseStudy) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet prioritizeSeoTags={true}>
-          <title>Case Study Not Found | Limitless Lab</title>
-          <meta name="description" content="Sorry, we couldn't find the case study you're looking for." />
-          <link rel="canonical" href={canonicalUrl} />
-          
-          {/* OpenGraph tags for social sharing */}
-          <meta property="og:title" content="Case Study Not Found | Limitless Lab" />
-          <meta property="og:description" content="Sorry, we couldn't find the case study you're looking for." />
-          <meta property="og:image" content={defaultImage} />
-          <meta property="og:type" content="article" />
-          <meta property="og:url" content={canonicalUrl} />
-          <meta property="og:site_name" content="Limitless Lab" />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="630" />
-          
-          {/* Twitter Card tags */}
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:title" content="Case Study Not Found | Limitless Lab" />
-          <meta name="twitter:description" content="Sorry, we couldn't find the case study you're looking for." />
-          <meta name="twitter:image" content={defaultImage} />
-        </Helmet>
+        <OpenGraphTags
+          title="Case Study Not Found | Limitless Lab"
+          description="Sorry, we couldn't find the case study you're looking for."
+          imageUrl={defaultImage}
+          url={canonicalUrl}
+          type="article"
+        />
         <MainNav />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <h2 className="text-2xl font-semibold">Case study not found</h2>
@@ -169,27 +127,13 @@ export default function CaseStudy() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet prioritizeSeoTags={true}>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        <link rel="canonical" href={canonicalUrl} />
-        
-        {/* Force override any existing tags with these explicit OpenGraph tags */}
-        <meta property="og:title" content={caseStudy.name} />
-        <meta property="og:description" content={pageDescription} />
-        <meta property="og:image" content={pageImage} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:site_name" content="Limitless Lab" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        
-        {/* Twitter Card tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={caseStudy.name} />
-        <meta name="twitter:description" content={pageDescription} />
-        <meta name="twitter:image" content={pageImage} />
-      </Helmet>
+      <OpenGraphTags
+        title={pageTitle}
+        description={pageDescription}
+        imageUrl={pageImage}
+        url={canonicalUrl}
+        type="article"
+      />
       
       <MainNav />
       
