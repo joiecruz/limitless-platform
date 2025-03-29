@@ -57,11 +57,18 @@ export default function Blog() {
     console.log("- Description:", pageDescription);
     console.log("- Image:", pageImage);
     console.log("- URL:", canonicalUrl);
+    
+    // Debug what the document head contains
+    const metaTags = document.querySelectorAll('meta');
+    console.log("Current meta tags in document:");
+    metaTags.forEach(tag => {
+      console.log(`${tag.getAttribute('property') || tag.getAttribute('name')}: ${tag.getAttribute('content')}`);
+    });
   }, [pageTitle, pageDescription, pageImage, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet>
+      <Helmet prioritizeSeoTags>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonicalUrl} />

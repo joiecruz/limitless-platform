@@ -8,6 +8,7 @@ import { CTASection } from "@/components/site-config/CTASection";
 import { ArrowRight } from "lucide-react";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export default function CaseStudies() {
   const { toast } = useToast();
@@ -23,6 +24,11 @@ export default function CaseStudies() {
       
       if (error) {
         console.error("Error fetching case studies:", error);
+        toast({
+          title: "Error loading case studies",
+          description: "Failed to load case studies. Please try again later.",
+          variant: "destructive",
+        });
         throw error;
       }
       
@@ -49,9 +55,27 @@ export default function CaseStudies() {
   const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   const canonicalUrl = `${window.location.origin}/case-studies`;
 
+  // Add additional console logs to debug OpenGraph tags
+  useEffect(() => {
+    console.log("Setting case studies listing OpenGraph tags:");
+    console.log("- Title:", pageTitle);
+    console.log("- Description:", pageDescription);
+    console.log("- Image:", pageImage);
+    console.log("- URL:", canonicalUrl);
+    
+    // Debug what the document head contains
+    setTimeout(() => {
+      const metaTags = document.querySelectorAll('meta');
+      console.log("Current meta tags in document for case studies:");
+      metaTags.forEach(tag => {
+        console.log(`${tag.getAttribute('property') || tag.getAttribute('name')}: ${tag.getAttribute('content')}`);
+      });
+    }, 500);
+  }, [pageTitle, pageDescription, pageImage, canonicalUrl]);
+
   return (
     <div className="min-h-screen bg-white">
-      <Helmet>
+      <Helmet prioritizeSeoTags>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonicalUrl} />
