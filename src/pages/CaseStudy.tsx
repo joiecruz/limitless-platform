@@ -56,9 +56,72 @@ export default function CaseStudy() {
     }
   }, [error]);
 
+  // Define variables outside conditional rendering
+  const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  const canonicalUrl = `${window.location.origin}/case-studies/${slug}`;
+  
+  // Define meta data based on case study availability
+  const pageTitle = caseStudy 
+    ? `${caseStudy.name} | Limitless Lab Case Studies` 
+    : isLoading 
+      ? "Loading Case Study | Limitless Lab" 
+      : "Case Study Not Found | Limitless Lab";
+  
+  const pageDescription = caseStudy 
+    ? (caseStudy.description || "Explore this case study from Limitless Lab").substring(0, 160)
+    : isLoading
+      ? "Loading case study from Limitless Lab"
+      : "Sorry, we couldn't find the case study you're looking for.";
+  
+  const pageImage = caseStudy?.cover_photo || defaultImage;
+
+  // Debug OpenGraph tags
+  useEffect(() => {
+    console.log("Current URL:", window.location.href);
+    console.log("Setting OpenGraph tags for case study:", slug);
+    console.log("- Title:", pageTitle);
+    console.log("- Description:", pageDescription);
+    console.log("- Image:", pageImage);
+    console.log("- URL:", canonicalUrl);
+    
+    // Force checking what's actually in the document
+    setTimeout(() => {
+      const ogTags = {
+        title: document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+        description: document.querySelector('meta[property="og:description"]')?.getAttribute('content'),
+        image: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+        url: document.querySelector('meta[property="og:url"]')?.getAttribute('content'),
+        type: document.querySelector('meta[property="og:type"]')?.getAttribute('content'),
+      };
+      
+      console.log("DOCUMENT HEAD CONTAINS THESE OG TAGS:", ogTags);
+    }, 1000);
+  }, [slug, pageTitle, pageDescription, pageImage, canonicalUrl]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
+        <Helmet prioritizeSeoTags={true}>
+          <title>Loading Case Study | Limitless Lab</title>
+          <meta name="description" content="Loading case study from Limitless Lab" />
+          <link rel="canonical" href={canonicalUrl} />
+          
+          {/* OpenGraph tags for social sharing */}
+          <meta property="og:title" content="Loading Case Study | Limitless Lab" />
+          <meta property="og:description" content="Loading case study from Limitless Lab" />
+          <meta property="og:image" content={defaultImage} />
+          <meta property="og:type" content="article" />
+          <meta property="og:url" content={canonicalUrl} />
+          <meta property="og:site_name" content="Limitless Lab" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          
+          {/* Twitter Card tags */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Loading Case Study | Limitless Lab" />
+          <meta name="twitter:description" content="Loading case study from Limitless Lab" />
+          <meta name="twitter:image" content={defaultImage} />
+        </Helmet>
         <MainNav />
         <div className="animate-pulse space-y-8 max-w-7xl mx-auto px-4 py-16">
           <div className="h-8 bg-gray-200 rounded w-1/4" />
@@ -75,12 +138,26 @@ export default function CaseStudy() {
   if (!caseStudy) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet prioritizeSeoTags>
-          <title>Case Study Not Found</title>
+        <Helmet prioritizeSeoTags={true}>
+          <title>Case Study Not Found | Limitless Lab</title>
           <meta name="description" content="Sorry, we couldn't find the case study you're looking for." />
-          <meta property="og:title" content="Case Study Not Found" />
+          <link rel="canonical" href={canonicalUrl} />
+          
+          {/* OpenGraph tags for social sharing */}
+          <meta property="og:title" content="Case Study Not Found | Limitless Lab" />
           <meta property="og:description" content="Sorry, we couldn't find the case study you're looking for." />
-          <meta property="og:type" content="website" />
+          <meta property="og:image" content={defaultImage} />
+          <meta property="og:type" content="article" />
+          <meta property="og:url" content={canonicalUrl} />
+          <meta property="og:site_name" content="Limitless Lab" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          
+          {/* Twitter Card tags */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Case Study Not Found | Limitless Lab" />
+          <meta name="twitter:description" content="Sorry, we couldn't find the case study you're looking for." />
+          <meta name="twitter:image" content={defaultImage} />
         </Helmet>
         <MainNav />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
@@ -90,41 +167,22 @@ export default function CaseStudy() {
     );
   }
 
-  const pageTitle = `${caseStudy.name} | Limitless Lab Case Studies`;
-  const pageDescription = caseStudy.description || "Explore this case study from Limitless Lab";
-  const pageImage = caseStudy.cover_photo || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
-  const canonicalUrl = `${window.location.origin}/case-studies/${caseStudy.slug}`;
-
-  // Add additional console logs to debug OpenGraph tags
-  useEffect(() => {
-    console.log("Setting OpenGraph tags for case study:");
-    console.log("- Title:", pageTitle);
-    console.log("- Description:", pageDescription);
-    console.log("- Image:", pageImage);
-    console.log("- URL:", canonicalUrl);
-    
-    // Debug what the document head contains
-    const metaTags = document.querySelectorAll('meta');
-    console.log("Current meta tags in document for case study:");
-    metaTags.forEach(tag => {
-      console.log(`${tag.getAttribute('property') || tag.getAttribute('name')}: ${tag.getAttribute('content')}`);
-    });
-  }, [pageTitle, pageDescription, pageImage, canonicalUrl]);
-
   return (
     <div className="min-h-screen bg-white">
-      <Helmet prioritizeSeoTags>
+      <Helmet prioritizeSeoTags={true}>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonicalUrl} />
         
-        {/* OpenGraph tags */}
+        {/* Force override any existing tags with these explicit OpenGraph tags */}
         <meta property="og:title" content={caseStudy.name} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:image" content={pageImage} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Limitless Lab" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />

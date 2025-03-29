@@ -63,41 +63,49 @@ export default function BlogPost() {
     }
   }, [error]);
   
-  // Define default values outside of conditional rendering
-  const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  // Define all variables outside conditional rendering blocks
   const canonicalUrl = `${window.location.origin}/blog/${slug}`;
   
-  // Always define these variables regardless of loading state
+  // Define meta data variables based on post availability
+  const metaTitle = post ? `${post.title} | Limitless Lab Blog` : "Loading Blog Post | Limitless Lab";
+  const metaDescription = post 
+    ? (post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`).substring(0, 160) 
+    : "Loading blog post from Limitless Lab";
+  
+  const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  const ogImage = post?.cover_image || defaultImage;
+  
+  // Calculate read time
   const wordCount = post ? (post.content ? post.content.split(/\s+/).length : 0) : 0;
   const readTime = Math.ceil(wordCount / 200);
   
-  // Prepare meta title and description regardless of post loading state
-  const metaTitle = post ? `${post.title} | Limitless Lab Blog` : "Loading Blog Post | Limitless Lab";
-  const metaDescription = post 
-    ? (post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`) 
-    : "Loading blog post from Limitless Lab";
-  const ogImage = post?.cover_image || defaultImage;
-
-  // Debug OpenGraph tags - this hook should always be present
+  // Debug OpenGraph tags
   useEffect(() => {
-    console.log("Setting blog OpenGraph tags:");
+    console.log("Current URL:", window.location.href);
+    console.log("Setting blog OpenGraph tags for:", slug);
     console.log("- Title:", metaTitle);
     console.log("- Description:", metaDescription);
     console.log("- Image:", ogImage);
     console.log("- URL:", canonicalUrl);
     
-    // Debug what the document head contains
-    const metaTags = document.querySelectorAll('meta');
-    console.log("Current meta tags in document:");
-    metaTags.forEach(tag => {
-      console.log(`${tag.getAttribute('property') || tag.getAttribute('name')}: ${tag.getAttribute('content')}`);
-    });
-  }, [metaTitle, metaDescription, ogImage, canonicalUrl]);
+    // Force checking what's actually in the document
+    setTimeout(() => {
+      const ogTags = {
+        title: document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+        description: document.querySelector('meta[property="og:description"]')?.getAttribute('content'),
+        image: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+        url: document.querySelector('meta[property="og:url"]')?.getAttribute('content'),
+        type: document.querySelector('meta[property="og:type"]')?.getAttribute('content'),
+      };
+      
+      console.log("DOCUMENT HEAD CONTAINS THESE OG TAGS:", ogTags);
+    }, 1000);
+  }, [slug, metaTitle, metaDescription, ogImage, canonicalUrl]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet prioritizeSeoTags>
+        <Helmet prioritizeSeoTags={true}>
           <title>Loading Blog Post | Limitless Lab</title>
           <meta name="description" content="Loading blog post from Limitless Lab" />
           <link rel="canonical" href={canonicalUrl} />
@@ -124,7 +132,7 @@ export default function BlogPost() {
   if (!post) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet prioritizeSeoTags>
+        <Helmet prioritizeSeoTags={true}>
           <title>Blog Post Not Found | Limitless Lab</title>
           <meta name="description" content="The blog post you're looking for couldn't be found." />
           <link rel="canonical" href={canonicalUrl} />
@@ -150,18 +158,21 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet prioritizeSeoTags>
+      <Helmet prioritizeSeoTags={true}>
         <title>{metaTitle}</title>
         <meta name="description" content={metaDescription} />
         <link rel="canonical" href={canonicalUrl} />
         
-        {/* OpenGraph tags for social sharing */}
+        {/* Force override any existing tags with these explicit OpenGraph tags */}
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content={ogImage} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Limitless Lab" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="article:published_time" content={post.created_at} />
         
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
