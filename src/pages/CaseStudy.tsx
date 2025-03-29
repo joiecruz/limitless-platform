@@ -11,16 +11,18 @@ import { CaseStudyImages } from "@/components/case-studies/CaseStudyImages";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Helmet } from "react-helmet";
 import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CaseStudy() {
   const { slug } = useParams();
+  const { toast } = useToast();
 
   // Log the slug value to help with debugging
   useEffect(() => {
     console.log("Case study slug:", slug);
   }, [slug]);
 
-  const { data: caseStudy, isLoading } = useQuery({
+  const { data: caseStudy, isLoading, error } = useQuery({
     queryKey: ['case-study', slug],
     queryFn: async () => {
       console.log("Fetching case study with slug:", slug);
@@ -32,13 +34,27 @@ export default function CaseStudy() {
 
       if (error) {
         console.error("Error fetching case study:", error);
+        toast({
+          title: "Error loading case study",
+          description: "Unable to load the case study. Please try again later.",
+          variant: "destructive",
+        });
         throw error;
       }
       
       console.log("Case study data:", data);
       return data;
     },
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Handle error state
+  useEffect(() => {
+    if (error) {
+      console.error("Error loading case study:", error);
+    }
+  }, [error]);
 
   if (isLoading) {
     return (
@@ -59,7 +75,7 @@ export default function CaseStudy() {
   if (!caseStudy) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet>
+        <Helmet prioritizeSeoTags>
           <title>Case Study Not Found</title>
           <meta name="description" content="Sorry, we couldn't find the case study you're looking for." />
           <meta property="og:title" content="Case Study Not Found" />
@@ -81,16 +97,23 @@ export default function CaseStudy() {
 
   // Add additional console logs to debug OpenGraph tags
   useEffect(() => {
-    console.log("Setting OpenGraph tags:");
+    console.log("Setting OpenGraph tags for case study:");
     console.log("- Title:", pageTitle);
     console.log("- Description:", pageDescription);
     console.log("- Image:", pageImage);
     console.log("- URL:", canonicalUrl);
+    
+    // Debug what the document head contains
+    const metaTags = document.querySelectorAll('meta');
+    console.log("Current meta tags in document for case study:");
+    metaTags.forEach(tag => {
+      console.log(`${tag.getAttribute('property') || tag.getAttribute('name')}: ${tag.getAttribute('content')}`);
+    });
   }, [pageTitle, pageDescription, pageImage, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet>
+      <Helmet prioritizeSeoTags>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonicalUrl} />

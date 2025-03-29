@@ -87,11 +87,18 @@ export default function BlogPost() {
     console.log("- Description:", post.excerpt || post.meta_description);
     console.log("- Image:", post.cover_image || defaultImage);
     console.log("- URL:", canonicalUrl);
+    
+    // Debug what the document head contains
+    const metaTags = document.querySelectorAll('meta');
+    console.log("Current meta tags in document:");
+    metaTags.forEach(tag => {
+      console.log(`${tag.getAttribute('property') || tag.getAttribute('name')}: ${tag.getAttribute('content')}`);
+    });
   }, [post.title, post.excerpt, post.meta_description, post.cover_image, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet>
+      <Helmet prioritizeSeoTags>
         <title>{post.title} | Limitless Lab Blog</title>
         <meta name="description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
         <link rel="canonical" href={canonicalUrl} />
