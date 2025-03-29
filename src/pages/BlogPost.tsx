@@ -63,29 +63,27 @@ export default function BlogPost() {
     }
   }, [error]);
   
-  if (isLoading) {
-    return <BlogLoading />;
-  }
-
-  if (!post) {
-    return <BlogNotFound />;
-  }
-
-  const wordCount = post.content ? post.content.split(/\s+/).length : 0;
+  // Define default values outside of conditional rendering
+  const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+  const canonicalUrl = `${window.location.origin}/blog/${slug}`;
+  
+  // Always define these variables regardless of loading state
+  const wordCount = post ? (post.content ? post.content.split(/\s+/).length : 0) : 0;
   const readTime = Math.ceil(wordCount / 200);
   
-  // Define a default image to use if post doesn't have a cover image
-  const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
-  
-  // Get the canonical URL for this post
-  const canonicalUrl = `${window.location.origin}/blog/${post.slug}`;
+  // Prepare meta title and description regardless of post loading state
+  const metaTitle = post ? `${post.title} | Limitless Lab Blog` : "Loading Blog Post | Limitless Lab";
+  const metaDescription = post 
+    ? (post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`) 
+    : "Loading blog post from Limitless Lab";
+  const ogImage = post?.cover_image || defaultImage;
 
-  // Add additional console logs to debug OpenGraph tags
+  // Debug OpenGraph tags - this hook should always be present
   useEffect(() => {
     console.log("Setting blog OpenGraph tags:");
-    console.log("- Title:", post.title);
-    console.log("- Description:", post.excerpt || post.meta_description);
-    console.log("- Image:", post.cover_image || defaultImage);
+    console.log("- Title:", metaTitle);
+    console.log("- Description:", metaDescription);
+    console.log("- Image:", ogImage);
     console.log("- URL:", canonicalUrl);
     
     // Debug what the document head contains
@@ -94,19 +92,73 @@ export default function BlogPost() {
     metaTags.forEach(tag => {
       console.log(`${tag.getAttribute('property') || tag.getAttribute('name')}: ${tag.getAttribute('content')}`);
     });
-  }, [post.title, post.excerpt, post.meta_description, post.cover_image, canonicalUrl]);
+  }, [metaTitle, metaDescription, ogImage, canonicalUrl]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Helmet prioritizeSeoTags>
+          <title>Loading Blog Post | Limitless Lab</title>
+          <meta name="description" content="Loading blog post from Limitless Lab" />
+          <link rel="canonical" href={canonicalUrl} />
+          
+          {/* OpenGraph tags for social sharing */}
+          <meta property="og:title" content="Loading Blog Post | Limitless Lab" />
+          <meta property="og:description" content="Loading blog post from Limitless Lab" />
+          <meta property="og:image" content={defaultImage} />
+          <meta property="og:type" content="article" />
+          <meta property="og:url" content={canonicalUrl} />
+          <meta property="og:site_name" content="Limitless Lab" />
+          
+          {/* Twitter Card tags */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Loading Blog Post | Limitless Lab" />
+          <meta name="twitter:description" content="Loading blog post from Limitless Lab" />
+          <meta name="twitter:image" content={defaultImage} />
+        </Helmet>
+        <BlogLoading />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Helmet prioritizeSeoTags>
+          <title>Blog Post Not Found | Limitless Lab</title>
+          <meta name="description" content="The blog post you're looking for couldn't be found." />
+          <link rel="canonical" href={canonicalUrl} />
+          
+          {/* OpenGraph tags for social sharing */}
+          <meta property="og:title" content="Blog Post Not Found | Limitless Lab" />
+          <meta property="og:description" content="The blog post you're looking for couldn't be found." />
+          <meta property="og:image" content={defaultImage} />
+          <meta property="og:type" content="article" />
+          <meta property="og:url" content={canonicalUrl} />
+          <meta property="og:site_name" content="Limitless Lab" />
+          
+          {/* Twitter Card tags */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Blog Post Not Found | Limitless Lab" />
+          <meta name="twitter:description" content="The blog post you're looking for couldn't be found." />
+          <meta name="twitter:image" content={defaultImage} />
+        </Helmet>
+        <BlogNotFound />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
       <Helmet prioritizeSeoTags>
-        <title>{post.title} | Limitless Lab Blog</title>
-        <meta name="description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
         <link rel="canonical" href={canonicalUrl} />
         
         {/* OpenGraph tags for social sharing */}
         <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
-        <meta property="og:image" content={post.cover_image || defaultImage} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:image" content={ogImage} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Limitless Lab" />
@@ -114,8 +166,8 @@ export default function BlogPost() {
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
-        <meta name="twitter:description" content={post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`} />
-        <meta name="twitter:image" content={post.cover_image || defaultImage} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={ogImage} />
       </Helmet>
       
       <MainNav />
