@@ -52,34 +52,43 @@ export default function Blog() {
 
   // Add additional console logs to debug OpenGraph tags
   useEffect(() => {
+    console.log("Current URL:", window.location.href);
     console.log("Setting blog listing OpenGraph tags:");
     console.log("- Title:", pageTitle);
     console.log("- Description:", pageDescription);
     console.log("- Image:", pageImage);
     console.log("- URL:", canonicalUrl);
     
-    // Debug what the document head contains
-    const metaTags = document.querySelectorAll('meta');
-    console.log("Current meta tags in document:");
-    metaTags.forEach(tag => {
-      console.log(`${tag.getAttribute('property') || tag.getAttribute('name')}: ${tag.getAttribute('content')}`);
-    });
+    // Force checking what's actually in the document
+    setTimeout(() => {
+      const ogTags = {
+        title: document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+        description: document.querySelector('meta[property="og:description"]')?.getAttribute('content'),
+        image: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+        url: document.querySelector('meta[property="og:url"]')?.getAttribute('content'),
+        type: document.querySelector('meta[property="og:type"]')?.getAttribute('content'),
+      };
+      
+      console.log("DOCUMENT HEAD CONTAINS THESE OG TAGS:", ogTags);
+    }, 1000);
   }, [pageTitle, pageDescription, pageImage, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet prioritizeSeoTags>
+      <Helmet prioritizeSeoTags={true}>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonicalUrl} />
         
-        {/* OpenGraph tags */}
+        {/* Force override any existing tags with these explicit OpenGraph tags */}
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Limitless Lab" />
         <meta property="og:image" content={pageImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
