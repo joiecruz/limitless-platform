@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,80 +10,88 @@ interface ForgotPasswordFormProps {
   initialEmail?: string;
 }
 
-export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswordFormProps) => {
+export function ForgotPasswordForm({ onCancel, initialEmail = '' }: ForgotPasswordFormProps) {
   const [email, setEmail] = useState(initialEmail);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !email.trim()) {
+    if (!email) {
       toast({
         title: "Email Required",
-        description: "Please enter your email address.",
+        description: "Please enter your email address",
         variant: "destructive",
       });
       return;
     }
-
-    setLoading(true);
+    
+    setIsLoading(true);
 
     try {
-      // Use the correct redirect URL pointing to our reset-password page
+      // Get the site URL using the window location
+      const origin = window.location.origin;
+      const redirectTo = `${origin}/reset-password`;
+      
+      console.log("Sending password reset to:", email);
+      console.log("Redirect URL:", redirectTo);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectTo
       });
 
       if (error) throw error;
 
       toast({
         title: "Password Reset Email Sent",
-        description: "Check your inbox for a password reset link.",
+        description: "Check your email for a link to reset your password",
       });
-      onCancel(); // Return to login form after successful submission
+      
+      // Return to login view
+      onCancel();
     } catch (error: any) {
+      console.error("Password reset error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to send reset password email",
+        description: error.message || "Failed to send reset email",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-gray-900">Reset your password</h2>
-        <p className="mt-2 text-sm text-gray-600">
-          Enter your email and we'll send you a password reset link
+    <div className="space-y-4">
+      <div className="space-y-2 text-center">
+        <h2 className="text-2xl font-semibold tracking-tight">Forgot Password</h2>
+        <p className="text-sm text-muted-foreground">
+          Enter your email address and we'll send you a link to reset your password
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
           <Input
+            id="email"
             type="email"
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="pl-10"
+            className="w-full"
           />
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <Button
             type="submit"
-            className="w-full"
-            disabled={loading}
-            variant="default"
             style={{ backgroundColor: "rgb(69, 66, 158)" }}
+            disabled={isLoading}
+            className="w-full"
           >
-            {loading ? "Sending..." : "Reset password"}
+            {isLoading ? "Sending..." : "Send Reset Link"}
           </Button>
           
           <Button
@@ -93,10 +100,10 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
             onClick={onCancel}
             className="w-full"
           >
-            Back to sign in
+            Back to Sign In
           </Button>
         </div>
       </form>
     </div>
   );
-};
+}
