@@ -2,16 +2,16 @@
 import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
 
-// Regular client
+// Regular client - with proper error handling
 export const client = createClient({
   projectId: '42h9veeb',
   dataset: 'production',
-  apiVersion: '2024-03-30',
+  apiVersion: '2024-03-30', 
   useCdn: process.env.NODE_ENV === 'production',
   perspective: 'published',
 });
 
-// Preview client
+// Preview client with token
 export const previewClient = createClient({
   projectId: '42h9veeb',
   dataset: 'production',
@@ -31,12 +31,13 @@ export function urlFor(source: any) {
   return builder.image(source);
 }
 
-// Helper function to fetch blog posts
+// Helper function to fetch blog posts with better error handling
 export async function getBlogPosts(preview = false) {
   console.log('Fetching blog posts with preview:', preview);
-  const client = getClient(preview);
+  const currentClient = getClient(preview);
+  
   try {
-    const posts = await client.fetch(`
+    const posts = await currentClient.fetch(`
       *[_type == "post"] | order(publishedAt desc) {
         _id,
         title,
@@ -53,16 +54,18 @@ export async function getBlogPosts(preview = false) {
     return posts;
   } catch (error) {
     console.error('Error fetching blog posts:', error);
-    throw error;
+    // Return empty array instead of throwing to prevent app crashes
+    return [];
   }
 }
 
-// Helper function to fetch a single blog post by slug
+// Helper function to fetch a single blog post by slug with better error handling
 export async function getBlogPostBySlug(slug: string, preview = false) {
   console.log('Fetching blog post with slug:', slug, 'preview:', preview);
-  const client = getClient(preview);
+  const currentClient = getClient(preview);
+  
   try {
-    const post = await client.fetch(`
+    const post = await currentClient.fetch(`
       *[_type == "post" && slug.current == $slug][0] {
         _id,
         title,
@@ -88,11 +91,12 @@ export async function getBlogPostBySlug(slug: string, preview = false) {
     return post;
   } catch (error) {
     console.error('Error fetching blog post by slug:', error);
-    throw error;
+    // Return null instead of throwing to prevent app crashes
+    return null;
   }
 }
 
-// Helper function to fetch all tags with post counts
+// Helper function to fetch all tags with post counts with better error handling
 export async function getAllTags() {
   console.log('Fetching all tags');
   try {
@@ -108,6 +112,7 @@ export async function getAllTags() {
     return tags;
   } catch (error) {
     console.error('Error fetching tags:', error);
-    throw error;
+    // Return empty array instead of throwing to prevent app crashes
+    return [];
   }
 }

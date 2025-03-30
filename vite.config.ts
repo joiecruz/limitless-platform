@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => ({
     ]
   },
   define: {
-    'import.meta.env.VITE_SANITY_API_TOKEN': JSON.stringify(process.env.SANITY_API_TOKEN),
+    // Fix for environment variables to be properly exposed
+    'import.meta.env.VITE_SANITY_API_TOKEN': JSON.stringify(process.env.VITE_SANITY_API_TOKEN || process.env.SANITY_API_TOKEN),
   },
 }))

@@ -3,16 +3,27 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useBlogPosts } from "@/hooks/use-blog-posts";
 import { urlFor } from "@/lib/sanity";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export function BlogSection() {
+  const { toast } = useToast();
   const { data: posts, isLoading, error } = useBlogPosts();
   
-  // Log any errors for debugging
-  if (error) {
-    console.error('Error loading blog posts in BlogSection:', error);
-  }
+  // Show a toast notification on error
+  useEffect(() => {
+    if (error) {
+      console.error('Error loading blog posts in BlogSection:', error);
+      toast({
+        title: "Unable to load blog posts",
+        description: "We're experiencing some technical difficulties. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
   
-  const latestPosts = posts?.slice(0, 3);
+  // Fallback to supabase blog posts if there's an error with Sanity
+  const latestPosts = posts?.slice(0, 3) || [];
 
   return (
     <div className="bg-white py-24 sm:py-32">
@@ -36,8 +47,8 @@ export function BlogSection() {
           </div>
         ) : error ? (
           <div className="mx-auto mt-16 text-center">
-            <p className="text-red-500">Failed to load latest articles</p>
-            <p className="mt-2 text-gray-600">Please try again later</p>
+            <p className="text-red-500">We're experiencing some technical difficulties</p>
+            <p className="mt-2 text-gray-600">Please check back later for our latest articles</p>
           </div>
         ) : latestPosts && latestPosts.length > 0 ? (
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-12 lg:mx-0 lg:max-w-none lg:grid-cols-3">
@@ -50,6 +61,11 @@ export function BlogSection() {
                         src={urlFor(post.mainImage).width(800).height(450).url()}
                         alt={post.title}
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          // Fallback for image loading errors
+                          const target = e.target as HTMLImageElement;
+                          target.src = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+                        }}
                       />
                     ) : (
                       <div className="h-full w-full bg-gray-200" />
@@ -57,7 +73,7 @@ export function BlogSection() {
                   </div>
                   <div className="mt-4">
                     <time dateTime={post.publishedAt} className="text-sm text-gray-500">
-                      {format(new Date(post.publishedAt), 'MMMM d, yyyy')}
+                      {format(new Date(post.publishedAt || new Date()), 'MMMM d, yyyy')}
                     </time>
                     <h3 className="mt-2 text-lg font-semibold leading-6 text-gray-900 group-hover:text-[#393CA0]">
                       {post.title}

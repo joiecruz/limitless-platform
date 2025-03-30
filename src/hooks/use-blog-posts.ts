@@ -27,8 +27,10 @@ export function useBlogPosts(preview = false) {
   return useQuery({
     queryKey: ['blog-posts', preview],
     queryFn: () => getBlogPosts(preview),
-    retry: 2,
+    retry: 3,
     staleTime: 60 * 1000, // 1 minute
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
   });
 }
 
@@ -37,8 +39,9 @@ export function useBlogPost(slug: string, preview = false) {
     queryKey: ['blog-post', slug, preview],
     queryFn: () => getBlogPostBySlug(slug, preview),
     enabled: !!slug,
-    retry: 2,
+    retry: 3,
     staleTime: 60 * 1000, // 1 minute
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -46,7 +49,8 @@ export function useBlogTags() {
   return useQuery({
     queryKey: ['blog-tags'],
     queryFn: getAllTags,
-    retry: 2,
+    retry: 3,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 }
