@@ -1,3 +1,4 @@
+
 import { Helmet } from 'react-helmet-async';
 
 export interface OpenGraphTagsProps {
@@ -25,8 +26,8 @@ export function OpenGraphTags({
   tags,
   section
 }: OpenGraphTagsProps) {
-  const baseUrl = 'https://limitlesslab.app';
-  const currentUrl = url || window.location.href;
+  const baseUrl = 'https://limitlesslab.org'; // Updated to your actual domain
+  const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : baseUrl);
 
   return (
     <Helmet>

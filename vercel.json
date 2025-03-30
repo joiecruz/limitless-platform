@@ -1,0 +1,11 @@
+
+{
+  "rewrites": [
+    { "source": "/blog/:slug*", "destination": "/api/index" },
+    { "source": "/case-studies/:slug*", "destination": "/api/index" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "vite"
+}

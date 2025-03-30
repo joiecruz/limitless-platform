@@ -1,15 +1,12 @@
 
-// This file should be deployed as a serverless function or middleware on your hosting platform
-// For Netlify, add it to your netlify/functions/ directory
-// For Vercel, add it to your api/ directory
-
+// Copy of server-middleware.js for Vercel
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 
-exports.handler = async function(event, context) {
+export default async function handler(req, res) {
   // Get the path from the request
-  const { path: urlPath } = event;
+  const urlPath = req.url;
   
   console.log('Processing request for path:', urlPath);
   
@@ -42,7 +39,7 @@ exports.handler = async function(event, context) {
           const post = sanityData.result;
           
           // Read the HTML file
-          const htmlPath = path.join(__dirname, 'dist', 'index.html');
+          const htmlPath = path.join(process.cwd(), 'dist', 'index.html');
           console.log('Reading HTML file from:', htmlPath);
           let html = fs.readFileSync(htmlPath, 'utf8');
           
@@ -92,13 +89,8 @@ exports.handler = async function(event, context) {
           console.log('Successfully injected blog metadata from Sanity');
           
           // Return the modified HTML
-          return {
-            statusCode: 200,
-            headers: {
-              'Content-Type': 'text/html',
-            },
-            body: html,
-          };
+          res.setHeader('Content-Type', 'text/html');
+          return res.status(200).send(html);
         }
       } catch (sanityError) {
         console.error('Error fetching from Sanity:', sanityError);
@@ -125,7 +117,7 @@ exports.handler = async function(event, context) {
           const post = posts[0];
           
           // Read the HTML file
-          const htmlPath = path.join(__dirname, 'dist', 'index.html');
+          const htmlPath = path.join(process.cwd(), 'dist', 'index.html');
           console.log('Reading HTML file from:', htmlPath);
           let html = fs.readFileSync(htmlPath, 'utf8');
           
@@ -154,13 +146,8 @@ exports.handler = async function(event, context) {
           console.log('Successfully injected blog metadata from Supabase');
           
           // Return the modified HTML
-          return {
-            statusCode: 200,
-            headers: {
-              'Content-Type': 'text/html',
-            },
-            body: html,
-          };
+          res.setHeader('Content-Type', 'text/html');
+          return res.status(200).send(html);
         }
       } catch (error) {
         console.error('Error processing request:', error);
@@ -173,20 +160,12 @@ exports.handler = async function(event, context) {
   // For all other requests, serve the file as-is
   console.log('Serving static HTML for path:', urlPath);
   try {
-    const htmlPath = path.join(__dirname, 'dist', 'index.html');
+    const htmlPath = path.join(process.cwd(), 'dist', 'index.html');
     const html = fs.readFileSync(htmlPath, 'utf8');
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/html',
-      },
-      body: html,
-    };
+    res.setHeader('Content-Type', 'text/html');
+    return res.status(200).send(html);
   } catch (readError) {
     console.error('Error reading HTML file:', readError);
-    return {
-      statusCode: 500,
-      body: 'Internal Server Error',
-    };
+    return res.status(500).send('Internal Server Error');
   }
 };

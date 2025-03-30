@@ -1,8 +1,5 @@
 
-// This file should be deployed as a serverless function or middleware on your hosting platform
-// For Netlify, add it to your netlify/functions/ directory
-// For Vercel, add it to your api/ directory
-
+// Copy of server-middleware.js for Netlify
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
@@ -42,7 +39,7 @@ exports.handler = async function(event, context) {
           const post = sanityData.result;
           
           // Read the HTML file
-          const htmlPath = path.join(__dirname, 'dist', 'index.html');
+          const htmlPath = path.join(__dirname, '..', '..', 'dist', 'index.html');
           console.log('Reading HTML file from:', htmlPath);
           let html = fs.readFileSync(htmlPath, 'utf8');
           
@@ -125,7 +122,7 @@ exports.handler = async function(event, context) {
           const post = posts[0];
           
           // Read the HTML file
-          const htmlPath = path.join(__dirname, 'dist', 'index.html');
+          const htmlPath = path.join(__dirname, '..', '..', 'dist', 'index.html');
           console.log('Reading HTML file from:', htmlPath);
           let html = fs.readFileSync(htmlPath, 'utf8');
           
@@ -173,7 +170,7 @@ exports.handler = async function(event, context) {
   // For all other requests, serve the file as-is
   console.log('Serving static HTML for path:', urlPath);
   try {
-    const htmlPath = path.join(__dirname, 'dist', 'index.html');
+    const htmlPath = path.join(__dirname, '..', '..', 'dist', 'index.html');
     const html = fs.readFileSync(htmlPath, 'utf8');
     return {
       statusCode: 200,
