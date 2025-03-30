@@ -9,6 +9,7 @@ export const client = createClient({
   apiVersion: '2024-03-30', 
   useCdn: import.meta.env.MODE === 'production',
   perspective: 'published',
+  token: 'skiDdn7nX4ZdoPx4Sl0kg4uAvAGSgpb9mdFKS2KwfrvffzzYT0eULAPhOJ9oXVUzGzPYIwP0bsA1SW0ZmIjKgqjiGCVV7s8iii1gLTZncg1zu7izaXlfV797uymPZTsqsNdsA6WUtHDv4wVf0Cj0U04qIxgO01DXnnpuSUfoQxCJuReVUb6y',
 });
 
 // Preview client with token
@@ -34,10 +35,11 @@ export function urlFor(source: any) {
 // Helper function to fetch blog posts with better error handling
 export async function getBlogPosts(preview = false) {
   console.log('Fetching blog posts with preview:', preview);
-  console.log('Using direct token configuration instead of env vars');
+  console.log('Using direct token configuration');
   const currentClient = getClient(preview);
   
   try {
+    console.log('Executing Sanity query...');
     const posts = await currentClient.fetch(`
       *[_type == "post"] | order(publishedAt desc) {
         _id,

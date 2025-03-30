@@ -5,14 +5,15 @@ import { useBlogPosts } from "@/hooks/use-blog-posts";
 import { urlFor } from "@/lib/sanity";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function BlogSection() {
   const { toast } = useToast();
-  const { data: posts, isLoading, error } = useBlogPosts();
+  const { data: posts, isLoading, error, isError } = useBlogPosts();
   
   // Show a toast notification on error
   useEffect(() => {
-    if (error) {
+    if (isError && error) {
       console.error('Error loading blog posts in BlogSection:', error);
       toast({
         title: "Unable to load blog posts",
@@ -20,9 +21,9 @@ export function BlogSection() {
         variant: "destructive",
       });
     }
-  }, [error, toast]);
+  }, [isError, error, toast]);
   
-  // Fallback to supabase blog posts if there's an error with Sanity
+  // Fallback to empty array if there's an error with Sanity
   const latestPosts = posts?.slice(0, 3) || [];
 
   return (
@@ -38,14 +39,15 @@ export function BlogSection() {
         {isLoading ? (
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-12 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-[16/9] w-full bg-gray-200 rounded-lg" />
-                <div className="mt-4 h-4 w-1/3 bg-gray-200 rounded" />
-                <div className="mt-2 h-6 w-3/4 bg-gray-200 rounded" />
+              <div key={i} className="flex flex-col space-y-3">
+                <Skeleton className="h-48 w-full rounded-lg" />
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
               </div>
             ))}
           </div>
-        ) : error ? (
+        ) : isError ? (
           <div className="mx-auto mt-16 text-center">
             <p className="text-red-500">We're experiencing some technical difficulties</p>
             <p className="mt-2 text-gray-600">Please check back later for our latest articles</p>
@@ -62,6 +64,7 @@ export function BlogSection() {
                         alt={post.title}
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                         onError={(e) => {
+                          console.log('Image failed to load, using fallback');
                           // Fallback for image loading errors
                           const target = e.target as HTMLImageElement;
                           target.src = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
@@ -73,11 +76,14 @@ export function BlogSection() {
                   </div>
                   <div className="mt-4">
                     <time dateTime={post.publishedAt} className="text-sm text-gray-500">
-                      {format(new Date(post.publishedAt || new Date()), 'MMMM d, yyyy')}
+                      {post.publishedAt ? format(new Date(post.publishedAt), 'MMMM d, yyyy') : 'Date unavailable'}
                     </time>
                     <h3 className="mt-2 text-lg font-semibold leading-6 text-gray-900 group-hover:text-[#393CA0]">
                       {post.title}
                     </h3>
+                    {post.excerpt && (
+                      <p className="mt-2 text-sm text-gray-600 line-clamp-3">{post.excerpt}</p>
+                    )}
                   </div>
                 </Link>
               </article>
@@ -86,6 +92,7 @@ export function BlogSection() {
         ) : (
           <div className="mx-auto mt-16 text-center">
             <p className="text-gray-600">No articles available at the moment</p>
+            <p className="mt-2 text-sm text-gray-500">Check back soon for new content</p>
           </div>
         )}
 
