@@ -6,30 +6,29 @@ import { PortableText } from "@portabletext/react";
 import { format } from "date-fns";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { useBlogPost } from "@/hooks/use-blog-posts";
-import { urlFor } from "@/lib/sanity";
+import { urlFor, FALLBACK_IMAGE } from "@/lib/sanity";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
 import { useToast } from "@/hooks/use-toast";
-
-// Fallback image when mainImage is null
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=1200&h=630";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, AlertCircle, ExternalLink } from "lucide-react";
 
 export default function BlogPost() {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
   const preview = searchParams.get("preview") === "true";
   const { toast } = useToast();
-  const { data: post, isLoading, error } = useBlogPost(slug || "", preview);
+  const { data: post, isLoading, error, refetch } = useBlogPost(slug || "", preview);
 
-  // Log any errors
-  if (error) {
-    console.error("Error loading blog post:", error);
+  // Handle retry
+  const handleRetry = () => {
     toast({
-      title: "Error loading blog post",
-      description: "Unable to load the blog post. Please try again later.",
-      variant: "destructive",
+      title: "Retrying connection",
+      description: "Attempting to reconnect to the blog service...",
     });
-  }
+    refetch();
+  };
 
+  // Metadata
   const baseUrl = window.location.origin;
   const canonicalUrl = `${baseUrl}/blog/${post?.slug?.current || slug}`;
   const imageUrl = post?.mainImage ? urlFor(post.mainImage).width(1200).height(630).url() : FALLBACK_IMAGE;
@@ -56,6 +55,61 @@ export default function BlogPost() {
     );
   }
 
+  if (error) {
+    return (
+      <>
+        <MainNav />
+        <div className="min-h-screen bg-white pt-16">
+          <div className="mx-auto max-w-3xl px-6 py-16 sm:py-24 lg:px-8">
+            <div className="flex flex-col items-center text-center">
+              <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Blog Post</h1>
+              <p className="text-gray-600 mb-8">
+                We're having trouble connecting to our content service. Please try again later.
+              </p>
+              
+              {error instanceof Error && (
+                <div className="mb-8 bg-red-50 p-4 rounded text-sm text-left w-full max-w-lg overflow-auto max-h-40">
+                  <p className="font-semibold">Error details:</p>
+                  <p className="text-red-700">{error.message}</p>
+                </div>
+              )}
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  onClick={handleRetry}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => window.history.back()}
+                >
+                  Go Back
+                </Button>
+                <a 
+                  href={`https://42h9veeb.api.sanity.io/v2021-10-21/data/query/production?query=*%5B_type+%3D%3D+%22post%22+%26%26+slug.current+%3D%3D+%22${slug}%22%5D`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2 w-full"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Test API Connection
+                  </Button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   if (!post) {
     return (
       <>
@@ -64,6 +118,13 @@ export default function BlogPost() {
           <div className="mx-auto max-w-3xl px-6 py-16 sm:py-24 lg:px-8">
             <h1 className="text-2xl font-bold text-gray-900">Post not found</h1>
             <p className="mt-2 text-gray-600">The blog post you're looking for doesn't exist.</p>
+            <Button
+              variant="outline"
+              onClick={() => window.history.back()}
+              className="mt-6"
+            >
+              Go Back to Blog
+            </Button>
           </div>
         </div>
       </>
@@ -102,7 +163,7 @@ export default function BlogPost() {
               </h1>
               <div className="mt-4 flex items-center gap-x-4 text-xs">
                 <time dateTime={post.publishedAt} className="text-gray-500">
-                  {format(new Date(post.publishedAt), 'MMM d, yyyy')}
+                  {post.publishedAt ? format(new Date(post.publishedAt), 'MMM d, yyyy') : 'Publication date unknown'}
                 </time>
                 {post.categories?.map((category) => (
                   <span
@@ -115,27 +176,18 @@ export default function BlogPost() {
               </div>
             </header>
 
-            {post.mainImage ? (
-              <div className="relative mt-8 aspect-[16/9] w-full">
-                <img
-                  src={urlFor(post.mainImage).width(1200).height(675).url()}
-                  alt={post.title}
-                  className="rounded-2xl object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = FALLBACK_IMAGE;
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="relative mt-8 aspect-[16/9] w-full">
-                <img
-                  src={FALLBACK_IMAGE}
-                  alt={post.title}
-                  className="rounded-2xl object-cover"
-                />
-              </div>
-            )}
+            <div className="relative mt-8 aspect-[16/9] w-full">
+              <img
+                src={post.mainImage ? urlFor(post.mainImage).width(1200).height(675).url() : FALLBACK_IMAGE}
+                alt={post.title}
+                className="rounded-2xl object-cover"
+                onError={(e) => {
+                  console.log('Image failed to load, using fallback');
+                  const target = e.target as HTMLImageElement;
+                  target.src = FALLBACK_IMAGE;
+                }}
+              />
+            </div>
 
             <div className="prose prose-lg prose-indigo mt-8 max-w-none">
               <PortableText 

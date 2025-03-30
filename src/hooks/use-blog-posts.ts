@@ -36,8 +36,8 @@ export function useBlogPosts(preview = false) {
         throw error;
       }
     },
-    retry: 1,
-    retryDelay: 1000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff with max 10 second delay
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
@@ -47,10 +47,22 @@ export function useBlogPosts(preview = false) {
 export function useBlogPost(slug: string, preview = false) {
   return useQuery({
     queryKey: ['blog-post', slug, preview],
-    queryFn: () => getBlogPostBySlug(slug, preview),
+    queryFn: async () => {
+      try {
+        const post = await getBlogPostBySlug(slug, preview);
+        // Handle null image case by adding a null check
+        if (post && !post.mainImage) {
+          console.log(`Post ${slug} has no mainImage, using null`);
+        }
+        return post;
+      } catch (error) {
+        console.error(`Error fetching blog post ${slug}:`, error);
+        throw error;
+      }
+    },
     enabled: !!slug,
-    retry: 1,
-    retryDelay: 1000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });
@@ -59,9 +71,17 @@ export function useBlogPost(slug: string, preview = false) {
 export function useBlogTags() {
   return useQuery({
     queryKey: ['blog-tags'],
-    queryFn: getAllTags,
-    retry: 1,
-    retryDelay: 1000,
+    queryFn: async () => {
+      try {
+        const tags = await getAllTags();
+        return tags;
+      } catch (error) {
+        console.error('Error fetching blog tags:', error);
+        throw error;
+      }
+    },
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
     staleTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
   });

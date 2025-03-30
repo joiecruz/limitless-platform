@@ -5,32 +5,58 @@ import imageUrlBuilder from '@sanity/image-url';
 // Configuration constants
 const SANITY_PROJECT_ID = '42h9veeb';
 const SANITY_DATASET = 'production';
-const SANITY_API_VERSION = '2021-10-21'; // Using an older, more stable API version
+const SANITY_API_VERSION = '2021-10-21';
 const SANITY_TOKEN = 'skiDdn7nX4ZdoPx4Sl0kg4uAvAGSgpb9mdFKS2KwfrvffzzYT0eULAPhOJ9oXVUzGzPYIwP0bsA1SW0ZmIjKgqjiGCVV7s8iii1gLTZncg1zu7izaXlfV797uymPZTsqsNdsA6WUtHDv4wVf0Cj0U04qIxgO01DXnnpuSUfoQxCJuReVUb6y';
 
-// Create main client with a shorter timeout and no CDN for reliability
-export const client = createClient({
+// FALLBACK_IMAGE used when mainImage is null or fails to load
+export const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=450";
+
+// Create two clients - one with CDN for faster delivery, one without for more reliable direct connections
+export const cdnClient = createClient({
+  projectId: SANITY_PROJECT_ID,
+  dataset: SANITY_DATASET,
+  apiVersion: SANITY_API_VERSION,
+  useCdn: true, // Enable CDN for faster initial loads
+  token: SANITY_TOKEN,
+  perspective: 'published',
+});
+
+export const directClient = createClient({
   projectId: SANITY_PROJECT_ID,
   dataset: SANITY_DATASET,
   apiVersion: SANITY_API_VERSION,
   useCdn: false, // Disable CDN for more reliable direct connections
   token: SANITY_TOKEN,
-  timeout: 30, // Shorter timeout to fail faster
+  perspective: 'published',
+  timeout: 15, // Shorter timeout for quicker fallback
 });
 
-// Set up image URL builder
+// Always start with the client for default operations
+export const client = cdnClient;
+
+// Set up image URL builder with more robust error handling
 const builder = imageUrlBuilder(client);
 
 export function urlFor(source: any) {
-  // Handle null source to prevent errors
+  // Handle null source gracefully
   if (!source) {
-    console.warn('Attempted to resolve image URL from null source');
+    console.warn('Attempted to resolve image URL from null source - using fallback image');
     return {
-      url: () => 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=450',
-      width: () => ({ height: () => ({ url: () => 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=450' }) }),
+      url: () => FALLBACK_IMAGE,
+      width: () => ({ height: () => ({ url: () => FALLBACK_IMAGE }) }),
     };
   }
-  return builder.image(source);
+  
+  try {
+    return builder.image(source);
+  } catch (error) {
+    console.error('Error building image URL:', error);
+    // Return a fallback function that mimics the imageUrlBuilder interface
+    return {
+      url: () => FALLBACK_IMAGE,
+      width: () => ({ height: () => ({ url: () => FALLBACK_IMAGE }) }),
+    };
+  }
 }
 
 // Mock data for when Sanity connection fails
@@ -67,32 +93,44 @@ const MOCK_BLOG_POSTS = [
   }
 ];
 
-// Helper function to fetch blog posts with enhanced error handling
+// Helper function to fetch blog posts with enhanced error handling and multiple retry strategies
 export async function getBlogPosts(preview = false) {
-  console.log('Fetching blog posts from Sanity...');
+  console.log('Fetching blog posts...');
+  
+  // Define the query once to reuse it
+  const query = `*[_type == "post"] | order(publishedAt desc) {
+    _id,
+    title,
+    slug,
+    mainImage,
+    publishedAt,
+    excerpt,
+    categories[]->{name},
+    tags[]->{title}
+  }`;
   
   try {
-    // First attempt: try the regular query
-    const query = `*[_type == "post"] | order(publishedAt desc) {
-      _id,
-      title,
-      slug,
-      mainImage,
-      publishedAt,
-      excerpt,
-      categories,
-      tags
-    }`;
-    
-    const posts = await client.fetch(query, {}, { timeout: 8000 });
-    console.log(`Successfully fetched ${posts?.length || 0} blog posts from Sanity`);
+    // First attempt: try with CDN for faster response
+    console.log('Trying to fetch with CDN...');
+    const posts = await cdnClient.fetch(query);
+    console.log(`Successfully fetched ${posts?.length || 0} blog posts from Sanity (CDN)`);
     return posts;
-  } catch (error) {
-    console.error('Error fetching from Sanity:', error);
+  } catch (cdnError) {
+    console.warn('CDN fetch failed, trying direct API:', cdnError);
     
-    // Return mock data when in development or as a fallback
-    console.log('Using fallback mock blog data');
-    return MOCK_BLOG_POSTS;
+    try {
+      // Second attempt: try direct API connection
+      console.log('Trying direct API connection...');
+      const posts = await directClient.fetch(query, {}, { timeout: 8000 });
+      console.log(`Successfully fetched ${posts?.length || 0} blog posts from Sanity (direct)`);
+      return posts;
+    } catch (directError) {
+      console.error('All Sanity fetch attempts failed:', directError);
+      
+      // Return mock data as fallback
+      console.log('Using fallback mock blog data');
+      return MOCK_BLOG_POSTS;
+    }
   }
 }
 
@@ -100,70 +138,99 @@ export async function getBlogPosts(preview = false) {
 export async function getBlogPostBySlug(slug: string, preview = false) {
   console.log('Fetching blog post with slug:', slug);
   
-  try {
-    const query = `*[_type == "post" && slug.current == $slug][0] {
+  const query = `*[_type == "post" && slug.current == $slug][0] {
+    _id,
+    title,
+    slug,
+    mainImage,
+    publishedAt,
+    excerpt,
+    body,
+    "author": author->name,
+    "categories": categories[]->name,
+    "tags": tags[]->title,
+    "relatedPosts": *[_type == "post" && slug.current != $slug][0...3] {
       _id,
       title,
       slug,
       mainImage,
       publishedAt,
-      excerpt,
-      body,
-      categories,
-      tags,
-      "relatedPosts": *[_type == "post" && slug.current != $slug][0...3] {
-        _id,
-        title,
-        slug,
-        mainImage,
-        publishedAt,
-        excerpt
-      }
-    }`;
-    
-    const post = await client.fetch(query, { slug }, { timeout: 8000 });
-    return post;
-  } catch (error) {
-    console.error('Error fetching blog post by slug:', error);
-    
-    // If we're looking for a mock slug (for development), return mock data
-    if (slug.startsWith('mock-') || slug.includes('building-responsive')) {
-      const mockPost = MOCK_BLOG_POSTS.find(p => p.slug.current === slug) || MOCK_BLOG_POSTS[0];
-      
-      return {
-        ...mockPost,
-        body: [
-          {
-            _type: 'block',
-            style: 'normal',
-            children: [
-              {
-                _type: 'span',
-                text: 'This is mock content for the blog post. In a real scenario, this would be fetched from Sanity.'
-              }
-            ]
-          }
-        ],
-        relatedPosts: MOCK_BLOG_POSTS.filter(p => p._id !== mockPost._id)
-      };
+      excerpt
     }
+  }`;
+  
+  try {
+    // First attempt: try with CDN
+    const post = await cdnClient.fetch(query, { slug });
+    return post;
+  } catch (cdnError) {
+    console.warn('CDN fetch failed for post slug, trying direct API:', cdnError);
     
-    return null;
+    try {
+      // Second attempt: try direct API connection
+      const post = await directClient.fetch(query, { slug }, { timeout: 8000 });
+      return post;
+    } catch (directError) {
+      console.error('All Sanity fetch attempts failed for post slug:', directError);
+      
+      // If we're looking for a mock slug (for development), return mock data
+      if (slug.startsWith('mock-') || slug.includes('building-responsive')) {
+        const mockPost = MOCK_BLOG_POSTS.find(p => p.slug.current === slug) || MOCK_BLOG_POSTS[0];
+        
+        return {
+          ...mockPost,
+          body: [
+            {
+              _type: 'block',
+              style: 'normal',
+              children: [
+                {
+                  _type: 'span',
+                  text: 'This is mock content for the blog post. In a real scenario, this would be fetched from Sanity.'
+                }
+              ]
+            }
+          ],
+          author: 'Demo Author',
+          relatedPosts: MOCK_BLOG_POSTS.filter(p => p._id !== mockPost._id)
+        };
+      }
+      
+      return null;
+    }
   }
 }
 
-// Helper function to fetch all tags
+// Helper function to fetch all tags with better error handling
 export async function getAllTags() {
   try {
-    const tags = await client.fetch(`*[_type == "tag"] {
+    // First attempt with CDN
+    const tags = await cdnClient.fetch(`*[_type == "tag"] {
       _id,
       title,
       "name": title,
       "count": count(*[_type == "post" && references(^._id)])
     } | order(count desc)`);
     return tags;
-  } catch (error) {
-    console.error('Error fetching tags:', error);
-    return [];
+  } catch (cdnError) {
+    console.warn('CDN fetch failed for tags, trying direct API:', cdnError);
+    
+    try {
+      // Second attempt with direct API
+      const tags = await directClient.fetch(`*[_type == "tag"] {
+        _id,
+        title,
+        "name": title,
+        "count": count(*[_type == "post" && references(^._id)])
+      } | order(count desc)`);
+      return tags;
+    } catch (directError) {
+      console.error('All Sanity fetch attempts failed for tags:', directError);
+      return [
+        { _id: 'mock-tag-1', title: 'React', name: 'React', count: 5 },
+        { _id: 'mock-tag-2', title: 'Design', name: 'Design', count: 4 },
+        { _id: 'mock-tag-3', title: 'JavaScript', name: 'JavaScript', count: 3 }
+      ];
+    }
   }
 }

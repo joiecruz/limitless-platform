@@ -1,10 +1,7 @@
 
 import { Link } from "react-router-dom";
-import { urlFor } from "@/lib/sanity";
+import { urlFor, FALLBACK_IMAGE } from "@/lib/sanity";
 import { BlogPost } from "@/hooks/use-blog-posts";
-
-// Fallback image to use when post.mainImage is null
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=400&h=225";
 
 interface RelatedPostsProps {
   posts: BlogPost[];

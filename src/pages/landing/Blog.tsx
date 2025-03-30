@@ -6,19 +6,18 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { useBlogPosts } from "@/hooks/use-blog-posts";
-import { urlFor } from "@/lib/sanity";
+import { urlFor, FALLBACK_IMAGE } from "@/lib/sanity";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, ExternalLink } from "lucide-react";
 
 const POSTS_PER_PAGE = 9;
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=450";
 
 export default function Blog() {
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = Number(searchParams.get("page")) || 1;
-  const { data: allPosts, isLoading, error, refetch } = useBlogPosts();
+  const { data: allPosts, isLoading, error, refetch, isSuccess } = useBlogPosts();
 
   // Calculate pagination
   const totalPosts = allPosts?.length || 0;
@@ -71,16 +70,40 @@ export default function Blog() {
               <Alert className="bg-red-50 border-red-200">
                 <AlertTitle className="text-red-800">Connection Issue</AlertTitle>
                 <AlertDescription className="text-red-600">
-                  We're having trouble connecting to our content service. You're seeing cached or fallback content.
+                  <p className="mb-4">We're having trouble connecting to our content service. You're seeing cached or fallback content.</p>
+                  
+                  {error instanceof Error && (
+                    <div className="mb-4 bg-red-100 p-3 rounded text-sm overflow-auto max-h-36">
+                      <p className="font-semibold">Error details:</p>
+                      <p>{error.message}</p>
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button 
+                      onClick={handleRetry} 
+                      className="bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-2"
+                      variant="outline"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Try Again
+                    </Button>
+                    <a 
+                      href="https://42h9veeb.api.sanity.io/v2021-10-21/data/query/production?query=*%5B_type+%3D%3D+%22post%22%5D"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      <Button 
+                        variant="outline" 
+                        className="w-full flex items-center gap-2 bg-white text-gray-800 border-gray-300"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Test API Connection
+                      </Button>
+                    </a>
+                  </div>
                 </AlertDescription>
-                <Button 
-                  onClick={handleRetry} 
-                  className="mt-4 bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-2"
-                  variant="outline"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Try Again
-                </Button>
               </Alert>
             </div>
           )}
@@ -174,6 +197,16 @@ export default function Blog() {
                 <RefreshCw className="h-4 w-4" />
                 Refresh Content
               </Button>
+            </div>
+          )}
+
+          {isSuccess && (
+            <div className="mt-8 text-center text-sm text-gray-500">
+              {totalPosts === 0 ? (
+                <p>Using mock content (Sanity connection successful, but no posts found)</p>
+              ) : (
+                <p>Showing {posts?.length || 0} of {totalPosts} posts from Sanity</p>
+              )}
             </div>
           )}
         </div>

@@ -2,18 +2,15 @@
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useBlogPosts } from "@/hooks/use-blog-posts";
-import { urlFor } from "@/lib/sanity";
+import { urlFor, FALLBACK_IMAGE } from "@/lib/sanity";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw } from "lucide-react";
-
-// Fallback image to use when mainImage is null
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=450";
+import { AlertCircle, RefreshCw, ExternalLink } from "lucide-react";
 
 export function BlogSection() {
   const { toast } = useToast();
-  const { data: posts, isLoading, error, isError, refetch } = useBlogPosts();
+  const { data: posts, isLoading, error, isError, refetch, isSuccess } = useBlogPosts();
   
   // Show latest 3 posts
   const latestPosts = posts?.slice(0, 3) || [];
@@ -56,13 +53,28 @@ export function BlogSection() {
             <p className="mt-2 text-gray-600 mb-6">
               We're having trouble connecting to our content service. You're seeing cached or fallback content.
             </p>
-            <Button 
-              onClick={handleRetry} 
-              className="mt-4 flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Try Again
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                onClick={handleRetry} 
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Try Again
+              </Button>
+              <Link 
+                to="https://42h9veeb.api.sanity.io/v2021-10-21/data/query/production?query=*%5B_type+%3D%3D+%22post%22%5D"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2 w-full"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Test Sanity Connection
+                </Button>
+              </Link>
+            </div>
           </div>
         ) : latestPosts && latestPosts.length > 0 ? (
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-12 lg:mx-0 lg:max-w-none lg:grid-cols-3">
@@ -108,6 +120,18 @@ export function BlogSection() {
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
+          </div>
+        )}
+
+        {isSuccess && (
+          <div className="mt-4 text-center text-sm text-gray-500">
+            {latestPosts.length === 0 ? (
+              <p>Using mock content (Sanity connection successful, but no posts found)</p>
+            ) : posts?.length === latestPosts.length ? (
+              <p>Showing all {posts.length} posts from Sanity</p>
+            ) : (
+              <p>Showing {latestPosts.length} of {posts?.length} posts from Sanity</p>
+            )}
           </div>
         )}
 
