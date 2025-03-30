@@ -6,10 +6,11 @@ import { urlFor } from "@/lib/sanity";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 export function BlogSection() {
   const { toast } = useToast();
-  const { data: posts, isLoading, error, isError } = useBlogPosts();
+  const { data: posts, isLoading, error, isError, refetch } = useBlogPosts();
   
   // Show a toast notification on error
   useEffect(() => {
@@ -23,8 +24,22 @@ export function BlogSection() {
     }
   }, [isError, error, toast]);
   
+  // Debug logging
+  useEffect(() => {
+    console.log('BlogSection render state:', { 
+      postsLoaded: posts?.length || 0,
+      isLoading, 
+      isError: !!error 
+    });
+  }, [posts, isLoading, error]);
+  
   // Fallback to empty array if there's an error with Sanity
   const latestPosts = posts?.slice(0, 3) || [];
+
+  const handleRetry = () => {
+    console.log('Manually retrying blog posts fetch');
+    refetch();
+  };
 
   return (
     <div className="bg-white py-24 sm:py-32">
@@ -51,6 +66,9 @@ export function BlogSection() {
           <div className="mx-auto mt-16 text-center">
             <p className="text-red-500">We're experiencing some technical difficulties</p>
             <p className="mt-2 text-gray-600">Please check back later for our latest articles</p>
+            <Button onClick={handleRetry} className="mt-4">
+              Retry
+            </Button>
           </div>
         ) : latestPosts && latestPosts.length > 0 ? (
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-12 lg:mx-0 lg:max-w-none lg:grid-cols-3">
@@ -92,7 +110,17 @@ export function BlogSection() {
         ) : (
           <div className="mx-auto mt-16 text-center">
             <p className="text-gray-600">No articles available at the moment</p>
-            <p className="mt-2 text-sm text-gray-500">Check back soon for new content</p>
+            <p className="mt-4 text-sm text-gray-500">
+              Please check Sanity Studio to ensure blog posts exist with the correct schema.
+            </p>
+            <div className="mt-2 text-sm text-gray-500">
+              <p>Sanity Configuration:</p>
+              <p>Project ID: 42h9veeb</p>
+              <p>Dataset: production</p>
+            </div>
+            <Button onClick={handleRetry} className="mt-4">
+              Retry
+            </Button>
           </div>
         )}
 
