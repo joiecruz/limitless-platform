@@ -1,4 +1,3 @@
-
 // Copy of server-middleware.js for Netlify
 const fs = require('fs');
 const path = require('path');
@@ -14,7 +13,7 @@ exports.handler = async function(event, context) {
     // Handle blog posts
     if (urlPath.startsWith('/blog/') && urlPath !== '/blog/') {
       // Extract the slug from the URL
-      const slug = urlPath.replace('/blog/', '');
+      const slug = urlPath.replace('/blog/', '').split('?')[0]; // Remove query parameters
       console.log('Handling blog post with slug:', slug);
       
       // First try to fetch data from Sanity directly
@@ -23,8 +22,17 @@ exports.handler = async function(event, context) {
         const SANITY_DATASET = 'production';
         const SANITY_API_VERSION = '2021-10-21';
         
+        const sanityQuery = encodeURIComponent(`*[_type == "post" && slug.current == "${slug}"][0]{
+          title,
+          excerpt,
+          "publishedAt": publishedAt,
+          mainImage{asset->{_id, url}},
+          "author": author->name,
+          "categories": categories[]->name
+        }`);
+        
         const response = await fetch(
-          `https://${SANITY_PROJECT_ID}.api.sanity.io/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}?query=*%5B_type%20%3D%3D%20%22post%22%20%26%26%20slug.current%20%3D%3D%20%22${slug}%22%5D%5B0%5D`,
+          `https://${SANITY_PROJECT_ID}.api.sanity.io/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}?query=${sanityQuery}`,
           {
             headers: {
               'Accept': 'application/json'
@@ -45,46 +53,57 @@ exports.handler = async function(event, context) {
           
           // Get the image URL
           let imageUrl = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
-          if (post.mainImage) {
-            const imageId = post.mainImage.asset._ref;
-            const dimensions = imageId.split('-')[1];
-            const format = imageId.split('-')[2];
-            imageUrl = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${imageId.split('-')[0]}-${dimensions}.${format}`;
+          if (post.mainImage && post.mainImage.asset) {
+            // Use the direct URL if available
+            if (post.mainImage.asset.url) {
+              imageUrl = `${post.mainImage.asset.url}?w=1200&h=630&fit=crop&crop=center`;
+            } else if (post.mainImage.asset._id) {
+              // Or build it from _id
+              imageUrl = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${post.mainImage.asset._id.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}?w=1200&h=630&fit=crop&crop=center`;
+            }
           }
           
-          // Replace OpenGraph tags with dynamic content
-          html = html.replace(/<meta property="og:title" content="[^"]*"/, 
-                            `<meta property="og:title" content="${post.title} | Limitless Lab"`);
+          // Get proper domain for canonical URL
+          // Determine the domain from event headers
+          const domain = event.headers.host ? 
+            `${event.headers['x-forwarded-proto'] ? event.headers['x-forwarded-proto'] : 'https'}://${event.headers.host}` : 
+            'https://limitlesslab.org';
+          const canonicalUrl = `${domain}/blog/${slug}`;
           
-          html = html.replace(/<meta property="og:description" content="[^"]*"/, 
-                            `<meta property="og:description" content="${post.excerpt || post.title}"`);
+          // Replace all meta tags - use a more thorough approach
+          const head = html.split('</head>')[0];
+          const body = html.split('</head>')[1];
           
-          html = html.replace(/<meta property="og:image" content="[^"]*"/, 
-                            `<meta property="og:image" content="${imageUrl}"`);
+          // Create new head content with proper meta tags
+          let newHead = head;
           
-          html = html.replace(/<meta property="og:url" content="[^"]*"/, 
-                            `<meta property="og:url" content="https://limitlesslab.org/blog/${slug}"`);
+          // Remove existing OpenGraph tags
+          newHead = newHead.replace(/<meta property="og:[^>]*>/g, '');
+          newHead = newHead.replace(/<meta name="twitter:[^>]*>/g, '');
           
-          html = html.replace(/<meta property="og:type" content="[^"]*"/, 
-                            `<meta property="og:type" content="article"`);
+          // Add updated OpenGraph tags
+          const ogTags = `
+  <title>${post.title} | Limitless Lab</title>
+  <meta name="description" content="${post.excerpt || post.title}">
+  <meta property="og:title" content="${post.title} | Limitless Lab">
+  <meta property="og:description" content="${post.excerpt || post.title}">
+  <meta property="og:image" content="${imageUrl}">
+  <meta property="og:url" content="${canonicalUrl}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Limitless Lab">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${post.title} | Limitless Lab">
+  <meta name="twitter:description" content="${post.excerpt || post.title}">
+  <meta name="twitter:image" content="${imageUrl}">
+  <link rel="canonical" href="${canonicalUrl}">`;
           
-          html = html.replace(/<title>[^<]*<\/title>/, 
-                            `<title>${post.title} | Limitless Lab</title>`);
-                            
-          html = html.replace(/<meta name="description" content="[^"]*"/, 
-                            `<meta name="description" content="${post.excerpt || post.title}"`);
+          // Inject the new tags just before </head>
+          newHead += ogTags;
           
-          // Add Twitter card tags if not present
-          if (!html.includes('twitter:card')) {
-            const headEnd = html.indexOf('</head>');
-            const twitterTags = `
-              <meta name="twitter:card" content="summary_large_image" />
-              <meta name="twitter:title" content="${post.title} | Limitless Lab" />
-              <meta name="twitter:description" content="${post.excerpt || post.title}" />
-              <meta name="twitter:image" content="${imageUrl}" />
-            `;
-            html = html.slice(0, headEnd) + twitterTags + html.slice(headEnd);
-          }
+          // Put it all back together
+          html = newHead + '</head>' + body;
           
           console.log('Successfully injected blog metadata from Sanity');
           

@@ -1,4 +1,3 @@
-
 import { Helmet } from 'react-helmet-async';
 import { SANITY_PROJECT_ID, SANITY_DATASET } from '@/lib/sanity';
 
@@ -17,6 +16,7 @@ export interface OpenGraphTagsProps {
   sanityImage?: {
     asset: {
       _ref: string;
+      url?: string;
     };
   };
 }
@@ -39,12 +39,26 @@ export function OpenGraphTags({
   
   // Process Sanity image if provided
   let imageUrl = image;
-  if (sanityImage?.asset?._ref) {
-    const imageId = sanityImage.asset._ref;
-    const [id, dimensions, format] = imageId.split('-');
-    // Generate a Sanity CDN URL with proper dimensions for social sharing (1200x630 is ideal for most platforms)
-    imageUrl = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${id}-${dimensions}.${format}?w=1200&h=630&fit=crop&crop=center`;
+  if (sanityImage?.asset) {
+    // Use direct URL if available
+    if (sanityImage.asset.url) {
+      imageUrl = `${sanityImage.asset.url}?w=1200&h=630&fit=crop&crop=center`;
+    } 
+    // Otherwise build from _ref
+    else if (sanityImage.asset._ref) {
+      const imageRef = sanityImage.asset._ref;
+      const [id, dimensions, format] = imageRef.split('-');
+      
+      // Generate a Sanity CDN URL with proper dimensions for social sharing (1200x630 is ideal for most platforms)
+      imageUrl = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${id}-${dimensions}.${format}?w=1200&h=630&fit=crop&crop=center`;
+      
+      // Log the generated URL for debugging
+      console.log('Generated Sanity image URL:', imageUrl);
+    }
   }
+
+  // Log OpenGraph data for debugging
+  console.log('OpenGraph Tags Component:', { title, description, imageUrl, currentUrl, type });
 
   return (
     <Helmet>
@@ -93,6 +107,9 @@ export function OpenGraphTags({
       
       {/* Preload the OpenGraph image for faster rendering */}
       <link rel="preload" as="image" href={imageUrl} />
+      
+      {/* Debug comment visible in HTML source */}
+      {/* <!-- OpenGraph Tags added by OpenGraphTags component: ${new Date().toISOString()} --> */}
     </Helmet>
   );
 }
