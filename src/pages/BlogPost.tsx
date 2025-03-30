@@ -1,3 +1,4 @@
+
 import { useParams, useSearchParams } from "react-router-dom";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
@@ -8,6 +9,9 @@ import { useBlogPost } from "@/hooks/use-blog-posts";
 import { urlFor } from "@/lib/sanity";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
 import { useToast } from "@/hooks/use-toast";
+
+// Fallback image when mainImage is null
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=1200&h=630";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -28,7 +32,7 @@ export default function BlogPost() {
 
   const baseUrl = window.location.origin;
   const canonicalUrl = `${baseUrl}/blog/${post?.slug?.current || slug}`;
-  const imageUrl = post?.mainImage ? urlFor(post.mainImage).width(1200).height(630).url() : undefined;
+  const imageUrl = post?.mainImage ? urlFor(post.mainImage).width(1200).height(630).url() : FALLBACK_IMAGE;
 
   if (isLoading) {
     return (
@@ -111,10 +115,22 @@ export default function BlogPost() {
               </div>
             </header>
 
-            {post.mainImage && (
+            {post.mainImage ? (
               <div className="relative mt-8 aspect-[16/9] w-full">
                 <img
                   src={urlFor(post.mainImage).width(1200).height(675).url()}
+                  alt={post.title}
+                  className="rounded-2xl object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = FALLBACK_IMAGE;
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="relative mt-8 aspect-[16/9] w-full">
+                <img
+                  src={FALLBACK_IMAGE}
                   alt={post.title}
                   className="rounded-2xl object-cover"
                 />

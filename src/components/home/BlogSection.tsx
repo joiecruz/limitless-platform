@@ -9,6 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, RefreshCw } from "lucide-react";
 
+// Fallback image to use when mainImage is null
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=450";
+
 export function BlogSection() {
   const { toast } = useToast();
   const { data: posts, isLoading, error, isError, refetch } = useBlogPosts();
@@ -94,13 +97,15 @@ export function BlogSection() {
                         onError={(e) => {
                           console.log('Image failed to load, using fallback');
                           const target = e.target as HTMLImageElement;
-                          target.src = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+                          target.src = FALLBACK_IMAGE;
                         }}
                       />
                     ) : (
-                      <div className="h-full w-full bg-gray-200 flex items-center justify-center">
-                        <span className="text-gray-500">No image available</span>
-                      </div>
+                      <img
+                        src={FALLBACK_IMAGE}
+                        alt={post.title}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
                     )}
                   </div>
                   <div className="mt-4">

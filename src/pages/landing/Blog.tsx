@@ -1,3 +1,4 @@
+
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Link, useSearchParams } from "react-router-dom";
@@ -9,6 +10,7 @@ import { urlFor } from "@/lib/sanity";
 import { Button } from "@/components/ui/button";
 
 const POSTS_PER_PAGE = 9;
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=450";
 
 export default function Blog() {
   const { toast } = useToast();
@@ -80,15 +82,27 @@ export default function Blog() {
                   <article key={post._id} className="group">
                     <Link to={`/blog/${post.slug.current}`} className="block">
                       <div className="aspect-[16/9] w-full overflow-hidden rounded-lg">
-                        <img
-                          src={urlFor(post.mainImage).width(800).height(450).url()}
-                          alt={post.title}
-                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                        />
+                        {post.mainImage ? (
+                          <img
+                            src={urlFor(post.mainImage).width(800).height(450).url()}
+                            alt={post.title}
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = FALLBACK_IMAGE;
+                            }}
+                          />
+                        ) : (
+                          <img
+                            src={FALLBACK_IMAGE}
+                            alt={post.title}
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                          />
+                        )}
                       </div>
                       <div className="mt-4">
                         <time dateTime={post.publishedAt} className="text-sm text-gray-500">
-                          {format(new Date(post.publishedAt), 'MMMM d, yyyy')}
+                          {post.publishedAt ? format(new Date(post.publishedAt), 'MMMM d, yyyy') : 'Date unavailable'}
                         </time>
                         <h3 className="mt-2 text-lg font-semibold leading-6 text-gray-900 group-hover:text-[#393CA0]">
                           {post.title}
