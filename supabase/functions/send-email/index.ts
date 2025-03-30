@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -175,21 +174,14 @@ function ensureCorrectResetLink(link: string): string {
     let baseUrl = url.origin; // Default to the origin part of the URL
     
     // Check if it's a preview URL and handle accordingly
-    if (url.origin.includes("lovableproject.com")) {
+    if (url.hostname.includes("lovableproject.com")) {
       baseUrl = url.origin;
-    } else if (url.origin.includes("supabase.co")) {
+    } else if (url.hostname.includes("supabase.co")) {
       // We're dealing with a Supabase URL, check query parameters for our domain
-      const redirectParam = url.searchParams.get("redirect_to");
-      if (redirectParam) {
-        try {
-          const redirectUrl = new URL(redirectParam);
-          baseUrl = redirectUrl.origin;
-        } catch (e) {
-          console.error("Error parsing redirect_to URL:", e);
-        }
-      } else {
-        // If no redirect_to parameter, assume production domain
-        baseUrl = "https://limitlesslab.org";
+      // IMPORTANT CHANGE: Always set redirect_to to reset-password, not dashboard
+      baseUrl = "https://limitlesslab.org";
+      if (url.origin.includes("localhost") || url.origin.includes("127.0.0.1")) {
+        baseUrl = url.origin;
       }
     }
     

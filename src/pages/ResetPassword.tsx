@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -109,20 +110,15 @@ export default function ResetPassword() {
     try {
       console.log('Attempting to update password with token...');
       
-      // Fix: The TypeScript error by using a conditional approach
-      let result;
-      
-      // First try updateUser with access token
-      if (accessToken) {
-        result = await supabase.auth.updateUser(
-          { password },
-          { session: { access_token: accessToken, refresh_token: '' } }
-        );
-      }
+      // Fix: Use the updateUser method correctly
+      const { error } = await supabase.auth.updateUser(
+        { password },
+        { accessToken } // Pass accessToken as a string
+      );
 
-      if (result?.error) {
-        console.error("Password update error:", result.error);
-        throw result.error;
+      if (error) {
+        console.error("Password update error:", error);
+        throw error;
       }
 
       toast({
