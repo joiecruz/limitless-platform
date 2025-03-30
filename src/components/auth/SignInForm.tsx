@@ -1,12 +1,11 @@
+
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 export function SignInForm() {
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
