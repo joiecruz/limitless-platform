@@ -3,11 +3,11 @@ import { format } from "date-fns";
 
 interface BlogMetaProps {
   createdAt: string;
-  readTime: number;
+  readTime?: number;
   categories?: string[] | null;
 }
 
-export function BlogMeta({ createdAt, readTime, categories }: BlogMetaProps) {
+export function BlogMeta({ createdAt, readTime = 3, categories }: BlogMetaProps) {
   return (
     <div className="flex flex-wrap items-center gap-4 mb-8 text-sm text-gray-600">
       <time dateTime={createdAt}>

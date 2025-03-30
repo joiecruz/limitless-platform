@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
-import { blogCategories } from "@/constants/blogCategories";
+import { BLOG_CATEGORIES } from "@/constants/blogCategories";
 
 interface BlogCategorySelectProps {
   value: string[] | undefined;
@@ -59,7 +59,7 @@ export function BlogCategorySelect({ value = [], onChange, error }: BlogCategory
             <CommandInput placeholder="Search categories..." />
             <CommandEmpty>No category found.</CommandEmpty>
             <CommandGroup>
-              {blogCategories.map((category) => (
+              {BLOG_CATEGORIES.map((category) => (
                 <CommandItem
                   key={category}
                   value={category}

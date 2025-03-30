@@ -13,7 +13,6 @@ interface BlogFormData {
   tags?: string[];
   cover_image?: string;
   created_at?: string;
-  read_time?: number;
 }
 
 interface UseBlogFormSubmitProps {
@@ -21,13 +20,6 @@ interface UseBlogFormSubmitProps {
   blogId?: string;
   onSuccess?: () => void;
 }
-
-// Helper function to calculate estimated read time
-const calculateReadTime = (content: string): number => {
-  const wordsPerMinute = 200;
-  const wordCount = content.trim().split(/\s+/).length;
-  return Math.ceil(wordCount / wordsPerMinute);
-};
 
 export function useBlogFormSubmit({ isEdit, blogId, onSuccess }: UseBlogFormSubmitProps) {
   const { toast } = useToast();
@@ -37,15 +29,11 @@ export function useBlogFormSubmit({ isEdit, blogId, onSuccess }: UseBlogFormSubm
     try {
       setIsLoading(true);
       
-      // Calculate read time if not provided
-      const readTime = formData.read_time || calculateReadTime(formData.content);
-      
       if (isEdit && blogId) {
         const { error } = await supabase
           .from('articles')
           .update({
             ...formData,
-            read_time: readTime,
             updated_at: new Date().toISOString(),
           })
           .eq('id', blogId);
@@ -64,7 +52,6 @@ export function useBlogFormSubmit({ isEdit, blogId, onSuccess }: UseBlogFormSubm
           .from('articles')
           .insert([{
             ...formData,
-            read_time: readTime,
             created_at: createdAt,
           }]);
 
