@@ -1,52 +1,70 @@
+
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 interface BlogTagsInputProps {
-  value: string[];
+  value: string[] | undefined;
   onChange: (value: string[]) => void;
   error?: string;
 }
 
-export function BlogTagsInput({ value, onChange, error }: BlogTagsInputProps) {
-  const handleInputChange = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-      e.preventDefault();
-      const newTag = e.currentTarget.value.trim().toLowerCase();
-      if (!value.includes(newTag)) {
-        onChange([...value, newTag]);
-      }
-      e.currentTarget.value = '';
+export function BlogTagsInput({ value = [], onChange, error }: BlogTagsInputProps) {
+  const [tagInput, setTagInput] = useState("");
+  // Ensure value is always an array
+  const tags = Array.isArray(value) ? value : [];
+
+  const addTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      onChange([...tags, trimmedTag]);
+      setTagInput("");
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    onChange(value.filter(tag => tag !== tagToRemove));
+    onChange(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTag();
+    }
   };
 
   return (
     <div className="space-y-2">
-      <Label>Tags</Label>
-      <Input
-        type="text"
-        placeholder="Type a tag and press Enter"
-        onKeyDown={handleInputChange}
-      />
+      <Label htmlFor="tags">Tags</Label>
+      
+      <div className="flex gap-2">
+        <Input
+          id="tags"
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Add a tag"
+          className={error ? "border-red-500" : ""}
+        />
+        <Button type="button" onClick={addTag} variant="outline">
+          Add
+        </Button>
+      </div>
+      
       {error && <p className="text-sm text-red-500">{error}</p>}
+      
       <div className="flex flex-wrap gap-2 mt-2">
-        {value.map((tag) => (
-          <span
-            key={tag}
-            className="bg-secondary/10 text-secondary px-2 py-1 rounded-md text-sm flex items-center gap-1"
-          >
+        {tags.map((tag) => (
+          <Badge key={tag} variant="secondary" className="flex items-center gap-1">
             {tag}
-            <button
-              type="button"
+            <X
+              className="h-3 w-3 cursor-pointer"
               onClick={() => removeTag(tag)}
-              className="hover:text-red-500"
-            >
-              ×
-            </button>
-          </span>
+            />
+          </Badge>
         ))}
       </div>
     </div>

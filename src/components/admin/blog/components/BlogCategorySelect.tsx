@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+
+import { useState } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -14,27 +14,32 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { BLOG_CATEGORIES } from "@/constants/blogCategories";
+import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+import { blogCategories } from "@/constants/blogCategories";
 
 interface BlogCategorySelectProps {
-  value: string[];
+  value: string[] | undefined;
   onChange: (value: string[]) => void;
   error?: string;
 }
 
-export function BlogCategorySelect({ value, onChange, error }: BlogCategorySelectProps) {
+export function BlogCategorySelect({ value = [], onChange, error }: BlogCategorySelectProps) {
   const [open, setOpen] = useState(false);
+  // Ensure value is always an array
+  const selectedCategories = Array.isArray(value) ? value : [];
 
   const toggleCategory = (category: string) => {
-    if (value.includes(category)) {
-      onChange(value.filter((c) => c !== category));
+    if (selectedCategories.includes(category)) {
+      onChange(selectedCategories.filter((c) => c !== category));
     } else {
-      onChange([...value, category]);
+      onChange([...selectedCategories, category]);
     }
   };
 
   return (
     <div className="space-y-2">
+      <Label htmlFor="categories">Categories</Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -43,9 +48,10 @@ export function BlogCategorySelect({ value, onChange, error }: BlogCategorySelec
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {value.length === 0
-              ? "Select categories..."
-              : `${value.length} selected`}
+            {selectedCategories.length > 0
+              ? `${selectedCategories.length} categories selected`
+              : "Select categories"}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0">
@@ -53,15 +59,18 @@ export function BlogCategorySelect({ value, onChange, error }: BlogCategorySelec
             <CommandInput placeholder="Search categories..." />
             <CommandEmpty>No category found.</CommandEmpty>
             <CommandGroup>
-              {BLOG_CATEGORIES.map((category) => (
+              {blogCategories.map((category) => (
                 <CommandItem
                   key={category}
-                  onSelect={() => toggleCategory(category)}
+                  value={category}
+                  onSelect={() => {
+                    toggleCategory(category);
+                  }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value.includes(category) ? "opacity-100" : "opacity-0"
+                      selectedCategories.includes(category) ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {category}
@@ -72,23 +81,6 @@ export function BlogCategorySelect({ value, onChange, error }: BlogCategorySelec
         </PopoverContent>
       </Popover>
       {error && <p className="text-sm text-red-500">{error}</p>}
-      <div className="flex flex-wrap gap-2 mt-2">
-        {value.map((category) => (
-          <div
-            key={category}
-            className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm flex items-center gap-1"
-          >
-            {category}
-            <button
-              type="button"
-              onClick={() => onChange(value.filter((c) => c !== category))}
-              className="hover:text-red-500"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

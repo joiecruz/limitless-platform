@@ -24,6 +24,10 @@ export function BlogFormContent({
   blogId,
   isEdit
 }: BlogFormContentProps) {
+  // Ensure categories and tags are always arrays
+  const categories = Array.isArray(formData.categories) ? formData.categories : [];
+  const tags = Array.isArray(formData.tags) ? formData.tags : [];
+
   return (
     <div className="space-y-6">
       <BlogTitleInput
@@ -77,13 +81,13 @@ export function BlogFormContent({
       />
 
       <BlogCategorySelect
-        value={formData.categories}
+        value={categories}
         onChange={(value) => updateFormData("categories", value)}
         error={errors.categories}
       />
 
       <BlogTagsInput
-        value={formData.tags}
+        value={tags}
         onChange={(value) => updateFormData("tags", value)}
         error={errors.tags}
       />
