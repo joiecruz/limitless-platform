@@ -1,4 +1,3 @@
-
 import { useAuthRedirect } from "@/components/auth/useAuthRedirect";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { AuthLogo } from "@/components/auth/AuthLogo";
@@ -150,6 +149,7 @@ export default function SignIn() {
 
         {/* Sign In Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 animate-fade-in">
+          <SignInForm />
           <AuthLinks />
         </div>
       </div>

@@ -56,7 +56,7 @@ export function SignInForm() {
         },
         style: {
           button: {
-            height: '3rem',
+            height: '2.75rem',
             borderRadius: '0.5rem',
           },
           input: {
