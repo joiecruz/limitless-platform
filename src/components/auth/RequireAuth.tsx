@@ -26,6 +26,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     // Skip auth check for certain pages
     if (location.pathname === '/verify-email' || 
         location.pathname === '/signup' || 
+        location.pathname === '/signin' ||
         location.pathname === '/reset-password') {
       console.log("RequireAuth: Skipping auth check for special route:", location.pathname);
       setIsChecking(false);
@@ -128,6 +129,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   if ((isPasswordResetPage && hasResetToken) ||
       location.pathname === '/reset-password' ||
       location.pathname === '/verify-email' || 
+      location.pathname === '/signin' ||
       location.pathname === '/signup') {
     return <>{children}</>;
   }

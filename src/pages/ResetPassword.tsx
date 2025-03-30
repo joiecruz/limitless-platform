@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,6 @@ export default function ResetPassword() {
   const [passwordError, setPasswordError] = useState('');
   const [validToken, setValidToken] = useState(false);
   const [hashParams, setHashParams] = useState<URLSearchParams | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -31,11 +31,10 @@ export default function ResetPassword() {
         const type = params.get('type');
         const token = params.get('access_token');
         
-        console.log('Reset password parameters:', { type, accessToken: !!token });
+        console.log('Reset password parameters:', { type, hasToken: !!token });
         
         if (token && type === 'recovery') {
           setValidToken(true);
-          setAccessToken(token);
         } else {
           toast({
             title: "Invalid Reset Link",
@@ -75,7 +74,7 @@ export default function ResetPassword() {
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validatePassword() || !validToken || !accessToken) {
+    if (!validatePassword() || !validToken || !hashParams) {
       return;
     }
     
@@ -84,11 +83,19 @@ export default function ResetPassword() {
     try {
       console.log('Attempting to update password...');
       
-      // Use updateUser to set the new password
-      const { error } = await supabase.auth.updateUser(
-        { password },
-        { accessToken }  // This is the correct way to pass the token
-      );
+      // Get the access token from the hash params
+      const accessToken = hashParams.get('access_token');
+      
+      if (!accessToken) {
+        throw new Error('Access token not found');
+      }
+      
+      // Update user password using the token
+      const { error } = await supabase.auth.updateUser({ 
+        password: password 
+      }, { 
+        emailRedirectTo: window.location.origin 
+      });
 
       if (error) throw error;
 

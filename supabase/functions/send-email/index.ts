@@ -36,8 +36,12 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("Extracted reset link:", resetLink);
       
       if (resetLink) {
+        // Make sure the link points to our reset-password page 
+        const fixedLink = ensureCorrectResetLink(resetLink);
+        console.log("Fixed reset link:", fixedLink);
+        
         // Replace with our streamlined template
-        emailRequest.html = generatePasswordResetEmail(resetLink, emailRequest.to[0]);
+        emailRequest.html = generatePasswordResetEmail(fixedLink, emailRequest.to[0]);
         console.log("Generated new email template with reset link");
       } else {
         console.error("Could not extract reset link from email");
@@ -109,6 +113,30 @@ function extractResetLink(html: string): string | null {
   }
   
   return null;
+}
+
+// Ensure the reset link points to our reset-password page
+function ensureCorrectResetLink(link: string): string {
+  // If the link already points to the reset-password page, return it
+  if (link.includes("redirect_to=") && link.includes("/reset-password")) {
+    return link;
+  }
+  
+  // Replace any existing redirect_to parameter
+  if (link.includes("redirect_to=")) {
+    // Parse the URL
+    let url = new URL(link);
+    // Get origin of the site
+    const redirectUrl = new URL("/reset-password", url.origin);
+    // Update the redirect_to parameter
+    url.searchParams.set("redirect_to", redirectUrl.toString());
+    return url.toString();
+  }
+  
+  // If no redirect_to parameter, add it
+  const separator = link.includes("?") ? "&" : "?";
+  const origin = link.split("/auth/")[0]; // Extract base URL
+  return `${link}${separator}redirect_to=${origin}/reset-password`;
 }
 
 // Function to generate password reset email
