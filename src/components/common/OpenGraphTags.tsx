@@ -1,5 +1,5 @@
 
-import { Helmet, HelmetProvider } from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
 
 interface OpenGraphTagsProps {
   title: string;
@@ -9,6 +9,8 @@ interface OpenGraphTagsProps {
   type?: "website" | "article" | "profile";
   siteName?: string;
   publishedTime?: string;
+  readTime?: number;
+  categories?: string[];
 }
 
 export function OpenGraphTags({
@@ -19,6 +21,8 @@ export function OpenGraphTags({
   type = "website",
   siteName = "Limitless Lab",
   publishedTime,
+  readTime,
+  categories,
 }: OpenGraphTagsProps) {
   // Add a unique debug ID to verify these tags are being rendered
   const debugId = `og-${Math.random().toString(36).substring(7)}`;
@@ -46,6 +50,16 @@ export function OpenGraphTags({
       {/* Article specific tags */}
       {type === "article" && publishedTime && (
         <meta property="article:published_time" content={publishedTime} />
+      )}
+      
+      {type === "article" && readTime && (
+        <meta property="article:reading_time" content={String(readTime)} />
+      )}
+      
+      {type === "article" && categories && categories.length > 0 && (
+        categories.map((category, index) => (
+          <meta key={index} property="article:tag" content={category} />
+        ))
       )}
       
       {/* Twitter Card tags */}

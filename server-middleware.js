@@ -51,6 +51,24 @@ exports.handler = async function(event, context) {
         
         html = html.replace(/<meta property="og:type" content="[^"]*"/, 
                           `<meta property="og:type" content="article"`);
+
+        // Add article specific tags
+        if (post.created_at) {
+          html = html.replace('</head>',
+                            `<meta property="article:published_time" content="${post.created_at}"></head>`);
+        }
+
+        if (post.read_time) {
+          html = html.replace('</head>',
+                            `<meta property="article:reading_time" content="${post.read_time}"></head>`);
+        }
+
+        if (post.categories && post.categories.length > 0) {
+          const categoryTags = post.categories.map(category => 
+            `<meta property="article:tag" content="${category}">`
+          ).join('');
+          html = html.replace('</head>', `${categoryTags}</head>`);
+        }
         
         html = html.replace(/<title>[^<]*<\/title>/, 
                           `<title>${post.title} | Limitless Lab</title>`);

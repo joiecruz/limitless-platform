@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
@@ -18,7 +19,7 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
-  // Check if user is superadmin
+  // Check if user is admin or superadmin
   const { data: profile } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
@@ -27,64 +28,68 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('is_superadmin')
+        .select('is_superadmin, is_admin')
         .eq('id', user.id)
         .single();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('Profile data:', data);
       return data;
     }
   });
+  
+  // Check if user can upload images
+  const canUpload = profile?.is_superadmin || profile?.is_admin;
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check if user is superadmin
-    if (!profile?.is_superadmin) {
-      console.log('Superadmin access denied');
+    // Check if user has permission
+    if (!canUpload) {
       toast({
         title: "Unauthorized",
-        description: "Only superadmins can upload blog cover images",
+        description: "Only admins can upload blog cover images",
         variant: "destructive",
       });
       return;
-    } else {
-      console.log('Superadmin access granted');
     }
 
     setIsUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${blogId || 'new'}-cover.${fileExt}`;
-
       // First check file size
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
         throw new Error('File size must be less than 10MB');
       }
 
+      // Create a unique file name using the blog ID or a timestamp if new blog
+      const fileExt = file.name.split('.').pop();
+      const fileName = `blog-cover-${blogId || Date.now()}.${fileExt}`;
+
+      // Create the bucket if it doesn't exist
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const blogCoversBucketExists = buckets?.some(b => b.name === 'blog-covers');
+      
+      if (!blogCoversBucketExists) {
+        await supabase.storage.createBucket('blog-covers', {
+          public: true
+        });
+      }
+
       // Upload the file
       const { error: uploadError, data } = await supabase.storage
         .from('blog-covers')
-        .upload(filePath, file, { 
+        .upload(fileName, file, { 
           upsert: true,
           cacheControl: '3600'
         });
 
-      if (uploadError) {
-        console.error('Error uploading:', uploadError);
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('blog-covers')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       onChange(publicUrl);
       
@@ -105,41 +110,59 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        <Input 
-          value={value} 
-          onChange={(e) => onChange(e.target.value)} 
-          placeholder="Cover image URL" 
-        />
-        {profile?.is_superadmin && (
-          <div className="relative">
-            <Input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              id="cover-image-upload"
-              onChange={handleImageUpload}
-              disabled={isUploading}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              asChild
-              disabled={isUploading}
-            >
-              <label htmlFor="cover-image-upload" className="cursor-pointer">
-                {isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Upload className="h-4 w-4" />
-                )}
-              </label>
-            </Button>
-          </div>
-        )}
+    <div className="space-y-4">
+      <div>
+        <Label>Cover Image</Label>
+        <div className="flex items-center gap-2 mt-1.5">
+          <Input 
+            value={value} 
+            onChange={(e) => onChange(e.target.value)} 
+            placeholder="Cover image URL" 
+            className="flex-1"
+          />
+          {canUpload && (
+            <div className="relative">
+              <Input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                id="cover-image-upload"
+                onChange={handleImageUpload}
+                disabled={isUploading}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                asChild
+                disabled={isUploading}
+              >
+                <label htmlFor="cover-image-upload" className="cursor-pointer flex items-center">
+                  {isUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-2" />
+                  )}
+                  Upload
+                </label>
+              </Button>
+            </div>
+          )}
+        </div>
+        {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
       </div>
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      
+      {value && (
+        <div className="relative rounded-md overflow-hidden border border-input h-48 w-full bg-muted/20">
+          <img
+            src={value}
+            alt="Cover preview"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder.svg";
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

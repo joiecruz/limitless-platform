@@ -64,7 +64,7 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
+      };
       enrollments: {
         Row: {
           course_id: string
@@ -106,7 +106,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      };
       lessons: {
         Row: {
           body_content: string | null
@@ -156,7 +156,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      };
       message_reactions: {
         Row: {
           created_at: string
@@ -188,7 +188,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      };
       messages: {
         Row: {
           channel_id: string
@@ -243,7 +243,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      };
       profiles: {
         Row: {
           avatar_url: string | null
@@ -288,7 +288,7 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
-      }
+      };
       workspace_domains: {
         Row: {
           created_at: string
@@ -323,7 +323,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      };
       workspace_members: {
         Row: {
           created_at: string
@@ -362,7 +362,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
+      };
       workspaces: {
         Row: {
           created_at: string
@@ -386,7 +386,58 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
+      };
+      articles: {
+        Row: {
+          created_at: string;
+          tags: string[] | null;
+          categories: string[] | null;
+          cover_image: string | null;
+          published: boolean | null;
+          id: string;
+          updated_at: string;
+          created_by: string | null;
+          title: string;
+          excerpt: string | null;
+          slug: string;
+          content: string;
+          meta_description: string | null;
+          read_time: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          tags?: string[] | null;
+          categories?: string[] | null;
+          cover_image?: string | null;
+          published?: boolean | null;
+          id?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          title: string;
+          excerpt?: string | null;
+          slug: string;
+          content: string;
+          meta_description?: string | null;
+          read_time?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          tags?: string[] | null;
+          categories?: string[] | null;
+          cover_image?: string | null;
+          published?: boolean | null;
+          id?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          title?: string;
+          excerpt?: string | null;
+          slug?: string;
+          content?: string;
+          meta_description?: string | null;
+          read_time?: number | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       create_workspace_with_owner: {

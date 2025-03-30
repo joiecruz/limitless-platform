@@ -1,3 +1,4 @@
+
 import { RichTextEditor } from "../RichTextEditor";
 import { BlogTitleInput } from "./BlogTitleInput";
 import { BlogSlugInput } from "./BlogSlugInput";
@@ -7,6 +8,7 @@ import { BlogCoverImageInput } from "./BlogCoverImageInput";
 import { BlogCategorySelect } from "./BlogCategorySelect";
 import { BlogTagsInput } from "./BlogTagsInput";
 import { BlogPublishToggle } from "./BlogPublishToggle";
+import { BlogDateInput } from "./BlogDateInput";
 
 interface BlogFormContentProps {
   formData: any;
@@ -36,6 +38,21 @@ export function BlogFormContent({
         onChange={(value) => updateFormData("slug", value)}
         error={errors.slug}
       />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <BlogDateInput
+          label="Publication Date"
+          value={formData.created_at}
+          onChange={(value) => updateFormData("created_at", value)}
+          error={errors.created_at}
+          description="The date this post will appear to be published on"
+        />
+        
+        <BlogPublishToggle
+          value={formData.published}
+          onChange={(value) => updateFormData("published", value)}
+        />
+      </div>
 
       <BlogCoverImageInput
         value={formData.cover_image}
@@ -76,11 +93,6 @@ export function BlogFormContent({
         value={formData.tags}
         onChange={(value) => updateFormData("tags", value)}
         error={errors.tags}
-      />
-
-      <BlogPublishToggle
-        value={formData.published}
-        onChange={(value) => updateFormData("published", value)}
       />
     </div>
   );
