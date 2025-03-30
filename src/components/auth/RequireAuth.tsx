@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,8 +12,10 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
-    // Skip auth check for verify-email and signup pages
-    if (location.pathname === '/verify-email' || location.pathname === '/signup') {
+    // Skip auth check for certain pages
+    if (location.pathname === '/verify-email' || 
+        location.pathname === '/signup' || 
+        location.pathname === '/reset-password') {
       setIsChecking(false);
       return;
     }
@@ -75,8 +78,10 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      // Skip auth redirects for verify-email and signup pages
-      if (location.pathname === '/verify-email' || location.pathname === '/signup') {
+      // Skip auth redirects for certain pages
+      if (location.pathname === '/verify-email' || 
+          location.pathname === '/signup' || 
+          location.pathname === '/reset-password') {
         return;
       }
 
@@ -101,6 +106,13 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 
   if (isChecking) {
     return null; // Or a loading spinner
+  }
+
+  // Skip auth check for reset-password and other non-auth-required pages
+  if (location.pathname === '/reset-password' ||
+      location.pathname === '/verify-email' || 
+      location.pathname === '/signup') {
+    return <>{children}</>;
   }
 
   if (!isAuthenticated) {

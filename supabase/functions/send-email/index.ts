@@ -75,9 +75,10 @@ const handler = async (req: Request): Promise<Response> => {
 
 // Helper function to extract the reset link from the original email
 function extractResetLink(html: string): string {
-  // Simple regex to find a URL that contains reset-password
-  const resetLinkMatch = html.match(/https:\/\/[^"'\s]+/g);
+  // Use a more robust regex to find the password reset URL
+  const resetLinkMatch = html.match(/https:\/\/[^"'\s]+type=recovery[^"'\s]*/g);
   if (resetLinkMatch && resetLinkMatch.length > 0) {
+    console.log("Found reset link:", resetLinkMatch[0]);
     return resetLinkMatch[0];
   }
   return "#"; // Fallback if no link is found

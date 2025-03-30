@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,11 +24,16 @@ export function useAuthRedirect() {
         const { data: { session } } = await supabase.auth.getSession();
         console.log("useAuthRedirect - Current session:", session);
 
+        // Skip auth redirects for specific auth-related pages
+        if (location.pathname.includes('/reset-password')) {
+          console.log("useAuthRedirect - On reset password page, skipping redirect");
+          return;
+        }
+
         if (!session) {
           // If no session and not on auth pages, redirect to signin
           if (!location.pathname.includes('/signin') && 
               !location.pathname.includes('/signup') && 
-              !location.pathname.includes('/reset-password') &&
               !location.pathname.includes('/verify-email')) {
             navigate('/signin');
           }
@@ -47,8 +53,7 @@ export function useAuthRedirect() {
 
         // If user is authenticated and on auth pages, redirect to dashboard
         if (location.pathname.includes('/signin') || 
-            location.pathname.includes('/signup') || 
-            location.pathname.includes('/reset-password')) {
+            location.pathname.includes('/signup')) {
           
           // Check workspace membership
           const { data: memberData, error: memberError } = await supabase
