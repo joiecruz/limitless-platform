@@ -2,34 +2,46 @@
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
-import { getAllBlogPosts } from "@/integrations/sanity/blogService";
-import { urlFor } from "@/integrations/sanity/client";
 
 export default function Blog() {
   const { toast } = useToast();
 
   const { data: posts, isLoading, error } = useQuery({
     queryKey: ["published-blog-posts"],
-    queryFn: getAllBlogPosts,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('published', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching blog posts:", error);
+        toast({
+          title: "Error loading blog posts",
+          description: "Unable to load blog posts. Please try again later.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+      
+      return data || [];
+    },
   });
 
   // Log any errors for debugging
   useEffect(() => {
     if (error) {
       console.error("Error in blog listing query:", error);
-      toast({
-        title: "Error loading blog posts",
-        description: "Unable to load blog posts. Please try again later.",
-        variant: "destructive",
-      });
     }
-  }, [error, toast]);
+  }, [error]);
 
   // Metadata for the blog listing page
   const baseUrl = window.location.origin;
@@ -85,14 +97,14 @@ export default function Blog() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {posts.map((post) => (
                 <Link 
-                  key={post._id} 
-                  to={`/blog/${post.slug.current}`}
+                  key={post.id} 
+                  to={`/blog/${post.slug}`}
                   className="group"
                 >
                   <div className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow h-full flex flex-col">
                     <div className="aspect-[16/9] relative">
                       <img
-                        src={post.mainImage ? urlFor(post.mainImage) : "/placeholder.svg"}
+                        src={post.cover_image || "/placeholder.svg"}
                         alt={post.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -100,7 +112,7 @@ export default function Blog() {
                     <div className="p-6 flex-1 flex flex-col">
                       <div className="flex-1">
                         <p className="text-sm text-gray-500 mb-2">
-                          {post.publishedAt && format(new Date(post.publishedAt), 'MMMM d, yyyy')}
+                          {post.created_at && format(new Date(post.created_at), 'MMMM d, yyyy')}
                         </p>
                         <h3 className="text-xl font-semibold mb-3 group-hover:text-[#393CA0] transition-colors">
                           {post.title}

@@ -1,6 +1,7 @@
 
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { CaseStudyHeader } from "@/components/case-studies/CaseStudyHeader";
@@ -11,8 +12,6 @@ import { CTASection } from "@/components/site-config/CTASection";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
-import { getCaseStudyBySlug } from "@/integrations/sanity/caseStudyService";
-import { urlFor } from "@/integrations/sanity/client";
 
 export default function CaseStudy() {
   const { slug } = useParams();
@@ -25,8 +24,27 @@ export default function CaseStudy() {
 
   const { data: caseStudy, isLoading, error } = useQuery({
     queryKey: ['case-study', slug],
-    queryFn: () => slug ? getCaseStudyBySlug(slug) : Promise.reject('No slug provided'),
-    enabled: !!slug,
+    queryFn: async () => {
+      console.log("Fetching case study with slug:", slug);
+      const { data, error } = await supabase
+        .from('case_studies')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+
+      if (error) {
+        console.error("Error fetching case study:", error);
+        toast({
+          title: "Error loading case study",
+          description: "Unable to load the case study. Please try again later.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+      
+      console.log("Case study data:", data);
+      return data;
+    },
     retry: 1,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -35,22 +53,12 @@ export default function CaseStudy() {
   useEffect(() => {
     if (error) {
       console.error("Error loading case study:", error);
-      toast({
-        title: "Error loading case study",
-        description: "Unable to load the case study. Please try again later.",
-        variant: "destructive",
-      });
     }
-  }, [error, toast]);
+  }, [error]);
 
   // Define variables outside conditional rendering
   const defaultImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   const canonicalUrl = `${window.location.origin}/case-studies/${slug}`;
-  
-  // Get image URLs
-  const coverImageUrl = caseStudy?.coverImage ? urlFor(caseStudy.coverImage) : defaultImage;
-  const additionalImage1Url = caseStudy?.additionalImage1 ? urlFor(caseStudy.additionalImage1) : undefined;
-  const additionalImage2Url = caseStudy?.additionalImage2 ? urlFor(caseStudy.additionalImage2) : undefined;
   
   // Define meta data based on case study availability
   const pageTitle = caseStudy 
@@ -65,14 +73,16 @@ export default function CaseStudy() {
       ? "Loading case study from Limitless Lab"
       : "Sorry, we couldn't find the case study you're looking for.";
   
+  const pageImage = caseStudy?.cover_photo || defaultImage;
+
   // Debug OpenGraph tags
   useEffect(() => {
     console.log("Case Study Debug Info:");
     console.log("- URL:", canonicalUrl);
     console.log("- Slug:", slug);
     console.log("- Case Study loaded:", !!caseStudy);
-    console.log("- Image:", coverImageUrl);
-  }, [canonicalUrl, slug, caseStudy, coverImageUrl]);
+    console.log("- Image:", pageImage);
+  }, [canonicalUrl, slug, caseStudy, pageImage]);
 
   if (isLoading) {
     return (
@@ -120,7 +130,7 @@ export default function CaseStudy() {
       <OpenGraphTags
         title={pageTitle}
         description={pageDescription}
-        imageUrl={coverImageUrl}
+        imageUrl={pageImage}
         url={canonicalUrl}
         type="article"
       />
@@ -140,17 +150,17 @@ export default function CaseStudy() {
         />
         
         <CaseStudyContent 
-          problem={caseStudy.problemOpportunity}
+          problem={caseStudy.problem_opportunity}
           approach={caseStudy.approach}
           impact={caseStudy.impact}
         />
         
-        {(coverImageUrl || additionalImage1Url || additionalImage2Url) && (
+        {(caseStudy.cover_photo || caseStudy.additional_photo1 || caseStudy.additional_photo2) && (
           <CaseStudyImages 
-            coverPhoto={coverImageUrl}
+            coverPhoto={caseStudy.cover_photo}
             name={caseStudy.name}
-            additionalPhoto1={additionalImage1Url}
-            additionalPhoto2={additionalImage2Url}
+            additionalPhoto1={caseStudy.additional_photo1}
+            additionalPhoto2={caseStudy.additional_photo2}
           />
         )}
       </article>
