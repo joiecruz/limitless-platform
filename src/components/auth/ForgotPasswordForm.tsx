@@ -78,7 +78,7 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
         <div className="flex flex-col gap-3">
           <Button
             type="submit"
-            className="w-full"
+            className="w-full bg-[#393ca0] hover:bg-[#2d2f80] h-12"
             disabled={loading}
           >
             {loading ? "Sending..." : "Reset password"}
@@ -88,7 +88,7 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="w-full"
+            className="w-full h-12"
           >
             Back to sign in
           </Button>
