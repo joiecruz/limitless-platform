@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { getBlogPosts, getBlogPostBySlug, getAllTags } from '@/lib/sanity';
 
@@ -26,6 +27,8 @@ export function useBlogPosts(preview = false) {
   return useQuery({
     queryKey: ['blog-posts', preview],
     queryFn: () => getBlogPosts(preview),
+    retry: 2,
+    staleTime: 60 * 1000, // 1 minute
   });
 }
 
@@ -34,6 +37,8 @@ export function useBlogPost(slug: string, preview = false) {
     queryKey: ['blog-post', slug, preview],
     queryFn: () => getBlogPostBySlug(slug, preview),
     enabled: !!slug,
+    retry: 2,
+    staleTime: 60 * 1000, // 1 minute
   });
 }
 
@@ -41,5 +46,7 @@ export function useBlogTags() {
   return useQuery({
     queryKey: ['blog-tags'],
     queryFn: getAllTags,
+    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
-} 
+}

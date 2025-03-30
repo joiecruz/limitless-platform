@@ -35,9 +35,15 @@ export default defineConfig(({ mode }) => ({
     }
   },
   optimizeDeps: {
-    include: ['@supabase/supabase-js', '@supabase/auth-ui-react']
+    include: [
+      '@supabase/supabase-js', 
+      '@supabase/auth-ui-react',
+      '@sanity/client',
+      '@sanity/image-url',
+      '@portabletext/react'
+    ]
   },
   define: {
-    'process.env.SANITY_API_TOKEN': JSON.stringify(process.env.SANITY_API_TOKEN),
+    'import.meta.env.VITE_SANITY_API_TOKEN': JSON.stringify(process.env.SANITY_API_TOKEN),
   },
 }))
