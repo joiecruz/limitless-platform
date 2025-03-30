@@ -38,7 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (resetLink) {
         // Replace with our streamlined template
         emailRequest.html = generatePasswordResetEmail(resetLink, emailRequest.to[0]);
-        console.log("Generated new email template with reset link:", resetLink);
+        console.log("Generated new email template with reset link");
       } else {
         console.error("Could not extract reset link from email");
       }
@@ -113,8 +113,8 @@ function extractResetLink(html: string): string | null {
 
 // Function to generate password reset email
 function generatePasswordResetEmail(resetLink: string, email: string): string {
-  // Use backticks (`) for template literals to properly interpolate ${resetLink}
-  return `<!DOCTYPE html>
+  return `
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -145,7 +145,7 @@ function generatePasswordResetEmail(resetLink: string, email: string): string {
       display: block;
       width: 200px;
       background-color: #45429e;
-      color: white;
+      color: white !important;
       text-align: center;
       padding: 12px 20px;
       text-decoration: none;
@@ -158,6 +158,10 @@ function generatePasswordResetEmail(resetLink: string, email: string): string {
       text-align: center;
       font-size: 12px;
       color: #666;
+    }
+    a {
+      color: #45429e;
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -172,12 +176,12 @@ function generatePasswordResetEmail(resetLink: string, email: string): string {
   
   <p>We received a request to reset your password for your Limitless Lab account. Click the button below to set a new password:</p>
   
-  <a href="${resetLink}" class="button">Reset Password</a>
+  <a href="${resetLink}" style="display: block; width: 200px; background-color: #45429e; color: white !important; text-align: center; padding: 12px 20px; text-decoration: none; border-radius: 4px; margin: 30px auto; font-weight: bold;">Reset Password</a>
   
   <p>If you didn't request a password reset, you can safely ignore this email.</p>
   
   <p>If the button doesn't work, copy and paste this link into your browser:</p>
-  <p style="word-break: break-all; color: #3355bb;"><a href="${resetLink}">${resetLink}</a></p>
+  <p><a href="${resetLink}">${resetLink}</a></p>
   
   <p>Thank you,<br>The Limitless Lab Team</p>
   
@@ -188,7 +192,8 @@ function generatePasswordResetEmail(resetLink: string, email: string): string {
     <p>This is an automated email, please do not reply.</p>
   </div>
 </body>
-</html>`;
+</html>
+  `;
 }
 
 serve(handler);
