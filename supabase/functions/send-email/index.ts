@@ -113,82 +113,82 @@ function extractResetLink(html: string): string | null {
 
 // Function to generate password reset email
 function generatePasswordResetEmail(resetLink: string, email: string): string {
-  // We use string concatenation here to avoid template literal issues
-  return '<!DOCTYPE html>\
-<html>\
-<head>\
-  <meta charset="utf-8">\
-  <meta name="viewport" content="width=device-width, initial-scale=1">\
-  <title>Reset Your Password</title>\
-  <style>\
-    body {\
-      font-family: Arial, sans-serif;\
-      line-height: 1.6;\
-      color: #333;\
-      max-width: 600px;\
-      margin: 0 auto;\
-      padding: 20px;\
-    }\
-    .header {\
-      text-align: center;\
-      margin-bottom: 30px;\
-    }\
-    .header img {\
-      max-width: 200px;\
-    }\
-    h1 {\
-      color: #333;\
-      text-align: center;\
-      margin-bottom: 20px;\
-    }\
-    .button {\
-      display: block;\
-      width: 200px;\
-      background-color: #45429e;\
-      color: white;\
-      text-align: center;\
-      padding: 12px 20px;\
-      text-decoration: none;\
-      border-radius: 4px;\
-      margin: 30px auto;\
-      font-weight: bold;\
-    }\
-    .footer {\
-      margin-top: 40px;\
-      text-align: center;\
-      font-size: 12px;\
-      color: #666;\
-    }\
-  </style>\
-</head>\
-<body>\
-  <div class="header">\
-    <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Limitless Lab" />\
-  </div>\
-  \
-  <h1>Reset Your Password</h1>\
-  \
-  <p>Hello,</p>\
-  \
-  <p>We received a request to reset your password for your Limitless Lab account. Click the button below to set a new password:</p>\
-  \
-  <a href="' + resetLink + '" class="button">Reset Password</a>\
-  \
-  <p>If you didn\'t request a password reset, you can safely ignore this email.</p>\
-  \
-  <p>If the button doesn\'t work, copy and paste this link into your browser:</p>\
-  <p style="word-break: break-all; color: #3355bb;"><a href="' + resetLink + '">' + resetLink + '</a></p>\
-  \
-  <p>Thank you,<br>The Limitless Lab Team</p>\
-  \
-  <div class="footer">\
-    <p>Limitless Lab</p>\
-    <p>5F RFM Corporate Center, Pioneer Street, Mandaluyong City, Philippines</p>\
-    <p>#2 Venture Drive #19-21 Vision Exchange, Singapore, 608526</p>\
-    <p>This is an automated email, please do not reply.</p>\
-  </div>\
-</body>\
-</html>';
+  // Use backticks (`) for template literals to properly interpolate ${resetLink}
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reset Your Password</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header img {
+      max-width: 200px;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .button {
+      display: block;
+      width: 200px;
+      background-color: #45429e;
+      color: white;
+      text-align: center;
+      padding: 12px 20px;
+      text-decoration: none;
+      border-radius: 4px;
+      margin: 30px auto;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Limitless Lab" />
+  </div>
+  
+  <h1>Reset Your Password</h1>
+  
+  <p>Hello,</p>
+  
+  <p>We received a request to reset your password for your Limitless Lab account. Click the button below to set a new password:</p>
+  
+  <a href="${resetLink}" class="button">Reset Password</a>
+  
+  <p>If you didn't request a password reset, you can safely ignore this email.</p>
+  
+  <p>If the button doesn't work, copy and paste this link into your browser:</p>
+  <p style="word-break: break-all; color: #3355bb;"><a href="${resetLink}">${resetLink}</a></p>
+  
+  <p>Thank you,<br>The Limitless Lab Team</p>
+  
+  <div class="footer">
+    <p>Limitless Lab</p>
+    <p>5F RFM Corporate Center, Pioneer Street, Mandaluyong City, Philippines</p>
+    <p>#2 Venture Drive #19-21 Vision Exchange, Singapore, 608526</p>
+    <p>This is an automated email, please do not reply.</p>
+  </div>
+</body>
+</html>`;
 }
 
 serve(handler);
