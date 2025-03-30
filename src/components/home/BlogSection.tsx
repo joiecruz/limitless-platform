@@ -2,11 +2,11 @@
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useBlogPosts } from "@/hooks/use-blog-posts";
-import { urlFor, FALLBACK_IMAGE } from "@/lib/sanity";
+import { urlFor, FALLBACK_IMAGE, SANITY_PROJECT_ID } from "@/lib/sanity";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw, ExternalLink } from "lucide-react";
+import { AlertCircle, RefreshCw, ExternalLink, Bug } from "lucide-react";
 
 export function BlogSection() {
   const { toast } = useToast();
@@ -15,12 +15,23 @@ export function BlogSection() {
   // Show latest 3 posts
   const latestPosts = posts?.slice(0, 3) || [];
 
+  // For debugging
+  const sanityTestUrl = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/production?query=*%5B_type+%3D%3D+%22post%22%5D%5B0..2%5D`;
+
   const handleRetry = () => {
     toast({
       title: "Retrying connection",
       description: "Attempting to reconnect to the blog service...",
     });
     refetch();
+  };
+
+  const showDebugInfo = () => {
+    toast({
+      title: "Debug Info",
+      description: `Sanity Studio URL: https://limitless-lab.sanity.studio\nProject ID: ${SANITY_PROJECT_ID}`,
+      duration: 10000,
+    });
   };
 
   return (
@@ -51,9 +62,9 @@ export function BlogSection() {
             </div>
             <h3 className="text-lg font-semibold text-orange-600">Connection Issue</h3>
             <p className="mt-2 text-gray-600 mb-6">
-              We're having trouble connecting to our content service. You're seeing cached or fallback content.
+              We're having trouble connecting to our content service ({error instanceof Error ? error.message.slice(0, 100) + '...' : 'Unknown error'})
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
               <Button 
                 onClick={handleRetry} 
                 className="flex items-center gap-2"
@@ -61,8 +72,8 @@ export function BlogSection() {
                 <RefreshCw className="h-4 w-4" />
                 Try Again
               </Button>
-              <Link 
-                to="https://42h9veeb.api.sanity.io/v2021-10-21/data/query/production?query=*%5B_type+%3D%3D+%22post%22%5D"
+              <a 
+                href={sanityTestUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -73,8 +84,16 @@ export function BlogSection() {
                   <ExternalLink className="h-4 w-4" />
                   Test Sanity Connection
                 </Button>
-              </Link>
+              </a>
             </div>
+            <Button 
+              variant="secondary" 
+              className="flex items-center gap-2 mx-auto"
+              onClick={showDebugInfo}
+            >
+              <Bug className="h-4 w-4" />
+              Show Debug Info
+            </Button>
           </div>
         ) : latestPosts && latestPosts.length > 0 ? (
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-12 lg:mx-0 lg:max-w-none lg:grid-cols-3">
@@ -116,10 +135,22 @@ export function BlogSection() {
             <p className="mt-4 text-gray-600">
               Please check back later for new content.
             </p>
-            <Button onClick={handleRetry} className="mt-6 flex items-center gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+              <Button onClick={handleRetry} className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </Button>
+              <a 
+                href="https://limitless-lab.sanity.studio" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" className="flex items-center gap-2 w-full">
+                  <ExternalLink className="h-4 w-4" />
+                  Go to Sanity Studio
+                </Button>
+              </a>
+            </div>
           </div>
         )}
 

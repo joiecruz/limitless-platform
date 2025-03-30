@@ -28,19 +28,21 @@ export function useBlogPosts(preview = false) {
     queryKey: ['blog-posts', preview],
     queryFn: async () => {
       try {
-        console.log('Fetching blog posts...');
+        console.log('Fetching blog posts via React Query...');
         const posts = await getBlogPosts(preview);
+        if (!posts || posts.length === 0) {
+          console.warn('No posts returned from Sanity');
+        }
         return posts;
       } catch (error) {
         console.error('Error in useBlogPosts:', error);
         throw error;
       }
     },
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff with max 10 second delay
+    retry: 2,
+    retryDelay: 1000,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
-    refetchOnReconnect: true,
   });
 }
 
@@ -49,8 +51,9 @@ export function useBlogPost(slug: string, preview = false) {
     queryKey: ['blog-post', slug, preview],
     queryFn: async () => {
       try {
+        console.log(`Fetching blog post with slug: ${slug}`);
         const post = await getBlogPostBySlug(slug, preview);
-        // Handle null image case by adding a null check
+        // Handle null image case
         if (post && !post.mainImage) {
           console.log(`Post ${slug} has no mainImage, using null`);
         }
@@ -61,9 +64,9 @@ export function useBlogPost(slug: string, preview = false) {
       }
     },
     enabled: !!slug,
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
@@ -80,9 +83,9 @@ export function useBlogTags() {
         throw error;
       }
     },
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
