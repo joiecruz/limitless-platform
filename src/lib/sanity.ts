@@ -14,7 +14,7 @@ export const client = createClient({
   projectId: SANITY_PROJECT_ID,
   dataset: SANITY_DATASET,
   apiVersion: SANITY_API_VERSION,
-  useCdn: true,
+  useCdn: false, // Disable CDN to avoid CORS issues
   perspective: 'published',
 });
 
@@ -77,7 +77,7 @@ export const MOCK_BLOG_POSTS = [
   }
 ];
 
-// Helper function to fetch blog posts with simplified approach and better error handling
+// Helper function to fetch blog posts with better CORS handling
 export async function getBlogPosts(preview = false) {
   console.log('Fetching blog posts...');
   
@@ -100,6 +100,13 @@ export async function getBlogPosts(preview = false) {
   } catch (error) {
     console.error('Failed to fetch from Sanity:', error);
     console.log('Using fallback mock blog data');
+    
+    // Show CORS-specific error information for debugging
+    if (error instanceof Error && error.message.includes('CORS')) {
+      console.error('CORS issue detected. Please add your domain to the CORS origins in Sanity Studio.');
+      console.error('Go to https://limitless-lab.sanity.studio/desk and then Settings → API → CORS origins');
+    }
+    
     return MOCK_BLOG_POSTS;
   }
 }

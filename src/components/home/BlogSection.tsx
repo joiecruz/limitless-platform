@@ -6,7 +6,7 @@ import { urlFor, FALLBACK_IMAGE, SANITY_PROJECT_ID } from "@/lib/sanity";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw, ExternalLink, Bug } from "lucide-react";
+import { AlertCircle, RefreshCw, ExternalLink, Bug, Settings } from "lucide-react";
 
 export function BlogSection() {
   const { toast } = useToast();
@@ -17,6 +17,7 @@ export function BlogSection() {
 
   // For debugging
   const sanityTestUrl = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/production?query=*%5B_type+%3D%3D+%22post%22%5D%5B0..2%5D`;
+  const sanityCorsUrl = `https://limitless-lab.sanity.studio/desk/settings;api;cors`;
 
   const handleRetry = () => {
     toast({
@@ -29,7 +30,7 @@ export function BlogSection() {
   const showDebugInfo = () => {
     toast({
       title: "Debug Info",
-      description: `Sanity Studio URL: https://limitless-lab.sanity.studio\nProject ID: ${SANITY_PROJECT_ID}`,
+      description: `Sanity Studio URL: https://limitless-lab.sanity.studio\nProject ID: ${SANITY_PROJECT_ID}\nCORS Issue: Check settings at limitless-lab.sanity.studio`,
       duration: 10000,
     });
   };
@@ -62,7 +63,7 @@ export function BlogSection() {
             </div>
             <h3 className="text-lg font-semibold text-orange-600">Connection Issue</h3>
             <p className="mt-2 text-gray-600 mb-6">
-              We're having trouble connecting to our content service ({error instanceof Error ? error.message.slice(0, 100) + '...' : 'Unknown error'})
+              We're having trouble connecting to our content service. This may be a CORS issue.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
               <Button 
@@ -73,6 +74,21 @@ export function BlogSection() {
                 Try Again
               </Button>
               <a 
+                href={sanityCorsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2 w-full"
+                >
+                  <Settings className="h-4 w-4" />
+                  Sanity CORS Settings
+                </Button>
+              </a>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+              <a 
                 href={sanityTestUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -82,7 +98,20 @@ export function BlogSection() {
                   className="flex items-center gap-2 w-full"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Test Sanity Connection
+                  Test Sanity API
+                </Button>
+              </a>
+              <a 
+                href="https://limitless-lab.sanity.studio"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2 w-full"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Go to Sanity Studio
                 </Button>
               </a>
             </div>
@@ -94,6 +123,19 @@ export function BlogSection() {
               <Bug className="h-4 w-4" />
               Show Debug Info
             </Button>
+            
+            {error instanceof Error && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg text-left text-sm">
+                <p className="font-semibold">Error details:</p>
+                <p className="text-red-600 break-all">{error.message}</p>
+                {error.message.includes('CORS') && (
+                  <p className="mt-2 text-orange-600">
+                    This appears to be a CORS issue. Please add your website domain to the allowed 
+                    origins in Sanity Studio settings.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ) : latestPosts && latestPosts.length > 0 ? (
           <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-12 lg:mx-0 lg:max-w-none lg:grid-cols-3">

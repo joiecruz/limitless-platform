@@ -9,7 +9,7 @@ export interface BlogPost {
   mainImage: any;
   publishedAt: string;
   excerpt?: string;
-  body?: any;
+  body?: any[];
   author?: string;
   categories?: string[];
   tags?: string[];
@@ -39,7 +39,7 @@ export function useBlogPosts(preview = false) {
         throw error;
       }
     },
-    retry: 2,
+    retry: 1, // Reduce retries to avoid excessive requests when CORS is blocked
     retryDelay: 1000,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
@@ -64,7 +64,7 @@ export function useBlogPost(slug: string, preview = false) {
       }
     },
     enabled: !!slug,
-    retry: 2,
+    retry: 1, // Reduce retries
     retryDelay: 1000,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -83,7 +83,7 @@ export function useBlogTags() {
         throw error;
       }
     },
-    retry: 2,
+    retry: 1, // Reduce retries
     retryDelay: 1000,
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
