@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -95,11 +96,20 @@ export function InvitedUserOnboardingModal({
     }
   };
 
+  // Handle dialog open state changes - prevent closing during onboarding
+  const handleOpenChange = (value: boolean) => {
+    // Prevent closing the modal during onboarding process
+    if (!value && open && currentStep < TOTAL_STEPS) {
+      return;
+    }
+    
+    if (onOpenChange) {
+      onOpenChange(value);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(value) => {
-      if (!value) return;
-      if (onOpenChange) onOpenChange(value);
-    }}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px] h-[600px] p-0 [&>button]:hidden">
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
