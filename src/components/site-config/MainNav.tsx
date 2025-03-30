@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -22,8 +23,8 @@ export function MainNav() {
             <Link to="/tools" className="text-gray-700 hover:text-[#393CA0]">Tools</Link>
           </nav>
           <div className="flex items-center space-x-4">
-            <Link to="/contact">
-              <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90">Get in touch</Button>
+            <Link to="/signup">
+              <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90">Sign up</Button>
             </Link>
           </div>
         </div>
