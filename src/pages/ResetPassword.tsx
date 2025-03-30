@@ -13,28 +13,44 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [validToken, setValidToken] = useState(false);
+  const [hashParams, setHashParams] = useState<URLSearchParams | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     // Check if we have a hash token when the component mounts
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get('type');
-    const accessToken = hashParams.get('access_token');
+    const hash = window.location.hash;
+    console.log('Reset password page loaded with hash:', hash);
     
-    console.log('Reset password page loaded with hash params', { type, accessToken: !!accessToken });
-    
-    if (!accessToken || type !== 'recovery') {
+    if (hash) {
+      const params = new URLSearchParams(hash.substring(1));
+      setHashParams(params);
+      
+      const type = params.get('type');
+      const accessToken = params.get('access_token');
+      
+      console.log('Reset password parameters:', { type, accessToken: !!accessToken });
+      
+      if (!accessToken || type !== 'recovery') {
+        toast({
+          title: "Invalid Reset Link",
+          description: "This password reset link is invalid or has expired.",
+          variant: "destructive",
+        });
+        navigate('/signin');
+        return;
+      }
+      
+      setValidToken(true);
+    } else {
+      console.log('No hash parameters found');
       toast({
-        title: "Invalid Reset Link",
-        description: "This password reset link is invalid or has expired.",
+        title: "Missing Reset Link Parameters",
+        description: "The password reset link appears to be incomplete.",
         variant: "destructive",
       });
       navigate('/signin');
-      return;
     }
-    
-    setValidToken(true);
   }, [navigate, toast]);
 
   const validatePassword = () => {
@@ -53,16 +69,23 @@ export default function ResetPassword() {
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validatePassword() || !validToken) {
+    if (!validatePassword() || !validToken || !hashParams) {
       return;
     }
     
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      });
+      console.log('Attempting to update password...');
+      
+      // Make sure we're using the access_token from the URL
+      const accessToken = hashParams.get('access_token');
+      
+      // Use access token directly to update the user's password
+      const { error } = await supabase.auth.updateUser(
+        { password },
+        { accessToken: accessToken || undefined }
+      );
 
       if (error) throw error;
 

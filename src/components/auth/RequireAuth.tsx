@@ -16,6 +16,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     if (location.pathname === '/verify-email' || 
         location.pathname === '/signup' || 
         location.pathname === '/reset-password') {
+      console.log("RequireAuth: Skipping auth check for special route:", location.pathname);
       setIsChecking(false);
       return;
     }

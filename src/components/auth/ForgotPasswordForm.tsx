@@ -30,7 +30,7 @@ export function ForgotPasswordForm({ onCancel, initialEmail = '' }: ForgotPasswo
     setIsLoading(true);
 
     try {
-      // Get the site URL using the window location
+      // Ensure we have an absolute URL for the redirect
       const origin = window.location.origin;
       const redirectTo = `${origin}/reset-password`;
       
