@@ -29,10 +29,18 @@ const handler = async (req: Request): Promise<Response> => {
     // Check if this is a password reset email
     if (emailRequest.subject.includes("Reset Your Password") || 
         emailRequest.html.includes("reset your password")) {
-      // Replace with our simplified template
-      emailRequest.html = generateSimplePasswordResetEmail(
-        extractResetLink(emailRequest.html)
-      );
+      console.log("Password reset email detected, customizing template...");
+      
+      // Extract the reset link from the original email
+      const resetLink = extractResetLink(emailRequest.html);
+      console.log("Extracted reset link:", resetLink);
+      
+      if (resetLink) {
+        // Replace with our streamlined template without OTP
+        emailRequest.html = generatePasswordResetEmail(resetLink, emailRequest.to[0]);
+      } else {
+        console.error("Could not extract reset link from email");
+      }
     }
     
     const res = await fetch("https://api.resend.com/emails", {
@@ -74,18 +82,18 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 // Helper function to extract the reset link from the original email
-function extractResetLink(html: string): string {
+function extractResetLink(html: string): string | null {
   // Use a more robust regex to find the password reset URL
-  const resetLinkMatch = html.match(/https:\/\/[^"'\s]+type=recovery[^"'\s]*/g);
+  const resetLinkMatch = html.match(/(https:\/\/[^"'\s]+type=recovery[^"'\s]*)/g);
   if (resetLinkMatch && resetLinkMatch.length > 0) {
     console.log("Found reset link:", resetLinkMatch[0]);
     return resetLinkMatch[0];
   }
-  return "#"; // Fallback if no link is found
+  return null; // Fallback if no link is found
 }
 
-// Function to generate simple password reset email
-function generateSimplePasswordResetEmail(resetLink: string): string {
+// Function to generate password reset email without OTP
+function generatePasswordResetEmail(resetLink: string, email: string): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -136,7 +144,7 @@ function generateSimplePasswordResetEmail(resetLink: string): string {
     </head>
     <body>
       <div class="header">
-        <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/limitless_lab_logo.png" alt="Limitless Lab" />
+        <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/LL%20LOGO_PNG.png" alt="Limitless Lab" />
       </div>
       
       <h1>Reset Your Password</h1>
@@ -153,6 +161,8 @@ function generateSimplePasswordResetEmail(resetLink: string): string {
       
       <div class="footer">
         <p>Limitless Lab</p>
+        <p>5F RFM Corporate Center, Pioneer Street, Mandaluyong City, Philippines</p>
+        <p>#2 Venture Drive #19-21 Vision Exchange, Singapore, 608526</p>
         <p>This is an automated email, please do not reply.</p>
       </div>
     </body>
