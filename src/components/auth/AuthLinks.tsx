@@ -1,26 +1,15 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ForgotPasswordForm } from './ForgotPasswordForm';
 
-export const AuthLinks = () => {
+interface AuthLinksProps {
+  onForgotPassword?: () => void;
+}
+
+export const AuthLinks = ({ onForgotPassword }: AuthLinksProps) => {
   const navigate = useNavigate();
-  const [showPasswordReset, setShowPasswordReset] = useState(false);
   
-  // Get email from the input field
-  const getEmailFromForm = (): string => {
-    const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
-    return emailInput?.value || '';
-  };
-
-  if (showPasswordReset) {
-    return <ForgotPasswordForm 
-      onCancel={() => setShowPasswordReset(false)}
-      initialEmail={getEmailFromForm()}
-    />;
-  }
-
   return (
     <div className="text-center mt-4 space-y-2">
       <p className="text-sm text-gray-600">
@@ -37,7 +26,7 @@ export const AuthLinks = () => {
         <Button
           variant="link"
           className="p-0 h-auto font-semibold text-primary hover:text-primary/80"
-          onClick={() => setShowPasswordReset(true)}
+          onClick={onForgotPassword}
         >
           Forgot password?
         </Button>

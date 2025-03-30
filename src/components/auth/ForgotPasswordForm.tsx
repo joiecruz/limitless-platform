@@ -81,6 +81,7 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
             className="w-full"
             disabled={loading}
             variant="default"
+            style={{ backgroundColor: "rgb(69, 66, 158)" }}
           >
             {loading ? "Sending..." : "Reset password"}
           </Button>
