@@ -80,6 +80,7 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
             type="submit"
             className="w-full"
             disabled={loading}
+            variant="default"
           >
             {loading ? "Sending..." : "Reset password"}
           </Button>
