@@ -183,6 +183,120 @@ exports.handler = async function(event, context) {
         console.error('Error processing request:', error);
       }
     }
+    
+    // Handle case studies
+    if (urlPath.startsWith('/case-studies/') && urlPath !== '/case-studies/') {
+      // Extract the slug from the URL
+      const slug = urlPath.replace('/case-studies/', '').split('?')[0]; // Remove query parameters
+      console.log('Handling case study with slug:', slug);
+      
+      try {
+        const SANITY_PROJECT_ID = '42h9veeb';
+        const SANITY_DATASET = 'production';
+        const SANITY_API_VERSION = '2021-10-21';
+        
+        const sanityQuery = encodeURIComponent(`*[_type == "caseStudy" && slug.current == "${slug}"][0]{
+          title,
+          description,
+          client,
+          coverImage{asset->{_id, url}},
+          "services": services[]->title,
+          "sdgs": sdgs[]->title
+        }`);
+        
+        const response = await fetch(
+          `https://${SANITY_PROJECT_ID}.api.sanity.io/v${SANITY_API_VERSION}/data/query/${SANITY_DATASET}?query=${sanityQuery}`,
+          {
+            headers: {
+              'Accept': 'application/json'
+            }
+          }
+        );
+        
+        const sanityData = await response.json();
+        console.log('Fetched case study from Sanity:', sanityData.result ? 'success' : 'not found');
+        
+        if (sanityData.result) {
+          const caseStudy = sanityData.result;
+          
+          // Read the HTML file
+          const htmlPath = path.join(__dirname, '..', '..', 'dist', 'index.html');
+          console.log('Reading HTML file from:', htmlPath);
+          let html = fs.readFileSync(htmlPath, 'utf8');
+          
+          // Get the image URL
+          let imageUrl = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+          if (caseStudy.coverImage && caseStudy.coverImage.asset) {
+            // Use the direct URL if available
+            if (caseStudy.coverImage.asset.url) {
+              imageUrl = `${caseStudy.coverImage.asset.url}?w=1200&h=630&fit=crop&crop=center`;
+            } else if (caseStudy.coverImage.asset._id) {
+              // Or build it from _id
+              imageUrl = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${caseStudy.coverImage.asset._id.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}?w=1200&h=630&fit=crop&crop=center`;
+            }
+          }
+          
+          // Get proper domain for canonical URL
+          const domain = event.headers.host ? 
+            `${event.headers['x-forwarded-proto'] ? event.headers['x-forwarded-proto'] : 'https'}://${event.headers.host}` : 
+            'https://limitlesslab.org';
+          const canonicalUrl = `${domain}/case-studies/${slug}`;
+          
+          // Format title with client if available
+          const title = caseStudy.client 
+            ? `${caseStudy.title} - ${caseStudy.client} | Limitless Lab` 
+            : `${caseStudy.title} | Limitless Lab`;
+          
+          // Replace all meta tags - use a more thorough approach
+          const head = html.split('</head>')[0];
+          const body = html.split('</head>')[1];
+          
+          // Create new head content with proper meta tags
+          let newHead = head;
+          
+          // Remove existing OpenGraph tags
+          newHead = newHead.replace(/<meta property="og:[^>]*>/g, '');
+          newHead = newHead.replace(/<meta name="twitter:[^>]*>/g, '');
+          
+          // Add updated OpenGraph tags
+          const ogTags = `
+  <title>${title}</title>
+  <meta name="description" content="${caseStudy.description || caseStudy.title}">
+  <meta property="og:title" content="${title}">
+  <meta property="og:description" content="${caseStudy.description || caseStudy.title}">
+  <meta property="og:image" content="${imageUrl}">
+  <meta property="og:url" content="${canonicalUrl}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Limitless Lab">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${title}">
+  <meta name="twitter:description" content="${caseStudy.description || caseStudy.title}">
+  <meta name="twitter:image" content="${imageUrl}">
+  <link rel="canonical" href="${canonicalUrl}">`;
+          
+          // Inject the new tags just before </head>
+          newHead += ogTags;
+          
+          // Put it all back together
+          html = newHead + '</head>' + body;
+          
+          console.log('Successfully injected case study metadata from Sanity');
+          
+          // Return the modified HTML
+          return {
+            statusCode: 200,
+            headers: {
+              'Content-Type': 'text/html',
+            },
+            body: html,
+          };
+        }
+      } catch (error) {
+        console.error('Error fetching case study from Sanity:', error);
+      }
+    }
   } catch (error) {
     console.error('Error processing request:', error);
   }
