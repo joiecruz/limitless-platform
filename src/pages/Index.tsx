@@ -1,11 +1,10 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { InfiniteLogos } from "@/components/site-config/InfiniteLogos";
 import { Features } from "@/components/site-config/Features";
-import { BlogSection } from "@/components/site-config/BlogSection";
+import { BlogSection } from "@/components/home/BlogSection";
 import { CTASection } from "@/components/site-config/CTASection";
 import { LoadingPage } from "@/components/common/LoadingPage";
 import { Suspense, useEffect } from "react";
@@ -102,28 +101,9 @@ export default function Index() {
       </Suspense>
 
       {/* Blog Section */}
-      <div className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Latest Articles</h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Stay updated with our latest insights and news
-            </p>
-          </div>
-          <Suspense fallback={<LoadingPage />}>
-            <BlogSection />
-          </Suspense>
-          <div className="mt-12 text-center">
-            <Button 
-              variant="outline"
-              onClick={() => navigate('/blog')}
-              className="px-8 text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
-            >
-              View All Articles
-            </Button>
-          </div>
-        </div>
-      </div>
+      <Suspense fallback={<LoadingPage />}>
+        <BlogSection />
+      </Suspense>
 
       {/* CTA Section */}
       <CTASection />
