@@ -112,31 +112,60 @@ function extractResetLink(html: string): string | null {
     }
   }
   
+  // Try to find a confirmation URL template
+  if (html.includes("{{ .ConfirmationURL }}")) {
+    console.log("Found confirmation URL template");
+    // This is likely in a template, not an actual link yet
+    // We need to handle this differently
+    return null;
+  }
+  
   return null;
 }
 
 // Ensure the reset link points to our reset-password page
 function ensureCorrectResetLink(link: string): string {
-  // If the link already points to the reset-password page, return it
-  if (link.includes("redirect_to=") && link.includes("/reset-password")) {
-    return link;
-  }
-  
-  // Replace any existing redirect_to parameter
-  if (link.includes("redirect_to=")) {
-    // Parse the URL
-    let url = new URL(link);
-    // Get origin of the site
-    const redirectUrl = new URL("/reset-password", url.origin);
-    // Update the redirect_to parameter
-    url.searchParams.set("redirect_to", redirectUrl.toString());
+  try {
+    // If the link already contains our custom domain, use it as is
+    if (link.includes("limitlesslab.org/reset-password")) {
+      return link;
+    }
+    
+    // Base case: working with a Supabase auth link
+    const url = new URL(link);
+    
+    // Make sure the redirect_to parameter is set to our reset-password page
+    // Extract the base URL to use for redirection
+    let baseUrl = url.origin; // Default to the origin part of the URL
+    
+    // Check if it's a preview URL and handle accordingly
+    if (url.origin.includes("lovableproject.com")) {
+      baseUrl = url.origin;
+    } else if (url.origin.includes("supabase.co")) {
+      // We're dealing with a Supabase URL, check query parameters for our domain
+      const redirectParam = url.searchParams.get("redirect_to");
+      if (redirectParam) {
+        try {
+          const redirectUrl = new URL(redirectParam);
+          baseUrl = redirectUrl.origin;
+        } catch (e) {
+          console.error("Error parsing redirect_to URL:", e);
+        }
+      } else {
+        // If no redirect_to parameter, assume production domain
+        baseUrl = "https://limitlesslab.org";
+      }
+    }
+    
+    // Set the redirect_to parameter to the reset-password page
+    url.searchParams.set("redirect_to", `${baseUrl}/reset-password`);
+    
+    console.log("Modified reset link:", url.toString());
     return url.toString();
+  } catch (error) {
+    console.error("Error in ensureCorrectResetLink:", error);
+    return link; // Return original link if there's an error
   }
-  
-  // If no redirect_to parameter, add it
-  const separator = link.includes("?") ? "&" : "?";
-  const origin = link.split("/auth/")[0]; // Extract base URL
-  return `${link}${separator}redirect_to=${origin}/reset-password`;
 }
 
 // Function to generate password reset email
