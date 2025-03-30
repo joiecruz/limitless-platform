@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { useBlogPosts } from "@/hooks/use-blog-posts";
 import { urlFor } from "@/lib/sanity";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, RefreshCw } from "lucide-react";
@@ -16,23 +15,10 @@ export function BlogSection() {
   const { toast } = useToast();
   const { data: posts, isLoading, error, isError, refetch } = useBlogPosts();
   
-  // Show a toast notification on error
-  useEffect(() => {
-    if (isError && error) {
-      console.error('Error loading blog posts in BlogSection:', error);
-      toast({
-        title: "Connection issue with blog service",
-        description: "We're experiencing some technical difficulties. Please try again later.",
-        variant: "destructive",
-      });
-    }
-  }, [isError, error, toast]);
-  
-  // Fallback to empty array if there's an error with Sanity
+  // Show latest 3 posts
   const latestPosts = posts?.slice(0, 3) || [];
 
   const handleRetry = () => {
-    console.log('Manually retrying blog posts fetch');
     toast({
       title: "Retrying connection",
       description: "Attempting to reconnect to the blog service...",
@@ -64,17 +50,12 @@ export function BlogSection() {
         ) : isError ? (
           <div className="mx-auto mt-16 max-w-md text-center">
             <div className="flex justify-center mb-4">
-              <AlertCircle className="h-12 w-12 text-red-500" />
+              <AlertCircle className="h-12 w-12 text-orange-500" />
             </div>
-            <h3 className="text-lg font-semibold text-red-600">Connection Error</h3>
+            <h3 className="text-lg font-semibold text-orange-600">Connection Issue</h3>
             <p className="mt-2 text-gray-600 mb-6">
-              We're having trouble connecting to our content service. This could be due to:
+              We're having trouble connecting to our content service. You're seeing cached or fallback content.
             </p>
-            <ul className="text-left text-sm text-gray-600 mb-6 space-y-2">
-              <li>• Network connectivity issues</li>
-              <li>• Temporary service outage</li>
-              <li>• API configuration problems</li>
-            </ul>
             <Button 
               onClick={handleRetry} 
               className="mt-4 flex items-center gap-2"
@@ -88,25 +69,19 @@ export function BlogSection() {
             {latestPosts.map((post) => (
               <article key={post._id} className="group">
                 <Link to={`/blog/${post.slug.current}`} className="block">
-                  <div className="aspect-[16/9] w-full overflow-hidden rounded-lg">
-                    {post.mainImage ? (
-                      <img
-                        src={urlFor(post.mainImage).width(800).height(450).url()}
-                        alt={post.title}
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                        onError={(e) => {
-                          console.log('Image failed to load, using fallback');
-                          const target = e.target as HTMLImageElement;
-                          target.src = FALLBACK_IMAGE;
-                        }}
-                      />
-                    ) : (
-                      <img
-                        src={FALLBACK_IMAGE}
-                        alt={post.title}
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                      />
-                    )}
+                  <div className="aspect-[16/9] w-full overflow-hidden rounded-lg bg-gray-100">
+                    <img
+                      src={post.mainImage 
+                        ? urlFor(post.mainImage).width(800).height(450).url() 
+                        : FALLBACK_IMAGE}
+                      alt={post.title}
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        console.log('Image failed to load, using fallback');
+                        const target = e.target as HTMLImageElement;
+                        target.src = FALLBACK_IMAGE;
+                      }}
+                    />
                   </div>
                   <div className="mt-4">
                     <time dateTime={post.publishedAt} className="text-sm text-gray-500">
@@ -127,19 +102,8 @@ export function BlogSection() {
           <div className="mx-auto mt-16 max-w-lg text-center">
             <h3 className="text-lg font-semibold text-gray-800">No articles available</h3>
             <p className="mt-4 text-gray-600">
-              Please ensure your Sanity project is properly configured and contains blog posts.
+              Please check back later for new content.
             </p>
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-left">
-              <p className="font-medium mb-2">Sanity Configuration:</p>
-              <p>Project ID: 42h9veeb</p>
-              <p>Dataset: production</p>
-              <p className="mt-2">Check that:</p>
-              <ul className="list-disc pl-5 mt-1 space-y-1">
-                <li>Posts exist in your Sanity project</li>
-                <li>Posts have the '_type' set to "post"</li>
-                <li>CORS settings allow access from this domain</li>
-              </ul>
-            </div>
             <Button onClick={handleRetry} className="mt-6 flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
               Refresh

@@ -8,6 +8,8 @@ import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { useBlogPosts } from "@/hooks/use-blog-posts";
 import { urlFor } from "@/lib/sanity";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { RefreshCw } from "lucide-react";
 
 const POSTS_PER_PAGE = 9;
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&h=450";
@@ -16,17 +18,7 @@ export default function Blog() {
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = Number(searchParams.get("page")) || 1;
-  const { data: allPosts, isLoading, error } = useBlogPosts();
-
-  // Log any errors for debugging
-  if (error) {
-    console.error("Error in blog listing query:", error);
-    toast({
-      title: "Error loading blog posts",
-      description: "Unable to load blog posts. Please try again later.",
-      variant: "destructive",
-    });
-  }
+  const { data: allPosts, isLoading, error, refetch } = useBlogPosts();
 
   // Calculate pagination
   const totalPosts = allPosts?.length || 0;
@@ -37,6 +29,15 @@ export default function Blog() {
   const handlePageChange = (page: number) => {
     setSearchParams({ page: page.toString() });
     window.scrollTo(0, 0);
+  };
+
+  // Handle manual retry
+  const handleRetry = () => {
+    toast({
+      title: "Retrying connection",
+      description: "Attempting to reconnect to the blog service...",
+    });
+    refetch();
   };
 
   // Metadata for the blog listing page
@@ -65,6 +66,25 @@ export default function Blog() {
             </p>
           </div>
 
+          {error && (
+            <div className="mt-8">
+              <Alert className="bg-red-50 border-red-200">
+                <AlertTitle className="text-red-800">Connection Issue</AlertTitle>
+                <AlertDescription className="text-red-600">
+                  We're having trouble connecting to our content service. You're seeing cached or fallback content.
+                </AlertDescription>
+                <Button 
+                  onClick={handleRetry} 
+                  className="mt-4 bg-red-100 text-red-800 hover:bg-red-200 flex items-center gap-2"
+                  variant="outline"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </Alert>
+            </div>
+          )}
+
           {isLoading ? (
             <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {[...Array(9)].map((_, i) => (
@@ -81,24 +101,19 @@ export default function Blog() {
                 {posts.map((post) => (
                   <article key={post._id} className="group">
                     <Link to={`/blog/${post.slug.current}`} className="block">
-                      <div className="aspect-[16/9] w-full overflow-hidden rounded-lg">
-                        {post.mainImage ? (
-                          <img
-                            src={urlFor(post.mainImage).width(800).height(450).url()}
-                            alt={post.title}
-                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = FALLBACK_IMAGE;
-                            }}
-                          />
-                        ) : (
-                          <img
-                            src={FALLBACK_IMAGE}
-                            alt={post.title}
-                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                          />
-                        )}
+                      <div className="aspect-[16/9] w-full overflow-hidden rounded-lg bg-gray-100">
+                        <img
+                          src={post.mainImage 
+                            ? urlFor(post.mainImage).width(800).height(450).url() 
+                            : FALLBACK_IMAGE}
+                          alt={post.title}
+                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                          onError={(e) => {
+                            console.log('Image failed to load, using fallback');
+                            const target = e.target as HTMLImageElement;
+                            target.src = FALLBACK_IMAGE;
+                          }}
+                        />
                       </div>
                       <div className="mt-4">
                         <time dateTime={post.publishedAt} className="text-sm text-gray-500">
@@ -107,6 +122,9 @@ export default function Blog() {
                         <h3 className="mt-2 text-lg font-semibold leading-6 text-gray-900 group-hover:text-[#393CA0]">
                           {post.title}
                         </h3>
+                        {post.excerpt && (
+                          <p className="mt-2 text-sm text-gray-600 line-clamp-2">{post.excerpt}</p>
+                        )}
                       </div>
                     </Link>
                   </article>
@@ -149,6 +167,13 @@ export default function Blog() {
             <div className="text-center py-12">
               <h3 className="text-xl text-gray-600">No blog posts found</h3>
               <p className="mt-2 text-gray-500">Check back later for new content</p>
+              <Button 
+                onClick={handleRetry} 
+                className="mt-6 flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh Content
+              </Button>
             </div>
           )}
         </div>
