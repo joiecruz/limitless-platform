@@ -44,7 +44,22 @@ const handler = async (req: Request): Promise<Response> => {
         emailRequest.html = generatePasswordResetEmail(fixedLink, emailRequest.to[0]);
         console.log("Generated new email template with reset link");
       } else {
-        console.error("Could not extract reset link from email");
+        // Handle case where the email contains the Supabase template placeholder
+        if (emailRequest.html.includes("{{ .ConfirmationURL }}")) {
+          console.log("Found confirmation URL template placeholder, replacing with dynamic handler");
+          
+          // Create a URL that will look like the dashboard URL but will be intercepted by client-side code
+          const baseUrl = getBaseUrlFromEmail(emailRequest.html);
+          const handleRedirectUrl = baseUrl ? `${baseUrl}/reset-password` : "https://limitlesslab.org/reset-password";
+          
+          console.log("Using replacement reset URL:", handleRedirectUrl);
+          
+          // Replace with our template using the redirect handler URL
+          emailRequest.html = generatePasswordResetEmail(handleRedirectUrl, emailRequest.to[0]);
+          console.log("Generated new email template with redirect handler URL");
+        } else {
+          console.error("Could not extract reset link from email");
+        }
       }
     }
     
@@ -85,6 +100,26 @@ const handler = async (req: Request): Promise<Response> => {
     });
   }
 };
+
+// Helper function to get base URL from email content
+function getBaseUrlFromEmail(html: string): string | null {
+  // Try to find any domain references in the email
+  const domainRegex = /(https?:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+  const matches = [...html.matchAll(domainRegex)];
+  
+  if (matches.length > 0) {
+    // Extract domain from first match
+    try {
+      const url = new URL(matches[0][1]);
+      return url.origin;
+    } catch (e) {
+      console.error("Error parsing URL:", e);
+    }
+  }
+  
+  // Default to production URL if no domain found
+  return "https://limitlesslab.org";
+}
 
 // Helper function to extract the reset link from the original email
 function extractResetLink(html: string): string | null {
@@ -134,7 +169,8 @@ function ensureCorrectResetLink(link: string): string {
     // Base case: working with a Supabase auth link
     const url = new URL(link);
     
-    // Make sure the redirect_to parameter is set to our reset-password page
+    // Critical change: Make sure we modify the redirect_to parameter to point to the reset-password page, not dashboard
+    
     // Extract the base URL to use for redirection
     let baseUrl = url.origin; // Default to the origin part of the URL
     

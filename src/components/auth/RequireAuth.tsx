@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,9 +11,24 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
-    // Check if we're on the reset-password page with a token in the hash
+    // Refined logic for password reset page detection
     const isPasswordResetPage = location.pathname === '/reset-password';
-    const hasResetToken = window.location.hash.includes('type=recovery') && window.location.hash.includes('access_token');
+    
+    // Check for reset tokens in various formats
+    const hasHashToken = location.hash && (
+      location.hash.includes('type=recovery') || 
+      location.hash.includes('access_token') ||
+      // Also check for JWT that might be the whole hash
+      (location.hash.length > 20 && !location.hash.includes('='))
+    );
+    
+    const hasQueryToken = location.search && (
+      location.search.includes('type=recovery') || 
+      location.search.includes('token=') || 
+      location.search.includes('access_token=')
+    );
+    
+    const hasResetToken = hasHashToken || hasQueryToken;
     
     // If we're on the reset password page with a token, skip auth check completely
     if (isPasswordResetPage && hasResetToken) {
@@ -27,7 +41,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     if (location.pathname === '/verify-email' || 
         location.pathname === '/signup' || 
         location.pathname === '/signin' ||
-        location.pathname === '/reset-password') {
+        (location.pathname === '/reset-password' && !hasResetToken)) {
       console.log("RequireAuth: Skipping auth check for special route:", location.pathname);
       setIsChecking(false);
       return;
@@ -115,19 +129,33 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast, location.pathname]);
+  }, [navigate, toast, location.pathname, location.hash, location.search]);
 
   if (isChecking) {
     return null; // Or a loading spinner
   }
 
-  // Check if we're on the reset-password page with a token in the hash
+  // Check if we're on the reset-password page with a token in various locations
   const isPasswordResetPage = location.pathname === '/reset-password';
-  const hasResetToken = window.location.hash.includes('type=recovery') && window.location.hash.includes('access_token');
+  
+  // Check for reset tokens in various formats
+  const hasHashToken = location.hash && (
+    location.hash.includes('type=recovery') || 
+    location.hash.includes('access_token') ||
+    (location.hash.length > 20 && !location.hash.includes('='))
+  );
+  
+  const hasQueryToken = location.search && (
+    location.search.includes('type=recovery') || 
+    location.search.includes('token=') || 
+    location.search.includes('access_token=')
+  );
+  
+  const hasResetToken = hasHashToken || hasQueryToken;
   
   // Skip auth check for reset-password with token and other non-auth-required pages
   if ((isPasswordResetPage && hasResetToken) ||
-      location.pathname === '/reset-password' ||
+      (isPasswordResetPage && !hasResetToken) ||
       location.pathname === '/verify-email' || 
       location.pathname === '/signin' ||
       location.pathname === '/signup') {

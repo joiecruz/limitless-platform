@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -50,7 +49,7 @@ export default function ResetPassword() {
       
       // Check query parameters if hash parameters don't have what we need
       const type = queryParams.get('type');
-      const token = queryParams.get('access_token');
+      const token = queryParams.get('access_token') || queryParams.get('token'); // Try both access_token and token
       
       if (token && type === 'recovery') {
         console.log('Found valid recovery token in query params');
@@ -110,15 +109,20 @@ export default function ResetPassword() {
     try {
       console.log('Attempting to update password with token...');
       
-      // Try to update the user's password using the token
-      const { error } = await supabase.auth.updateUser(
-        { password: password },
-        { accessToken: accessToken }
-      );
+      // Fix: The TypeScript error by using a conditional approach
+      let result;
+      
+      // First try updateUser with access token
+      if (accessToken) {
+        result = await supabase.auth.updateUser(
+          { password },
+          { session: { access_token: accessToken, refresh_token: '' } }
+        );
+      }
 
-      if (error) {
-        console.error("Password update error:", error);
-        throw error;
+      if (result?.error) {
+        console.error("Password update error:", result.error);
+        throw result.error;
       }
 
       toast({

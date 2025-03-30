@@ -38,7 +38,7 @@ export function ForgotPasswordForm({ onCancel, initialEmail = '' }: ForgotPasswo
       console.log("Redirect URL:", redirectTo);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo
+        redirectTo: redirectTo // This is critical - must point to reset-password page, not dashboard
       });
 
       if (error) throw error;
