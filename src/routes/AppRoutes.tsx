@@ -77,7 +77,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/privacy-policy" element={<Privacy />} />
       <Route path="/terms-of-service" element={<Terms />} />
 
-      {/* Auth routes */}
+      {/* Auth routes - Outside of RequireAuth to prevent redirection loops */}
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/reset-password" element={<ResetPassword />} />

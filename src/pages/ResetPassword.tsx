@@ -18,39 +18,44 @@ export default function ResetPassword() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we have a hash token when the component mounts
-    const hash = window.location.hash;
-    console.log('Reset password page loaded with hash:', hash);
-    
-    if (hash) {
-      const params = new URLSearchParams(hash.substring(1));
-      setHashParams(params);
+    // Immediately check if there's a valid hash when component mounts
+    const checkHash = () => {
+      // Check if we have a hash token
+      const hash = window.location.hash;
+      console.log('Reset password page loaded with hash:', hash);
       
-      const type = params.get('type');
-      const accessToken = params.get('access_token');
-      
-      console.log('Reset password parameters:', { type, accessToken: !!accessToken });
-      
-      if (!accessToken || type !== 'recovery') {
+      if (hash && hash.length > 1) {
+        const params = new URLSearchParams(hash.substring(1));
+        setHashParams(params);
+        
+        const type = params.get('type');
+        const accessToken = params.get('access_token');
+        
+        console.log('Reset password parameters:', { type, accessToken: !!accessToken });
+        
+        if (accessToken && type === 'recovery') {
+          setValidToken(true);
+        } else {
+          toast({
+            title: "Invalid Reset Link",
+            description: "This password reset link is invalid or has expired.",
+            variant: "destructive",
+          });
+          navigate('/signin');
+        }
+      } else {
+        console.log('No hash parameters found');
         toast({
-          title: "Invalid Reset Link",
-          description: "This password reset link is invalid or has expired.",
+          title: "Missing Reset Link Parameters",
+          description: "The password reset link appears to be incomplete.",
           variant: "destructive",
         });
         navigate('/signin');
-        return;
       }
-      
-      setValidToken(true);
-    } else {
-      console.log('No hash parameters found');
-      toast({
-        title: "Missing Reset Link Parameters",
-        description: "The password reset link appears to be incomplete.",
-        variant: "destructive",
-      });
-      navigate('/signin');
-    }
+    };
+
+    // Check hash on mount
+    checkHash();
   }, [navigate, toast]);
 
   const validatePassword = () => {
@@ -82,11 +87,11 @@ export default function ResetPassword() {
       const accessToken = hashParams.get('access_token');
       console.log('Using access token for password reset');
       
-      // Use updateUser to set the new password with the access token directly
-      // Pass the access token as string without wrapping it in an object
+      // Use updateUser to set the new password
+      // Pass the access token directly
       const { error } = await supabase.auth.updateUser(
         { password },
-        { emailRedirectTo: window.location.origin }
+        { accessToken: accessToken || undefined }
       );
 
       if (error) throw error;

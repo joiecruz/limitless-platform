@@ -12,6 +12,17 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
+    // Check if we're on the reset-password page with a token in the hash
+    const isPasswordResetPage = location.pathname === '/reset-password';
+    const hasResetToken = window.location.hash.includes('type=recovery');
+    
+    // If we're on the reset password page with a token, skip auth check completely
+    if (isPasswordResetPage && hasResetToken) {
+      console.log("RequireAuth: On reset password page with token, skipping all auth checks");
+      setIsChecking(false);
+      return;
+    }
+    
     // Skip auth check for certain pages
     if (location.pathname === '/verify-email' || 
         location.pathname === '/signup' || 
@@ -109,8 +120,13 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     return null; // Or a loading spinner
   }
 
-  // Skip auth check for reset-password and other non-auth-required pages
-  if (location.pathname === '/reset-password' ||
+  // Check if we're on the reset-password page with a token in the hash
+  const isPasswordResetPage = location.pathname === '/reset-password';
+  const hasResetToken = window.location.hash.includes('type=recovery');
+  
+  // Skip auth check for reset-password with token and other non-auth-required pages
+  if ((isPasswordResetPage && hasResetToken) ||
+      location.pathname === '/reset-password' ||
       location.pathname === '/verify-email' || 
       location.pathname === '/signup') {
     return <>{children}</>;

@@ -24,6 +24,16 @@ export function useAuthRedirect() {
         const { data: { session } } = await supabase.auth.getSession();
         console.log("useAuthRedirect - Current session:", session);
 
+        // Check if we're on a password reset page with a token
+        const isPasswordResetPage = location.pathname === '/reset-password';
+        const hasResetToken = window.location.hash.includes('type=recovery');
+        
+        // Skip all redirects if on password reset page with token
+        if (isPasswordResetPage && hasResetToken) {
+          console.log("useAuthRedirect - On reset password page with token, skipping redirect");
+          return;
+        }
+
         // Skip auth redirects for specific auth-related pages
         if (location.pathname.includes('/reset-password')) {
           console.log("useAuthRedirect - On reset password page, skipping redirect");
