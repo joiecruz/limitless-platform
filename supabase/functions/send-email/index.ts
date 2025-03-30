@@ -31,7 +31,6 @@ const handler = async (req: Request): Promise<Response> => {
         emailRequest.html.includes("reset your password")) {
       // Replace with our simplified template
       emailRequest.html = generateSimplePasswordResetEmail(
-        emailRequest.to[0],
         extractResetLink(emailRequest.html)
       );
     }
@@ -85,7 +84,7 @@ function extractResetLink(html: string): string {
 }
 
 // Function to generate simple password reset email
-function generateSimplePasswordResetEmail(email: string, resetLink: string): string {
+function generateSimplePasswordResetEmail(resetLink: string): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -117,7 +116,7 @@ function generateSimplePasswordResetEmail(email: string, resetLink: string): str
         .button {
           display: block;
           width: 200px;
-          background-color: #593AE8;
+          background-color: #45429e;
           color: white;
           text-align: center;
           padding: 12px 20px;
