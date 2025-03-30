@@ -30,6 +30,7 @@ export interface SanityBlogPost {
     image: SanityImage;
   };
   meta_description?: string;
+  estimatedReadingTime?: number; // Added this property
 }
 
 // For case studies

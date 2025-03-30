@@ -1,5 +1,6 @@
 
 import { PortableText } from '@portabletext/react';
+import { urlFor } from '@/integrations/sanity/client';
 
 interface BlogContentProps {
   content: any;
@@ -12,7 +13,7 @@ const components = {
       return (
         <div className="my-8">
           <img
-            src={`https://cdn.sanity.io/images/your-project-id/production/${value.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png')}`}
+            src={urlFor(value)}
             alt={value.alt || 'Blog image'}
             className="rounded-lg mx-auto"
           />
