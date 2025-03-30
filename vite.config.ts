@@ -21,6 +21,20 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'dist',
     copyPublicDir: true,
+    rollupOptions: {
+      external: [],
+      output: {
+        manualChunks: {
+          'vendor': [
+            '@supabase/supabase-js',
+            '@supabase/auth-ui-react'
+          ]
+        }
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['@supabase/supabase-js', '@supabase/auth-ui-react']
   },
   define: {
     'process.env.SANITY_API_TOKEN': JSON.stringify(process.env.SANITY_API_TOKEN),
