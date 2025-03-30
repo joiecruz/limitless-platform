@@ -27,7 +27,8 @@ export function useBlogPosts(preview = false) {
   return useQuery({
     queryKey: ['blog-posts', preview],
     queryFn: () => getBlogPosts(preview),
-    retry: 3,
+    retry: 5,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     staleTime: 60 * 1000, // 1 minute
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
@@ -39,7 +40,8 @@ export function useBlogPost(slug: string, preview = false) {
     queryKey: ['blog-post', slug, preview],
     queryFn: () => getBlogPostBySlug(slug, preview),
     enabled: !!slug,
-    retry: 3,
+    retry: 5,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     staleTime: 60 * 1000, // 1 minute
     refetchOnWindowFocus: false,
   });
@@ -49,7 +51,8 @@ export function useBlogTags() {
   return useQuery({
     queryKey: ['blog-tags'],
     queryFn: getAllTags,
-    retry: 3,
+    retry: 5,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });
