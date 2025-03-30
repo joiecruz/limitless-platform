@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 export function BlogSection() {
   const { toast } = useToast();
@@ -17,27 +18,22 @@ export function BlogSection() {
     if (isError && error) {
       console.error('Error loading blog posts in BlogSection:', error);
       toast({
-        title: "Unable to load blog posts",
+        title: "Connection issue with blog service",
         description: "We're experiencing some technical difficulties. Please try again later.",
         variant: "destructive",
       });
     }
   }, [isError, error, toast]);
   
-  // Debug logging
-  useEffect(() => {
-    console.log('BlogSection render state:', { 
-      postsLoaded: posts?.length || 0,
-      isLoading, 
-      isError: !!error 
-    });
-  }, [posts, isLoading, error]);
-  
   // Fallback to empty array if there's an error with Sanity
   const latestPosts = posts?.slice(0, 3) || [];
 
   const handleRetry = () => {
     console.log('Manually retrying blog posts fetch');
+    toast({
+      title: "Retrying connection",
+      description: "Attempting to reconnect to the blog service...",
+    });
     refetch();
   };
 
@@ -63,11 +59,25 @@ export function BlogSection() {
             ))}
           </div>
         ) : isError ? (
-          <div className="mx-auto mt-16 text-center">
-            <p className="text-red-500">We're experiencing some technical difficulties</p>
-            <p className="mt-2 text-gray-600">Please check back later for our latest articles</p>
-            <Button onClick={handleRetry} className="mt-4">
-              Retry
+          <div className="mx-auto mt-16 max-w-md text-center">
+            <div className="flex justify-center mb-4">
+              <AlertCircle className="h-12 w-12 text-red-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-red-600">Connection Error</h3>
+            <p className="mt-2 text-gray-600 mb-6">
+              We're having trouble connecting to our content service. This could be due to:
+            </p>
+            <ul className="text-left text-sm text-gray-600 mb-6 space-y-2">
+              <li>• Network connectivity issues</li>
+              <li>• Temporary service outage</li>
+              <li>• API configuration problems</li>
+            </ul>
+            <Button 
+              onClick={handleRetry} 
+              className="mt-4 flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try Again
             </Button>
           </div>
         ) : latestPosts && latestPosts.length > 0 ? (
@@ -83,13 +93,14 @@ export function BlogSection() {
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                         onError={(e) => {
                           console.log('Image failed to load, using fallback');
-                          // Fallback for image loading errors
                           const target = e.target as HTMLImageElement;
                           target.src = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
                         }}
                       />
                     ) : (
-                      <div className="h-full w-full bg-gray-200" />
+                      <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500">No image available</span>
+                      </div>
                     )}
                   </div>
                   <div className="mt-4">
@@ -108,18 +119,25 @@ export function BlogSection() {
             ))}
           </div>
         ) : (
-          <div className="mx-auto mt-16 text-center">
-            <p className="text-gray-600">No articles available at the moment</p>
-            <p className="mt-4 text-sm text-gray-500">
-              Please check Sanity Studio to ensure blog posts exist with the correct schema.
+          <div className="mx-auto mt-16 max-w-lg text-center">
+            <h3 className="text-lg font-semibold text-gray-800">No articles available</h3>
+            <p className="mt-4 text-gray-600">
+              Please ensure your Sanity project is properly configured and contains blog posts.
             </p>
-            <div className="mt-2 text-sm text-gray-500">
-              <p>Sanity Configuration:</p>
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-left">
+              <p className="font-medium mb-2">Sanity Configuration:</p>
               <p>Project ID: 42h9veeb</p>
               <p>Dataset: production</p>
+              <p className="mt-2">Check that:</p>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>Posts exist in your Sanity project</li>
+                <li>Posts have the '_type' set to "post"</li>
+                <li>CORS settings allow access from this domain</li>
+              </ul>
             </div>
-            <Button onClick={handleRetry} className="mt-4">
-              Retry
+            <Button onClick={handleRetry} className="mt-6 flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Refresh
             </Button>
           </div>
         )}
