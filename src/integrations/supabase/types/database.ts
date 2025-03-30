@@ -1,414 +1,388 @@
-import { Json } from '../types';
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
-      channels: {
+      articles: {
         Row: {
-          created_at: string;
-          description: string | null;
-          id: string;
-          is_public: boolean;
-          name: string;
-          updated_at: string;
-          workspace_id: string | null;
-        };
-        Insert: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_public?: boolean;
-          name: string;
-          updated_at?: string;
-          workspace_id?: string | null;
-        };
-        Update: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_public?: boolean;
-          name?: string;
-          updated_at?: string;
-          workspace_id?: string | null;
-        };
-      };
-      courses: {
-        Row: {
-          created_at: string
-          description: string | null
-          enrollee_count: number | null
           id: string
-          image_url: string | null
-          lesson_count: number | null
           title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          enrollee_count?: number | null
-          id?: string
-          image_url?: string | null
-          lesson_count?: number | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          enrollee_count?: number | null
-          id?: string
-          image_url?: string | null
-          lesson_count?: number | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      enrollments: {
-        Row: {
-          course_id: string
-          created_at: string
-          id: string
-          progress: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          course_id: string
-          created_at?: string
-          id?: string
-          progress?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          course_id?: string
-          created_at?: string
-          id?: string
-          progress?: number | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "enrollments_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "enrollments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      lessons: {
-        Row: {
-          body_content: string | null
-          course_id: string
-          created_at: string | null
-          description: string | null
-          duration: number | null
-          id: string
-          order: number
-          release_date: string | null
-          title: string
-          updated_at: string | null
-          video_url: string | null
-        }
-        Insert: {
-          body_content?: string | null
-          course_id: string
-          created_at?: string | null
-          description?: string | null
-          duration?: number | null
-          id?: string
-          order: number
-          release_date?: string | null
-          title: string
-          updated_at?: string | null
-          video_url?: string | null
-        }
-        Update: {
-          body_content?: string | null
-          course_id?: string
-          created_at?: string | null
-          description?: string | null
-          duration?: number | null
-          id?: string
-          order?: number
-          release_date?: string | null
-          title?: string
-          updated_at?: string | null
-          video_url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lessons_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      message_reactions: {
-        Row: {
-          created_at: string
-          emoji: string
-          id: string
-          message_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          emoji: string
-          id?: string
-          message_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          emoji?: string
-          id?: string
-          message_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "message_reactions_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          channel_id: string
+          slug: string
           content: string
+          excerpt?: string | null
+          meta_description?: string | null
+          cover_image?: string | null
+          published?: boolean
           created_at: string
-          id: string
-          image_url: string | null
-          parent_id: string | null
           updated_at: string
-          user_id: string
+          tags?: string[] | null
+          categories?: string[] | null
+          created_by?: string | null
         }
         Insert: {
-          channel_id: string
-          content: string
-          created_at?: string
           id?: string
-          image_url?: string | null
-          parent_id?: string | null
+          title: string
+          slug: string
+          content: string
+          excerpt?: string | null
+          meta_description?: string | null
+          cover_image?: string | null
+          published?: boolean
+          created_at?: string
           updated_at?: string
-          user_id: string
+          tags?: string[] | null
+          categories?: string[] | null
+          created_by?: string | null
         }
         Update: {
-          channel_id?: string
+          id?: string
+          title?: string
+          slug?: string
           content?: string
+          excerpt?: string | null
+          meta_description?: string | null
+          cover_image?: string | null
+          published?: boolean
           created_at?: string
-          id?: string
-          image_url?: string | null
-          parent_id?: string | null
           updated_at?: string
-          user_id?: string
+          tags?: string[] | null
+          categories?: string[] | null
+          created_by?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "messages_channel_id_fkey"
-            columns: ["channel_id"]
-            isOneToOne: false
-            referencedRelation: "channels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
-      profiles: {
+      case_studies: {
         Row: {
-          avatar_url: string | null
-          company_size: string | null
-          created_at: string
-          first_name: string | null
-          goals: string | null
-          id: string
-          is_admin: boolean | null
-          last_name: string | null
-          referral_source: string | null
-          role: string | null
-          updated_at: string
-          username: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          company_size?: string | null
-          created_at?: string
-          first_name?: string | null
-          goals?: string | null
-          id: string
-          is_admin?: boolean | null
-          last_name?: string | null
-          referral_source?: string | null
-          role?: string | null
-          updated_at?: string
-          username?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          company_size?: string | null
-          created_at?: string
-          first_name?: string | null
-          goals?: string | null
-          id?: string
-          is_admin?: boolean | null
-          last_name?: string | null
-          referral_source?: string | null
-          role?: string | null
-          updated_at?: string
-          username?: string | null
-        }
-        Relationships: []
-      }
-      workspace_domains: {
-        Row: {
-          created_at: string
-          domain: string
-          id: string
-          updated_at: string
-          verified: boolean | null
-          workspace_id: string
-        }
-        Insert: {
-          created_at?: string
-          domain: string
-          id?: string
-          updated_at?: string
-          verified?: boolean | null
-          workspace_id: string
-        }
-        Update: {
-          created_at?: string
-          domain?: string
-          id?: string
-          updated_at?: string
-          verified?: boolean | null
-          workspace_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "workspace_domains_workspace_id_fkey"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      workspace_members: {
-        Row: {
-          created_at: string
-          last_active: string
-          role: string
-          user_id: string
-          workspace_id: string
-        }
-        Insert: {
-          created_at?: string
-          last_active?: string
-          role: string
-          user_id: string
-          workspace_id: string
-        }
-        Update: {
-          created_at?: string
-          last_active?: string
-          role?: string
-          user_id?: string
-          workspace_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "workspace_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workspace_members_workspace_id_fkey"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      workspaces: {
-        Row: {
-          created_at: string
           id: string
           name: string
           slug: string
+          client?: string | null
+          description?: string | null
+          services?: string[] | null
+          sdgs?: string[] | null
+          problem_opportunity?: string | null
+          approach?: string | null
+          impact?: string | null
+          quote_from_customer?: string | null
+          cover_photo?: string | null
+          additional_photo1?: string | null
+          additional_photo2?: string | null
+          created_at: string
           updated_at: string
         }
         Insert: {
-          created_at?: string
           id?: string
           name: string
           slug: string
+          client?: string | null
+          description?: string | null
+          services?: string[] | null
+          sdgs?: string[] | null
+          problem_opportunity?: string | null
+          approach?: string | null
+          impact?: string | null
+          quote_from_customer?: string | null
+          cover_photo?: string | null
+          additional_photo1?: string | null
+          additional_photo2?: string | null
+          created_at?: string
           updated_at?: string
         }
         Update: {
-          created_at?: string
           id?: string
           name?: string
           slug?: string
+          client?: string | null
+          description?: string | null
+          services?: string[] | null
+          sdgs?: string[] | null
+          problem_opportunity?: string | null
+          approach?: string | null
+          impact?: string | null
+          quote_from_customer?: string | null
+          cover_photo?: string | null
+          additional_photo1?: string | null
+          additional_photo2?: string | null
+          created_at?: string
           updated_at?: string
         }
-        Relationships: []
       }
-    };
+      channels: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          is_public: boolean
+          workspace_id: string | null
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          is_public?: boolean
+          workspace_id?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          is_public?: boolean
+          workspace_id?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+      courses: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          image_url: string | null
+          locked: boolean
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          image_url?: string | null
+          locked?: boolean
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          image_url?: string | null
+          locked?: boolean
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+      enrollments: {
+        Row: {
+          id: string
+          user_id: string
+          course_id: string
+          completed_lessons: string[]
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          course_id: string
+          completed_lessons?: string[]
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          course_id?: string
+          completed_lessons?: string[]
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+      lessons: {
+        Row: {
+          id: string
+          title: string
+          content: string | null
+          course_id: string
+          order: number
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          content?: string | null
+          course_id: string
+          order?: number
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          content?: string | null
+          course_id?: string
+          order?: number
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+      message_reactions: {
+        Row: {
+          id: string
+          message_id: string
+          user_id: string
+          emoji: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          user_id: string
+          emoji: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          user_id?: string
+          emoji?: string
+          created_at?: string
+        }
+      }
+      messages: {
+        Row: {
+          id: string
+          content: string | null
+          user_id: string
+          channel_id: string
+          created_at: string
+          updated_at: string | null
+          image_url: string | null
+        }
+        Insert: {
+          id?: string
+          content?: string | null
+          user_id: string
+          channel_id: string
+          created_at?: string
+          updated_at?: string | null
+          image_url?: string | null
+        }
+        Update: {
+          id?: string
+          content?: string | null
+          user_id?: string
+          channel_id?: string
+          created_at?: string
+          updated_at?: string | null
+          image_url?: string | null
+        }
+      }
+      profiles: {
+        Row: {
+          id: string
+          email: string | null
+          first_name: string | null
+          last_name: string | null
+          username: string | null
+          avatar_url: string | null
+          bio: string | null
+          is_superadmin: boolean
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          email?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          username?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          is_superadmin?: boolean
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          email?: string | null
+          first_name?: string | null
+          last_name?: string | null
+          username?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          is_superadmin?: boolean
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+      workspace_members: {
+        Row: {
+          id: string
+          workspace_id: string
+          user_id: string
+          role: string
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          user_id: string
+          role?: string
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          user_id?: string
+          role?: string
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+      workspaces: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+    }
     Functions: {
       create_workspace_with_owner: {
         Args: {
-          workspace_name: string;
-          workspace_slug: string;
-          owner_id: string;
-        };
-        Returns: Json;
-      };
+          workspace_name: string
+          workspace_slug: string
+          owner_id: string
+        }
+        Returns: Json
+      }
       is_workspace_admin: {
         Args: {
-          workspace_id: string;
-        };
-        Returns: boolean;
-      };
-    };
+          workspace_id: string
+        }
+        Returns: boolean
+      }
+    }
     Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
-};
+      user_role: "admin" | "member"
+    }
+  }
+}
