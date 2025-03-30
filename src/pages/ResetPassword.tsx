@@ -82,10 +82,10 @@ export default function ResetPassword() {
       const accessToken = hashParams.get('access_token');
       console.log('Using access token for password reset');
       
-      // Use updateUser to set the new password
+      // Use updateUser to set the new password with the access token directly
       const { error } = await supabase.auth.updateUser(
         { password },
-        { session: { access_token: accessToken || '' } }
+        { accessToken }
       );
 
       if (error) throw error;
