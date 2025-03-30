@@ -10,7 +10,6 @@ interface BlogFormProps {
     slug: string;
     content: string;
     excerpt?: string;
-    meta_description?: string;
     published?: boolean;
     categories?: string[];
     tags?: string[];
@@ -40,7 +39,6 @@ export function BlogForm({
     slug: initialData?.slug || "",
     content: initialData?.content || "",
     excerpt: initialData?.excerpt || "",
-    meta_description: initialData?.meta_description || "",
     published: initialData?.published || false,
     categories: initialData?.categories || [],
     tags: initialData?.tags || [],

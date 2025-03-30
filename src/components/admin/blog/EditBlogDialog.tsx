@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +15,6 @@ interface BlogFormData {
   slug: string;
   content: string;
   excerpt: string;
-  meta_description: string;
   cover_image: string;
 }
 
@@ -53,7 +53,6 @@ export function EditBlogDialog({ blogId, isOpen, onClose, onSuccess }: EditBlogD
         slug: blog.slug,
         content: blog.content,
         excerpt: blog.excerpt || "",
-        meta_description: blog.meta_description || "",
         cover_image: blog.cover_image || "",
       });
     }

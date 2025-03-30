@@ -41,7 +41,7 @@ exports.handler = async function(event, context) {
                           `<meta property="og:title" content="${post.title} | Limitless Lab"`);
         
         html = html.replace(/<meta property="og:description" content="[^"]*"/, 
-                          `<meta property="og:description" content="${post.excerpt || post.meta_description || post.title.substring(0, 160)}"`);
+                          `<meta property="og:description" content="${post.excerpt || post.title.substring(0, 160)}"`);
         
         html = html.replace(/<meta property="og:image" content="[^"]*"/, 
                           `<meta property="og:image" content="${post.cover_image || 'https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png'}"`);
@@ -74,7 +74,7 @@ exports.handler = async function(event, context) {
                           `<title>${post.title} | Limitless Lab</title>`);
                           
         html = html.replace(/<meta name="description" content="[^"]*"/, 
-                          `<meta name="description" content="${post.excerpt || post.meta_description || post.title.substring(0, 160)}"`);
+                          `<meta name="description" content="${post.excerpt || post.title.substring(0, 160)}"`);
         
         // Return the modified HTML
         return {

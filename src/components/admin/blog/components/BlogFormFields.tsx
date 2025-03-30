@@ -1,3 +1,4 @@
+
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,7 +10,6 @@ interface BlogFormData {
   slug: string;
   content: string;
   excerpt: string;
-  meta_description: string;
   cover_image: string;
 }
 
@@ -82,20 +82,6 @@ export function BlogFormFields({ form, blogId }: BlogFormFieldsProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Excerpt</FormLabel>
-            <FormControl>
-              <Textarea {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="meta_description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Meta Description</FormLabel>
             <FormControl>
               <Textarea {...field} />
             </FormControl>

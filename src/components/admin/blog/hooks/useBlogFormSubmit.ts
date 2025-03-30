@@ -8,7 +8,6 @@ interface BlogFormData {
   slug: string;
   content: string;
   excerpt: string;
-  meta_description: string;
   published: boolean;
   categories?: string[];
   tags?: string[];

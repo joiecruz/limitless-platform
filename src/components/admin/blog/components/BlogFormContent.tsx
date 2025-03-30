@@ -3,7 +3,6 @@ import { RichTextEditor } from "../RichTextEditor";
 import { BlogTitleInput } from "./BlogTitleInput";
 import { BlogSlugInput } from "./BlogSlugInput";
 import { BlogExcerptInput } from "./BlogExcerptInput";
-import { BlogMetaDescription } from "./BlogMetaDescription";
 import { BlogCoverImageInput } from "./BlogCoverImageInput";
 import { BlogCategorySelect } from "./BlogCategorySelect";
 import { BlogTagsInput } from "./BlogTagsInput";
@@ -75,12 +74,6 @@ export function BlogFormContent({
         value={formData.excerpt}
         onChange={(value) => updateFormData("excerpt", value)}
         error={errors.excerpt}
-      />
-
-      <BlogMetaDescription
-        value={formData.meta_description}
-        onChange={(value) => updateFormData("meta_description", value)}
-        error={errors.meta_description}
       />
 
       <BlogCategorySelect

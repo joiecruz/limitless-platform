@@ -109,7 +109,7 @@ export default function BlogPost() {
 
   // Metadata for the current post
   const metaTitle = `${post.title} | Limitless Lab Blog`;
-  const metaDescription = (post.excerpt || post.meta_description || `${post.title} - Limitless Lab Blog`).substring(0, 160);
+  const metaDescription = (post.excerpt || `${post.title} - Limitless Lab Blog`).substring(0, 160);
   const ogImage = post.cover_image || defaultImage;
 
   return (

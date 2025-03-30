@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Image } from "lucide-react";
 import { PageTitleInput } from "./components/PageTitleInput";
 import { PageSlugInput } from "./components/PageSlugInput";
-import { PageMetaDescription } from "./components/PageMetaDescription";
 import { PagePublishToggle } from "./components/PagePublishToggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,6 @@ interface PageEditorProps {
     title: string;
     slug: string;
     content: any;
-    meta_description?: string;
     published?: boolean;
     meta_image?: string;
   };
@@ -34,7 +32,6 @@ export function PageEditor({ pageId, initialData, onSuccess }: PageEditorProps) 
     title: initialData?.title || "",
     slug: initialData?.slug || "",
     content: initialData?.content || { html: "" },
-    meta_description: initialData?.meta_description || "",
     published: initialData?.published || false,
     meta_image: initialData?.meta_image || "",
   });
@@ -98,11 +95,6 @@ export function PageEditor({ pageId, initialData, onSuccess }: PageEditorProps) 
         <PageSlugInput
           value={formData.slug}
           onChange={(slug) => setFormData(prev => ({ ...prev, slug }))}
-        />
-
-        <PageMetaDescription
-          value={formData.meta_description}
-          onChange={(meta_description) => setFormData(prev => ({ ...prev, meta_description }))}
         />
 
         <div>
