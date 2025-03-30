@@ -18,7 +18,7 @@ export const previewClient = createClient({
   apiVersion: '2024-03-30',
   useCdn: false,
   perspective: 'previewDrafts',
-  token: import.meta.env.VITE_SANITY_API_TOKEN,
+  token: 'skiDdn7nX4ZdoPx4Sl0kg4uAvAGSgpb9mdFKS2KwfrvffzzYT0eULAPhOJ9oXVUzGzPYIwP0bsA1SW0ZmIjKgqjiGCVV7s8iii1gLTZncg1zu7izaXlfV797uymPZTsqsNdsA6WUtHDv4wVf0Cj0U04qIxgO01DXnnpuSUfoQxCJuReVUb6y',
 });
 
 // Helper to get the right client
@@ -34,7 +34,7 @@ export function urlFor(source: any) {
 // Helper function to fetch blog posts with better error handling
 export async function getBlogPosts(preview = false) {
   console.log('Fetching blog posts with preview:', preview);
-  console.log('API Token available:', !!import.meta.env.VITE_SANITY_API_TOKEN);
+  console.log('Using direct token configuration instead of env vars');
   const currentClient = getClient(preview);
   
   try {
