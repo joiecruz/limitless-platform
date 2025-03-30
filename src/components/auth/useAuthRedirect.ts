@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +25,7 @@ export function useAuthRedirect() {
 
         // Check if we're on a password reset page with a token
         const isPasswordResetPage = location.pathname === '/reset-password';
-        const hasResetToken = window.location.hash.includes('type=recovery');
+        const hasResetToken = window.location.hash.includes('type=recovery') && window.location.hash.includes('access_token');
         
         // Skip all redirects if on password reset page with token
         if (isPasswordResetPage && hasResetToken) {
@@ -35,8 +34,11 @@ export function useAuthRedirect() {
         }
 
         // Skip auth redirects for specific auth-related pages
-        if (location.pathname.includes('/reset-password')) {
-          console.log("useAuthRedirect - On reset password page, skipping redirect");
+        if (location.pathname.includes('/reset-password') || 
+            location.pathname.includes('/signin') || 
+            location.pathname.includes('/signup') || 
+            location.pathname.includes('/verify-email')) {
+          console.log("useAuthRedirect - On auth page, skipping redirect");
           return;
         }
 
