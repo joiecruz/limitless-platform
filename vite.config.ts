@@ -45,6 +45,8 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     // Fix for environment variables to be properly exposed
-    'import.meta.env.VITE_SANITY_API_TOKEN': JSON.stringify(process.env.VITE_SANITY_API_TOKEN || process.env.SANITY_API_TOKEN),
+    'process.env.NODE_ENV': JSON.stringify(mode),
+    'process.env.VITE_SANITY_API_TOKEN': JSON.stringify(process.env.VITE_SANITY_API_TOKEN),
+    'process.env.SANITY_API_TOKEN': JSON.stringify(process.env.SANITY_API_TOKEN),
   },
 }))

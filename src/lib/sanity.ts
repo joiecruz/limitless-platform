@@ -7,7 +7,7 @@ export const client = createClient({
   projectId: '42h9veeb',
   dataset: 'production',
   apiVersion: '2024-03-30', 
-  useCdn: process.env.NODE_ENV === 'production',
+  useCdn: import.meta.env.MODE === 'production',
   perspective: 'published',
 });
 
@@ -18,7 +18,7 @@ export const previewClient = createClient({
   apiVersion: '2024-03-30',
   useCdn: false,
   perspective: 'previewDrafts',
-  token: import.meta.env.VITE_SANITY_API_TOKEN || process.env.SANITY_API_TOKEN,
+  token: import.meta.env.VITE_SANITY_API_TOKEN,
 });
 
 // Helper to get the right client
