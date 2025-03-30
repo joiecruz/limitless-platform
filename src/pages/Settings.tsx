@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
@@ -20,8 +21,8 @@ export default function Settings() {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
+    <div className="py-6">
+      <div className="mb-6 px-4 md:px-0">
         <h1 className="text-2xl font-bold tracking-tight">Workspace Settings</h1>
         <p className="text-muted-foreground">
           Manage your workspace settings and preferences.
@@ -29,26 +30,26 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList>
+        <TabsList className="px-4 md:px-0 w-full sm:w-auto flex overflow-x-auto">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
         
         <TabsContent value="general">
-          <Card className="p-6">
+          <Card className="p-4 md:p-6">
             <GeneralSettings />
           </Card>
         </TabsContent>
         
         <TabsContent value="members">
-          <Card className="p-6">
+          <Card className="p-4 md:p-6">
             <MembersSettings />
           </Card>
         </TabsContent>
         
         <TabsContent value="billing">
-          <Card className="p-6">
+          <Card className="p-4 md:p-6">
             <BillingSettings />
           </Card>
         </TabsContent>

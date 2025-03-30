@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileForm } from "@/components/profile/ProfileForm";
@@ -80,7 +81,7 @@ export default function AccountSettings() {
 
   if (profileLoading) {
     return (
-      <div className="max-w-xl mx-auto py-8 px-4">
+      <div className="py-8 px-4">
         <h1 className="text-2xl font-bold mb-8">Account Settings</h1>
         <div className="bg-white p-6 rounded-lg border">
           <div className="animate-pulse space-y-4">
@@ -94,7 +95,7 @@ export default function AccountSettings() {
   }
 
   return (
-    <div className="max-w-xl mx-auto py-8 px-4">
+    <div className="py-8 px-4">
       <h1 className="text-2xl font-bold mb-8">Account Settings</h1>
       <div className="bg-white p-6 rounded-lg border">
         <ProfileForm

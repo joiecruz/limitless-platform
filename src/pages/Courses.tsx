@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -125,7 +126,7 @@ const Courses = () => {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {courses?.map((course) => {
           const enrollment = enrollments?.find((e) => e.course_id === course.id);
           
@@ -142,6 +143,6 @@ const Courses = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Courses;
