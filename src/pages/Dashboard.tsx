@@ -55,9 +55,18 @@ export default function Dashboard() {
                             !profile.referral_source;
       
       // Show onboarding if needed or if coming from email confirmation
-      setShowOnboarding(needsOnboarding || location.state?.showOnboarding);
+      const shouldShowOnboarding = needsOnboarding || location.state?.showOnboarding;
+      setShowOnboarding(shouldShowOnboarding);
+      
+      // If profile is incomplete and needs onboarding, set isIncompleteProfile in state
+      if (needsOnboarding && !isIncompleteProfile) {
+        navigate(location.pathname, { 
+          state: { ...location.state, isIncompleteProfile: true },
+          replace: true 
+        });
+      }
     }
-  }, [profile, profileLoading, location.state]);
+  }, [profile, profileLoading, location.state, navigate, location.pathname, isIncompleteProfile]);
 
   const quickLinks = [
     {

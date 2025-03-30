@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -128,7 +129,7 @@ const Lesson = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         <LessonSidebar
           lessons={lessons}
           currentLessonId={lessonId}
@@ -138,10 +139,10 @@ const Lesson = () => {
         />
 
         <div className={`flex-1 overflow-auto transition-all duration-300 ${
-          isOpen ? 'ml-80' : 'ml-0'
+          isOpen ? 'md:ml-80' : 'ml-0'
         }`}>
           <div className="w-full">
-            <div className="w-full max-w-4xl mx-auto py-8">
+            <div className="w-full max-w-4xl mx-auto py-4 md:py-8 px-4 md:px-0">
               <LessonHeader
                 title={lesson.title}
                 description={lesson.description}
@@ -154,7 +155,7 @@ const Lesson = () => {
                 bodyContent={lesson.body_content}
               />
 
-              <div className="px-6">
+              <div className="px-2 md:px-6">
                 <LessonNavigation
                   previousLesson={previousLesson}
                   nextLesson={nextLesson}
@@ -168,6 +169,6 @@ const Lesson = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Lesson;

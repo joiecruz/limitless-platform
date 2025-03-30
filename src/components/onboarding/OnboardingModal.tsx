@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -84,12 +85,20 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
     return null;
   }
 
+  // When modal attempts to close, only allow it if it's not mandatory
+  const handleOpenChange = (value: boolean) => {
+    // Prevent closing the modal if it's for an incomplete profile or during initial onboarding
+    if (!value && (isIncompleteProfile || (open && currentStep < TOTAL_STEPS))) {
+      return;
+    }
+    
+    if (onOpenChange) {
+      onOpenChange(value);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(value) => {
-      // Prevent closing the modal if it's for an incomplete profile
-      if (!value && isIncompleteProfile) return;
-      if (onOpenChange) onOpenChange(value);
-    }}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px] h-[500px] p-0 [&>button]:hidden">
         <div className="p-6 h-full flex flex-col">
           <DialogHeader>
