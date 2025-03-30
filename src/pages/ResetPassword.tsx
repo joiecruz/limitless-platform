@@ -83,9 +83,10 @@ export default function ResetPassword() {
       console.log('Using access token for password reset');
       
       // Use updateUser to set the new password with the access token directly
+      // Pass the access token as string without wrapping it in an object
       const { error } = await supabase.auth.updateUser(
         { password },
-        { accessToken }
+        { emailRedirectTo: window.location.origin }
       );
 
       if (error) throw error;

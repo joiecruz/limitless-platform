@@ -142,10 +142,10 @@ function generatePasswordResetEmail(resetLink: string, email: string): string {
       margin-bottom: 20px;
     }
     .button {
-      display: block;
+      display: inline-block;
       width: 200px;
       background-color: #45429e;
-      color: white !important;
+      color: white;
       text-align: center;
       padding: 12px 20px;
       text-decoration: none;
@@ -176,7 +176,9 @@ function generatePasswordResetEmail(resetLink: string, email: string): string {
   
   <p>We received a request to reset your password for your Limitless Lab account. Click the button below to set a new password:</p>
   
-  <a href="${resetLink}" style="display: block; width: 200px; background-color: #45429e; color: white !important; text-align: center; padding: 12px 20px; text-decoration: none; border-radius: 4px; margin: 30px auto; font-weight: bold;">Reset Password</a>
+  <div style="text-align: center;">
+    <a href="${resetLink}" style="display: inline-block; width: 200px; background-color: #45429e; color: white; text-align: center; padding: 12px 20px; text-decoration: none; border-radius: 4px; margin: 30px auto; font-weight: bold;">Reset Password</a>
+  </div>
   
   <p>If you didn't request a password reset, you can safely ignore this email.</p>
   
