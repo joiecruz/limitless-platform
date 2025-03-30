@@ -1,5 +1,6 @@
 
 import { Helmet } from 'react-helmet-async';
+import { SANITY_PROJECT_ID, SANITY_DATASET } from '@/lib/sanity';
 
 export interface OpenGraphTagsProps {
   title: string;
@@ -12,6 +13,12 @@ export interface OpenGraphTagsProps {
   author?: string;
   tags?: string[];
   section?: string;
+  // Sanity-specific props
+  sanityImage?: {
+    asset: {
+      _ref: string;
+    };
+  };
 }
 
 export function OpenGraphTags({
@@ -24,10 +31,20 @@ export function OpenGraphTags({
   modifiedTime,
   author,
   tags,
-  section
+  section,
+  sanityImage
 }: OpenGraphTagsProps) {
   const baseUrl = 'https://limitlesslab.org'; // Updated to your actual domain
   const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : baseUrl);
+  
+  // Process Sanity image if provided
+  let imageUrl = image;
+  if (sanityImage?.asset?._ref) {
+    const imageId = sanityImage.asset._ref;
+    const [id, dimensions, format] = imageId.split('-');
+    // Generate a Sanity CDN URL with proper dimensions for social sharing (1200x630 is ideal for most platforms)
+    imageUrl = `https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${id}-${dimensions}.${format}?w=1200&h=630&fit=crop&crop=center`;
+  }
 
   return (
     <Helmet>
@@ -38,7 +55,7 @@ export function OpenGraphTags({
       <meta property="og:type" content={type} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={image} />
+      <meta property="og:image" content={imageUrl} />
       <meta property="og:url" content={currentUrl} />
       <meta property="og:site_name" content="Limitless Lab" />
       <meta property="og:image:width" content="1200" />
@@ -48,7 +65,7 @@ export function OpenGraphTags({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={image} />
+      <meta name="twitter:image" content={imageUrl} />
 
       {/* Article specific tags */}
       {type === "article" && (
@@ -73,6 +90,9 @@ export function OpenGraphTags({
 
       {/* Canonical URL */}
       <link rel="canonical" href={currentUrl} />
+      
+      {/* Preload the OpenGraph image for faster rendering */}
+      <link rel="preload" as="image" href={imageUrl} />
     </Helmet>
   );
 }

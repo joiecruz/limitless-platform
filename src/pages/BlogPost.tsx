@@ -137,13 +137,13 @@ export default function BlogPost() {
         title={`${post.title} | Limitless Lab Blog`}
         description={post.excerpt || `${post.title} - Limitless Lab Blog`}
         type="article"
-        image={imageUrl}
         url={canonicalUrl}
         publishedTime={post.publishedAt}
         modifiedTime={post._updatedAt}
         author={post.author}
         tags={post.categories}
         section="Blog"
+        sanityImage={post.mainImage} // Pass the full Sanity image object
       />
 
       {preview && (
