@@ -8,9 +8,10 @@ import { BlogCoverImageInput } from "./BlogCoverImageInput";
 import { BlogCategorySelect } from "./BlogCategorySelect";
 import { BlogTagsInput } from "./BlogTagsInput";
 import { BlogPublishToggle } from "./BlogPublishToggle";
+import { BlogFormValues } from "../BlogForm";
 
 interface BlogFormContentProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<BlogFormValues>;
   blogId?: string | null;
   isEdit?: boolean;
 }

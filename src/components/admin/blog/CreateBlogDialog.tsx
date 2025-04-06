@@ -9,6 +9,7 @@ import { BlogFormContent } from "./components/BlogFormContent";
 import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { BlogFormValues } from "./BlogForm";
 
 interface CreateBlogDialogProps {
   onSuccess: () => void;
@@ -27,8 +28,6 @@ const blogFormSchema = z.object({
   created_at: z.string().default(new Date().toISOString()),
   read_time: z.number().optional(),
 });
-
-type BlogFormValues = z.infer<typeof blogFormSchema>;
 
 export function CreateBlogDialog({ onSuccess }: CreateBlogDialogProps) {
   const [open, setOpen] = useState(false);
@@ -78,7 +77,6 @@ export function CreateBlogDialog({ onSuccess }: CreateBlogDialogProps) {
               blogId={null}
               isEdit={false}
             />
-
             <div className="flex justify-end mt-6 space-x-2">
               <Button
                 type="button"

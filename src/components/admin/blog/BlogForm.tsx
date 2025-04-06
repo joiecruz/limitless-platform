@@ -30,11 +30,11 @@ interface BlogFormProps {
   blogId?: string;
 }
 
-export function BlogForm({ 
-  initialData, 
+export function BlogForm({
+  initialData,
   onSuccess,
   isEdit,
-  blogId 
+  blogId
 }: BlogFormProps) {
   const { handleSubmit: submitForm, isLoading } = useBlogFormSubmit({
     isEdit,
