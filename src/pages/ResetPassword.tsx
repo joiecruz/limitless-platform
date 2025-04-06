@@ -110,10 +110,11 @@ export default function ResetPassword() {
     try {
       console.log('Attempting to update password with token...');
       
-      // Fix: Use the updateUser method with the correct parameters
+      // Fix: Use the updateUser method with correct parameters
+      // The current API doesn't accept a session object directly in the options
       const { error } = await supabase.auth.updateUser(
         { password },
-        { session: { access_token: accessToken, refresh_token: '' } }
+        { accessToken }  // Fixed: Pass access token directly without using the session property
       );
 
       if (error) {
