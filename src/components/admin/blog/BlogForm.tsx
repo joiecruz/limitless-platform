@@ -1,33 +1,40 @@
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { BlogFormContent } from "./components/BlogFormContent";
 import { BlogFormFooter } from "./components/BlogFormFooter";
 import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
+import { Form } from "@/components/ui/form";
+
+const blogFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  slug: z.string().min(1, "Slug is required"),
+  content: z.string().min(1, "Content is required"),
+  excerpt: z.string().optional(),
+  meta_description: z.string().optional(),
+  cover_image: z.string().optional(),
+  published: z.boolean().default(false),
+  categories: z.array(z.string()).default([]),
+  tags: z.array(z.string()).default([]),
+  created_at: z.string().default(new Date().toISOString()),
+  read_time: z.number().optional(),
+});
+
+export type BlogFormValues = z.infer<typeof blogFormSchema>;
 
 interface BlogFormProps {
-  initialData?: {
-    title: string;
-    slug: string;
-    content: string;
-    excerpt?: string;
-    meta_description?: string;
-    published?: boolean;
-    categories?: string[];
-    tags?: string[];
-    cover_image?: string;
-    created_at?: string;
-    read_time?: number;
-  };
+  initialData?: Partial<BlogFormValues>;
   onSuccess?: () => void;
   isEdit?: boolean;
   blogId?: string;
 }
 
-export function BlogForm({ 
-  initialData, 
+export function BlogForm({
+  initialData,
   onSuccess,
   isEdit,
-  blogId 
+  blogId
 }: BlogFormProps) {
   const { handleSubmit: submitForm, isLoading } = useBlogFormSubmit({
     isEdit,
@@ -35,61 +42,37 @@ export function BlogForm({
     onSuccess,
   });
 
-  const [formData, setFormData] = useState({
-    title: initialData?.title || "",
-    slug: initialData?.slug || "",
-    content: initialData?.content || "",
-    excerpt: initialData?.excerpt || "",
-    meta_description: initialData?.meta_description || "",
-    published: initialData?.published || false,
-    categories: initialData?.categories || [],
-    tags: initialData?.tags || [],
-    cover_image: initialData?.cover_image || "",
-    created_at: initialData?.created_at || new Date().toISOString(),
-    read_time: initialData?.read_time || undefined,
+  const form = useForm<BlogFormValues>({
+    resolver: zodResolver(blogFormSchema),
+    defaultValues: {
+      title: initialData?.title || "",
+      slug: initialData?.slug || "",
+      content: initialData?.content || "",
+      excerpt: initialData?.excerpt || "",
+      meta_description: initialData?.meta_description || "",
+      published: initialData?.published || false,
+      categories: initialData?.categories || [],
+      tags: initialData?.tags || [],
+      cover_image: initialData?.cover_image || "",
+      created_at: initialData?.created_at || new Date().toISOString(),
+      read_time: initialData?.read_time,
+    },
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.title) newErrors.title = "Title is required";
-    if (!formData.slug) newErrors.slug = "Slug is required";
-    if (!formData.content) newErrors.content = "Content is required";
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      await submitForm(formData);
-    }
-  };
-
-  const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
+  const onSubmit = async (values: BlogFormValues) => {
+    await submitForm(values);
   };
 
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-6">
-      <BlogFormContent 
-        formData={formData}
-        updateFormData={updateFormData}
-        errors={errors}
-        blogId={blogId}
-        isEdit={isEdit}
-      />
-      <BlogFormFooter isLoading={isLoading} />
-    </form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <BlogFormContent 
+          form={form}
+          blogId={blogId}
+          isEdit={isEdit}
+        />
+        <BlogFormFooter isLoading={isLoading} />
+      </form>
+    </Form>
   );
 }

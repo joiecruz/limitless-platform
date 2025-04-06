@@ -2,20 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-interface BlogFormData {
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string;
-  meta_description: string;
-  published: boolean;
-  categories?: string[];
-  tags?: string[];
-  cover_image?: string;
-  created_at?: string;
-  read_time?: number;
-}
+import { BlogFormValues } from "../BlogForm";
 
 interface UseBlogFormSubmitProps {
   isEdit?: boolean;
@@ -34,7 +21,7 @@ export function useBlogFormSubmit({ isEdit, blogId, onSuccess }: UseBlogFormSubm
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (formData: BlogFormData) => {
+  const handleSubmit = async (formData: BlogFormValues) => {
     try {
       setIsLoading(true);
       
