@@ -1,65 +1,62 @@
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Loader2, Plus } from "lucide-react";
 import { BlogFormContent } from "./components/BlogFormContent";
 import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
-import { BlogFormActions } from "./components/BlogFormActions";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface CreateBlogDialogProps {
   onSuccess: () => void;
 }
 
+const blogFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  slug: z.string().min(1, "Slug is required"),
+  content: z.string().min(1, "Content is required"),
+  excerpt: z.string().optional(),
+  meta_description: z.string().optional(),
+  cover_image: z.string().optional(),
+  published: z.boolean().default(false),
+  categories: z.array(z.string()).default([]),
+  tags: z.array(z.string()).default([]),
+  created_at: z.string().default(new Date().toISOString()),
+  read_time: z.number().optional(),
+});
+
+type BlogFormValues = z.infer<typeof blogFormSchema>;
+
 export function CreateBlogDialog({ onSuccess }: CreateBlogDialogProps) {
   const [open, setOpen] = useState(false);
-  const { handleSubmit, isLoading } = useBlogFormSubmit({ onSuccess: () => {
-    setOpen(false);
-    onSuccess();
-  }});
-
-  const [formData, setFormData] = useState({
-    title: "",
-    slug: "",
-    content: "",
-    excerpt: "",
-    meta_description: "",
-    cover_image: "",
-    published: false,
-    categories: [],
-    tags: [],
-    created_at: new Date().toISOString(),
+  const { handleSubmit: submitToServer, isLoading } = useBlogFormSubmit({ 
+    onSuccess: () => {
+      setOpen(false);
+      onSuccess();
+    }
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const form = useForm<BlogFormValues>({
+    resolver: zodResolver(blogFormSchema),
+    defaultValues: {
+      title: "",
+      slug: "",
+      content: "",
+      excerpt: "",
+      meta_description: "",
+      cover_image: "",
+      published: false,
+      categories: [],
+      tags: [],
+      created_at: new Date().toISOString(),
+    },
+  });
 
-  const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => {
-        const updated = { ...prev };
-        delete updated[field];
-        return updated;
-      });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.title) newErrors.title = "Title is required";
-    if (!formData.slug) newErrors.slug = "Slug is required";
-    if (!formData.content) newErrors.content = "Content is required";
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const onSubmitForm = () => {
-    if (validateForm()) {
-      handleSubmit(formData);
-    }
+  const onSubmit = async (values: BlogFormValues) => {
+    await submitToServer(values);
   };
 
   return (
@@ -74,31 +71,31 @@ export function CreateBlogDialog({ onSuccess }: CreateBlogDialogProps) {
         <DialogHeader>
           <DialogTitle>Create New Blog Post</DialogTitle>
         </DialogHeader>
-        <Form>
-          <div className="py-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <BlogFormContent 
-              formData={formData}
-              updateFormData={updateFormData}
-              errors={errors}
+              form={form}
+              blogId={null}
+              isEdit={false}
             />
 
             <div className="flex justify-end mt-6 space-x-2">
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
                 Cancel
               </Button>
               <Button 
-                type="button" 
-                onClick={onSubmitForm}
+                type="submit" 
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Post
               </Button>
             </div>
-          </div>
+          </form>
         </Form>
       </DialogContent>
     </Dialog>
