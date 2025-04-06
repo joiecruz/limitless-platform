@@ -1,18 +1,13 @@
 
 import { RichTextEditor } from "../RichTextEditor";
-import { BlogTitleInput } from "./BlogTitleInput";
-import { BlogSlugInput } from "./BlogSlugInput";
-import { BlogExcerptInput } from "./BlogExcerptInput";
-import { BlogMetaDescription } from "./BlogMetaDescription";
-import { BlogCoverImageInput } from "./BlogCoverImageInput";
-import { BlogCategorySelect } from "./BlogCategorySelect";
-import { BlogTagsInput } from "./BlogTagsInput";
-import { BlogPublishToggle } from "./BlogPublishToggle";
-import { BlogDateInput } from "./BlogDateInput";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
+import { BlogCoverImageInput } from "./BlogCoverImageInput";
+import { BlogCategorySelect } from "./BlogCategorySelect";
+import { BlogTagsInput } from "./BlogTagsInput";
+import { BlogPublishToggle } from "./BlogPublishToggle";
 
 interface BlogFormContentProps {
   form: UseFormReturn<any>;
