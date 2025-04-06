@@ -111,10 +111,12 @@ export default function ResetPassword() {
       console.log('Attempting to update password with token...');
       
       // Fix: Use the updateUser method with correct parameters
-      // The current API doesn't accept a session object directly in the options
       const { error } = await supabase.auth.updateUser(
         { password },
-        { accessToken }  // Fixed: Pass access token directly without using the session property
+        { 
+          // Use proper options format based on Supabase JS client
+          emailRedirectTo: window.location.origin 
+        }
       );
 
       if (error) {
