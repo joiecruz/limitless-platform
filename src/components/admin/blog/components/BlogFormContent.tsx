@@ -1,182 +1,98 @@
 
 import { RichTextEditor } from "../RichTextEditor";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { UseFormReturn } from "react-hook-form";
+import { BlogTitleInput } from "./BlogTitleInput";
+import { BlogSlugInput } from "./BlogSlugInput";
+import { BlogExcerptInput } from "./BlogExcerptInput";
+import { BlogMetaDescription } from "./BlogMetaDescription";
 import { BlogCoverImageInput } from "./BlogCoverImageInput";
 import { BlogCategorySelect } from "./BlogCategorySelect";
 import { BlogTagsInput } from "./BlogTagsInput";
 import { BlogPublishToggle } from "./BlogPublishToggle";
-import { BlogFormValues } from "../BlogForm";
+import { BlogDateInput } from "./BlogDateInput";
 
 interface BlogFormContentProps {
-  form: UseFormReturn<BlogFormValues>;
-  blogId?: string | null;
+  formData: any;
+  updateFormData: (field: string, value: any) => void;
+  errors: Record<string, string>;
+  blogId?: string;
   isEdit?: boolean;
 }
 
 export function BlogFormContent({ 
-  form,
+  formData, 
+  updateFormData, 
+  errors,
   blogId,
   isEdit
 }: BlogFormContentProps) {
   return (
     <div className="space-y-6">
-      <FormField
-        control={form.control}
-        name="title"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Title</FormLabel>
-            <FormControl>
-              <Input {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+      <BlogTitleInput
+        value={formData.title}
+        onChange={(value) => updateFormData("title", value)}
+        error={errors.title}
       />
 
-      <FormField
-        control={form.control}
-        name="slug"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Slug</FormLabel>
-            <FormControl>
-              <Input {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+      <BlogSlugInput
+        value={formData.slug}
+        onChange={(value) => updateFormData("slug", value)}
+        error={errors.slug}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
-          name="created_at"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Publication Date</FormLabel>
-              <FormControl>
-                <Input 
-                  type="date" 
-                  value={new Date(field.value).toISOString().substring(0, 10)}
-                  onChange={(e) => field.onChange(new Date(e.target.value).toISOString())}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <BlogDateInput
+          label="Publication Date"
+          value={formData.created_at}
+          onChange={(value) => updateFormData("created_at", value)}
+          error={errors.created_at}
+          description="The date this post will appear to be published on"
         />
         
-        <FormField
-          control={form.control}
-          name="published"
-          render={({ field }) => (
-            <BlogPublishToggle
-              value={field.value}
-              onChange={field.onChange}
-            />
-          )}
+        <BlogPublishToggle
+          value={formData.published}
+          onChange={(value) => updateFormData("published", value)}
         />
       </div>
 
-      <FormField
-        control={form.control}
-        name="cover_image"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Cover Image</FormLabel>
-            <FormControl>
-              <BlogCoverImageInput
-                value={field.value}
-                onChange={field.onChange}
-                error=""
-                blogId={blogId || ""}
-              />
-            </FormControl>
-            {field.value && (
-              <div className="mt-2">
-                <img 
-                  src={field.value} 
-                  alt="Cover preview" 
-                  className="max-h-48 rounded-lg object-cover"
-                />
-              </div>
-            )}
-            <FormMessage />
-          </FormItem>
-        )}
+      <BlogCoverImageInput
+        value={formData.cover_image}
+        onChange={(value) => updateFormData("cover_image", value)}
+        error={errors.cover_image}
+        blogId={blogId}
       />
 
-      <FormField
-        control={form.control}
-        name="content"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Content</FormLabel>
-            <FormControl>
-              <RichTextEditor
-                value={field.value}
-                onChange={field.onChange}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+      <div className="space-y-2">
+        <RichTextEditor
+          value={formData.content}
+          onChange={(value) => updateFormData("content", value)}
+        />
+        {errors.content && (
+          <p className="text-sm text-red-500">{errors.content}</p>
         )}
+      </div>
+
+      <BlogExcerptInput
+        value={formData.excerpt}
+        onChange={(value) => updateFormData("excerpt", value)}
+        error={errors.excerpt}
       />
 
-      <FormField
-        control={form.control}
-        name="excerpt"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Excerpt</FormLabel>
-            <FormControl>
-              <Textarea {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+      <BlogMetaDescription
+        value={formData.meta_description}
+        onChange={(value) => updateFormData("meta_description", value)}
+        error={errors.meta_description}
       />
 
-      <FormField
-        control={form.control}
-        name="meta_description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Meta Description</FormLabel>
-            <FormControl>
-              <Textarea {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+      <BlogCategorySelect
+        value={formData.categories}
+        onChange={(value) => updateFormData("categories", value)}
+        error={errors.categories}
       />
 
-      <FormField
-        control={form.control}
-        name="categories"
-        render={({ field }) => (
-          <BlogCategorySelect
-            value={field.value}
-            onChange={field.onChange}
-            error=""
-          />
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="tags"
-        render={({ field }) => (
-          <BlogTagsInput
-            value={field.value}
-            onChange={field.onChange}
-            error=""
-          />
-        )}
+      <BlogTagsInput
+        value={formData.tags}
+        onChange={(value) => updateFormData("tags", value)}
+        error={errors.tags}
       />
     </div>
   );

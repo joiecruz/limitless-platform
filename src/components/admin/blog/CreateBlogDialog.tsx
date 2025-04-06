@@ -1,45 +1,29 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plus } from "lucide-react";
-import { BlogFormContent } from "./components/BlogFormContent";
-import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { BlogFormValues } from "./BlogForm";
 
-interface CreateBlogDialogProps {
-  onSuccess: () => void;
+interface BlogFormData {
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  meta_description: string;
+  cover_image: string;
 }
 
-const blogFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  slug: z.string().min(1, "Slug is required"),
-  content: z.string().min(1, "Content is required"),
-  excerpt: z.string().optional(),
-  meta_description: z.string().optional(),
-  cover_image: z.string().optional(),
-  published: z.boolean().default(false),
-  categories: z.array(z.string()).default([]),
-  tags: z.array(z.string()).default([]),
-  created_at: z.string().default(new Date().toISOString()),
-  read_time: z.number().optional(),
-});
-
-export function CreateBlogDialog({ onSuccess }: CreateBlogDialogProps) {
+export function CreateBlogDialog({ onSuccess }: { onSuccess: () => void }) {
   const [open, setOpen] = useState(false);
-  const { handleSubmit: submitToServer, isLoading } = useBlogFormSubmit({ 
-    onSuccess: () => {
-      setOpen(false);
-      onSuccess();
-    }
-  });
-
-  const form = useForm<BlogFormValues>({
-    resolver: zodResolver(blogFormSchema),
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  
+  const form = useForm<BlogFormData>({
     defaultValues: {
       title: "",
       slug: "",
@@ -47,15 +31,40 @@ export function CreateBlogDialog({ onSuccess }: CreateBlogDialogProps) {
       excerpt: "",
       meta_description: "",
       cover_image: "",
-      published: false,
-      categories: [],
-      tags: [],
-      created_at: new Date().toISOString(),
     },
   });
 
-  const onSubmit = async (values: BlogFormValues) => {
-    await submitToServer(values);
+  const onSubmit = async (data: BlogFormData) => {
+    try {
+      setIsLoading(true);
+      
+      const { error } = await supabase
+        .from('articles')
+        .insert([{
+          ...data,
+          published: false,
+          content: data.content, // In a real app, you might want to store this as JSON
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Blog post created",
+        description: "The blog post has been created successfully.",
+      });
+
+      form.reset();
+      setOpen(false);
+      onSuccess();
+    } catch (error: any) {
+      toast({
+        title: "Error creating blog post",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -66,29 +75,102 @@ export function CreateBlogDialog({ onSuccess }: CreateBlogDialogProps) {
           Create Blog Post
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[725px]">
         <DialogHeader>
           <DialogTitle>Create New Blog Post</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <BlogFormContent 
-              form={form}
-              blogId={null}
-              isEdit={false}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Enter blog post title" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <div className="flex justify-end mt-6 space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading}
-              >
+            
+            <FormField
+              control={form.control}
+              name="slug"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Slug</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="enter-url-friendly-slug" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="excerpt"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Excerpt</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} placeholder="Brief excerpt of the blog post" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="meta_description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Meta Description</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} placeholder="SEO meta description" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cover_image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cover Image URL</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="https://example.com/image.jpg" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Blog post content (HTML supported)"
+                      className="min-h-[200px]" 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Post
               </Button>

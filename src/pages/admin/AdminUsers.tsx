@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -10,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,12 +22,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
 
 export default function AdminUsers() {
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -110,20 +107,6 @@ export default function AdminUsers() {
     }
   };
 
-  // Filter users based on search query
-  const filteredUsers = users?.filter(user => {
-    if (!searchQuery.trim()) return true;
-    
-    const query = searchQuery.toLowerCase();
-    const email = user.email?.toLowerCase() || "";
-    const firstName = user.first_name?.toLowerCase() || "";
-    const lastName = user.last_name?.toLowerCase() || "";
-    
-    return email.includes(query) || 
-           firstName.includes(query) || 
-           lastName.includes(query);
-  });
-
   if (isLoading) {
     return (
       <div className="flex justify-center p-4">
@@ -135,17 +118,6 @@ export default function AdminUsers() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Users</h1>
-      
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          placeholder="Search users by name or email..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-      
       <Table>
         <TableHeader>
           <TableRow>
@@ -157,7 +129,7 @@ export default function AdminUsers() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredUsers?.map((user) => (
+          {users?.map((user) => (
             <TableRow key={user.id}>
               <TableCell>{user.email}</TableCell>
               <TableCell>
@@ -181,13 +153,6 @@ export default function AdminUsers() {
               </TableCell>
             </TableRow>
           ))}
-          {filteredUsers?.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
-                No users found matching your search
-              </TableCell>
-            </TableRow>
-          )}
         </TableBody>
       </Table>
 
