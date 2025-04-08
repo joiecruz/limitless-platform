@@ -68,6 +68,7 @@ export function BlogFormContent({
         <RichTextEditor
           value={formData.content}
           onChange={(value) => updateFormData("content", value)}
+          blogId={blogId}
         />
         {errors.content && (
           <p className="text-sm text-red-500">{errors.content}</p>
