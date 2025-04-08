@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { BlogFormContent } from "./components/BlogFormContent";
 import { BlogFormFooter } from "./components/BlogFormFooter";
@@ -34,12 +35,12 @@ export function BlogForm({
     onSuccess,
   });
 
+  // Use excerpt for both excerpt and meta_description
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     slug: initialData?.slug || "",
     content: initialData?.content || "",
     excerpt: initialData?.excerpt || initialData?.meta_description || "",
-    meta_description: initialData?.meta_description || initialData?.excerpt || "",
     published: initialData?.published || false,
     categories: initialData?.categories || [],
     tags: initialData?.tags || [],
@@ -64,6 +65,7 @@ export function BlogForm({
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      // Pass excerpt as meta_description too
       const updatedFormData = {
         ...formData,
         meta_description: formData.excerpt
@@ -74,15 +76,7 @@ export function BlogForm({
   };
 
   const updateFormData = (field: string, value: any) => {
-    setFormData(prev => {
-      const updated = { ...prev, [field]: value };
-      
-      if (field === 'excerpt') {
-        updated.meta_description = value;
-      }
-      
-      return updated;
-    });
+    setFormData(prev => ({ ...prev, [field]: value }));
     
     if (errors[field]) {
       setErrors(prev => {

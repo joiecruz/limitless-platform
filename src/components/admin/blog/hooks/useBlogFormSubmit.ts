@@ -33,7 +33,7 @@ export function useBlogFormSubmit({ isEdit, blogId, onSuccess }: UseBlogFormSubm
       // Ensure the data we send has meta_description property
       const finalData = {
         ...formData,
-        meta_description: formData.meta_description || formData.excerpt
+        meta_description: formData.excerpt
       };
       
       if (isEdit && blogId) {
