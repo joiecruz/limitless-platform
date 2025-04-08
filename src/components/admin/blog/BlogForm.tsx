@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BlogFormContent } from "./components/BlogFormContent";
 import { BlogFormFooter } from "./components/BlogFormFooter";
 import { useBlogFormSubmit } from "./hooks/useBlogFormSubmit";
+import { initializeBlogStorage } from "./utils/initializeStorage";
 
 interface BlogFormProps {
   initialData?: {
@@ -46,6 +47,11 @@ export function BlogForm({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Initialize blog storage when component mounts
+  useEffect(() => {
+    initializeBlogStorage();
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};

@@ -1,6 +1,8 @@
 
+import { useState, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,18 +14,32 @@ import {
   Heading2, 
   Heading3,
   Undo,
-  Redo
+  Redo,
+  Image as ImageIcon
 } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuidv4 } from 'uuid';
+import { useToast } from "@/hooks/use-toast";
 
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  blogId?: string;
 }
 
-export function RichTextEditor({ value, onChange, className }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, className, blogId }: RichTextEditorProps) {
+  const { toast } = useToast();
+  const [isUploading, setIsUploading] = useState(false);
+  
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Image.configure({
+        allowBase64: true,
+        inline: true,
+      }),
+    ],
     content: value,
     onUpdate: ({ editor }) => {
       // Only update when content actually changes to prevent flickering
@@ -38,6 +54,78 @@ export function RichTextEditor({ value, onChange, className }: RichTextEditorPro
       },
     },
   });
+
+  const addImage = useCallback(async (file: File) => {
+    if (!editor) return;
+    
+    setIsUploading(true);
+    
+    try {
+      if (!file || !file.type.includes('image')) {
+        toast({
+          title: "Invalid file",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = blogId 
+        ? `blog/${blogId}/${fileName}`
+        : `blog/temp/${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('blog-assets')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: publicUrl } = supabase.storage
+        .from('blog-assets')
+        .getPublicUrl(filePath);
+
+      if (publicUrl) {
+        // Insert image at current position
+        editor
+          .chain()
+          .focus()
+          .setImage({ src: publicUrl.publicUrl, alt: file.name })
+          .run();
+          
+        toast({
+          title: "Image uploaded",
+          description: "Image has been added to the content",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  }, [editor, blogId, toast]);
+
+  const handleImageUpload = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        await addImage(target.files[0]);
+      }
+    };
+    input.click();
+  }, [addImage]);
 
   if (!editor) {
     return null;
@@ -108,6 +196,15 @@ export function RichTextEditor({ value, onChange, className }: RichTextEditorPro
           type="button"
         >
           <Quote className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleImageUpload}
+          type="button"
+          disabled={isUploading}
+        >
+          <ImageIcon className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"

@@ -11,6 +11,7 @@ import { BlogMeta } from "@/components/blog/BlogMeta";
 import { BlogContent } from "@/components/blog/BlogContent";
 import { BlogNotFound } from "@/components/blog/BlogNotFound";
 import { BlogLoading } from "@/components/blog/BlogLoading";
+import { RelatedBlogs } from "@/components/blog/RelatedBlogs";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 
@@ -135,6 +136,13 @@ export default function BlogPost() {
         />
         
         <BlogContent content={post.content} />
+        
+        {/* Add the related blogs component */}
+        <RelatedBlogs 
+          currentPostId={post.id} 
+          categories={post.categories || []} 
+          tags={post.tags || []} 
+        />
       </article>
 
       <CTASection />

@@ -81,6 +81,26 @@ export function BlogCategorySelect({ value = [], onChange, error }: BlogCategory
         </PopoverContent>
       </Popover>
       {error && <p className="text-sm text-red-500">{error}</p>}
+      
+      {selectedCategories.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {selectedCategories.map((category) => (
+            <span
+              key={category}
+              className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm flex items-center gap-1"
+            >
+              {category}
+              <button
+                type="button"
+                onClick={() => toggleCategory(category)}
+                className="hover:text-red-500 ml-1"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
