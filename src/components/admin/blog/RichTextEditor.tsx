@@ -90,11 +90,11 @@ export function RichTextEditor({ value, onChange, className, blogId }: RichTextE
         .getPublicUrl(filePath);
 
       if (publicUrl) {
-        // Insert image at current position
+        // Insert image at current position - using setImage instead of insertImage
         editor
           .chain()
           .focus()
-          .insertImage({ src: publicUrl.publicUrl, alt: file.name })
+          .setImage({ src: publicUrl.publicUrl, alt: file.name })
           .run();
           
         toast({
