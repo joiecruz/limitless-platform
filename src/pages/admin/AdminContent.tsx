@@ -8,7 +8,7 @@ import { ToolsTable } from "@/components/admin/tools/ToolsTable";
 import { useNavigate } from "react-router-dom";
 import { CreateCaseStudyDialog } from "@/components/admin/case-studies/CreateCaseStudyDialog";
 import { AddLogoDialog } from "@/components/admin/logos/AddLogoDialog";
-import { Book, Briefcase, Image, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export default function AdminContent() {
   const navigate = useNavigate();

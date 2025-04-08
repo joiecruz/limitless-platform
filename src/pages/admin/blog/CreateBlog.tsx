@@ -13,6 +13,17 @@ export default function CreateBlog() {
       <BlogForm 
         onSuccess={() => navigate("/admin/content")} 
         isEdit={false}
+        initialData={{
+          title: "",
+          slug: "",
+          content: "",
+          excerpt: "",
+          published: false,
+          categories: [],
+          tags: [],
+          cover_image: "",
+          created_at: new Date().toISOString()
+        }}
       />
     </div>
   );
