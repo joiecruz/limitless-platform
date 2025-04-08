@@ -1,3 +1,4 @@
+
 interface LessonBodyContentProps {
   content: string | null;
 }
