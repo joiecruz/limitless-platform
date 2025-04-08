@@ -15,7 +15,6 @@ interface BlogFormProps {
     tags?: string[];
     cover_image?: string;
     created_at?: string;
-    read_time?: number;
   };
   onSuccess?: () => void;
   isEdit?: boolean;
@@ -44,7 +43,6 @@ export function BlogForm({
     tags: Array.isArray(initialData?.tags) ? initialData.tags : [],
     cover_image: initialData?.cover_image || "",
     created_at: initialData?.created_at || new Date().toISOString(),
-    read_time: initialData?.read_time || undefined,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
