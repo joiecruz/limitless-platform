@@ -1,5 +1,4 @@
 
-import { UseFormReturn } from "react-hook-form";
 import { RichTextEditor } from "../RichTextEditor";
 import { BlogTitleInput } from "./BlogTitleInput";
 import { BlogSlugInput } from "./BlogSlugInput";
@@ -10,148 +9,90 @@ import { BlogCategorySelect } from "./BlogCategorySelect";
 import { BlogTagsInput } from "./BlogTagsInput";
 import { BlogPublishToggle } from "./BlogPublishToggle";
 import { BlogDateInput } from "./BlogDateInput";
-import { BlogFormValues } from "../BlogForm";
-import { FormField } from "@/components/ui/form";
 
 interface BlogFormContentProps {
-  form: UseFormReturn<BlogFormValues>;
+  formData: any;
+  updateFormData: (field: string, value: any) => void;
+  errors: Record<string, string>;
   blogId?: string;
   isEdit?: boolean;
 }
 
 export function BlogFormContent({ 
-  form,
+  formData, 
+  updateFormData, 
+  errors,
   blogId,
   isEdit
 }: BlogFormContentProps) {
   return (
     <div className="space-y-6">
-      <FormField
-        control={form.control}
-        name="title"
-        render={({ field }) => (
-          <BlogTitleInput
-            value={field.value}
-            onChange={field.onChange}
-            error={form.formState.errors.title?.message}
-          />
-        )}
+      <BlogTitleInput
+        value={formData.title}
+        onChange={(value) => updateFormData("title", value)}
+        error={errors.title}
       />
 
-      <FormField
-        control={form.control}
-        name="slug"
-        render={({ field }) => (
-          <BlogSlugInput
-            value={field.value}
-            onChange={field.onChange}
-            error={form.formState.errors.slug?.message}
-          />
-        )}
+      <BlogSlugInput
+        value={formData.slug}
+        onChange={(value) => updateFormData("slug", value)}
+        error={errors.slug}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
-          name="created_at"
-          render={({ field }) => (
-            <BlogDateInput
-              label="Publication Date"
-              value={field.value}
-              onChange={field.onChange}
-              error={form.formState.errors.created_at?.message}
-              description="The date this post will appear to be published on"
-            />
-          )}
+        <BlogDateInput
+          label="Publication Date"
+          value={formData.created_at}
+          onChange={(value) => updateFormData("created_at", value)}
+          error={errors.created_at}
+          description="The date this post will appear to be published on"
         />
         
-        <FormField
-          control={form.control}
-          name="published"
-          render={({ field }) => (
-            <BlogPublishToggle
-              value={field.value}
-              onChange={field.onChange}
-            />
-          )}
+        <BlogPublishToggle
+          value={formData.published}
+          onChange={(value) => updateFormData("published", value)}
         />
       </div>
 
-      <FormField
-        control={form.control}
-        name="cover_image"
-        render={({ field }) => (
-          <BlogCoverImageInput
-            value={field.value || ""}
-            onChange={field.onChange}
-            error={form.formState.errors.cover_image?.message}
-            blogId={blogId}
-          />
-        )}
+      <BlogCoverImageInput
+        value={formData.cover_image}
+        onChange={(value) => updateFormData("cover_image", value)}
+        error={errors.cover_image}
+        blogId={blogId}
       />
 
-      <FormField
-        control={form.control}
-        name="content"
-        render={({ field }) => (
-          <div className="space-y-2">
-            <RichTextEditor
-              value={field.value}
-              onChange={field.onChange}
-            />
-            {form.formState.errors.content && (
-              <p className="text-sm text-red-500">{form.formState.errors.content.message}</p>
-            )}
-          </div>
+      <div className="space-y-2">
+        <RichTextEditor
+          value={formData.content}
+          onChange={(value) => updateFormData("content", value)}
+        />
+        {errors.content && (
+          <p className="text-sm text-red-500">{errors.content}</p>
         )}
+      </div>
+
+      <BlogExcerptInput
+        value={formData.excerpt}
+        onChange={(value) => updateFormData("excerpt", value)}
+        error={errors.excerpt}
       />
 
-      <FormField
-        control={form.control}
-        name="excerpt"
-        render={({ field }) => (
-          <BlogExcerptInput
-            value={field.value || ""}
-            onChange={field.onChange}
-            error={form.formState.errors.excerpt?.message}
-          />
-        )}
+      <BlogMetaDescription
+        value={formData.meta_description}
+        onChange={(value) => updateFormData("meta_description", value)}
+        error={errors.meta_description}
       />
 
-      <FormField
-        control={form.control}
-        name="meta_description"
-        render={({ field }) => (
-          <BlogMetaDescription
-            value={field.value || ""}
-            onChange={field.onChange}
-            error={form.formState.errors.meta_description?.message}
-          />
-        )}
+      <BlogCategorySelect
+        value={formData.categories}
+        onChange={(value) => updateFormData("categories", value)}
+        error={errors.categories}
       />
 
-      <FormField
-        control={form.control}
-        name="categories"
-        render={({ field }) => (
-          <BlogCategorySelect
-            value={field.value}
-            onChange={field.onChange}
-            error={form.formState.errors.categories?.message}
-          />
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="tags"
-        render={({ field }) => (
-          <BlogTagsInput
-            value={field.value}
-            onChange={field.onChange}
-            error={form.formState.errors.tags?.message}
-          />
-        )}
+      <BlogTagsInput
+        value={formData.tags}
+        onChange={(value) => updateFormData("tags", value)}
+        error={errors.tags}
       />
     </div>
   );
