@@ -8,6 +8,7 @@ interface BlogFormData {
   slug: string;
   content: string;
   excerpt: string;
+  meta_description?: string;
   published: boolean;
   categories?: string[];
   tags?: string[];
@@ -29,11 +30,17 @@ export function useBlogFormSubmit({ isEdit, blogId, onSuccess }: UseBlogFormSubm
     try {
       setIsLoading(true);
       
+      // Ensure the data we send has meta_description property
+      const finalData = {
+        ...formData,
+        meta_description: formData.meta_description || formData.excerpt
+      };
+      
       if (isEdit && blogId) {
         const { error } = await supabase
           .from('articles')
           .update({
-            ...formData,
+            ...finalData,
             updated_at: new Date().toISOString(),
           })
           .eq('id', blogId);
@@ -46,12 +53,12 @@ export function useBlogFormSubmit({ isEdit, blogId, onSuccess }: UseBlogFormSubm
         });
       } else {
         // For new posts, ensure we have a creation date
-        const createdAt = formData.created_at || new Date().toISOString();
+        const createdAt = finalData.created_at || new Date().toISOString();
         
         const { error } = await supabase
           .from('articles')
           .insert([{
-            ...formData,
+            ...finalData,
             created_at: createdAt,
           }]);
 

@@ -78,6 +78,8 @@ export function BlogFormContent({
         value={formData.excerpt}
         onChange={(value) => updateFormData("excerpt", value)}
         error={errors.excerpt}
+        label="Excerpt / Meta Description"
+        description="This will be used for both the blog excerpt and page meta description"
       />
 
       <BlogCategorySelect

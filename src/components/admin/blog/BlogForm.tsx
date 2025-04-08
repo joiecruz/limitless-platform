@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { BlogFormContent } from "./components/BlogFormContent";
 import { BlogFormFooter } from "./components/BlogFormFooter";
@@ -10,6 +9,7 @@ interface BlogFormProps {
     slug: string;
     content: string;
     excerpt?: string;
+    meta_description?: string;
     published?: boolean;
     categories?: string[];
     tags?: string[];
@@ -38,7 +38,8 @@ export function BlogForm({
     title: initialData?.title || "",
     slug: initialData?.slug || "",
     content: initialData?.content || "",
-    excerpt: initialData?.excerpt || "",
+    excerpt: initialData?.excerpt || initialData?.meta_description || "",
+    meta_description: initialData?.meta_description || initialData?.excerpt || "",
     published: initialData?.published || false,
     categories: initialData?.categories || [],
     tags: initialData?.tags || [],
@@ -63,12 +64,26 @@ export function BlogForm({
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      await submitForm(formData);
+      const updatedFormData = {
+        ...formData,
+        meta_description: formData.excerpt
+      };
+      
+      await submitForm(updatedFormData);
     }
   };
 
   const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      if (field === 'excerpt') {
+        updated.meta_description = value;
+      }
+      
+      return updated;
+    });
+    
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
