@@ -10,6 +10,7 @@ interface BlogFormProps {
     slug: string;
     content: string;
     excerpt?: string;
+    meta_description?: string;
     published?: boolean;
     categories?: string[];
     tags?: string[];
@@ -34,11 +35,12 @@ export function BlogForm({
     onSuccess,
   });
 
+  // Use excerpt for both excerpt and meta_description
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     slug: initialData?.slug || "",
     content: initialData?.content || "",
-    excerpt: initialData?.excerpt || "",
+    excerpt: initialData?.excerpt || initialData?.meta_description || "",
     published: initialData?.published || false,
     categories: initialData?.categories || [],
     tags: initialData?.tags || [],
@@ -63,12 +65,19 @@ export function BlogForm({
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      await submitForm(formData);
+      // Pass excerpt as meta_description too
+      const updatedFormData = {
+        ...formData,
+        meta_description: formData.excerpt
+      };
+      
+      await submitForm(updatedFormData);
     }
   };
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
