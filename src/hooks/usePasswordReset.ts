@@ -1,0 +1,148 @@
+
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+export function usePasswordReset() {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [validToken, setValidToken] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    parseParams();
+  }, [location, navigate, toast]);
+
+  const parseParams = () => {
+    console.log('Checking for reset parameters in URL');
+    
+    // Try to get parameters from hash fragment first
+    const hashParams = location.hash && location.hash.length > 1 
+      ? new URLSearchParams(location.hash.substring(1)) 
+      : null;
+    
+    // Get parameter from search query as fallback
+    const queryParams = new URLSearchParams(location.search);
+    
+    // Log all parameters for debugging
+    console.log('Hash parameters:', hashParams ? Object.fromEntries(hashParams.entries()) : 'None');
+    console.log('Query parameters:', Object.fromEntries(queryParams.entries()));
+    
+    // Look for type and token in hash parameters first
+    if (hashParams) {
+      const type = hashParams.get('type');
+      const token = hashParams.get('access_token');
+      
+      if (token && type === 'recovery') {
+        console.log('Found valid recovery token in hash params');
+        setValidToken(true);
+        setAccessToken(token);
+        return;
+      }
+    }
+    
+    // Check query parameters if hash parameters don't have what we need
+    const type = queryParams.get('type');
+    const token = queryParams.get('access_token') || queryParams.get('token'); // Try both access_token and token
+    
+    if (token && type === 'recovery') {
+      console.log('Found valid recovery token in query params');
+      setValidToken(true);
+      setAccessToken(token);
+      return;
+    }
+    
+    // Finally check for a JWT in the hash without params (another Supabase format)
+    if (location.hash && location.hash.length > 20 && !location.hash.includes('=')) {
+      // This might be a JWT directly in the hash
+      const possibleToken = location.hash.substring(1);
+      console.log('Found possible token in hash:', possibleToken.substring(0, 15) + '...');
+      setValidToken(true);
+      setAccessToken(possibleToken);
+      return;
+    }
+    
+    // If we get here, no valid parameters were found
+    console.log('No valid reset parameters found');
+    toast({
+      title: "Invalid Reset Link",
+      description: "This password reset link is invalid or has expired.",
+      variant: "destructive",
+    });
+    
+    // Wait a moment before redirecting to allow toast to display
+    setTimeout(() => navigate('/signin'), 2000);
+  };
+
+  const validatePassword = () => {
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return false;
+    }
+    if (password !== confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validatePassword() || !validToken || !accessToken) {
+      return;
+    }
+    
+    setLoading(true);
+
+    try {
+      console.log('Attempting to update password with token...');
+      
+      // Use the updateUser method with the token in options
+      const { error } = await supabase.auth.updateUser(
+        { password },
+        { accessToken } // The Supabase TypeScript definition might need updating
+      );
+
+      if (error) {
+        console.error("Password update error:", error);
+        throw error;
+      }
+
+      toast({
+        title: "Password updated",
+        description: "Your password has been updated successfully. Please sign in with your new password.",
+      });
+
+      // Redirect to sign in page
+      setTimeout(() => navigate('/signin'), 1500);
+    } catch (error: any) {
+      console.error("Password reset error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update password",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    loading,
+    passwordError,
+    validToken,
+    handlePasswordReset,
+  };
+}
