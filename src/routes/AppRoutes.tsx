@@ -111,6 +111,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/admin/courses" element={<AdminCourses />} />
         <Route path="/admin/pages" element={<AdminPages />} />
         <Route path="/admin/content" element={<AdminContent />} />
+        <Route path="/admin/blog/create" element={<CreateBlog />} />
         <Route path="/admin/content/blog/create" element={<CreateBlog />} />
         <Route path="/admin/content/blog/:id" element={<EditBlog />} />
         <Route path="/admin/content/case-studies/:id" element={<EditCaseStudy />} />

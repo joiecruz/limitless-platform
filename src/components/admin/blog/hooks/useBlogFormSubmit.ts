@@ -74,6 +74,7 @@ export function useBlogFormSubmit({ isEdit, blogId, onSuccess }: UseBlogFormSubm
         onSuccess();
       }
     } catch (error: any) {
+      console.error("Blog submission error:", error);
       toast({
         title: `Error ${isEdit ? 'updating' : 'creating'} blog post`,
         description: error.message,
