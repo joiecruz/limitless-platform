@@ -8,7 +8,6 @@ import { ToolsTable } from "@/components/admin/tools/ToolsTable";
 import { useNavigate } from "react-router-dom";
 import { CreateCaseStudyDialog } from "@/components/admin/case-studies/CreateCaseStudyDialog";
 import { AddLogoDialog } from "@/components/admin/logos/AddLogoDialog";
-import { CreateBlogDialog } from "@/components/admin/blog/CreateBlogDialog";
 import { Book, Briefcase, Image, Plus } from "lucide-react";
 
 export default function AdminContent() {
@@ -33,10 +32,10 @@ export default function AdminContent() {
         
         <TabsContent value="blog" className="space-y-4">
           <div className="flex justify-end mb-4">
-            <CreateBlogDialog onSuccess={() => {
-              // Refresh the blogs table
-              window.location.reload();
-            }} />
+            <Button onClick={() => navigate("/admin/content/blog/create")} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Create Blog Post
+            </Button>
           </div>
           <BlogsTable />
         </TabsContent>
