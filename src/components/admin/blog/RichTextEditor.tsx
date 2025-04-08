@@ -94,7 +94,7 @@ export function RichTextEditor({ value, onChange, className, blogId }: RichTextE
         editor
           .chain()
           .focus()
-          .setImage({ src: publicUrl.publicUrl, alt: file.name })
+          .insertImage({ src: publicUrl.publicUrl, alt: file.name })
           .run();
           
         toast({
