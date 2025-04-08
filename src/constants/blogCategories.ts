@@ -1,10 +1,17 @@
+
 export const BLOG_CATEGORIES = [
   "Design",
   "Innovation",
-  "News and Updates",
-  "Featured Stories",
-  "Digital Literacy",
-  "Artificial Intelligence"
+  "Digital Transformation",
+  "AI & Technology",
+  "Thought Leadership",
+  "Case Studies",
+  "Workshops & Events",
+  "Product Development",
+  "Research & Insights",
+  "Team & Culture",
+  "Sustainability",
+  "News & Updates"
 ] as const;
 
 export type BlogCategory = typeof BLOG_CATEGORIES[number];
