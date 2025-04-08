@@ -110,10 +110,10 @@ export default function ResetPassword() {
     try {
       console.log('Attempting to update password with token...');
       
-      // Fix: Use the correct signature for updateUser method when using an access token
+      // Fix: The correct way to use the updateUser method with an access token
       const { error } = await supabase.auth.updateUser(
         { password },
-        { accessToken } // Pass accessToken directly in the options
+        { token: accessToken }
       );
 
       if (error) {
