@@ -1,67 +1,108 @@
-import { Button } from "@/components/ui/button";
-import { Construction, Sparkles, ArrowRight } from "lucide-react";
+
+import { useState } from "react";
+import { CreateProjectButton } from "@/components/projects/CreateProjectButton";
+import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
+import { ProjectCard } from "@/components/projects/ProjectCard";
+import { ProjectBanner } from "@/components/projects/ProjectBanner";
 import { useNavigate } from "react-router-dom";
 
+// Example project data - in a real app this would come from an API
+const sampleProjects = [
+  {
+    id: "1",
+    title: "New Credit Card Product for Small Business Owners",
+    description: "Create an attractive new credit card offering for entrepreneurs and small business owners",
+    status: "in_progress",
+    image: "https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80",
+    projectPhases: ["DT", "AI"]
+  },
+  {
+    id: "2",
+    title: "Green Loan Initiative",
+    description: "A loan product designed specifically for financing environmentally friendly projects, such as renewable energy installations, energy-efficient buildings, and sustainable agriculture practices.",
+    status: "testing",
+    image: "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80",
+    projectPhases: ["DT", "AI"]
+  },
+  {
+    id: "3",
+    title: "Mobile Banking for Rural Areas",
+    description: "Development of a mobile banking app tailored for rural populations, providing easy access to banking services such as savings accounts, loans, and remittances",
+    status: "completed",
+    image: "https://images.unsplash.com/photo-1599253208431-2f0ea49cae26?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=986&q=80",
+    projectPhases: ["AI", "DT"]
+  },
+  {
+    id: "4",
+    title: "Crypto Investment Platform",
+    description: "Building a user-friendly platform for cryptocurrency investments with advanced risk management tools and educational resources",
+    status: "prototyping",
+    image: "https://images.unsplash.com/photo-1518544866330-ec6aba2ec7c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80",
+    projectPhases: ["AI"]
+  },
+  {
+    id: "5",
+    title: "Design Thinking Workshop Series",
+    description: "Creation of a workshop series to train internal teams on design thinking methods and innovation practices",
+    status: "in_progress",
+    image: "https://images.unsplash.com/photo-1528605105345-5344ea20e269?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+    projectPhases: ["DT"]
+  },
+  {
+    id: "6",
+    title: "Financial Wellness App",
+    description: "App that combines budgeting tools with behavioral science insights to promote better financial habits and decision-making",
+    status: "measure",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+    projectPhases: ["DT", "AI"]
+  }
+];
+
 export default function Projects() {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [projects, setProjects] = useState(sampleProjects);
   const navigate = useNavigate();
 
+  const handleCreateProject = (projectData: any) => {
+    // In a real app, you would call an API to create the project
+    const newProject = {
+      id: (projects.length + 1).toString(),
+      title: projectData.title,
+      description: projectData.description,
+      status: projectData.status,
+      image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+      projectPhases: ["DT"]
+    };
+    
+    setProjects([newProject, ...projects]);
+  };
+
+  const handleOpenCreateDialog = () => {
+    setIsCreateDialogOpen(true);
+  };
+
   return (
-    <div className="container max-w-4xl py-8 space-y-8 animate-fade-in">
-      <div className="text-center space-y-6">
-        <div className="flex justify-center">
-          <Construction className="h-16 w-16 text-primary" />
-        </div>
-        
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">
-            🚧 Oops – You Caught Us Early!
-          </h1>
-          
-          <p className="text-xl text-muted-foreground">
-            You're ahead of the curve! Our Project Dashboard Module is currently under construction, 
-            but as a valued Limitless Lab member, you'll be the first to experience it when it launches.
-          </p>
-        </div>
-
-        <div className="bg-muted/50 rounded-lg p-8 space-y-4">
-          <div className="flex items-center gap-2 text-lg font-semibold text-primary">
-            <Sparkles className="h-5 w-5" />
-            <h2>What to Expect:</h2>
-          </div>
-          
-          <ul className="space-y-2 text-left list-disc list-inside text-muted-foreground">
-            <li>A streamlined, intuitive, and AI-powered way to manage your innovation projects</li>
-            <li>Tried and tested innovation workflows to increase your chances of success</li>
-            <li>Collaborative tools designed to bring ideas to life faster</li>
-            <li>Insights and analytics to help you measure the impact for your projects</li>
-          </ul>
-          
-          <p className="text-sm italic">
-            We're building something exciting – and you'll get exclusive early access once it's ready!
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            👉 In the meantime, why not dive into our existing modules and keep your innovation journey going strong?
-          </p>
-
-          <div className="flex justify-center gap-4">
-            <Button onClick={() => navigate("/dashboard/courses")}>
-              Explore Courses
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/dashboard/tools")}>
-              Browse Tools
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <p className="text-sm text-muted-foreground pt-4">
-          Thanks for being part of our Limitless community – we can't wait to show you what's next!
-        </p>
+    <div className="container max-w-7xl px-4 py-8 animate-fade-in">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Projects</h1>
+        <CreateProjectButton onClick={handleOpenCreateDialog} />
       </div>
+
+      <ProjectBanner onCreateProject={handleOpenCreateDialog} />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {projects.map((project) => (
+          <div key={project.id}>
+            <ProjectCard {...project} />
+          </div>
+        ))}
+      </div>
+      
+      <CreateProjectDialog 
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onCreateProject={handleCreateProject}
+      />
     </div>
   );
 }
