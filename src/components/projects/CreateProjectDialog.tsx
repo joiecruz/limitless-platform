@@ -1,13 +1,13 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ProjectCardProps } from "./ProjectCard";
-import { X } from "lucide-react";
+import { Sparkles, X, Loader2 } from "lucide-react";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -22,6 +22,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
     description: "",
     status: "in_progress",
   });
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +57,51 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
     });
   };
 
+  const generateDescription = async () => {
+    if (!projectData.title?.trim()) {
+      toast({
+        title: "Title required",
+        description: "Please enter a project title first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingDescription(true);
+    try {
+      const response = await fetch("https://crllgygjuqpluvdpwayi.supabase.co/functions/v1/generate-description", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: `How might we ${projectData.title}?` }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.generatedText) {
+        setProjectData(prev => ({
+          ...prev,
+          description: data.generatedText
+        }));
+        toast({
+          title: "Description generated",
+          description: "AI has created a description for your project",
+        });
+      } else {
+        throw new Error(data.error || "Failed to generate description");
+      }
+    } catch (error) {
+      toast({
+        title: "Generation failed",
+        description: error instanceof Error ? error.message : "An error occurred while generating description",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingDescription(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
@@ -69,6 +115,9 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
         
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
+          <DialogDescription>
+            Add a new project to your dashboard. You can use AI to help generate a description.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
@@ -84,7 +133,29 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="project-description">Description</Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="project-description">Description</Label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-1"
+                  onClick={generateDescription}
+                  disabled={isGeneratingDescription}
+                >
+                  {isGeneratingDescription ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3.5 w-3.5" />
+                      <span>Generate with AI</span>
+                    </>
+                  )}
+                </Button>
+              </div>
               <Textarea 
                 id="project-description"
                 placeholder="Describe your project"
