@@ -15,12 +15,26 @@ serve(async (req) => {
 
   try {
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    console.log("API key available:", !!openAIApiKey);
     
     if (!openAIApiKey) {
       throw new Error('OPENAI_API_KEY is not set in environment');
     }
     
-    const { prompt } = await req.json();
+    // Parse request body
+    let body;
+    try {
+      body = await req.json();
+      console.log("Received request body:", JSON.stringify(body));
+    } catch (e) {
+      console.error("Error parsing request body:", e);
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { prompt } = body;
     
     if (!prompt) {
       return new Response(
@@ -29,12 +43,15 @@ serve(async (req) => {
       );
     }
 
+    console.log("Processing prompt:", prompt);
+
     const systemPrompt = `You are an expert in design thinking and innovation challenges. 
     Create a detailed but concise description (3-4 sentences) for a challenge based on the "How Might We" question provided. 
     The description should explain the purpose of collecting ideas for this challenge, 
     what kind of ideas are being sought, and the broader context of the challenge.
     Do not use placeholders or generic text - make it specific to the "How Might We" question.`;
 
+    console.log("Calling OpenAI API...");
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -52,13 +69,16 @@ serve(async (req) => {
       }),
     });
 
+    console.log("OpenAI API response status:", response.status);
     const data = await response.json();
     
     if (!response.ok) {
+      console.error("OpenAI API error:", data);
       throw new Error(data.error?.message || 'Error calling OpenAI API');
     }
 
     const generatedText = data.choices[0].message.content;
+    console.log("Generated text:", generatedText);
 
     return new Response(
       JSON.stringify({ generatedText }),

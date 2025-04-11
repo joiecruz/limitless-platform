@@ -68,16 +68,23 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
     }
 
     setIsGeneratingDescription(true);
+    console.log("Generating description for:", projectData.title);
+    
     try {
+      const prompt = `How might we ${projectData.title}?`;
+      console.log("Sending prompt to API:", prompt);
+      
       const response = await fetch("https://crllgygjuqpluvdpwayi.supabase.co/functions/v1/generate-description", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: `How might we ${projectData.title}?` }),
+        body: JSON.stringify({ prompt }),
       });
 
+      console.log("Response status:", response.status);
       const data = await response.json();
+      console.log("Response data:", data);
       
       if (response.ok && data.generatedText) {
         setProjectData(prev => ({
@@ -92,6 +99,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
         throw new Error(data.error || "Failed to generate description");
       }
     } catch (error) {
+      console.error("Error generating description:", error);
       toast({
         title: "Generation failed",
         description: error instanceof Error ? error.message : "An error occurred while generating description",
