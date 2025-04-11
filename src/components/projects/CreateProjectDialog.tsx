@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ interface CreateProjectDialogProps {
 }
 
 export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: CreateProjectDialogProps) {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [projectData, setProjectData] = useState<Partial<ProjectCardProps>>({
     title: "",
@@ -42,19 +44,18 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
       onCreateProject(projectData);
     }
     
-    // Reset form and close dialog
-    setProjectData({
-      title: "",
-      description: "",
-      status: "in_progress",
-    });
+    const projectId = Math.floor(Math.random() * 1000).toString(); // Temporary ID generation
     
+    // Close dialog
     onOpenChange(false);
     
     toast({
       title: "Project Created",
       description: "Your new project has been created successfully!",
     });
+    
+    // Navigate to the project detail page
+    navigate(`/dashboard/projects/${projectId}`);
   };
 
   const generateDescription = async () => {

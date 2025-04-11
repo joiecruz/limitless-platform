@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { CreateProjectButton } from "@/components/projects/CreateProjectButton";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { ProjectCard, ProjectCardProps } from "@/components/projects/ProjectCard";
@@ -145,7 +146,9 @@ export default function Projects() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
           <div key={project.id}>
-            <ProjectCard {...project} />
+            <Link to={`/dashboard/projects/${project.id}`}>
+              <ProjectCard {...project} />
+            </Link>
           </div>
         ))}
       </div>
