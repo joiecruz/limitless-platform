@@ -20,11 +20,11 @@ export function ProjectBanner({ onCreateProject }: ProjectBannerProps) {
           </div>
           <CreateProjectButton onClick={onCreateProject} />
         </div>
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 w-1/2 md:w-1/3 overflow-hidden relative">
           <img 
             src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets//projects-banner.png" 
             alt="Project Design" 
-            className="w-full max-w-md h-auto object-contain"
+            className="w-full object-contain"
           />
         </div>
       </div>
