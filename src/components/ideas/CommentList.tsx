@@ -1,14 +1,68 @@
 
+import { useState, useEffect } from "react";
 import { IdeaComment } from "@/types/ideas";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CommentListProps {
-  comments: IdeaComment[];
+  ideaId: string;
 }
 
-export function CommentList({ comments }: CommentListProps) {
+export function CommentList({ ideaId }: CommentListProps) {
+  const [comments, setComments] = useState<IdeaComment[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("idea_comments")
+          .select(`
+            *,
+            profiles:user_id (username, avatar_url, first_name, last_name)
+          `)
+          .eq("idea_id", ideaId)
+          .order("created_at", { ascending: true });
+          
+        if (error) throw error;
+        setComments(data || []);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchComments();
+    
+    // Set up real-time subscription for comments
+    const channel = supabase
+      .channel(`idea-comments-${ideaId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'idea_comments',
+        filter: `idea_id=eq.${ideaId}`
+      }, () => {
+        fetchComments();
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [ideaId]);
+  
+  if (loading) {
+    return (
+      <div className="text-center py-2 text-sm text-muted-foreground">
+        Loading comments...
+      </div>
+    );
+  }
+  
   if (comments.length === 0) {
     return (
       <div className="text-center py-2 text-sm text-muted-foreground">
