@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ProjectCardProps } from "./ProjectCard";
-import { X, Rocket, Lightbulb } from "lucide-react";
+import { X, Rocket, Lightbulb, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -25,6 +26,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
     description: "",
     status: "in_progress",
   });
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +68,57 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
 
   const handleSelectCollectIdeas = () => {
     setCurrentStep("collectIdeas");
+  };
+
+  const generateDescription = async () => {
+    if (!projectData.title) {
+      toast({
+        title: "Required field missing",
+        description: "Please enter a 'How Might We' question first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingDescription(true);
+    
+    try {
+      // Here we would normally call a Supabase Edge Function to generate description
+      // For now, we'll simulate it with a timeout
+      setTimeout(() => {
+        const generatedDescription = `This is an AI-generated description for the challenge: "${projectData.title}". 
+        
+This challenge aims to explore innovative solutions through collaborative ideation. Team members are encouraged to think outside the box and consider multiple perspectives. The collected ideas will be evaluated based on feasibility, impact, and alignment with organizational goals.`;
+        
+        setProjectData(prev => ({ ...prev, description: generatedDescription }));
+        setIsGeneratingDescription(false);
+        
+        toast({
+          title: "Description Generated",
+          description: "AI has created a description for your challenge",
+        });
+      }, 1500);
+      
+      // In a real implementation, we would call a Supabase Edge Function like this:
+      /*
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { prompt: projectData.title }
+      });
+      
+      if (error) throw error;
+      
+      setProjectData(prev => ({ ...prev, description: data.generatedText }));
+      */
+      
+    } catch (error) {
+      console.error("Error generating description:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate description. Please try again or enter manually.",
+        variant: "destructive",
+      });
+      setIsGeneratingDescription(false);
+    }
   };
 
   const renderInitialStep = () => (
@@ -126,7 +179,20 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="project-description">Challenge Description</Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="project-description">Challenge Description</Label>
+              <Button 
+                type="button" 
+                size="sm" 
+                variant="outline" 
+                className="flex items-center gap-1"
+                onClick={generateDescription}
+                disabled={isGeneratingDescription}
+              >
+                <Sparkles className="h-4 w-4" />
+                {isGeneratingDescription ? "Generating..." : "Generate with AI"}
+              </Button>
+            </div>
             <Textarea 
               id="project-description"
               placeholder="Provide context about the challenge and what you're trying to achieve"
