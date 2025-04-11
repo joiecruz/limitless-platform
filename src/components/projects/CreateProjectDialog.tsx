@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ProjectCardProps } from "./ProjectCard";
 import { Sparkles, X, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -25,8 +26,9 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
     status: "in_progress",
   });
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation
@@ -39,23 +41,66 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
       return;
     }
     
-    // Call the onCreateProject callback with the project data
-    if (onCreateProject) {
-      onCreateProject(projectData);
+    setIsSubmitting(true);
+    
+    try {
+      // Insert the project into Supabase
+      const { data, error } = await supabase
+        .from("projects")
+        .insert([
+          {
+            title: projectData.title,
+            description: projectData.description,
+            status: projectData.status,
+          }
+        ])
+        .select("id, title, description, status");
+      
+      if (error) {
+        console.error("Error creating project:", error);
+        toast({
+          title: "Error creating project",
+          description: "There was an error creating your project. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const newProject = data[0];
+      
+      // Call the onCreateProject callback with the project data
+      if (onCreateProject) {
+        onCreateProject({
+          id: newProject.id,
+          title: newProject.title,
+          description: newProject.description || "",
+          status: newProject.status as any,
+          // Default values for the card display
+          image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+          projectPhases: ["DT"]
+        });
+      }
+      
+      // Close dialog
+      onOpenChange(false);
+      
+      toast({
+        title: "Project Created",
+        description: "Your new project has been created successfully!",
+      });
+      
+      // Navigate to the project detail page
+      navigate(`/dashboard/projects/${newProject.id}`);
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      toast({
+        title: "Error creating project",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    const projectId = Math.floor(Math.random() * 1000).toString(); // Temporary ID generation
-    
-    // Close dialog
-    onOpenChange(false);
-    
-    toast({
-      title: "Project Created",
-      description: "Your new project has been created successfully!",
-    });
-    
-    // Navigate to the project detail page
-    navigate(`/dashboard/projects/${projectId}`);
   };
 
   const generateDescription = async () => {
@@ -176,7 +221,20 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
           </div>
           
           <DialogFooter>
-            <Button type="submit" className="bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white">Create Project</Button>
+            <Button 
+              type="submit" 
+              className="bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Project"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

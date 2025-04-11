@@ -1,12 +1,14 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import { Star, MessageSquare, Plus } from "lucide-react";
+import { Star, MessageSquare, Plus, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { IdeaCard } from "@/components/projects/IdeaCard";
 import { AddIdeaDialog } from "@/components/projects/AddIdeaDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 // Sample idea data - would come from API in real implementation
 const sampleIdeas = [
@@ -56,15 +58,77 @@ const sampleIdeas = [
   }
 ];
 
+interface Project {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  created_at?: string;
+  owner_id?: string;
+}
+
 const ProjectDetail = () => {
   const { projectId } = useParams();
   const [showAddIdeaDialog, setShowAddIdeaDialog] = useState(false);
   const [ideas] = useState(sampleIdeas);
-
-  // In a real implementation, we would fetch the project details by ID
-  // For now, we'll use static data or location state if available
-  const projectTitle = "How might we build a culture of innovation inside our company?";
-  const projectDescription = "This question challenges us to think about how we can foster an environment where creativity, experimentation, and continuous improvement are ingrained in our company's DNA. Building a culture of innovation involves more than just implementing new processes or technologies; it requires cultivating an open mindset where employees at all levels feel empowered to share ideas, take risks, and collaborate across teams.";
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        if (!projectId) return;
+        
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("projects")
+          .select("id, title, description, status, created_at, owner_id")
+          .eq("id", projectId)
+          .single();
+        
+        if (error) {
+          console.error("Error fetching project:", error);
+          toast({
+            title: "Error loading project",
+            description: "Could not load project details. Please try again later.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        setProject(data);
+      } catch (error) {
+        console.error("Unexpected error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProject();
+  }, [projectId, toast]);
+  
+  if (loading) {
+    return (
+      <div className="container max-w-7xl px-4 py-8 flex flex-col items-center justify-center h-48">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-2 text-muted-foreground">Loading project...</p>
+      </div>
+    );
+  }
+  
+  if (!project) {
+    return (
+      <div className="container max-w-7xl px-4 py-8">
+        <div className="text-center p-6 border rounded-lg bg-muted/30">
+          <h1 className="text-2xl font-bold mb-2">Project not found</h1>
+          <p className="text-muted-foreground">
+            The project you're looking for doesn't exist or you don't have permission to view it.
+          </p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="container max-w-7xl px-4 py-8 animate-fade-in">
@@ -99,8 +163,8 @@ const ProjectDetail = () => {
             </div>
           </div>
           
-          <h1 className="text-4xl font-bold mt-6 mb-4">{projectTitle}</h1>
-          <p className="text-lg text-gray-600 max-w-5xl">{projectDescription}</p>
+          <h1 className="text-4xl font-bold mt-6 mb-4">{project.title}</h1>
+          <p className="text-lg text-gray-600 max-w-5xl">{project.description}</p>
         </div>
         
         <Separator className="my-8" />
@@ -116,7 +180,7 @@ const ProjectDetail = () => {
       <AddIdeaDialog
         open={showAddIdeaDialog}
         onOpenChange={setShowAddIdeaDialog}
-        projectTitle={projectTitle}
+        projectTitle={project.title || ""}
       />
     </div>
   );
