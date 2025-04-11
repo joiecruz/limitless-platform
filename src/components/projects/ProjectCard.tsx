@@ -1,9 +1,9 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { formatDate } from "@/lib/utils";
+import { ProjectStatusBadge } from "./ProjectStatusBadge";
 
-interface ProjectCardProps {
+export interface ProjectCardProps {
   id: string;
   title: string;
   description: string;
@@ -13,40 +13,6 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ title, description, status, image, projectPhases = [] }: ProjectCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'testing':
-        return 'bg-purple-100 text-purple-800';
-      case 'prototyping':
-        return 'bg-orange-100 text-orange-800';
-      case 'measure':
-        return 'bg-pink-100 text-pink-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return 'In Progress';
-      case 'testing':
-        return 'Testing';
-      case 'prototyping':
-        return 'Prototyping';
-      case 'completed':
-        return 'Completed';
-      case 'measure':
-        return 'Measure';
-      default:
-        return status;
-    }
-  };
-
   const fallbackImage = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
   
   return (
@@ -66,9 +32,7 @@ export function ProjectCard({ title, description, status, image, projectPhases =
       </CardContent>
       <CardFooter className="flex justify-between items-center border-t p-4">
         <div className="flex items-center">
-          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
-            {getStatusText(status)}
-          </span>
+          <ProjectStatusBadge status={status} />
         </div>
         <div className="flex -space-x-2">
           {projectPhases.map((phase, index) => (

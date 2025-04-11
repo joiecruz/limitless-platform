@@ -1,10 +1,12 @@
 
+type ProjectStatus = 'completed' | 'in_progress' | 'testing' | 'prototyping' | 'measure';
+
 interface ProjectStatusBadgeProps {
-  status: string;
+  status: ProjectStatus;
 }
 
 export function ProjectStatusBadge({ status }: ProjectStatusBadgeProps) {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: ProjectStatus) => {
     switch (status) {
       case 'completed':
         return 'bg-green-100 text-green-800';
@@ -21,7 +23,7 @@ export function ProjectStatusBadge({ status }: ProjectStatusBadgeProps) {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: ProjectStatus) => {
     switch (status) {
       case 'in_progress':
         return 'In Progress';

@@ -6,16 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { ProjectCardProps } from "./ProjectCard";
 
 interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateProject?: (projectData: any) => void;
+  onCreateProject?: (projectData: Partial<ProjectCardProps>) => void;
 }
 
 export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: CreateProjectDialogProps) {
   const { toast } = useToast();
-  const [projectData, setProjectData] = useState({
+  const [projectData, setProjectData] = useState<Partial<ProjectCardProps>>({
     title: "",
     description: "",
     status: "in_progress",
@@ -25,7 +26,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
     e.preventDefault();
     
     // Validation
-    if (!projectData.title.trim()) {
+    if (!projectData.title?.trim()) {
       toast({
         title: "Required field missing",
         description: "Please enter a project title",

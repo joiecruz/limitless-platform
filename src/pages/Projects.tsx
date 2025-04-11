@@ -2,12 +2,11 @@
 import { useState } from "react";
 import { CreateProjectButton } from "@/components/projects/CreateProjectButton";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
-import { ProjectCard } from "@/components/projects/ProjectCard";
+import { ProjectCard, ProjectCardProps } from "@/components/projects/ProjectCard";
 import { ProjectBanner } from "@/components/projects/ProjectBanner";
-import { useNavigate } from "react-router-dom";
 
 // Example project data - in a real app this would come from an API
-const sampleProjects = [
+const sampleProjects: ProjectCardProps[] = [
   {
     id: "1",
     title: "New Credit Card Product for Small Business Owners",
@@ -61,15 +60,14 @@ const sampleProjects = [
 export default function Projects() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [projects, setProjects] = useState(sampleProjects);
-  const navigate = useNavigate();
 
   const handleCreateProject = (projectData: any) => {
     // In a real app, you would call an API to create the project
-    const newProject = {
+    const newProject: ProjectCardProps = {
       id: (projects.length + 1).toString(),
       title: projectData.title,
       description: projectData.description,
-      status: projectData.status,
+      status: "in_progress",
       image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
       projectPhases: ["DT"]
     };
