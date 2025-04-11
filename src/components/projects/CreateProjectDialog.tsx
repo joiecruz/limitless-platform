@@ -93,7 +93,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
             <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Create Project</Button>
+            <Button type="submit" className="bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white">Create Project</Button>
           </DialogFooter>
         </form>
       </DialogContent>

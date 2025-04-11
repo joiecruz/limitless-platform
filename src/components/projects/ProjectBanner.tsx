@@ -22,7 +22,7 @@ export function ProjectBanner({ onCreateProject }: ProjectBannerProps) {
         </div>
         <div className="flex-shrink-0">
           <img 
-            src="/lovable-uploads/df135d81-6b23-4b51-a76a-5731febf93be.png" 
+            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets//projects-banner.png" 
             alt="Project Design" 
             className="w-full max-w-md h-auto object-contain"
           />

@@ -12,7 +12,7 @@ const CreateProjectButton = forwardRef<HTMLButtonElement, CreateProjectButtonPro
     return (
       <Button 
         ref={ref}
-        className="gap-2" 
+        className="gap-2 bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white" 
         {...props}
       >
         <Plus className="h-5 w-5" />
