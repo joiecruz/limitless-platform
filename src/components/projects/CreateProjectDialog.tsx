@@ -83,24 +83,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
     setIsGeneratingDescription(true);
     
     try {
-      // Here we would normally call a Supabase Edge Function to generate description
-      // For now, we'll simulate it with a timeout
-      setTimeout(() => {
-        const generatedDescription = `This is an AI-generated description for the challenge: "${projectData.title}". 
-        
-This challenge aims to explore innovative solutions through collaborative ideation. Team members are encouraged to think outside the box and consider multiple perspectives. The collected ideas will be evaluated based on feasibility, impact, and alignment with organizational goals.`;
-        
-        setProjectData(prev => ({ ...prev, description: generatedDescription }));
-        setIsGeneratingDescription(false);
-        
-        toast({
-          title: "Description Generated",
-          description: "AI has created a description for your challenge",
-        });
-      }, 1500);
-      
-      // In a real implementation, we would call a Supabase Edge Function like this:
-      /*
+      // Call the Supabase Edge Function to generate a description
       const { data, error } = await supabase.functions.invoke('generate-description', {
         body: { prompt: projectData.title }
       });
@@ -108,8 +91,11 @@ This challenge aims to explore innovative solutions through collaborative ideati
       if (error) throw error;
       
       setProjectData(prev => ({ ...prev, description: data.generatedText }));
-      */
       
+      toast({
+        title: "Description Generated",
+        description: "AI has created a description for your challenge",
+      });
     } catch (error) {
       console.error("Error generating description:", error);
       toast({
@@ -117,6 +103,7 @@ This challenge aims to explore innovative solutions through collaborative ideati
         description: "Failed to generate description. Please try again or enter manually.",
         variant: "destructive",
       });
+    } finally {
       setIsGeneratingDescription(false);
     }
   };
