@@ -60,6 +60,7 @@ const sampleIdeas = [
 
 interface Project {
   id: string;
+  name: string;  // Added name property
   title: string;
   description: string | null;
   status: string;
@@ -83,7 +84,7 @@ const ProjectDetail = () => {
         setLoading(true);
         const { data, error } = await supabase
           .from("projects")
-          .select("id, title, description, status, created_at, owner_id")
+          .select("id, name, title, description, status, created_at, owner_id")
           .eq("id", projectId)
           .single();
         
@@ -163,7 +164,7 @@ const ProjectDetail = () => {
             </div>
           </div>
           
-          <h1 className="text-4xl font-bold mt-6 mb-4">{project.title}</h1>
+          <h1 className="text-4xl font-bold mt-6 mb-4">{project.title || project.name}</h1>
           <p className="text-lg text-gray-600 max-w-5xl">{project.description}</p>
         </div>
         
@@ -180,7 +181,7 @@ const ProjectDetail = () => {
       <AddIdeaDialog
         open={showAddIdeaDialog}
         onOpenChange={setShowAddIdeaDialog}
-        projectTitle={project.title || ""}
+        projectTitle={project.title || project.name || ""}
       />
     </div>
   );

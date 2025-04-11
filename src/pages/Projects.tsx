@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ProjectFromDB {
   id: string;
+  name: string; // Added name property
   title: string;
   description: string | null;
   status: string;
@@ -34,7 +35,7 @@ export default function Projects() {
         
         const { data, error } = await supabase
           .from("projects")
-          .select("id, title, description, status, created_at, owner_id")
+          .select("id, name, title, description, status, created_at, owner_id")
           .order("created_at", { ascending: false });
           
         if (error) {
@@ -43,7 +44,7 @@ export default function Projects() {
         
         const mappedProjects = data?.map((project: ProjectFromDB) => ({
           id: project.id,
-          title: project.title || "Untitled Project",
+          title: project.title || project.name || "Untitled Project",
           description: project.description || "",
           status: project.status as any,
           image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",

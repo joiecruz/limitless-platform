@@ -57,6 +57,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
         .from("projects")
         .insert([
           {
+            name: projectData.title, // Use title as name to satisfy DB constraint
             title: projectData.title,
             description: projectData.description || null,
             status: projectData.status,
