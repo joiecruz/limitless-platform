@@ -4,6 +4,9 @@ import { CreateProjectButton } from "@/components/projects/CreateProjectButton";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { ProjectCard, ProjectCardProps } from "@/components/projects/ProjectCard";
 import { ProjectBanner } from "@/components/projects/ProjectBanner";
+import { Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 // Example project data - in a real app this would come from an API
 const sampleProjects: ProjectCardProps[] = [
@@ -60,6 +63,7 @@ const sampleProjects: ProjectCardProps[] = [
 export default function Projects() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [projects, setProjects] = useState(sampleProjects);
+  const [showFilters, setShowFilters] = useState(false);
 
   const handleCreateProject = (projectData: Partial<ProjectCardProps>) => {
     // In a real app, you would call an API to create the project
@@ -79,6 +83,10 @@ export default function Projects() {
     setIsCreateDialogOpen(true);
   };
 
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
   return (
     <div className="container max-w-7xl px-4 py-8 animate-fade-in">
       <div className="flex justify-between items-center mb-8">
@@ -88,6 +96,52 @@ export default function Projects() {
 
       <ProjectBanner onCreateProject={handleOpenCreateDialog} />
       
+      <div className="my-6 flex justify-between items-center">
+        <div className="flex gap-3 items-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={toggleFilters} 
+            className="flex items-center gap-1"
+          >
+            <Filter className="h-4 w-4" /> Filters
+          </Button>
+          {showFilters && (
+            <span className="text-sm text-muted-foreground">
+              Showing all projects
+            </span>
+          )}
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {projects.length} {projects.length === 1 ? 'project' : 'projects'}
+        </div>
+      </div>
+
+      {showFilters && (
+        <div className="mb-6 p-4 bg-muted/40 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <h3 className="text-sm font-medium mb-2">Status</h3>
+              <div className="space-x-2">
+                <Button variant="outline" size="sm" className="text-xs">All</Button>
+                <Button variant="outline" size="sm" className="text-xs">In Progress</Button>
+                <Button variant="outline" size="sm" className="text-xs">Completed</Button>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium mb-2">Type</h3>
+              <div className="space-x-2">
+                <Button variant="outline" size="sm" className="text-xs">All</Button>
+                <Button variant="outline" size="sm" className="text-xs">Design Thinking</Button>
+                <Button variant="outline" size="sm" className="text-xs">AI Projects</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <Separator className="my-6" />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
           <div key={project.id}>
