@@ -130,7 +130,7 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
-            <AppRoutes />
+            <AppRoutes session={session} />
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
