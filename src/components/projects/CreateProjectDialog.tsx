@@ -44,14 +44,23 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
     setIsSubmitting(true);
     
     try {
+      // Get current user session to ensure user is authenticated
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData?.session?.user;
+      
+      if (!user) {
+        throw new Error("You must be logged in to create a project");
+      }
+      
       // Insert the project into Supabase
       const { data, error } = await supabase
         .from("projects")
         .insert([
           {
             title: projectData.title,
-            description: projectData.description,
+            description: projectData.description || null,
             status: projectData.status,
+            owner_id: user.id
           }
         ])
         .select("id, title, description, status");
@@ -60,7 +69,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
         console.error("Error creating project:", error);
         toast({
           title: "Error creating project",
-          description: "There was an error creating your project. Please try again.",
+          description: error.message || "There was an error creating your project. Please try again.",
           variant: "destructive",
         });
         return;
@@ -91,11 +100,11 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
       
       // Navigate to the project detail page
       navigate(`/dashboard/projects/${newProject.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Unexpected error:", err);
       toast({
         title: "Error creating project",
-        description: "An unexpected error occurred. Please try again.",
+        description: err.message || "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -144,11 +153,11 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
       } else {
         throw new Error(data.error || "Failed to generate description");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating description:", error);
       toast({
         title: "Generation failed",
-        description: error instanceof Error ? error.message : "An error occurred while generating description",
+        description: error.message || "An error occurred while generating description",
         variant: "destructive",
       });
     } finally {
