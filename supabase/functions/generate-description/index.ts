@@ -52,38 +52,46 @@ serve(async (req) => {
     Do not use placeholders or generic text - make it specific to the "How Might We" question.`;
 
     console.log("Calling OpenAI API...");
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 250,
-        temperature: 0.7,
-      }),
-    });
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 250,
+          temperature: 0.7,
+        }),
+      });
 
-    console.log("OpenAI API response status:", response.status);
-    const data = await response.json();
-    
-    if (!response.ok) {
-      console.error("OpenAI API error:", data);
-      throw new Error(data.error?.message || 'Error calling OpenAI API');
+      console.log("OpenAI API response status:", response.status);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error("OpenAI API error:", data);
+        throw new Error(data.error?.message || 'Error calling OpenAI API');
+      }
+
+      const generatedText = data.choices[0].message.content;
+      console.log("Generated text:", generatedText);
+
+      return new Response(
+        JSON.stringify({ generatedText }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (apiError) {
+      console.error("Error in OpenAI API call:", apiError);
+      return new Response(
+        JSON.stringify({ error: `OpenAI API error: ${apiError.message}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
-
-    const generatedText = data.choices[0].message.content;
-    console.log("Generated text:", generatedText);
-
-    return new Response(
-      JSON.stringify({ generatedText }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
     
   } catch (error) {
     console.error('Error generating description:', error);

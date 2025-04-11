@@ -70,4 +70,4 @@ url = ""
 
 [functions]
 [functions.generate-description]
-verify_jwt = true
+verify_jwt = false
