@@ -68,6 +68,9 @@ export default function CollectIdeas() {
         
         // Get likes count for each idea
         if (data && data.length > 0) {
+          const { data: userData } = await supabase.auth.getSession();
+          const currentUserId = userData?.session?.user?.id;
+          
           const ideasWithCounts = await Promise.all(
             data.map(async (idea) => {
               // Get likes count
@@ -83,18 +86,23 @@ export default function CollectIdeas() {
                 .eq("idea_id", idea.id);
                 
               // Check if current user has liked this idea
-              const { data: likeData, error: likeError } = await supabase
-                .from("idea_likes")
-                .select("id")
-                .eq("idea_id", idea.id)
-                .eq("user_id", supabase.auth.getUser()?.data?.user?.id || '')
-                .maybeSingle();
-                
+              let hasLiked = false;
+              if (currentUserId) {
+                const { data: likeData, error: likeError } = await supabase
+                  .from("idea_likes")
+                  .select("id")
+                  .eq("idea_id", idea.id)
+                  .eq("user_id", currentUserId)
+                  .maybeSingle();
+                  
+                hasLiked = !!likeData;
+              }
+              
               return {
                 ...idea,
                 likes_count: likesCount || 0,
                 comments_count: commentsCount || 0,
-                has_liked: !!likeData
+                has_liked: hasLiked
               };
             })
           );

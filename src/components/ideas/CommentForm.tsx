@@ -1,64 +1,64 @@
 
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { IdeaComment } from "@/types/ideas";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface CommentFormProps {
   ideaId: string;
-  onCommentAdded: (comment: IdeaComment) => void;
+  onCommentAdded: () => void;
 }
 
 export function CommentForm({ ideaId, onCommentAdded }: CommentFormProps) {
-  const { toast } = useToast();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!content.trim()) {
-      return;
-    }
-    
-    const user = supabase.auth.getUser()?.data?.user;
-    
-    if (!user) {
-      toast({ 
-        title: "Authentication required", 
-        description: "Please sign in to comment", 
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
+  const handleSubmit = async () => {
+    if (!content.trim()) return;
     
     try {
-      const { data, error } = await supabase
-        .from('idea_comments')
+      setIsSubmitting(true);
+      
+      // Get the current user
+      const { data: userData } = await supabase.auth.getSession();
+      const user = userData?.session?.user;
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "You must be logged in to comment",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Insert the comment
+      const { error } = await supabase
+        .from("idea_comments")
         .insert({
           idea_id: ideaId,
+          content: content.trim(),
           user_id: user.id,
-          content: content.trim()
-        })
-        .select(`
-          *,
-          profiles:user_id (username, avatar_url, first_name, last_name)
-        `)
-        .single();
+        });
         
       if (error) throw error;
       
+      // Reset form
       setContent("");
-      onCommentAdded(data);
-    } catch (error) {
-      console.error('Error posting comment:', error);
+      onCommentAdded();
+      
       toast({
-        title: 'Error',
-        description: 'Failed to post your comment',
-        variant: 'destructive',
+        title: "Comment added",
+        description: "Your comment has been posted",
+      });
+    } catch (error) {
+      console.error("Error posting comment:", error);
+      toast({
+        title: "Something went wrong",
+        description: "Unable to post your comment. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -66,25 +66,24 @@ export function CommentForm({ ideaId, onCommentAdded }: CommentFormProps) {
   };
   
   return (
-    <form onSubmit={handleSubmit}>
+    <div className="space-y-2">
       <Textarea
-        placeholder="Add a comment..."
+        placeholder="Write a comment..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        rows={1}
-        className="resize-none mb-2"
+        rows={2}
+        disabled={isSubmitting}
       />
       
       <div className="flex justify-end">
         <Button 
-          type="submit" 
           size="sm"
-          disabled={!content.trim() || isSubmitting}
-          className="bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white"
+          onClick={handleSubmit}
+          disabled={isSubmitting || !content.trim()}
         >
-          {isSubmitting ? "Posting..." : "Post"}
+          {isSubmitting ? "Posting..." : "Post comment"}
         </Button>
       </div>
-    </form>
+    </div>
   );
 }

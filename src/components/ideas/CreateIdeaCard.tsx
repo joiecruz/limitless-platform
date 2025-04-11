@@ -1,12 +1,12 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Lightbulb, Plus } from "lucide-react";
+import { PlusCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateIdeaCardProps {
   projectId: string;
@@ -15,150 +15,144 @@ interface CreateIdeaCardProps {
   focus?: boolean;
 }
 
-export function CreateIdeaCard({ projectId, onIdeaCreated, viewMode, focus }: CreateIdeaCardProps) {
-  const { toast } = useToast();
+export function CreateIdeaCard({ 
+  projectId, 
+  onIdeaCreated, 
+  viewMode, 
+  focus = false 
+}: CreateIdeaCardProps) {
+  const [isCreating, setIsCreating] = useState(focus);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
   useEffect(() => {
-    if (focus && titleInputRef.current) {
-      setIsExpanded(true);
-      setTimeout(() => {
-        titleInputRef.current?.focus();
-      }, 100);
+    if (isCreating && titleInputRef.current) {
+      titleInputRef.current.focus();
     }
-  }, [focus]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  }, [isCreating]);
+  
+  const handleCreate = async () => {
     if (!title.trim()) {
-      toast({ 
-        title: "Missing title", 
-        description: "Please add a title for your idea", 
-        variant: "destructive" 
+      toast({
+        title: "Title required",
+        description: "Please provide a title for your idea",
+        variant: "destructive",
       });
       return;
     }
-    
-    const user = supabase.auth.getUser()?.data?.user;
-    
-    if (!user) {
-      toast({ 
-        title: "Authentication required", 
-        description: "Please sign in to share ideas", 
-        variant: "destructive" 
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
     
     try {
-      const { data, error } = await supabase
-        .from('ideas')
+      setIsSubmitting(true);
+      
+      // Get the current user
+      const { data: userData } = await supabase.auth.getSession();
+      const user = userData?.session?.user;
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "You must be logged in to share ideas",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Insert the new idea
+      const { error } = await supabase
+        .from("ideas")
         .insert({
           project_id: projectId,
+          title,
+          content: content || "",
           user_id: user.id,
-          title: title.trim(),
-          content: content.trim() || title.trim()
-        })
-        .select();
+        });
         
       if (error) throw error;
-      
-      toast({
-        title: "Idea shared!",
-        description: "Your idea has been added to the board"
-      });
       
       // Reset form
       setTitle("");
       setContent("");
-      setIsExpanded(false);
+      setIsCreating(false);
       onIdeaCreated();
-    } catch (error) {
-      console.error('Error creating idea:', error);
+      
       toast({
-        title: 'Error',
-        description: 'Failed to share your idea. Please try again.',
-        variant: 'destructive',
+        title: "Idea shared!",
+        description: "Your idea has been added to the board",
+      });
+    } catch (error) {
+      console.error("Error creating idea:", error);
+      toast({
+        title: "Something went wrong",
+        description: "Unable to share your idea. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  const cardClass = viewMode === "grid" 
-    ? "h-full" 
-    : "w-full";
-  
-  if (!isExpanded) {
+  if (!isCreating) {
     return (
-      <Card className={`cursor-pointer border-dashed ${cardClass} hover:border-primary/50 hover:bg-muted/50 transition-colors`} onClick={() => setIsExpanded(true)}>
-        <CardContent className="flex flex-col items-center justify-center h-full py-8">
-          <div className="bg-primary/10 p-3 rounded-full mb-3">
-            <Plus className="h-6 w-6 text-primary" />
-          </div>
-          <p className="font-medium text-center">Share your idea</p>
-          <p className="text-muted-foreground text-sm text-center">Click to add your thoughts</p>
-        </CardContent>
+      <Card 
+        className={`border-dashed cursor-pointer hover:border-primary/50 transition-all ${
+          viewMode === "list" ? "p-4" : "p-6"
+        }`}
+        onClick={() => setIsCreating(true)}
+      >
+        <div className="flex flex-col items-center justify-center text-muted-foreground h-full min-h-[120px]">
+          <PlusCircle className="h-8 w-8 mb-2 opacity-70" />
+          <p>Share a new idea</p>
+        </div>
       </Card>
     );
   }
   
   return (
-    <Card className={cardClass}>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="p-4 space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="bg-primary/10 p-1.5 rounded-full">
-              <Lightbulb className="h-4 w-4 text-primary" />
-            </div>
-            <p className="text-sm font-medium">New Idea</p>
-          </div>
-          
-          <div className="space-y-3">
-            <Input
-              ref={titleInputRef}
-              placeholder="Idea title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={100}
-              required
-            />
-            
-            <Textarea 
-              placeholder="Describe your idea (optional)"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={3}
-              className="resize-none"
-            />
-          </div>
-        </CardContent>
+    <Card className={viewMode === "list" ? "p-4" : "p-6"}>
+      <div className="space-y-4">
+        <Input
+          ref={titleInputRef}
+          placeholder="Idea title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="font-medium text-lg"
+          disabled={isSubmitting}
+        />
         
-        <CardFooter className="flex justify-between px-4 py-3 border-t bg-muted/30">
-          <Button 
-            type="button" 
-            variant="ghost" 
-            onClick={() => setIsExpanded(false)}
+        <Textarea
+          placeholder="Describe your idea (optional)"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={3}
+          disabled={isSubmitting}
+        />
+        
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setIsCreating(false);
+              setTitle("");
+              setContent("");
+            }}
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
           
           <Button 
-            type="submit" 
-            disabled={!title.trim() || isSubmitting}
-            className="bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white"
+            size="sm" 
+            onClick={handleCreate}
+            disabled={isSubmitting || !title.trim()}
           >
             {isSubmitting ? "Sharing..." : "Share idea"}
           </Button>
-        </CardFooter>
-      </form>
+        </div>
+      </div>
     </Card>
   );
 }

@@ -1,19 +1,14 @@
 
 import { useState } from "react";
-import { Idea, IdeaComment } from "@/types/ideas";
 import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ThumbsUp, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Heart, MessageSquare, MoreVertical, Trash2 } from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Idea } from "@/types/ideas";
 import { CommentList } from "./CommentList";
 import { CommentForm } from "./CommentForm";
 
@@ -23,220 +18,154 @@ interface IdeaCardProps {
 }
 
 export function IdeaCard({ idea, viewMode }: IdeaCardProps) {
-  const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState<IdeaComment[]>([]);
-  const [isLoadingComments, setIsLoadingComments] = useState(false);
-  const [hasLiked, setHasLiked] = useState(idea.has_liked || false);
-  const [likesCount, setLikesCount] = useState(idea.likes_count || 0);
+  const [isLiking, setIsLiking] = useState(false);
+  const [currentIdea, setCurrentIdea] = useState<Idea>(idea);
+  const { toast } = useToast();
   
-  const currentUser = supabase.auth.getUser()?.data?.user;
-  const isOwner = currentUser && currentUser.id === idea.user_id;
-  
-  const userInitials = idea.profiles?.first_name && idea.profiles?.last_name 
-    ? `${idea.profiles.first_name[0]}${idea.profiles.last_name[0]}`
-    : idea.profiles?.username?.substring(0, 2).toUpperCase() 
-    || 'AN';
-  
-  const userName = idea.profiles?.first_name && idea.profiles?.last_name
-    ? `${idea.profiles.first_name} ${idea.profiles.last_name}`
-    : idea.profiles?.username || 'Anonymous';
-  
-  const timeAgo = formatDistanceToNow(new Date(idea.created_at), { addSuffix: true });
-  
-  const handleToggleLike = async () => {
+  const handleLikeToggle = async () => {
     try {
-      if (!currentUser) {
-        toast({ 
-          title: "Authentication required", 
-          description: "Please sign in to like ideas" 
+      setIsLiking(true);
+      
+      // Get the current user
+      const { data: userData } = await supabase.auth.getSession();
+      const user = userData?.session?.user;
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "You must be logged in to like ideas",
+          variant: "destructive",
         });
         return;
       }
       
-      if (hasLiked) {
-        // Unlike
+      if (currentIdea.has_liked) {
+        // Unlike the idea
         const { error } = await supabase
-          .from('idea_likes')
+          .from("idea_likes")
           .delete()
-          .eq('idea_id', idea.id)
-          .eq('user_id', currentUser.id);
+          .eq("idea_id", idea.id)
+          .eq("user_id", user.id);
           
         if (error) throw error;
         
-        setHasLiked(false);
-        setLikesCount(prev => Math.max(0, prev - 1));
+        setCurrentIdea({
+          ...currentIdea,
+          likes_count: (currentIdea.likes_count || 0) - 1,
+          has_liked: false,
+        });
       } else {
-        // Like
+        // Like the idea
         const { error } = await supabase
-          .from('idea_likes')
+          .from("idea_likes")
           .insert({
             idea_id: idea.id,
-            user_id: currentUser.id
+            user_id: user.id,
           });
           
         if (error) throw error;
         
-        setHasLiked(true);
-        setLikesCount(prev => prev + 1);
+        setCurrentIdea({
+          ...currentIdea,
+          likes_count: (currentIdea.likes_count || 0) + 1,
+          has_liked: true,
+        });
       }
     } catch (error) {
-      console.error('Error toggling like:', error);
+      console.error("Error toggling like:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to update like status',
-        variant: 'destructive',
-      });
-    }
-  };
-  
-  const handleDeleteIdea = async () => {
-    try {
-      const { error } = await supabase
-        .from('ideas')
-        .delete()
-        .eq('id', idea.id);
-        
-      if (error) throw error;
-      
-      toast({
-        title: 'Idea deleted',
-        description: 'Your idea has been deleted successfully',
-      });
-    } catch (error) {
-      console.error('Error deleting idea:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete idea',
-        variant: 'destructive',
-      });
-    }
-  };
-  
-  const handleToggleComments = async () => {
-    if (showComments) {
-      setShowComments(false);
-      return;
-    }
-    
-    setIsLoadingComments(true);
-    setShowComments(true);
-    
-    try {
-      const { data, error } = await supabase
-        .from('idea_comments')
-        .select(`
-          *,
-          profiles:user_id (username, avatar_url, first_name, last_name)
-        `)
-        .eq('idea_id', idea.id)
-        .order('created_at', { ascending: true });
-        
-      if (error) throw error;
-      
-      setComments(data || []);
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load comments',
-        variant: 'destructive',
+        title: "Something went wrong",
+        description: "Unable to process your like. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      setIsLoadingComments(false);
+      setIsLiking(false);
     }
   };
   
-  const handleAddComment = (newComment: IdeaComment) => {
-    setComments(prev => [...prev, newComment]);
+  const onCommentAdded = () => {
+    setCurrentIdea({
+      ...currentIdea,
+      comments_count: (currentIdea.comments_count || 0) + 1,
+    });
   };
   
-  const cardClass = viewMode === "grid" 
-    ? "bg-card border rounded-lg shadow-sm overflow-hidden h-full flex flex-col" 
-    : "bg-card border rounded-lg shadow-sm overflow-hidden flex flex-col";
+  const authorName = currentIdea.profiles?.first_name 
+    ? `${currentIdea.profiles.first_name} ${currentIdea.profiles.last_name || ''}`
+    : currentIdea.profiles?.username || 'Anonymous';
+    
+  const timeAgo = formatDistanceToNow(new Date(currentIdea.created_at), { addSuffix: true });
   
   return (
-    <div className={cardClass}>
-      <div className="p-4 flex-grow">
-        <div className="flex justify-between items-center mb-4">
+    <Card className={viewMode === "list" ? "p-4" : "p-6"}>
+      <div className="space-y-4">
+        <div>
+          <h3 className="font-semibold text-lg">{currentIdea.title}</h3>
+          {currentIdea.content && (
+            <p className="mt-2 text-muted-foreground whitespace-pre-line">{currentIdea.content}</p>
+          )}
+        </div>
+        
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Avatar>
-              <AvatarImage src={idea.profiles?.avatar_url || undefined} />
-              <AvatarFallback>{userInitials}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium">{userName}</p>
-              <p className="text-xs text-muted-foreground">{timeAgo}</p>
-            </div>
+            <span>{authorName}</span>
+            <span>•</span>
+            <span>{timeAgo}</span>
           </div>
           
-          {isOwner && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-4 w-4" />
-                  <span className="sr-only">Options</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleDeleteIdea} className="text-destructive focus:text-destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          {(currentIdea.likes_count || currentIdea.comments_count) ? (
+            <div className="flex items-center gap-3">
+              {currentIdea.likes_count! > 0 && (
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <ThumbsUp className="h-3 w-3" />
+                  <span>{currentIdea.likes_count}</span>
+                </Badge>
+              )}
+              
+              {currentIdea.comments_count! > 0 && (
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <MessageSquare className="h-3 w-3" />
+                  <span>{currentIdea.comments_count}</span>
+                </Badge>
+              )}
+            </div>
+          ) : null}
         </div>
         
-        <h3 className="text-lg font-semibold mb-2">{idea.title}</h3>
-        <p className="text-muted-foreground mb-4 whitespace-pre-line">{idea.content}</p>
-      </div>
-      
-      <div className="border-t px-4 py-3 flex justify-between items-center bg-muted/30">
-        <div className="flex space-x-2">
+        <div className="flex items-center gap-2">
           <Button 
-            variant="ghost" 
+            variant={currentIdea.has_liked ? "default" : "outline"} 
             size="sm" 
-            onClick={handleToggleLike} 
-            className={`gap-1 ${hasLiked ? 'text-rose-500' : ''}`}
+            className="flex items-center gap-1"
+            onClick={handleLikeToggle}
+            disabled={isLiking}
           >
-            <Heart className={`h-4 w-4 ${hasLiked ? 'fill-current' : ''}`} />
-            {likesCount > 0 && <span>{likesCount}</span>}
+            <ThumbsUp className="h-4 w-4" />
+            <span>{currentIdea.has_liked ? "Liked" : "Like"}</span>
           </Button>
           
           <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleToggleComments} 
-            className="gap-1"
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={() => setShowComments(!showComments)}
           >
             <MessageSquare className="h-4 w-4" />
-            {idea.comments_count && idea.comments_count > 0 && (
-              <span>{idea.comments_count}</span>
-            )}
+            <span>Comment</span>
           </Button>
         </div>
         
-        {/* Display tags as badges if we want to add them in the future */}
-        <div className="hidden">
-          <Badge variant="secondary" className="text-xs">Tag</Badge>
-        </div>
-      </div>
-      
-      {showComments && (
-        <div className="border-t px-4 py-3 bg-card">
-          {isLoadingComments ? (
-            <div className="flex justify-center py-2">
-              <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        {showComments && (
+          <div className="pt-2">
+            <Separator className="mb-4" />
+            <CommentForm ideaId={currentIdea.id} onCommentAdded={onCommentAdded} />
+            <div className="mt-4">
+              <CommentList ideaId={currentIdea.id} />
             </div>
-          ) : (
-            <>
-              <CommentList comments={comments} />
-              <CommentForm ideaId={idea.id} onCommentAdded={handleAddComment} />
-            </>
-          )}
-        </div>
-      )}
-    </div>
+          </div>
+        )}
+      </div>
+    </Card>
   );
 }
