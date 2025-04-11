@@ -1,9 +1,12 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { CreateProjectButton } from "@/components/projects/CreateProjectButton";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { ProjectCard, ProjectCardProps } from "@/components/projects/ProjectCard";
 import { ProjectBanner } from "@/components/projects/ProjectBanner";
+import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
 
 // Example project data - in a real app this would come from an API
 const sampleProjects: ProjectCardProps[] = [
@@ -90,8 +93,21 @@ export default function Projects() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
-          <div key={project.id}>
+          <div key={project.id} className="flex flex-col">
             <ProjectCard {...project} />
+            <div className="mt-2 flex justify-end px-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                className="gap-2"
+              >
+                <Link to={`/projects/${project.id}/ideas`}>
+                  <MessageSquare className="h-4 w-4" />
+                  Collect Ideas
+                </Link>
+              </Button>
+            </div>
           </div>
         ))}
       </div>
