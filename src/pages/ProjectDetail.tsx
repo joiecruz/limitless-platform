@@ -25,7 +25,7 @@ const ProjectDetail = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { ideas, loading: ideasLoading } = useProjectIdeas(projectId);
+  const { ideas, loading: ideasLoading, addIdea, rateIdea, addComment } = useProjectIdeas(projectId);
   
   useEffect(() => {
     const fetchProject = async () => {
@@ -127,7 +127,12 @@ const ProjectDetail = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {ideas.map(idea => (
-              <IdeaCard key={idea.id} idea={idea} />
+              <IdeaCard 
+                key={idea.id} 
+                idea={idea} 
+                onRate={rateIdea}
+                onComment={addComment}
+              />
             ))}
           </div>
         )}

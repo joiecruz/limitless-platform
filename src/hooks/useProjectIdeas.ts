@@ -102,6 +102,9 @@ export const useProjectIdeas = (projectId: string) => {
 
   const addIdea = async (title: string, content: string) => {
     try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from("ideas")
         .insert([
@@ -109,7 +112,7 @@ export const useProjectIdeas = (projectId: string) => {
             title,
             content,
             project_id: projectId,
-            user_id: (await supabase.auth.getUser()).data.user?.id
+            user_id: user.id
           }
         ])
         .select()
@@ -117,12 +120,13 @@ export const useProjectIdeas = (projectId: string) => {
 
       if (error) throw error;
 
+      // After successfully adding, fetch the complete idea data with all relationships
+      await fetchIdeas();
+
       toast({
         title: "Idea added",
         description: "Your idea has been added successfully!",
       });
-
-      await fetchIdeas();
     } catch (error: any) {
       console.error("Error adding idea:", error);
       toast({
@@ -133,48 +137,129 @@ export const useProjectIdeas = (projectId: string) => {
     }
   };
 
-  const generateIdea = async (projectTitle: string) => {
+  const rateIdea = async (ideaId: string) => {
     try {
-      const response = await fetch("https://crllgygjuqpluvdpwayi.supabase.co/functions/v1/generate-idea", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          prompt: `Generate an innovative idea for this challenge: ${projectTitle}`
-        }),
-      });
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error("Not authenticated");
 
-      if (!response.ok) {
-        throw new Error("Failed to generate idea");
+      const { data: existingLike } = await supabase
+        .from("idea_likes")
+        .select()
+        .eq("idea_id", ideaId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingLike) {
+        // Unlike if already liked
+        await supabase
+          .from("idea_likes")
+          .delete()
+          .eq("idea_id", ideaId)
+          .eq("user_id", user.id);
+      } else {
+        // Like if not already liked
+        await supabase
+          .from("idea_likes")
+          .insert([{ idea_id: ideaId, user_id: user.id }]);
       }
 
-      const data = await response.json();
-      return {
-        title: data.title,
-        content: data.description
-      };
+      await fetchIdeas();
     } catch (error: any) {
-      console.error("Error generating idea:", error);
+      console.error("Error rating idea:", error);
       toast({
-        title: "Error generating idea",
-        description: "Failed to generate idea. Please try again.",
+        title: "Error rating idea",
+        description: error.message,
         variant: "destructive",
       });
-      return null;
     }
   };
 
-  useEffect(() => {
-    if (projectId) {
-      fetchIdeas();
+  const addComment = async (ideaId: string, content: string) => {
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error("Not authenticated");
+
+      await supabase
+        .from("idea_comments")
+        .insert([{
+          idea_id: ideaId,
+          user_id: user.id,
+          content
+        }]);
+
+      await fetchIdeas();
+      
+      toast({
+        title: "Comment added",
+        description: "Your comment has been added successfully!",
+      });
+    } catch (error: any) {
+      console.error("Error adding comment:", error);
+      toast({
+        title: "Error adding comment",
+        description: error.message,
+        variant: "destructive",
+      });
     }
+  };
+
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!projectId) return;
+
+    // Subscribe to changes
+    const channel = supabase
+      .channel('ideas-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'ideas',
+          filter: `project_id=eq.${projectId}`
+        },
+        () => {
+          fetchIdeas();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'idea_likes'
+        },
+        () => {
+          fetchIdeas();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'idea_comments'
+        },
+        () => {
+          fetchIdeas();
+        }
+      )
+      .subscribe();
+
+    // Initial fetch
+    fetchIdeas();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [projectId]);
 
   return {
     ideas,
     loading,
     addIdea,
-    generateIdea
+    generateIdea,
+    rateIdea,
+    addComment
   };
 };
