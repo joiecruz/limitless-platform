@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +23,6 @@ export const useProjectIdeas = (projectId: string) => {
   const fetchIdeas = async () => {
     try {
       setLoading(true);
-      // First fetch basic idea information
       const { data: ideasData, error } = await supabase
         .from("ideas")
         .select(`
@@ -39,9 +37,7 @@ export const useProjectIdeas = (projectId: string) => {
 
       if (error) throw error;
 
-      // Get profile information separately to avoid the relationship error
       const enrichedIdeas = await Promise.all(ideasData.map(async (idea) => {
-        // Get user profile data
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("first_name, last_name, avatar_url")
@@ -50,7 +46,6 @@ export const useProjectIdeas = (projectId: string) => {
           
         if (profileError) console.error("Error fetching profile:", profileError);
 
-        // Get stars count
         const { count: starsCount, error: starsError } = await supabase
           .from("idea_likes")
           .select("id", { count: "exact" })
@@ -58,7 +53,6 @@ export const useProjectIdeas = (projectId: string) => {
           
         if (starsError) console.error("Error fetching stars:", starsError);
 
-        // Get comments count
         const { count: commentsCount, error: commentsError } = await supabase
           .from("idea_comments")
           .select("id", { count: "exact" })
@@ -66,7 +60,6 @@ export const useProjectIdeas = (projectId: string) => {
           
         if (commentsError) console.error("Error fetching comments:", commentsError);
 
-        // Create a properly typed author object
         const authorName = profileData 
           ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || 'Anonymous'
           : 'Anonymous';
@@ -105,6 +98,21 @@ export const useProjectIdeas = (projectId: string) => {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error("Not authenticated");
 
+      const optimisticIdea: Idea = {
+        id: crypto.randomUUID(),
+        title,
+        content,
+        stars: 0,
+        comments: 0,
+        created_at: new Date().toISOString(),
+        author: {
+          name: 'You',
+          avatar: `https://api.dicebear.com/7.x/avatars/svg?seed=${user.id}`,
+        },
+      };
+
+      setIdeas(prevIdeas => [optimisticIdea, ...prevIdeas]);
+
       const { data, error } = await supabase
         .from("ideas")
         .insert([
@@ -120,7 +128,6 @@ export const useProjectIdeas = (projectId: string) => {
 
       if (error) throw error;
 
-      // After successfully adding, fetch the complete idea data with all relationships
       await fetchIdeas();
 
       toast({
@@ -128,6 +135,8 @@ export const useProjectIdeas = (projectId: string) => {
         description: "Your idea has been added successfully!",
       });
     } catch (error: any) {
+      setIdeas(prevIdeas => prevIdeas.filter(idea => idea.id !== optimisticIdea.id));
+      
       console.error("Error adding idea:", error);
       toast({
         title: "Error adding idea",
@@ -150,14 +159,12 @@ export const useProjectIdeas = (projectId: string) => {
         .maybeSingle();
 
       if (existingLike) {
-        // Unlike if already liked
         await supabase
           .from("idea_likes")
           .delete()
           .eq("idea_id", ideaId)
           .eq("user_id", user.id);
       } else {
-        // Like if not already liked
         await supabase
           .from("idea_likes")
           .insert([{ idea_id: ideaId, user_id: user.id }]);
@@ -202,8 +209,7 @@ export const useProjectIdeas = (projectId: string) => {
       });
     }
   };
-  
-  // Add the missing generateIdea function
+
   const generateIdea = async (projectTitle: string): Promise<{title: string, content: string} | null> => {
     try {
       const { data, error } = await supabase.functions.invoke('generate-idea', {
@@ -233,11 +239,9 @@ export const useProjectIdeas = (projectId: string) => {
     }
   };
 
-  // Set up real-time subscription
   useEffect(() => {
     if (!projectId) return;
 
-    // Subscribe to changes
     const channel = supabase
       .channel('ideas-changes')
       .on(
@@ -276,7 +280,6 @@ export const useProjectIdeas = (projectId: string) => {
       )
       .subscribe();
 
-    // Initial fetch
     fetchIdeas();
 
     return () => {
