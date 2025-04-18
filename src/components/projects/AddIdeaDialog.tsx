@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { useProjectIdeas } from "@/hooks/useProjectIdeas";
+import { useParams } from "react-router-dom";
 
 interface AddIdeaDialogProps {
   open: boolean;
@@ -15,40 +16,38 @@ interface AddIdeaDialogProps {
 }
 
 export function AddIdeaDialog({ open, onOpenChange, projectTitle }: AddIdeaDialogProps) {
-  const { toast } = useToast();
+  const { projectId = '' } = useParams();
+  const { addIdea, generateIdea } = useProjectIdeas(projectId);
   const [ideaData, setIdeaData] = useState({
     title: "",
-    description: ""
+    content: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    // Validation
-    if (!ideaData.title?.trim()) {
-      toast({
-        title: "Required field missing",
-        description: "Please enter an idea title",
-        variant: "destructive",
-      });
-      return;
+    try {
+      await addIdea(ideaData.title, ideaData.content);
+      setIdeaData({ title: "", content: "" });
+      onOpenChange(false);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    // Here you would typically make an API call to save the idea
-    console.log("Submitting idea:", ideaData);
-    
-    // Reset form and close dialog
-    setIdeaData({
-      title: "",
-      description: ""
-    });
-    
-    onOpenChange(false);
-    
-    toast({
-      title: "Idea Added",
-      description: "Your idea has been added successfully!",
-    });
+  };
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    try {
+      const generated = await generateIdea(projectTitle);
+      if (generated) {
+        setIdeaData(generated);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -89,15 +88,41 @@ export function AddIdeaDialog({ open, onOpenChange, projectTitle }: AddIdeaDialo
                 id="idea-description"
                 placeholder="Describe your idea in more detail"
                 className="min-h-[150px]"
-                value={ideaData.description}
-                onChange={(e) => setIdeaData({ ...ideaData, description: e.target.value })}
+                value={ideaData.content}
+                onChange={(e) => setIdeaData({ ...ideaData, content: e.target.value })}
               />
             </div>
           </div>
           
-          <DialogFooter>
-            <Button type="submit" className="bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white">
-              Add Idea
+          <DialogFooter className="gap-2">
+            <Button 
+              type="button"
+              variant="outline"
+              onClick={handleGenerate}
+              disabled={isGenerating || isSubmitting}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate with AI"
+              )}
+            </Button>
+            <Button 
+              type="submit" 
+              className="bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white"
+              disabled={isSubmitting || isGenerating}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                "Add Idea"
+              )}
             </Button>
           </DialogFooter>
         </form>

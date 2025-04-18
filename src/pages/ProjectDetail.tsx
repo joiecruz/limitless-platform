@@ -1,66 +1,17 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
-import { Star, MessageSquare, Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { IdeaCard } from "@/components/projects/IdeaCard";
 import { AddIdeaDialog } from "@/components/projects/AddIdeaDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-// Sample idea data - would come from API in real implementation
-const sampleIdeas = [
-  {
-    id: "1",
-    title: "Innovation Hubs",
-    description: "Establish dedicated innovation labs or hubs within the company",
-    stars: 3,
-    comments: 1,
-    author: {
-      name: "Jane Cooper",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    }
-  },
-  {
-    id: "2",
-    title: "Hackathons",
-    description: "Organize company-wide hackaton to enable innovatoin",
-    stars: 11,
-    comments: 1,
-    author: {
-      name: "John Smith",
-      avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    }
-  },
-  {
-    id: "3",
-    title: "Give incentives",
-    description: "Provide free gift certificates for those who will start innovation",
-    stars: 24,
-    comments: 0,
-    author: {
-      name: "Emma Jones",
-      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    }
-  },
-  {
-    id: "4",
-    title: "Innovation Hubs",
-    description: "Establish dedicated innovation labs or hubs within the company",
-    stars: 34,
-    comments: 3,
-    author: {
-      name: "Mark Wilson",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    }
-  }
-];
+import { useProjectIdeas } from "@/hooks/useProjectIdeas";
 
 interface Project {
   id: string;
-  name: string;  // Added name property
+  name: string;
   title: string;
   description: string | null;
   status: string;
@@ -69,12 +20,12 @@ interface Project {
 }
 
 const ProjectDetail = () => {
-  const { projectId } = useParams();
+  const { projectId = '' } = useParams();
   const [showAddIdeaDialog, setShowAddIdeaDialog] = useState(false);
-  const [ideas] = useState(sampleIdeas);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { ideas, loading: ideasLoading } = useProjectIdeas(projectId);
   
   useEffect(() => {
     const fetchProject = async () => {
@@ -171,11 +122,17 @@ const ProjectDetail = () => {
         <Separator className="my-8" />
         
         {/* Ideas grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {ideas.map(idea => (
-            <IdeaCard key={idea.id} idea={idea} />
-          ))}
-        </div>
+        {ideasLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {ideas.map(idea => (
+              <IdeaCard key={idea.id} idea={idea} />
+            ))}
+          </div>
+        )}
       </div>
       
       <AddIdeaDialog
