@@ -62,9 +62,12 @@ export const useProjectIdeas = (projectId: string) => {
           
         if (commentsError) console.error("Error fetching comments:", commentsError);
 
-        // Handle profiles data safely
-        // Extract the profile data which could be an object or null
-        const profileData = idea.profiles || null;
+        // Handle profiles data safely with proper type casting
+        // The profiles field might be an array with a single object or null
+        // Extract the first item if it's an array
+        const profileData = Array.isArray(idea.profiles) 
+          ? (idea.profiles.length > 0 ? idea.profiles[0] : null) 
+          : idea.profiles;
         
         // Create a properly typed author object
         const authorName = profileData 
