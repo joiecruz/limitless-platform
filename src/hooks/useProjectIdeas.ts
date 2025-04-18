@@ -49,7 +49,7 @@ export const useProjectIdeas = (projectId: string) => {
         // Get stars count
         const { count: starsCount, error: starsError } = await supabase
           .from("idea_likes")
-          .select("id", { count: true })
+          .select("id", { count: "exact" })
           .eq("idea_id", idea.id);
           
         if (starsError) console.error("Error fetching stars:", starsError);
@@ -57,11 +57,18 @@ export const useProjectIdeas = (projectId: string) => {
         // Get comments count
         const { count: commentsCount, error: commentsError } = await supabase
           .from("idea_comments")
-          .select("id", { count: true })
+          .select("id", { count: "exact" })
           .eq("idea_id", idea.id);
           
         if (commentsError) console.error("Error fetching comments:", commentsError);
 
+        // Handle profiles object correctly - it's a single object, not an array
+        const profileData = idea.profiles as { 
+          first_name: string | null; 
+          last_name: string | null; 
+          avatar_url: string | null 
+        } | null;
+        
         return {
           id: idea.id,
           title: idea.title,
@@ -70,10 +77,10 @@ export const useProjectIdeas = (projectId: string) => {
           comments: commentsCount || 0,
           created_at: idea.created_at,
           author: {
-            name: idea.profiles ? 
-              `${idea.profiles.first_name || ''} ${idea.profiles.last_name || ''}`.trim() || 'Anonymous' 
+            name: profileData ? 
+              `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || 'Anonymous' 
               : 'Anonymous',
-            avatar: idea.profiles?.avatar_url || 'https://api.dicebear.com/7.x/avatars/svg?seed=' + idea.user_id
+            avatar: profileData?.avatar_url || 'https://api.dicebear.com/7.x/avatars/svg?seed=' + idea.user_id
           }
         };
       }));
