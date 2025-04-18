@@ -32,20 +32,24 @@ export const useProjectIdeas = (projectId: string) => {
           title,
           content,
           created_at,
-          user_id,
-          profiles:user_id (
-            first_name,
-            last_name,
-            avatar_url
-          )
+          user_id
         `)
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // Get counts separately
-      const ideasWithCounts = await Promise.all(ideasData.map(async (idea) => {
+      // Get profile information separately to avoid the relationship error
+      const enrichedIdeas = await Promise.all(ideasData.map(async (idea) => {
+        // Get user profile data
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("first_name, last_name, avatar_url")
+          .eq("id", idea.user_id)
+          .single();
+          
+        if (profileError) console.error("Error fetching profile:", profileError);
+
         // Get stars count
         const { count: starsCount, error: starsError } = await supabase
           .from("idea_likes")
@@ -62,13 +66,6 @@ export const useProjectIdeas = (projectId: string) => {
           
         if (commentsError) console.error("Error fetching comments:", commentsError);
 
-        // Handle profiles data safely with proper type casting
-        // The profiles field might be an array with a single object or null
-        // Extract the first item if it's an array
-        const profileData = Array.isArray(idea.profiles) 
-          ? (idea.profiles.length > 0 ? idea.profiles[0] : null) 
-          : idea.profiles;
-        
         // Create a properly typed author object
         const authorName = profileData 
           ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || 'Anonymous'
@@ -90,7 +87,7 @@ export const useProjectIdeas = (projectId: string) => {
         };
       }));
 
-      setIdeas(ideasWithCounts);
+      setIdeas(enrichedIdeas);
     } catch (error: any) {
       console.error("Error fetching ideas:", error);
       toast({
