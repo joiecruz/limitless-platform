@@ -202,6 +202,36 @@ export const useProjectIdeas = (projectId: string) => {
       });
     }
   };
+  
+  // Add the missing generateIdea function
+  const generateIdea = async (projectTitle: string): Promise<{title: string, content: string} | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-idea', {
+        body: { projectTitle }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Idea generated",
+        description: "AI has generated an idea based on your project."
+      });
+      
+      return data?.idea ? {
+        title: data.idea.title,
+        content: data.idea.content
+      } : null;
+      
+    } catch (error: any) {
+      console.error("Error generating idea:", error);
+      toast({
+        title: "Error generating idea",
+        description: error.message || "Failed to generate idea. Please try again.",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
 
   // Set up real-time subscription
   useEffect(() => {
