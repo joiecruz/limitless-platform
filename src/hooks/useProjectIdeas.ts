@@ -131,7 +131,8 @@ export const useProjectIdeas = (projectId: string) => {
 
       if (error) throw error;
 
-      await fetchIdeas();
+      // We don't need to call fetchIdeas here, 
+      // as the real-time subscription will update the ideas list
 
       toast({
         title: "Idea added",
@@ -175,7 +176,7 @@ export const useProjectIdeas = (projectId: string) => {
           .insert([{ idea_id: ideaId, user_id: user.id }]);
       }
 
-      await fetchIdeas();
+      // Real-time subscription should handle the update
     } catch (error: any) {
       console.error("Error rating idea:", error);
       toast({
@@ -199,7 +200,7 @@ export const useProjectIdeas = (projectId: string) => {
           content
         }]);
 
-      await fetchIdeas();
+      // Real-time subscription should handle the update
       
       toast({
         title: "Comment added",
@@ -247,17 +248,22 @@ export const useProjectIdeas = (projectId: string) => {
   useEffect(() => {
     if (!projectId) return;
 
+    // Initial fetch of ideas
+    fetchIdeas();
+
+    // Set up a single realtime channel with multiple subscriptions
     const channel = supabase
-      .channel('ideas-changes')
+      .channel('ideas-realtime')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
           schema: 'public',
           table: 'ideas',
           filter: `project_id=eq.${projectId}`
         },
-        () => {
+        (payload) => {
+          console.log('Ideas table change detected:', payload);
           fetchIdeas();
         }
       )
@@ -268,7 +274,8 @@ export const useProjectIdeas = (projectId: string) => {
           schema: 'public',
           table: 'idea_likes'
         },
-        () => {
+        (payload) => {
+          console.log('Idea likes change detected:', payload);
           fetchIdeas();
         }
       )
@@ -279,14 +286,16 @@ export const useProjectIdeas = (projectId: string) => {
           schema: 'public',
           table: 'idea_comments'
         },
-        () => {
+        (payload) => {
+          console.log('Idea comments change detected:', payload);
           fetchIdeas();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
 
-    fetchIdeas();
-
+    // Cleanup function
     return () => {
       supabase.removeChannel(channel);
     };
