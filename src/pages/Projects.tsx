@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CreateProjectButton } from "@/components/projects/CreateProjectButton";
@@ -13,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ProjectFromDB {
   id: string;
-  name: string; // Added name property
+  name: string;
   title: string;
   description: string | null;
   status: string;
@@ -68,7 +67,6 @@ export default function Projects() {
   }, [toast]);
 
   const handleCreateProject = (projectData: Partial<ProjectCardProps>) => {
-    // Add newly created project to the local state
     setProjects([{
       id: projectData.id || "",
       title: projectData.title || "",
@@ -85,6 +83,96 @@ export default function Projects() {
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
+  };
+
+  const handleEditProject = async (id: string) => {
+    const project = projects.find(p => p.id === id);
+    if (!project) return;
+    
+    const newTitle = prompt("Enter new project name:", project.title);
+    if (!newTitle?.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({ title: newTitle, name: newTitle })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setProjects(projects.map(p => 
+        p.id === id ? { ...p, title: newTitle } : p
+      ));
+
+      toast({
+        title: "Project updated",
+        description: "Project name has been updated successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error updating project:", error);
+      toast({
+        title: "Error updating project",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
+
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setProjects(projects.filter(p => p.id !== id));
+
+      toast({
+        title: "Project deleted",
+        description: "Project has been deleted successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error deleting project:", error);
+      toast({
+        title: "Error deleting project",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleImageChange = async (id: string) => {
+    const imageUrl = prompt("Enter new image URL:", "");
+    if (!imageUrl?.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({ image_url: imageUrl })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setProjects(projects.map(p => 
+        p.id === id ? { ...p, image: imageUrl } : p
+      ));
+
+      toast({
+        title: "Project updated",
+        description: "Project image has been updated successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error updating project image:", error);
+      toast({
+        title: "Error updating project",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -156,11 +244,13 @@ export default function Projects() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <div key={project.id}>
-              <Link to={`/dashboard/projects/${project.id}`}>
-                <ProjectCard {...project} />
-              </Link>
-            </div>
+            <ProjectCard 
+              key={project.id} 
+              {...project}
+              onEdit={handleEditProject}
+              onDelete={handleDeleteProject}
+              onImageChange={handleImageChange}
+            />
           ))}
         </div>
       )}
