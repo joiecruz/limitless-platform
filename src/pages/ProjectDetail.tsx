@@ -85,7 +85,6 @@ const ProjectDetail = () => {
   return (
     <div className="container max-w-7xl px-4 py-8 animate-fade-in">
       <div className="space-y-6">
-        {/* Header section */}
         <div>
           <div className="flex justify-between items-start mb-2">
             <div>
@@ -121,7 +120,6 @@ const ProjectDetail = () => {
         
         <Separator className="my-8" />
         
-        {/* Ideas grid */}
         {ideasLoading ? (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />

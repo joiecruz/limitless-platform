@@ -2,23 +2,10 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Star, MessageSquare } from "lucide-react";
-
-interface Author {
-  name: string;
-  avatar: string;
-}
-
-export interface IdeaProps {
-  id: string;
-  title: string;
-  description: string;
-  stars: number;
-  comments: number;
-  author: Author;
-}
+import { Idea } from "@/hooks/useProjectIdeas";
 
 interface IdeaCardProps {
-  idea: IdeaProps;
+  idea: Idea;
 }
 
 export function IdeaCard({ idea }: IdeaCardProps) {
@@ -26,7 +13,7 @@ export function IdeaCard({ idea }: IdeaCardProps) {
     <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
       <CardContent className="p-5">
         <h3 className="text-lg font-semibold mb-2">{idea.title}</h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-3">{idea.description}</p>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-3">{idea.content}</p>
       </CardContent>
       <CardFooter className="px-5 py-3 border-t border-gray-100 flex justify-between items-center">
         <div className="flex items-center space-x-4">
@@ -46,3 +33,5 @@ export function IdeaCard({ idea }: IdeaCardProps) {
     </Card>
   );
 }
+
+export type { Idea as IdeaProps };

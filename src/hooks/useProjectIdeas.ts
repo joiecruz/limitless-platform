@@ -24,6 +24,7 @@ export const useProjectIdeas = (projectId: string) => {
   const fetchIdeas = async () => {
     try {
       setLoading(true);
+      // First fetch basic idea information
       const { data: ideasData, error } = await supabase
         .from("ideas")
         .select(`
@@ -36,39 +37,48 @@ export const useProjectIdeas = (projectId: string) => {
             first_name,
             last_name,
             avatar_url
-          ),
-          (
-            SELECT count(*) 
-            FROM idea_likes 
-            WHERE idea_id = ideas.id
-          ) as stars,
-          (
-            SELECT count(*) 
-            FROM idea_comments 
-            WHERE idea_id = ideas.id
-          ) as comments
+          )
         `)
         .eq("project_id", projectId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      const formattedIdeas = ideasData.map(idea => ({
-        id: idea.id,
-        title: idea.title,
-        content: idea.content,
-        stars: idea.stars || 0,
-        comments: idea.comments || 0,
-        created_at: idea.created_at,
-        author: {
-          name: idea.profiles ? 
-            `${idea.profiles.first_name || ''} ${idea.profiles.last_name || ''}`.trim() || 'Anonymous' 
-            : 'Anonymous',
-          avatar: idea.profiles?.avatar_url || 'https://api.dicebear.com/7.x/avatars/svg?seed=' + idea.user_id
-        }
+      // Get counts separately
+      const ideasWithCounts = await Promise.all(ideasData.map(async (idea) => {
+        // Get stars count
+        const { count: starsCount, error: starsError } = await supabase
+          .from("idea_likes")
+          .select("id", { count: true })
+          .eq("idea_id", idea.id);
+          
+        if (starsError) console.error("Error fetching stars:", starsError);
+
+        // Get comments count
+        const { count: commentsCount, error: commentsError } = await supabase
+          .from("idea_comments")
+          .select("id", { count: true })
+          .eq("idea_id", idea.id);
+          
+        if (commentsError) console.error("Error fetching comments:", commentsError);
+
+        return {
+          id: idea.id,
+          title: idea.title,
+          content: idea.content,
+          stars: starsCount || 0,
+          comments: commentsCount || 0,
+          created_at: idea.created_at,
+          author: {
+            name: idea.profiles ? 
+              `${idea.profiles.first_name || ''} ${idea.profiles.last_name || ''}`.trim() || 'Anonymous' 
+              : 'Anonymous',
+            avatar: idea.profiles?.avatar_url || 'https://api.dicebear.com/7.x/avatars/svg?seed=' + idea.user_id
+          }
+        };
       }));
 
-      setIdeas(formattedIdeas);
+      setIdeas(ideasWithCounts);
     } catch (error: any) {
       console.error("Error fetching ideas:", error);
       toast({
