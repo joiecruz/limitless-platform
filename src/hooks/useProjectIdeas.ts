@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,11 +95,13 @@ export const useProjectIdeas = (projectId: string) => {
   };
 
   const addIdea = async (title: string, content: string) => {
+    let optimisticIdea: Idea | null = null;
+    
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error("Not authenticated");
 
-      const optimisticIdea: Idea = {
+      optimisticIdea = {
         id: crypto.randomUUID(),
         title,
         content,
@@ -111,7 +114,7 @@ export const useProjectIdeas = (projectId: string) => {
         },
       };
 
-      setIdeas(prevIdeas => [optimisticIdea, ...prevIdeas]);
+      setIdeas(prevIdeas => [optimisticIdea!, ...prevIdeas]);
 
       const { data, error } = await supabase
         .from("ideas")
@@ -135,7 +138,9 @@ export const useProjectIdeas = (projectId: string) => {
         description: "Your idea has been added successfully!",
       });
     } catch (error: any) {
-      setIdeas(prevIdeas => prevIdeas.filter(idea => idea.id !== optimisticIdea.id));
+      if (optimisticIdea) {
+        setIdeas(prevIdeas => prevIdeas.filter(idea => idea.id !== optimisticIdea!.id));
+      }
       
       console.error("Error adding idea:", error);
       toast({
