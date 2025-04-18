@@ -62,12 +62,16 @@ export const useProjectIdeas = (projectId: string) => {
           
         if (commentsError) console.error("Error fetching comments:", commentsError);
 
-        // Handle profiles object correctly - it's a single object, not an array
-        const profileData = idea.profiles as { 
-          first_name: string | null; 
-          last_name: string | null; 
-          avatar_url: string | null 
-        } | null;
+        // Handle profiles data safely
+        // Extract the profile data which could be an object or null
+        const profileData = idea.profiles || null;
+        
+        // Create a properly typed author object
+        const authorName = profileData 
+          ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || 'Anonymous'
+          : 'Anonymous';
+          
+        const authorAvatar = profileData?.avatar_url || `https://api.dicebear.com/7.x/avatars/svg?seed=${idea.user_id}`;
         
         return {
           id: idea.id,
@@ -77,10 +81,8 @@ export const useProjectIdeas = (projectId: string) => {
           comments: commentsCount || 0,
           created_at: idea.created_at,
           author: {
-            name: profileData ? 
-              `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() || 'Anonymous' 
-              : 'Anonymous',
-            avatar: profileData?.avatar_url || 'https://api.dicebear.com/7.x/avatars/svg?seed=' + idea.user_id
+            name: authorName,
+            avatar: authorAvatar
           }
         };
       }));
