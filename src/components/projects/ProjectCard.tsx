@@ -32,7 +32,7 @@ export interface ProjectCardProps {
   projectPhases?: string[];
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
-  onImageChange?: (id: string) => void;
+  onImageChange?: (id: string, imageUrl: string) => void;
 }
 
 export function ProjectCard({ 
@@ -76,7 +76,7 @@ export function ProjectCard({
   };
 
   const handleImageChange = () => {
-    onImageChange?.(id);
+    onImageChange?.(id, newImageUrl);
     setShowImageDialog(false);
     setNewImageUrl("");
   };
@@ -184,7 +184,7 @@ export function ProjectCard({
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={() => handleEdit()}>
+            <Button onClick={handleEdit}>
               Save changes
             </Button>
           </DialogFooter>
@@ -210,7 +210,7 @@ export function ProjectCard({
             <Button variant="outline" onClick={() => setShowImageDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={() => handleImageChange()}>
+            <Button onClick={handleImageChange}>
               Update photo
             </Button>
           </DialogFooter>
@@ -230,7 +230,7 @@ export function ProjectCard({
             <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={() => handleDelete()}>
+            <Button variant="destructive" onClick={handleDelete}>
               Delete project
             </Button>
           </DialogFooter>

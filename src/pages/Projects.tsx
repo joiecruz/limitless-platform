@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CreateProjectButton } from "@/components/projects/CreateProjectButton";
@@ -9,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface ProjectFromDB {
   id: string;
@@ -26,6 +29,11 @@ export default function Projects() {
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // New state for editing project
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<{id: string, title: string} | null>(null);
+  const [newProjectTitle, setNewProjectTitle] = useState("");
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -89,19 +97,29 @@ export default function Projects() {
     const project = projects.find(p => p.id === id);
     if (!project) return;
     
-    const newTitle = prompt("Enter new project name:", project.title);
-    if (!newTitle?.trim()) return;
-
+    // Open the edit dialog instead of showing a prompt
+    setEditingProject({ id, title: project.title });
+    setNewProjectTitle(project.title);
+    setIsEditDialogOpen(true);
+  };
+  
+  // New function to save the edited project title
+  const saveProjectEdit = async () => {
+    if (!editingProject || !newProjectTitle.trim()) {
+      setIsEditDialogOpen(false);
+      return;
+    }
+    
     try {
       const { error } = await supabase
         .from("projects")
-        .update({ title: newTitle, name: newTitle })
-        .eq("id", id);
+        .update({ title: newProjectTitle, name: newProjectTitle })
+        .eq("id", editingProject.id);
 
       if (error) throw error;
 
       setProjects(projects.map(p => 
-        p.id === id ? { ...p, title: newTitle } : p
+        p.id === editingProject.id ? { ...p, title: newProjectTitle } : p
       ));
 
       toast({
@@ -115,12 +133,13 @@ export default function Projects() {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsEditDialogOpen(false);
+      setEditingProject(null);
     }
   };
 
   const handleDeleteProject = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
-
     try {
       const { error } = await supabase
         .from("projects")
@@ -145,8 +164,7 @@ export default function Projects() {
     }
   };
 
-  const handleImageChange = async (id: string) => {
-    const imageUrl = prompt("Enter new image URL:", "");
+  const handleImageChange = async (id: string, imageUrl: string) => {
     if (!imageUrl?.trim()) return;
 
     try {
@@ -249,7 +267,7 @@ export default function Projects() {
               {...project}
               onEdit={handleEditProject}
               onDelete={handleDeleteProject}
-              onImageChange={handleImageChange}
+              onImageChange={(id) => handleImageChange(id, "")}
             />
           ))}
         </div>
@@ -260,6 +278,32 @@ export default function Projects() {
         onOpenChange={setIsCreateDialogOpen}
         onCreateProject={handleCreateProject}
       />
+
+      {/* Edit Project Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit project name</DialogTitle>
+            <DialogDescription>
+              Enter a new name for your project
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={newProjectTitle}
+            onChange={(e) => setNewProjectTitle(e.target.value)}
+            placeholder="Enter project name"
+            className="my-4"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveProjectEdit}>
+              Save changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
