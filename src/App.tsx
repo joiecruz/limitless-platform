@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -97,6 +96,19 @@ const App = () => {
       if (event === 'SIGNED_IN' && currentSession) {
         console.log("User signed in:", currentSession);
         setSession(currentSession);
+
+        // Add user to systeme.io mailing list
+        try {
+          const { error } = await supabase.functions.invoke('handle-systeme-signup', {
+            body: { user_id: currentSession.user.id }
+          });
+          
+          if (error) {
+            console.error('Error adding user to mailing list:', error);
+          }
+        } catch (error) {
+          console.error('Error calling systeme-signup function:', error);
+        }
         return;
       }
 
