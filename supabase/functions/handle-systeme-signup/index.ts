@@ -88,8 +88,12 @@ serve(async (req) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     try {
+      // Verify we're using the correct API endpoint
+      const apiUrl = 'https://systeme.io/api/v2/contacts'; // Updated to v2 endpoint
+      console.log(`Calling Systeme.io API at: ${apiUrl}`);
+
       // Use fetch with more explicit error handling
-      const response = await fetch('https://systeme.io/api/contacts', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,6 +122,56 @@ serve(async (req) => {
           throw new Error('Rate limit exceeded with Systeme.io API. Please try again later.');
         } else if (response.status === 401 || response.status === 403) {
           throw new Error('Authentication failed with Systeme.io API. Please check API key.');
+        } else if (response.status === 404) {
+          // Special handling for 404 errors
+          console.error('API endpoint not found. Please verify the correct API endpoint for Systeme.io');
+          
+          // Try fallback to v1 endpoint as a last resort
+          console.log('Attempting fallback to v1 endpoint...');
+          const fallbackResponse = await fetch('https://systeme.io/api/contacts', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-KEY': SYSTEME_API_KEY,
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(systemePayload),
+          });
+          
+          const fallbackText = await fallbackResponse.text();
+          console.log('Fallback response status:', fallbackResponse.status);
+          console.log('Fallback response text:', fallbackText);
+          
+          if (fallbackResponse.ok) {
+            console.log('Fallback to v1 endpoint successful');
+            responseText = fallbackText;
+            
+            // Return success with the fallback result
+            let fallbackResult;
+            try {
+              if (fallbackText.trim().startsWith('{') || fallbackText.trim().startsWith('[')) {
+                fallbackResult = JSON.parse(fallbackText);
+              } else {
+                fallbackResult = { message: fallbackText };
+              }
+            } catch (e) {
+              fallbackResult = { message: fallbackText };
+            }
+            
+            return new Response(
+              JSON.stringify({ 
+                success: true, 
+                data: fallbackResult,
+                note: 'Used fallback API endpoint'
+              }),
+              { 
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+              }
+            );
+          } else {
+            throw new Error(`Both API endpoints failed. Please verify your Systeme.io API key and endpoint documentation.`);
+          }
         } else {
           throw new Error(`Failed to add contact to systeme.io: ${response.status} - ${responseText.substring(0, 200)}`);
         }
