@@ -87,69 +87,112 @@ serve(async (req) => {
     // Add delay before calling Systeme API to ensure profile data is properly saved
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    try {
-      // Use fetch with more explicit error handling
-      const response = await fetch('https://systeme.io/api/contacts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-KEY': SYSTEME_API_KEY,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(systemePayload),
-      });
+    // Try multiple API endpoints
+    const apiEndpoints = [
+      { url: 'https://systeme.io/api/v2/contacts', version: 'v2' },
+      { url: 'https://systeme.io/api/contacts', version: 'v1' },
+      { url: 'https://systeme.io/api/external/contacts', version: 'external' }
+    ];
 
-      let responseText;
-      
+    let lastError = null;
+    let responseText = null;
+    let successResponse = null;
+
+    // Try each endpoint until one works
+    for (const endpoint of apiEndpoints) {
       try {
-        responseText = await response.text();
-        console.log('Systeme.io raw response status:', response.status);
-        console.log('Systeme.io raw response text:', responseText);
-      } catch (e) {
-        console.error('Error reading response text:', e);
-        responseText = 'Could not read response';
-      }
-      
-      if (!response.ok) {
-        console.error('Systeme.io API error status code:', response.status);
-        console.error('Systeme.io API error response:', responseText);
+        console.log(`Trying Systeme.io ${endpoint.version} API at: ${endpoint.url}`);
         
+        const response = await fetch(endpoint.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-KEY': SYSTEME_API_KEY,
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(systemePayload),
+        });
+
+        // Read response text regardless of status
+        responseText = await response.text();
+        console.log(`${endpoint.version} response status:`, response.status);
+        console.log(`${endpoint.version} raw response:`, responseText);
+        
+        // Handle common error statuses
         if (response.status === 429) {
-          throw new Error('Rate limit exceeded with Systeme.io API. Please try again later.');
+          console.error('Rate limit error from Systeme.io API');
+          lastError = new Error('Rate limit exceeded with Systeme.io API');
+          continue;
         } else if (response.status === 401 || response.status === 403) {
-          throw new Error('Authentication failed with Systeme.io API. Please check API key.');
-        } else {
-          throw new Error(`Failed to add contact to systeme.io: ${response.status} - ${responseText.substring(0, 200)}`);
+          console.error('Authentication error from Systeme.io API');
+          lastError = new Error('Authentication failed with Systeme.io API');
+          continue;
+        } else if (response.status === 404) {
+          console.error(`API endpoint ${endpoint.url} not found`);
+          lastError = new Error(`API endpoint ${endpoint.version} not found`);
+          continue;
+        } else if (!response.ok) {
+          console.error(`Failed API call to ${endpoint.version} endpoint:`, response.status, responseText);
+          lastError = new Error(`Failed with status ${response.status}`);
+          continue;
         }
-      }
 
-      // Try to parse the response as JSON
-      let result;
-      try {
-        // Check if the response is actually JSON before parsing
-        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
-          result = JSON.parse(responseText);
-          console.log('Successfully added user to systeme.io with tag:', result);
-        } else {
-          console.warn('Response is not JSON format:', responseText);
-          result = { message: 'Response received but not in JSON format' };
+        // Success case
+        console.log(`Success with ${endpoint.version} API endpoint!`);
+        
+        let result;
+        try {
+          // Check if the response is actually JSON before parsing
+          if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+            result = JSON.parse(responseText);
+          } else {
+            result = { message: 'Response received but not in JSON format', text: responseText };
+          }
+        } catch (e) {
+          result = { message: 'Error parsing response', text: responseText };
         }
-      } catch (e) {
-        console.error('Error parsing JSON response:', e);
-        result = { message: responseText };
-      }
 
+        successResponse = {
+          success: true, 
+          data: result,
+          endpoint: endpoint.version
+        };
+        
+        // We found a working endpoint, break the loop
+        break;
+      } catch (apiError) {
+        console.error(`Error with ${endpoint.version} API:`, apiError);
+        lastError = apiError;
+      }
+    }
+
+    // If we have a successful response, return it
+    if (successResponse) {
       return new Response(
-        JSON.stringify({ success: true, data: result }),
+        JSON.stringify(successResponse),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         }
       );
-    } catch (apiError) {
-      console.error('API call error:', apiError);
-      throw apiError;
     }
+
+    // If all endpoints failed
+    console.error('All Systeme.io API endpoints failed');
+    
+    // Return a softer error that doesn't break the user experience
+    // We don't want signup to fail just because Systeme.io integration failed
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Failed to add user to newsletter, but account was created successfully',
+        technical_details: lastError?.message || 'Unknown error',
+      }),
+      { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200, // Return 200 even though there was an error with Systeme.io
+      }
+    );
 
   } catch (error) {
     console.error('Error in handle-systeme-signup:', error);
