@@ -14,15 +14,29 @@ serve(async (req) => {
   }
 
   try {
-    const { user_id } = await req.json();
+    console.log('=== Starting handle-systeme-signup function ===');
+    
+    // Parse request body
+    let user_id;
+    try {
+      const body = await req.json();
+      user_id = body.user_id;
+      console.log('Request body parsed successfully:', body);
+    } catch (error) {
+      console.error('Error parsing request body:', error);
+      throw new Error('Invalid request body format');
+    }
+    
+    // Check API key
     const SYSTEME_API_KEY = Deno.env.get('SYSTEME_API_KEY');
-
     if (!SYSTEME_API_KEY) {
       console.error('SYSTEME_API_KEY is not set in environment variables');
       throw new Error('Missing API key configuration');
     }
 
+    // Validate user_id
     if (!user_id) {
+      console.error('No user_id provided in request body');
       throw new Error('No user_id provided');
     }
 
@@ -35,6 +49,7 @@ serve(async (req) => {
     );
 
     // Get user profile
+    console.log('Fetching user profile from database...');
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('email, first_name, last_name')

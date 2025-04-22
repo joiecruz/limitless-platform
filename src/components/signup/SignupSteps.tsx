@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,6 +55,26 @@ const SignupSteps = () => {
     return isValid;
   };
 
+  const addUserToSysteme = async (userId: string) => {
+    try {
+      console.log("[SignupSteps] Adding user to Systeme.io:", userId);
+      const { data, error } = await supabase.functions.invoke('handle-systeme-signup', {
+        body: { user_id: userId }
+      });
+      
+      if (error) {
+        console.error('[SignupSteps] Error adding user to Systeme.io:', error);
+        return false;
+      }
+      
+      console.log('[SignupSteps] Successfully added user to Systeme.io:', data);
+      return true;
+    } catch (e) {
+      console.error('[SignupSteps] Exception adding user to Systeme.io:', e);
+      return false;
+    }
+  };
+
   const handleSignup = async (email: string, password: string) => {
     try {
       setIsLoading(true);
@@ -76,17 +97,12 @@ const SignupSteps = () => {
         }
       });
 
-      if (error) {
-        console.error("Signup error:", error);
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
+      if (error) throw error;
 
       if (data?.user) {
+        // Try to add the user to Systeme.io right after signup
+        await addUserToSysteme(data.user.id);
+        
         localStorage.setItem("verificationEmail", email);
         navigate("/verify-email", { replace: true });
         toast({
