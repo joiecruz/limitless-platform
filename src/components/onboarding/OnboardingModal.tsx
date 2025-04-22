@@ -53,17 +53,20 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
       
       if (error) {
         console.error('[Onboarding] Error adding user to Systeme.io:', error);
-        toast({
-          title: "Note",
-          description: "You were added to our platform but there was an issue subscribing you to our newsletter.",
-          variant: "default",
-        });
+        // Don't show an error toast as this is non-critical
+        return;
+      }
+      
+      if (!data.success) {
+        console.warn('[Onboarding] Systeme.io integration responded with non-success:', data);
+        // Don't show an error toast as this is non-critical
         return;
       }
       
       console.log('[Onboarding] Successfully added user to Systeme.io:', data);
     } catch (e) {
       console.error('[Onboarding] Exception adding user to Systeme.io:', e);
+      // Don't show an error toast as this is non-critical
     }
   };
 
@@ -76,7 +79,11 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
       try {
         const { data } = await supabase.auth.getUser();
         if (data?.user) {
-          addUserToSysteme(data.user.id);
+          // Call Systeme.io integration but don't await it to not block the user flow
+          addUserToSysteme(data.user.id).catch(err => {
+            console.error("Background Systeme.io error:", err);
+            // Don't show toast to user as this is non-critical
+          });
         }
       } catch (error) {
         console.error("Error getting current user:", error);

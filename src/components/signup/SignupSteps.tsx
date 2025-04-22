@@ -67,6 +67,11 @@ const SignupSteps = () => {
         return false;
       }
       
+      if (data && !data.success) {
+        console.warn('[SignupSteps] Systeme.io integration responded with non-success:', data);
+        return false;
+      }
+      
       console.log('[SignupSteps] Successfully added user to Systeme.io:', data);
       return true;
     } catch (e) {
@@ -101,7 +106,11 @@ const SignupSteps = () => {
 
       if (data?.user) {
         // Try to add the user to Systeme.io right after signup
-        await addUserToSysteme(data.user.id);
+        // But don't block the signup flow or show errors if it fails
+        addUserToSysteme(data.user.id).catch(err => {
+          console.error("[SignupSteps] Background Systeme.io error:", err);
+          // Don't show an error toast as this is non-critical
+        });
         
         localStorage.setItem("verificationEmail", email);
         navigate("/verify-email", { replace: true });

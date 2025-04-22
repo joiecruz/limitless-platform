@@ -47,6 +47,11 @@ export default function Register() {
         return false;
       }
       
+      if (data && !data.success) {
+        console.warn('[SignUp] Systeme.io integration responded with non-success:', data);
+        return false;
+      }
+      
       console.log('[SignUp] Successfully added user to Systeme.io:', data);
       return true;
     } catch (e) {
@@ -68,8 +73,13 @@ export default function Register() {
       if (error) throw error;
 
       // Try to add the user to Systeme.io right after signup
+      // But don't block the signup flow if it fails
       if (data?.user) {
-        await addUserToSysteme(data.user.id);
+        // Call the function but don't await or depend on its result
+        addUserToSysteme(data.user.id).catch(err => {
+          console.error('[SignUp] Background Systeme.io error:', err);
+          // Don't show an error toast as this is non-critical
+        });
       }
 
       toast({
