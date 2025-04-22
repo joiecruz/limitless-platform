@@ -43,10 +43,15 @@ serve(async (req) => {
     console.log('Processing signup for user:', user_id);
 
     // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Supabase URL or Service Key not set');
+      throw new Error('Missing Supabase configuration');
+    }
+    
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get user profile
     console.log('Fetching user profile from database...');
@@ -54,14 +59,14 @@ serve(async (req) => {
       .from('profiles')
       .select('email, first_name, last_name')
       .eq('id', user_id)
-      .single();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid errors if no profile is found
 
     if (profileError) {
       console.error('Error fetching user profile:', profileError);
       throw profileError;
     }
 
-    if (!profile?.email) {
+    if (!profile || !profile.email) {
       console.error('No email found for user:', user_id);
       throw new Error('No email found for user');
     }
@@ -79,6 +84,9 @@ serve(async (req) => {
 
     console.log('Sending request to Systeme.io with payload:', JSON.stringify(systemePayload));
 
+    // Add delay before calling Systeme API to ensure profile data is properly saved
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     const response = await fetch('https://systeme.io/api/contacts', {
       method: 'POST',
       headers: {
@@ -92,8 +100,8 @@ serve(async (req) => {
     console.log('Systeme.io raw response:', responseText);
     
     if (!response.ok) {
-      console.error('Systeme.io API error:', responseText);
-      throw new Error(`Failed to add contact to systeme.io: ${responseText}`);
+      console.error('Systeme.io API error:', response.status, responseText);
+      throw new Error(`Failed to add contact to systeme.io: ${response.status} - ${responseText}`);
     }
 
     let result;
@@ -116,7 +124,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in handle-systeme-signup:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Unknown error' }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
