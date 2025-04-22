@@ -99,15 +99,28 @@ const App = () => {
 
         // Add user to systeme.io mailing list
         try {
-          const { error } = await supabase.functions.invoke('handle-systeme-signup', {
+          console.log("Calling systeme-signup function for user:", currentSession.user.id);
+          const { data, error } = await supabase.functions.invoke('handle-systeme-signup', {
             body: { user_id: currentSession.user.id }
           });
           
           if (error) {
             console.error('Error adding user to mailing list:', error);
+            toast({
+              title: "Warning",
+              description: "Failed to add you to our mailing list. This won't affect your account.",
+              variant: "destructive",
+            });
+          } else {
+            console.log('Successfully added user to mailing list:', data);
           }
         } catch (error) {
           console.error('Error calling systeme-signup function:', error);
+          toast({
+            title: "Warning",
+            description: "There was an issue with our mailing list service. This won't affect your account.",
+            variant: "destructive",
+          });
         }
         return;
       }
