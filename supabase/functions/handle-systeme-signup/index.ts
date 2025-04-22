@@ -43,7 +43,7 @@ serve(async (req) => {
       throw new Error('No email found for user');
     }
 
-    // Add user to systeme.io list
+    // Add user to systeme.io with tag
     const response = await fetch('https://systeme.io/api/contacts', {
       method: 'POST',
       headers: {
@@ -54,7 +54,8 @@ serve(async (req) => {
         email: profile.email,
         firstName: profile.first_name || '',
         lastName: profile.last_name || '',
-        source: 'web_signup'
+        source: 'web_signup',
+        tags: ['Limitless Lab Platform Members']
       }),
     });
 
@@ -65,7 +66,7 @@ serve(async (req) => {
     }
 
     const result = await response.json();
-    console.log('Successfully added user to systeme.io:', result);
+    console.log('Successfully added user to systeme.io with tag:', result);
 
     return new Response(
       JSON.stringify({ success: true, data: result }),
