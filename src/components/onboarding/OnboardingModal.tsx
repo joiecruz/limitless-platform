@@ -13,6 +13,8 @@ import { useOnboardingSubmit } from "./hooks/useOnboardingSubmit";
 import { OnboardingProgress } from "./components/OnboardingProgress";
 import { OnboardingData } from "./types";
 import { useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface OnboardingModalProps {
   open?: boolean;
@@ -23,6 +25,7 @@ interface OnboardingModalProps {
 export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfile = false }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
+  const { toast } = useToast();
   const isInvitedUser = location.state?.isInvited;
   const showOnboarding = location.state?.showOnboarding ?? true;
   // Only show workspace creation step if user is not invited and not completing an incomplete profile
@@ -41,11 +44,44 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
 
   const { handleSubmit, loading } = useOnboardingSubmit({ onOpenChange });
 
+  const addUserToSysteme = async (userId: string) => {
+    try {
+      console.log("[Onboarding] Adding user to Systeme.io:", userId);
+      const { data, error } = await supabase.functions.invoke('handle-systeme-signup', {
+        body: { user_id: userId }
+      });
+      
+      if (error) {
+        console.error('[Onboarding] Error adding user to Systeme.io:', error);
+        toast({
+          title: "Note",
+          description: "You were added to our platform but there was an issue subscribing you to our newsletter.",
+          variant: "default",
+        });
+        return;
+      }
+      
+      console.log('[Onboarding] Successfully added user to Systeme.io:', data);
+    } catch (e) {
+      console.error('[Onboarding] Exception adding user to Systeme.io:', e);
+    }
+  };
+
   const handleNext = async (stepData: Partial<OnboardingData>) => {
     const updatedData = { ...formData, ...stepData };
     setFormData(updatedData);
 
     if (currentStep === TOTAL_STEPS) {
+      // Call systeme.io integration right before submitting the form
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (data?.user) {
+          addUserToSysteme(data.user.id);
+        }
+      } catch (error) {
+        console.error("Error getting current user:", error);
+      }
+      
       await handleSubmit(updatedData);
     } else {
       setCurrentStep(prev => prev + 1);

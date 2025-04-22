@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -34,17 +35,42 @@ export default function Register() {
     }
   };
 
+  const addUserToSysteme = async (userId: string) => {
+    try {
+      console.log("[SignUp] Adding user to Systeme.io:", userId);
+      const { data, error } = await supabase.functions.invoke('handle-systeme-signup', {
+        body: { user_id: userId }
+      });
+      
+      if (error) {
+        console.error('[SignUp] Error adding user to Systeme.io:', error);
+        return false;
+      }
+      
+      console.log('[SignUp] Successfully added user to Systeme.io:', data);
+      return true;
+    } catch (e) {
+      console.error('[SignUp] Exception adding user to Systeme.io:', e);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
 
       if (error) throw error;
+
+      // Try to add the user to Systeme.io right after signup
+      if (data?.user) {
+        await addUserToSysteme(data.user.id);
+      }
 
       toast({
         title: "Registration successful!",
