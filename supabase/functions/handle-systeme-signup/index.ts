@@ -43,10 +43,15 @@ serve(async (req) => {
     console.log('Processing signup for user:', user_id);
 
     // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Supabase URL or Service Key not set');
+      throw new Error('Missing Supabase configuration');
+    }
+    
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get user profile
     console.log('Fetching user profile from database...');
@@ -54,14 +59,14 @@ serve(async (req) => {
       .from('profiles')
       .select('email, first_name, last_name')
       .eq('id', user_id)
-      .single();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid errors if no profile is found
 
     if (profileError) {
       console.error('Error fetching user profile:', profileError);
       throw profileError;
     }
 
-    if (!profile?.email) {
+    if (!profile || !profile.email) {
       console.error('No email found for user:', user_id);
       throw new Error('No email found for user');
     }
@@ -79,44 +84,77 @@ serve(async (req) => {
 
     console.log('Sending request to Systeme.io with payload:', JSON.stringify(systemePayload));
 
-    const response = await fetch('https://systeme.io/api/contacts', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-KEY': SYSTEME_API_KEY,
-      },
-      body: JSON.stringify(systemePayload),
-    });
+    // Add delay before calling Systeme API to ensure profile data is properly saved
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const responseText = await response.text();
-    console.log('Systeme.io raw response:', responseText);
-    
-    if (!response.ok) {
-      console.error('Systeme.io API error:', responseText);
-      throw new Error(`Failed to add contact to systeme.io: ${responseText}`);
-    }
-
-    let result;
     try {
-      result = JSON.parse(responseText);
-      console.log('Successfully added user to systeme.io with tag:', result);
-    } catch (e) {
-      console.error('Error parsing JSON response:', e);
-      result = { message: responseText };
-    }
+      // Use fetch with more explicit error handling
+      const response = await fetch('https://systeme.io/api/contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': SYSTEME_API_KEY,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(systemePayload),
+      });
 
-    return new Response(
-      JSON.stringify({ success: true, data: result }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+      let responseText;
+      
+      try {
+        responseText = await response.text();
+        console.log('Systeme.io raw response status:', response.status);
+        console.log('Systeme.io raw response text:', responseText);
+      } catch (e) {
+        console.error('Error reading response text:', e);
+        responseText = 'Could not read response';
       }
-    );
+      
+      if (!response.ok) {
+        console.error('Systeme.io API error status code:', response.status);
+        console.error('Systeme.io API error response:', responseText);
+        
+        if (response.status === 429) {
+          throw new Error('Rate limit exceeded with Systeme.io API. Please try again later.');
+        } else if (response.status === 401 || response.status === 403) {
+          throw new Error('Authentication failed with Systeme.io API. Please check API key.');
+        } else {
+          throw new Error(`Failed to add contact to systeme.io: ${response.status} - ${responseText.substring(0, 200)}`);
+        }
+      }
+
+      // Try to parse the response as JSON
+      let result;
+      try {
+        // Check if the response is actually JSON before parsing
+        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+          result = JSON.parse(responseText);
+          console.log('Successfully added user to systeme.io with tag:', result);
+        } else {
+          console.warn('Response is not JSON format:', responseText);
+          result = { message: 'Response received but not in JSON format' };
+        }
+      } catch (e) {
+        console.error('Error parsing JSON response:', e);
+        result = { message: responseText };
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, data: result }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    } catch (apiError) {
+      console.error('API call error:', apiError);
+      throw apiError;
+    }
 
   } catch (error) {
     console.error('Error in handle-systeme-signup:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Unknown error' }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
