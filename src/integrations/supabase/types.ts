@@ -921,6 +921,7 @@ export type Database = {
           name: string
           owner_id: string | null
           status: string | null
+          title: string | null
           updated_at: string
           workflow_template_id: string | null
           workspace_id: string | null
@@ -941,6 +942,7 @@ export type Database = {
           name: string
           owner_id?: string | null
           status?: string | null
+          title?: string | null
           updated_at?: string
           workflow_template_id?: string | null
           workspace_id?: string | null
@@ -961,6 +963,7 @@ export type Database = {
           name?: string
           owner_id?: string | null
           status?: string | null
+          title?: string | null
           updated_at?: string
           workflow_template_id?: string | null
           workspace_id?: string | null
