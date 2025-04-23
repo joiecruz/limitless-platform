@@ -28,7 +28,13 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   const { toast } = useToast();
   const isInvitedUser = location.state?.isInvited;
   const showOnboarding = location.state?.showOnboarding ?? true;
-  // Only show workspace creation step if user is not invited and not completing an incomplete profile
+  
+  // Debug logs to help troubleshoot the missing workspace step
+  console.log('[OnboardingModal] isIncompleteProfile:', isIncompleteProfile);
+  console.log('[OnboardingModal] isInvitedUser:', isInvitedUser);
+  console.log('[OnboardingModal] location.state:', location.state);
+  
+  // Only hide workspace creation step if user is invited or completing an incomplete profile
   const TOTAL_STEPS = isIncompleteProfile || isInvitedUser ? 3 : 4;
 
   const [formData, setFormData] = useState<OnboardingData>({
