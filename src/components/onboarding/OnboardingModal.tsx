@@ -4,7 +4,7 @@ import {
   DialogContent,
   DialogHeader,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Step1 } from "./steps/Step1";
 import { Step2 } from "./steps/Step2";
 import { Step3 } from "./steps/Step3";
@@ -26,16 +26,30 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   const { toast } = useToast();
-  const isInvitedUser = location.state?.isInvited;
+  
+  // Get state from location or set defaults
+  const isInvitedUser = location.state?.isInvited === true;
   const showOnboarding = location.state?.showOnboarding ?? true;
   
-  // Debug logs to help troubleshoot the missing workspace step
   console.log('[OnboardingModal] isIncompleteProfile:', isIncompleteProfile);
   console.log('[OnboardingModal] isInvitedUser:', isInvitedUser);
   console.log('[OnboardingModal] location.state:', location.state);
+  console.log('[OnboardingModal] showOnboarding:', showOnboarding);
   
-  // Only hide workspace creation step if user is invited or completing an incomplete profile
-  const TOTAL_STEPS = isIncompleteProfile || isInvitedUser ? 3 : 4;
+  // Only hide workspace creation step if user is invited (they'll be added to an existing workspace)
+  // Or if they're completing an incomplete profile (they already have a workspace)
+  const shouldShowWorkspaceStep = !isInvitedUser && !isIncompleteProfile;
+  const TOTAL_STEPS = shouldShowWorkspaceStep ? 4 : 3;
+  
+  console.log('[OnboardingModal] shouldShowWorkspaceStep:', shouldShowWorkspaceStep);
+  console.log('[OnboardingModal] TOTAL_STEPS:', TOTAL_STEPS);
+
+  useEffect(() => {
+    // Reset to step 1 when modal opens
+    if (open) {
+      setCurrentStep(1);
+    }
+  }, [open]);
 
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
@@ -44,7 +58,7 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
     companySize: "",
     goals: [],
     referralSource: "",
-    workspaceName: isIncompleteProfile ? undefined : (isInvitedUser ? undefined : ""),
+    workspaceName: shouldShowWorkspaceStep ? "" : undefined,
     password: "",
   });
 
@@ -123,7 +137,7 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
       case 3:
         return <Step3 {...commonProps} />;
       case 4:
-        return !isInvitedUser && !isIncompleteProfile ? <Step4 {...commonProps} /> : null;
+        return shouldShowWorkspaceStep ? <Step4 {...commonProps} /> : null;
       default:
         return null;
     }
