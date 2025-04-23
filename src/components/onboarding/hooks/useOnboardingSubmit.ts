@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -96,8 +97,8 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
         }
       }
 
-      // Create workspace only if not an invited user
-      if (!isInvitedUser && formData.workspaceName) {
+      // Create workspace only if the user has provided a workspace name
+      if (formData.workspaceName) {
         console.log('Creating workspace:', formData.workspaceName);
         const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
         
@@ -117,6 +118,8 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
 
         // Invalidate queries to refresh workspace data
         await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      } else {
+        console.log('No workspace name provided, skipping workspace creation');
       }
 
       toast({

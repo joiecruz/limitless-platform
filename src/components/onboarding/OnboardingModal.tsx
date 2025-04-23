@@ -37,8 +37,8 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   console.log('[OnboardingModal] showOnboarding:', showOnboarding);
   
   // Only hide workspace creation step if user is invited (they'll be added to an existing workspace)
-  // Or if they're completing an incomplete profile (they already have a workspace)
-  const shouldShowWorkspaceStep = !isInvitedUser && !isIncompleteProfile;
+  // Incomplete profile users should still see workspace step unless they're invited users
+  const shouldShowWorkspaceStep = !isInvitedUser;
   const TOTAL_STEPS = shouldShowWorkspaceStep ? 4 : 3;
   
   console.log('[OnboardingModal] shouldShowWorkspaceStep:', shouldShowWorkspaceStep);
@@ -93,6 +93,9 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   const handleNext = async (stepData: Partial<OnboardingData>) => {
     const updatedData = { ...formData, ...stepData };
     setFormData(updatedData);
+
+    console.log('[OnboardingModal] Current step:', currentStep, 'Total steps:', TOTAL_STEPS);
+    console.log('[OnboardingModal] Form data:', updatedData);
 
     if (currentStep === TOTAL_STEPS) {
       // Call systeme.io integration right before submitting the form

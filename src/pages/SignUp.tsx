@@ -87,8 +87,11 @@ export default function Register() {
         description: "Please check your email to verify your account.",
       });
 
-      // Redirect to sign in page after successful registration
-      navigate("/signin");
+      // After signing up, redirect to dashboard with onboarding flag
+      navigate("/dashboard", { 
+        state: { showOnboarding: true },
+        replace: true 
+      });
     } catch (error: any) {
       toast({
         title: "Error",
