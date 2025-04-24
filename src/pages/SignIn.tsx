@@ -36,6 +36,7 @@ export default function SignIn() {
           setIsLoading(true);
           console.log("User authenticated, checking workspace membership...");
           
+          // Check for workspace membership
           const { data: memberData, error: memberError } = await supabase
             .from('workspace_members')
             .select(`
@@ -57,13 +58,19 @@ export default function SignIn() {
             return;
           }
 
+          // If user has no workspace, show onboarding with workspace creation
           if (!memberData || memberData.length === 0) {
-            console.log("No workspace found, redirecting to onboarding...");
-            navigate('/onboarding', { replace: true });
+            console.log("No workspace found, redirecting to dashboard with onboarding flag...");
+            navigate('/dashboard', { 
+              replace: true,
+              state: { 
+                showOnboarding: true
+              }
+            });
             return;
           }
 
-          // Use the first workspace as default
+          // User has a workspace, set the first one as default and go to dashboard
           const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
           console.log("Workspace found, redirecting to dashboard...", workspace);
           localStorage.setItem('selectedWorkspace', workspace.id);
@@ -89,6 +96,7 @@ export default function SignIn() {
       if (event === 'SIGNED_IN' && session) {
         setIsLoading(true);
         try {
+          // Check for workspace membership
           const { data: memberData, error: memberError } = await supabase
             .from('workspace_members')
             .select(`
@@ -105,11 +113,18 @@ export default function SignIn() {
             throw memberError;
           }
 
+          // If user has no workspace, show onboarding with workspace creation
           if (!memberData || memberData.length === 0) {
-            navigate('/onboarding', { replace: true });
+            navigate('/dashboard', { 
+              replace: true, 
+              state: { 
+                showOnboarding: true 
+              }
+            });
             return;
           }
 
+          // User has a workspace, set the first one as default and go to dashboard
           const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
           localStorage.setItem('selectedWorkspace', workspace.id);
           navigate('/dashboard', { replace: true });

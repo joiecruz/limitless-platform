@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -10,7 +11,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const isIncompleteProfile = location.state?.isIncompleteProfile;
+  const [isIncompleteProfile, setIsIncompleteProfile] = useState(location.state?.isIncompleteProfile || false);
 
   // Query to get user profile data
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -27,6 +28,27 @@ export default function Dashboard() {
 
       return data;
     },
+  });
+
+  // Query to check if user has any workspace memberships
+  const { data: workspaceMemberships, isLoading: workspacesLoading } = useQuery({
+    queryKey: ["workspaceMemberships"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", user.id);
+      
+      if (error) {
+        console.error("Error fetching workspace memberships:", error);
+        return [];
+      }
+      
+      return data || [];
+    }
   });
 
   useEffect(() => {
@@ -46,27 +68,42 @@ export default function Dashboard() {
 
   // Check if onboarding is needed
   useEffect(() => {
-    if (!profileLoading && profile) {
-      const needsOnboarding = !profile.first_name || 
-                            !profile.last_name || 
-                            !profile.role || 
-                            !profile.company_size || 
-                            !profile.goals || 
-                            !profile.referral_source;
-      
-      // Show onboarding if needed or if coming from email confirmation
-      const shouldShowOnboarding = needsOnboarding || location.state?.showOnboarding;
-      setShowOnboarding(shouldShowOnboarding);
-      
-      // If profile is incomplete and needs onboarding, set isIncompleteProfile in state
-      if (needsOnboarding && !isIncompleteProfile) {
-        navigate(location.pathname, { 
-          state: { ...location.state, isIncompleteProfile: true },
-          replace: true 
-        });
-      }
+    if (profileLoading || workspacesLoading) return;
+    
+    console.log("Dashboard - Profile:", profile);
+    console.log("Dashboard - Workspace memberships:", workspaceMemberships);
+    
+    // Check if profile is incomplete
+    const profileIncomplete = !profile?.first_name || 
+                          !profile?.last_name || 
+                          !profile?.role || 
+                          !profile?.company_size || 
+                          !profile?.goals || 
+                          !profile?.referral_source;
+    
+    // Check if user has no workspaces
+    const noWorkspaces = !workspaceMemberships || workspaceMemberships.length === 0;
+    
+    // Determine if onboarding should be shown
+    const needsOnboarding = profileIncomplete || noWorkspaces;
+    const shouldShowOnboarding = needsOnboarding || location.state?.showOnboarding;
+    
+    console.log("Dashboard - Profile incomplete:", profileIncomplete);
+    console.log("Dashboard - No workspaces:", noWorkspaces);
+    console.log("Dashboard - Should show onboarding:", shouldShowOnboarding);
+    
+    setShowOnboarding(shouldShowOnboarding);
+    setIsIncompleteProfile(profileIncomplete);
+    
+    // Update location state if needed
+    if (shouldShowOnboarding && !location.state?.isIncompleteProfile) {
+      navigate(location.pathname, { 
+        state: { ...location.state, isIncompleteProfile: profileIncomplete },
+        replace: true 
+      });
     }
-  }, [profile, profileLoading, location.state, navigate, location.pathname, isIncompleteProfile]);
+    
+  }, [profile, profileLoading, workspaceMemberships, workspacesLoading, location.state, navigate, location.pathname]);
 
   const quickLinks = [
     {
