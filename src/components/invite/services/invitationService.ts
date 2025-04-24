@@ -1,8 +1,11 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export async function verifyInvitation(token: string) {
   console.log("🔍 Verifying invitation token:", token);
 
+  // When retrieving the invitation, we need to use the anon role which has permissions
+  // to read invitations by token (as the user might not be authenticated yet)
   const { data: invitation, error: inviteError } = await supabase
     .from("workspace_invitations")
     .select("*")
@@ -40,6 +43,30 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
     status,
   });
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("You must be logged in to update an invitation.");
+  }
+
+  // First, get the invitation to check permissions
+  const { data: invitation, error: getError } = await supabase
+    .from("workspace_invitations")
+    .select("email")
+    .eq("id", invitationId)
+    .single();
+
+  if (getError) {
+    console.error("❌ Error getting invitation:", getError);
+    throw getError;
+  }
+
+  // Check if the user's email matches the invitation email
+  if (user.email?.toLowerCase() !== invitation.email.toLowerCase()) {
+    console.error("❌ User email does not match invitation email");
+    throw new Error("You don't have permission to update this invitation.");
+  }
+
+  // Update the invitation status
   const { error: updateError } = await supabase
     .from("workspace_invitations")
     .update({ 

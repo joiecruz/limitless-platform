@@ -1,9 +1,11 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { InviteModal } from "@/components/invite/InviteModal";
 import { verifyInvitation } from "@/components/invite/services/invitationService";
+import { LoadingPage } from "@/components/common/LoadingPage";
 
 export default function InvitePage() {
   const [searchParams] = useSearchParams();
@@ -79,7 +81,8 @@ export default function InvitePage() {
 
               if (updateError) {
                 console.error("Error updating invitation status:", updateError);
-                throw updateError;
+                // Continue despite error in updating status
+                console.warn("Continuing despite error in updating invitation status");
               }
 
               localStorage.setItem('selectedWorkspace', invitation.workspace_id);
@@ -123,7 +126,7 @@ export default function InvitePage() {
   }, [searchParams, navigate, toast]);
 
   if (loading) {
-    return null; // Or a loading spinner
+    return <LoadingPage />;
   }
 
   return (
@@ -131,7 +134,7 @@ export default function InvitePage() {
       {showInviteModal && (
         <InviteModal
           open={true}
-          onOpenChange={() => {}}
+          onOpenChange={setShowInviteModal}
         />
       )}
     </div>

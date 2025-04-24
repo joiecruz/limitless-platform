@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +33,7 @@ export function useWorkspaces() {
           .eq('id', user.id)
           .single();
 
-        if (profileError) {
+        if (profileError && profileError.code !== 'PGRST116') {
           console.error('Error fetching profile:', profileError);
           throw profileError;
         }
@@ -45,7 +46,11 @@ export function useWorkspaces() {
             .from('workspaces')
             .select('id, name, slug');
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error fetching all workspaces:', error);
+            throw error;
+          }
+          
           workspacesData = data.map(workspace => ({
             workspace: workspace
           }));
@@ -62,22 +67,28 @@ export function useWorkspaces() {
             `)
             .eq('user_id', user.id);
 
-          if (error) throw error;
+          if (error) {
+            console.error('Error fetching member workspaces:', error);
+            throw error;
+          }
+          
           workspacesData = data;
         }
 
         console.log('Raw workspace data:', workspacesData);
         
         // Safely type and transform the response
-        const formattedWorkspaces = (workspacesData as unknown as WorkspaceMemberWithWorkspace[]).map(item => ({
-          id: item.workspace.id,
-          name: item.workspace.name || 'Unnamed Workspace',
-          slug: item.workspace.slug || 'unnamed'
-        }));
+        const formattedWorkspaces = (workspacesData as unknown as WorkspaceMemberWithWorkspace[])
+          .filter(item => item.workspace) // Filter out any null workspaces
+          .map(item => ({
+            id: item.workspace.id,
+            name: item.workspace.name || 'Unnamed Workspace',
+            slug: item.workspace.slug || 'unnamed'
+          }));
 
         console.log('Formatted workspaces:', formattedWorkspaces);
         return formattedWorkspaces;
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error in fetchWorkspaces:', error);
         toast({
           title: "Error",

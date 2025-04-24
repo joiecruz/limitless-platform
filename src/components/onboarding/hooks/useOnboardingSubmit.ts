@@ -97,29 +97,45 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
         }
       }
 
-      // Create workspace only if the user has provided a workspace name
-      if (formData.workspaceName) {
+      // Create workspace only if:
+      // 1. The user has provided a workspace name AND
+      // 2. The user is not an invited user (invited users join existing workspaces)
+      if (formData.workspaceName && !isInvitedUser) {
         console.log('Creating workspace:', formData.workspaceName);
         const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
         
-        const { data: workspace, error: workspaceError } = await supabase
-          .rpc('create_workspace_with_owner', {
-            workspace_name: formData.workspaceName,
-            workspace_slug: slug,
-            owner_id: user.id
-          });
+        try {
+          // Use the RPC function to create workspace with owner role
+          const { data: workspace, error: workspaceError } = await supabase
+            .rpc('create_workspace_with_owner', {
+              workspace_name: formData.workspaceName,
+              workspace_slug: slug,
+              owner_id: user.id
+            });
 
-        if (workspaceError) {
-          console.error('Error creating workspace:', workspaceError);
-          throw workspaceError;
+          if (workspaceError) {
+            console.error('Error creating workspace:', workspaceError);
+            throw workspaceError;
+          }
+
+          console.log('Workspace created successfully:', workspace);
+
+          // Invalidate queries to refresh workspace data
+          await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+          
+          // Set the newly created workspace as the selected one
+          if (workspace) {
+            const workspaceObj = typeof workspace === 'string' ? JSON.parse(workspace) : workspace;
+            localStorage.setItem('selectedWorkspace', workspaceObj.id);
+          }
+        } catch (error) {
+          console.error('Error in workspace creation:', error);
+          throw error;
         }
-
-        console.log('Workspace created successfully:', workspace);
-
-        // Invalidate queries to refresh workspace data
-        await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       } else {
-        console.log('No workspace name provided, skipping workspace creation');
+        console.log('No workspace creation needed:', 
+          formData.workspaceName ? 'Has workspace name' : 'No workspace name',
+          isInvitedUser ? 'Is invited user' : 'Not invited user');
       }
 
       toast({

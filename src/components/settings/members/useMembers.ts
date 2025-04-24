@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Member, WorkspaceMember } from "./types";
@@ -39,7 +40,8 @@ export function useMembers(workspaceId?: string) {
 
       console.log('Active members data:', activeMembers);
 
-      // Fetch pending invitations
+      // Fetch pending invitations - with RLS, this should only return invitations for this workspace
+      // that the current user has permission to see
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
         .from('workspace_invitations')
         .select(`
@@ -100,13 +102,40 @@ export function useMembers(workspaceId?: string) {
         throw new Error('No workspace selected');
       }
 
+      // Get current user's role in the workspace
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: currentUserRole, error: roleError } = await supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (roleError) {
+        console.error('Error fetching user role:', roleError);
+        throw new Error('Could not determine your permissions');
+      }
+
+      const isOwner = currentUserRole.role === 'owner';
+      const isAdmin = currentUserRole.role === 'admin';
+
+      // Check permissions
+      if (member.role === 'owner' && !isOwner) {
+        throw new Error('Only owners can remove other owners');
+      }
+
+      if (!isOwner && !isAdmin) {
+        throw new Error('You do not have permission to remove members');
+      }
+
       if (member.status === 'Active') {
         const { error } = await supabase
           .from('workspace_members')
           .delete()
           .eq('workspace_id', workspaceId)
-          .eq('user_id', member.id)
-          .single();
+          .eq('user_id', member.id);
 
         if (error) {
           console.error('Error deleting member:', error);
@@ -116,8 +145,7 @@ export function useMembers(workspaceId?: string) {
         const { error } = await supabase
           .from('workspace_invitations')
           .delete()
-          .eq('id', member.id)
-          .single();
+          .eq('id', member.id);
 
         if (error) {
           console.error('Error cancelling invitation:', error);
