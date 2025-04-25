@@ -26,7 +26,7 @@ export default function InvitePage() {
 
         console.log("Handling invitation with token:", token);
         
-        // Verify the invitation first
+        // Verify the invitation first using our service that bypasses RLS
         const { invitation } = await verifyInvitation(token);
 
         if (!invitation) {
@@ -43,19 +43,18 @@ export default function InvitePage() {
           // If the signed-in user's email matches the invitation email
           if (session.user.email?.toLowerCase() === invitation.email.toLowerCase()) {
             try {
-              // Add user to workspace
-              const { error: memberError } = await supabase
-                .from("workspace_members")
-                .insert({
-                  workspace_id: invitation.workspace_id,
+              // Use the edge function to accept the invitation and add user to workspace
+              const { data, error } = await supabase.functions.invoke('process-invitation-acceptance', {
+                body: {
+                  invitation_id: invitation.id,
                   user_id: session.user.id,
+                  workspace_id: invitation.workspace_id,
                   role: invitation.role
-                })
-                .select()
-                .single();
+                }
+              });
 
-              if (memberError) {
-                if (memberError.code === '23505') { // Unique violation
+              if (error) {
+                if (error.message?.includes('already a member')) {
                   console.log("User is already a member of this workspace");
                   localStorage.setItem('selectedWorkspace', invitation.workspace_id);
                   navigate("/dashboard", { 
@@ -67,22 +66,7 @@ export default function InvitePage() {
                   });
                   return;
                 }
-                throw memberError;
-              }
-
-              // Update invitation status
-              const { error: updateError } = await supabase
-                .from("workspace_invitations")
-                .update({ 
-                  status: "accepted",
-                  accepted_at: new Date().toISOString()
-                })
-                .eq("id", invitation.id);
-
-              if (updateError) {
-                console.error("Error updating invitation status:", updateError);
-                // Continue despite error in updating status
-                console.warn("Continuing despite error in updating invitation status");
+                throw new Error(error.message || "Failed to process invitation");
               }
 
               localStorage.setItem('selectedWorkspace', invitation.workspace_id);

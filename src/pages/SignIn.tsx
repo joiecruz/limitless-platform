@@ -36,45 +36,42 @@ export default function SignIn() {
           setIsLoading(true);
           console.log("User authenticated, checking workspace membership...");
           
-          // Check for workspace membership
-          const { data: memberData, error: memberError } = await supabase
-            .from('workspace_members')
-            .select(`
-              workspace_id,
-              workspaces:workspace_id (
-                id,
-                name
-              )
-            `)
-            .eq('user_id', currentSession.user.id);
-
-          if (memberError) {
-            console.error("Error checking workspace membership:", memberError);
-            toast({
-              title: "Error",
-              description: "There was a problem signing you in. Please try again.",
-              variant: "destructive",
+          try {
+            // Check for workspace membership using edge function to bypass RLS
+            const { data: workspaces, error } = await supabase.functions.invoke('get-user-workspaces', {
+              body: { user_id: currentSession.user.id }
             });
-            return;
-          }
+            
+            if (error) {
+              console.error("Error checking workspace membership:", error);
+              toast({
+                title: "Error",
+                description: "There was a problem signing you in. Please try again.",
+                variant: "destructive",
+              });
+              return;
+            }
 
-          // If user has no workspace, show onboarding with workspace creation
-          if (!memberData || memberData.length === 0) {
-            console.log("No workspace found, redirecting to dashboard with onboarding flag...");
-            navigate('/dashboard', { 
-              replace: true,
-              state: { 
-                showOnboarding: true
-              }
-            });
-            return;
-          }
+            // If user has no workspace, show onboarding with workspace creation
+            if (!workspaces || workspaces.length === 0) {
+              console.log("No workspace found, redirecting to onboarding...");
+              navigate('/onboarding', { 
+                replace: true,
+                state: { 
+                  showOnboarding: true
+                }
+              });
+              return;
+            }
 
-          // User has a workspace, set the first one as default and go to dashboard
-          const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
-          console.log("Workspace found, redirecting to dashboard...", workspace);
-          localStorage.setItem('selectedWorkspace', workspace.id);
-          navigate('/dashboard', { replace: true });
+            // User has a workspace, set the first one as default and go to dashboard
+            console.log("Workspace found, redirecting to dashboard...", workspaces[0]);
+            localStorage.setItem('selectedWorkspace', workspaces[0].id);
+            navigate('/dashboard', { replace: true });
+          } catch (error) {
+            console.error("Error fetching workspaces:", error);
+            navigate('/onboarding', { replace: true });
+          }
         }
       } catch (error) {
         console.error("Error in auth change handler:", error);
@@ -96,26 +93,19 @@ export default function SignIn() {
       if (event === 'SIGNED_IN' && session) {
         setIsLoading(true);
         try {
-          // Check for workspace membership
-          const { data: memberData, error: memberError } = await supabase
-            .from('workspace_members')
-            .select(`
-              workspace_id,
-              workspaces:workspace_id (
-                id,
-                name
-              )
-            `)
-            .eq('user_id', session.user.id);
-
-          if (memberError) {
-            console.error("Error handling sign in:", memberError);
-            throw memberError;
+          // Check for workspace membership using edge function to bypass RLS
+          const { data: workspaces, error } = await supabase.functions.invoke('get-user-workspaces', {
+            body: { user_id: session.user.id }
+          });
+          
+          if (error) {
+            console.error("Error handling sign in:", error);
+            throw error;
           }
 
           // If user has no workspace, show onboarding with workspace creation
-          if (!memberData || memberData.length === 0) {
-            navigate('/dashboard', { 
+          if (!workspaces || workspaces.length === 0) {
+            navigate('/onboarding', { 
               replace: true, 
               state: { 
                 showOnboarding: true 
@@ -125,8 +115,7 @@ export default function SignIn() {
           }
 
           // User has a workspace, set the first one as default and go to dashboard
-          const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
-          localStorage.setItem('selectedWorkspace', workspace.id);
+          localStorage.setItem('selectedWorkspace', workspaces[0].id);
           navigate('/dashboard', { replace: true });
         } catch (error) {
           console.error("Error handling sign in:", error);
