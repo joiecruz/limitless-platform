@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingPage } from "@/components/common/LoadingPage";
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
@@ -15,7 +16,8 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     // Skip auth check for certain pages
     if (location.pathname === '/verify-email' || 
         location.pathname === '/signup' || 
-        location.pathname === '/reset-password') {
+        location.pathname === '/reset-password' ||
+        location.pathname === '/invite') {
       setIsChecking(false);
       return;
     }
@@ -75,13 +77,15 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
       
       if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
         setIsAuthenticated(true);
+        setIsChecking(false);
         return;
       }
 
       // Skip auth redirects for certain pages
       if (location.pathname === '/verify-email' || 
           location.pathname === '/signup' || 
-          location.pathname === '/reset-password') {
+          location.pathname === '/reset-password' ||
+          location.pathname === '/invite') {
         return;
       }
 
@@ -96,6 +100,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         navigate("/verify-email", { replace: true });
       } else {
         setIsAuthenticated(true);
+        setIsChecking(false);
       }
     });
 
@@ -105,13 +110,14 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   }, [navigate, toast, location.pathname]);
 
   if (isChecking) {
-    return null; // Or a loading spinner
+    return <LoadingPage />; // Show loading indicator while checking authentication
   }
 
   // Skip auth check for reset-password and other non-auth-required pages
   if (location.pathname === '/reset-password' ||
       location.pathname === '/verify-email' || 
-      location.pathname === '/signup') {
+      location.pathname === '/signup' ||
+      location.pathname === '/invite') {
     return <>{children}</>;
   }
 
