@@ -1,3 +1,4 @@
 
-# Redirect all routes to index.html for SPA routing
+# Handle SPA routing for all domains
 /* /index.html 200
+
