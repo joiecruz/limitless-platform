@@ -13,11 +13,14 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
+    console.log("RequireAuth: Initial render, current location:", location.pathname);
+
     // Skip auth check for certain pages
     if (location.pathname === '/verify-email' || 
         location.pathname === '/signup' || 
         location.pathname === '/reset-password' ||
         location.pathname === '/invite') {
+      console.log("RequireAuth: Skipping auth check for special routes");
       setIsChecking(false);
       return;
     }
@@ -27,6 +30,12 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         console.log("RequireAuth: Checking session...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
+        console.log("RequireAuth: Session details:", {
+          session: !!session,
+          sessionError,
+          user: session?.user
+        });
+
         if (sessionError) {
           console.error("RequireAuth: Session error:", sessionError);
           localStorage.clear();
@@ -36,8 +45,6 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        console.log("RequireAuth: Session state:", session);
-        
         if (!session) {
           console.log("RequireAuth: No session found, redirecting to signin");
           setIsAuthenticated(false);
@@ -57,7 +64,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         setIsAuthenticated(true);
         setIsChecking(false);
       } catch (error: any) {
-        console.error("RequireAuth: Auth error:", error);
+        console.error("RequireAuth: Unexpected auth error:", error);
         localStorage.clear();
         await supabase.auth.signOut();
         setIsAuthenticated(false);
@@ -76,6 +83,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
       console.log("RequireAuth: Auth state changed:", event, session);
       
       if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+        console.log("RequireAuth: Token refreshed or signed in");
         setIsAuthenticated(true);
         setIsChecking(false);
         return;
@@ -129,3 +137,4 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 }
 
 export default RequireAuth;
+

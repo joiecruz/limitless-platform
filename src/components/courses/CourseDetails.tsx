@@ -47,18 +47,16 @@ const CourseDetails = ({
         <CardTitle className="leading-[1.2]">{title}</CardTitle>
         <CardDescription className="line-clamp-2">{description}</CardDescription>
       </CardHeader>
-      {!isEnrolled && !isLocked && (
-        <div className="px-6 pb-4 flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <BookOpen className="h-4 w-4" />
-            <span>{lessonCount || 0} lessons</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            <span>{enrolleeCount || 0} enrolled</span>
-          </div>
+      <div className="px-6 pb-4 flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <BookOpen className="h-4 w-4" />
+          <span>{lessonCount} lessons</span>
         </div>
-      )}
+        <div className="flex items-center gap-1">
+          <Users className="h-4 w-4" />
+          <span>{enrolleeCount} enrolled</span>
+        </div>
+      </div>
     </>
   );
 };
