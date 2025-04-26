@@ -41,7 +41,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
           localStorage.removeItem('selectedWorkspace');
           await supabase.auth.signOut();
           setIsAuthenticated(false);
-          navigate("/signin", { replace: true });
+          navigate("/signin", { replace: true, state: { from: location } });
           return;
         }
 
@@ -49,7 +49,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
           console.log("RequireAuth: No session found, redirecting to signin");
           setIsAuthenticated(false);
           localStorage.removeItem('selectedWorkspace');
-          navigate("/signin", { replace: true });
+          navigate("/signin", { replace: true, state: { from: location } });
           return;
         }
 
@@ -67,7 +67,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         localStorage.removeItem('selectedWorkspace');
         await supabase.auth.signOut();
         setIsAuthenticated(false);
-        navigate("/signin", { replace: true });
+        navigate("/signin", { replace: true, state: { from: location } });
         toast({
           title: "Authentication Error",
           description: "Please sign in again",
