@@ -11,7 +11,14 @@ if (!rootElement) {
   document.body.appendChild(newRoot);
 }
 
+// Log information about the current environment
+console.log("App initializing with:", {
+  hostname: window.location.hostname,
+  pathname: window.location.pathname,
+  protocol: window.location.protocol,
+  href: window.location.href
+});
+
 // Mount React application
 const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
-

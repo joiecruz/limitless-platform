@@ -14,6 +14,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   
   useEffect(() => {
     console.log("RequireAuth: Initial render, current location:", location.pathname);
+    console.log("RequireAuth: Current hostname:", window.location.hostname);
 
     // Skip auth check for certain pages
     if (location.pathname === '/verify-email' || 
@@ -41,7 +42,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
           localStorage.removeItem('selectedWorkspace');
           await supabase.auth.signOut();
           setIsAuthenticated(false);
-          navigate("/signin", { replace: true });
+          navigate("/signin", { replace: true, state: { from: location } });
           return;
         }
 
@@ -49,7 +50,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
           console.log("RequireAuth: No session found, redirecting to signin");
           setIsAuthenticated(false);
           localStorage.removeItem('selectedWorkspace');
-          navigate("/signin", { replace: true });
+          navigate("/signin", { replace: true, state: { from: location } });
           return;
         }
 
@@ -67,7 +68,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         localStorage.removeItem('selectedWorkspace');
         await supabase.auth.signOut();
         setIsAuthenticated(false);
-        navigate("/signin", { replace: true });
+        navigate("/signin", { replace: true, state: { from: location } });
         toast({
           title: "Authentication Error",
           description: "Please sign in again",
@@ -80,6 +81,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("RequireAuth: Auth state changed:", event, session);
+      console.log("RequireAuth: Current hostname:", window.location.hostname);
       
       if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
         console.log("RequireAuth: Token refreshed or signed in");
