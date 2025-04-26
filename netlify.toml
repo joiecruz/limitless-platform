@@ -16,3 +16,9 @@
 
 [context.production.environment]
   VITE_APP_URL = "https://limitlesslab.org"
+
+# Handle custom domain routing
+[[headers]]
+  for = "/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"
