@@ -23,4 +23,6 @@ export default defineConfig(({ mode }) => ({
     outDir: process.env.VITE_APP_DOMAIN === 'app' ? 'dist-app' : 'dist',
     copyPublicDir: true,
   },
+  // Ensure router works properly with any base path
+  base: '/',
 }))

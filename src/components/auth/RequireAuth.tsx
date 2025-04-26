@@ -38,7 +38,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 
         if (sessionError) {
           console.error("RequireAuth: Session error:", sessionError);
-          localStorage.clear();
+          localStorage.removeItem('selectedWorkspace');
           await supabase.auth.signOut();
           setIsAuthenticated(false);
           navigate("/signin", { replace: true });
@@ -48,8 +48,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         if (!session) {
           console.log("RequireAuth: No session found, redirecting to signin");
           setIsAuthenticated(false);
-          localStorage.clear();
-          await supabase.auth.signOut();
+          localStorage.removeItem('selectedWorkspace');
           navigate("/signin", { replace: true });
           return;
         }
@@ -65,7 +64,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
         setIsChecking(false);
       } catch (error: any) {
         console.error("RequireAuth: Unexpected auth error:", error);
-        localStorage.clear();
+        localStorage.removeItem('selectedWorkspace');
         await supabase.auth.signOut();
         setIsAuthenticated(false);
         navigate("/signin", { replace: true });
@@ -100,7 +99,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
       if (!session || event === 'SIGNED_OUT') {
         console.log("RequireAuth: Session lost or signed out, redirecting to signin");
         setIsAuthenticated(false);
-        localStorage.clear();
+        localStorage.removeItem('selectedWorkspace');
         navigate("/signin", { replace: true });
       } else if (!session.user.email_confirmed_at) {
         console.log("RequireAuth: Email not confirmed, redirecting to verify-email");
@@ -137,4 +136,3 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 }
 
 export default RequireAuth;
-
