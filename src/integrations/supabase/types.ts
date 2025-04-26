@@ -1487,6 +1487,10 @@ export type Database = {
         Args: { workspace_id: string; user_id: string }
         Returns: boolean
       }
+      is_workspace_member_secure: {
+        Args: { workspace_id: string; user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
