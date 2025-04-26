@@ -21,12 +21,21 @@ console.log("App initializing with:", {
   isApexDomain: isApexDomain()
 });
 
-// Redirect apex domain to www if needed
-if (isApexDomain() && window.location.pathname !== '/redirect-detected') {
+// Set a session storage flag to prevent redirect loops
+const hasRedirected = sessionStorage.getItem('apex_redirect_attempted');
+
+// Redirect apex domain to www if needed, but only if we haven't tried redirecting before
+if (isApexDomain() && !hasRedirected) {
   console.log("Redirecting from apex domain to www subdomain");
+  sessionStorage.setItem('apex_redirect_attempted', 'true');
   window.location.href = `https://www.limitlesslab.org${window.location.pathname}${window.location.search}`;
 } else {
   // Mount React application
   const root = createRoot(document.getElementById("root")!);
   root.render(<App />);
+  
+  // Clear the redirect flag after successful mount
+  if (hasRedirected) {
+    sessionStorage.removeItem('apex_redirect_attempted');
+  }
 }
