@@ -17,8 +17,16 @@
 [context.production.environment]
   VITE_APP_URL = "https://limitlesslab.org"
 
-# Handle custom domain routing
+# Specific configuration for www subdomain
 [[headers]]
   for = "/*"
     [headers.values]
     Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Force redirect from apex to www to ensure consistent behavior
+[[redirects]]
+  from = "https://limitlesslab.org/*"
+  to = "https://www.limitlesslab.org/:splat"
+  status = 301
+  force = true
