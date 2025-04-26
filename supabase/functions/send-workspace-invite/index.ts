@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
@@ -44,6 +45,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Database configuration is missing");
     }
 
+    // Get user's token from request to validate permissions
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error("Authorization header is missing");
+    }
+
     // Parse and validate request body
     const requestBody = await req.json().catch(error => {
       console.error("Failed to parse request body:", error);
@@ -74,13 +81,50 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Inviter ID is required");
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    // Create clients
+    // Client with user's JWT (to respect RLS policies)
+    const userSupabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY,
+      {
+        global: {
+          headers: {
+            Authorization: authHeader
+          }
+        }
+      }
+    );
+
+    // Service role client to bypass RLS when necessary
+    const serviceSupabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    // Verify the user has admin or owner role in the workspace
+    const { data: userRole, error: roleError } = await userSupabase
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', workspaceId)
+      .eq('user_id', inviterId)
+      .single();
+
+    if (roleError) {
+      console.error("Error checking user role:", roleError);
+      throw new Error("Failed to verify your permissions");
+    }
+
+    if (!['admin', 'owner'].includes(userRole.role)) {
+      throw new Error("You don't have permission to invite users to this workspace");
+    }
+
+    // Generate a unique batch ID for this invite session
     const batchId = crypto.randomUUID();
 
     console.log("Creating invitations in database");
 
-    // Check for existing invitations
-    const { data: existingInvitations, error: checkError } = await supabase
+    // Check for existing invitations (using service role to ensure we see all invitations)
+    const { data: existingInvitations, error: checkError } = await serviceSupabase
       .from('workspace_invitations')
       .select('email')
       .in('email', emails.map(email => email.toLowerCase()))
@@ -109,8 +153,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create invitations only for new emails
-    const { data: invitations, error: inviteError } = await supabase
+    // Create invitations only for new emails (using user client to respect RLS)
+    const { data: invitations, error: inviteError } = await userSupabase
       .from('workspace_invitations')
       .insert(
         newEmails.map(email => ({
