@@ -20,6 +20,7 @@ export const getNormalizedDomain = (): string => {
     return 'limitlesslab.org';
   }
   
+  // For preview domains like Lovable app domain
   return hostname;
 };
 
@@ -36,4 +37,12 @@ export const getDomainStorageKey = (key: string): string => {
  */
 export const isAppSubdomain = (): boolean => {
   return window.location.hostname.startsWith('app.');
+};
+
+/**
+ * Checks if we're on the apex domain without www
+ */
+export const isApexDomain = (): boolean => {
+  const hostname = window.location.hostname;
+  return hostname === 'limitlesslab.org' && !hostname.startsWith('www.');
 };

@@ -4,6 +4,7 @@ import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingPage } from "@/components/common/LoadingPage";
+import { isApexDomain } from "@/utils/domainHelpers";
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
@@ -15,6 +16,13 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log("RequireAuth: Initial render, current location:", location.pathname);
     console.log("RequireAuth: Current hostname:", window.location.hostname);
+
+    // Handle apex domain issue for authenticated users
+    if (isApexDomain()) {
+      console.log("RequireAuth: Detected apex domain, will handle redirect to www domain");
+      // We'll let the main.tsx handle this redirect to avoid interference with authentication
+      return;
+    }
 
     // Skip auth check for certain pages
     if (location.pathname === '/verify-email' || 

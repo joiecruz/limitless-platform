@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { checkUserProfile } from "@/hooks/useProfileCheck";
+import { isApexDomain, getNormalizedDomain } from "@/utils/domainHelpers";
 
 interface WorkspaceMemberData {
   workspace_id: string;
@@ -19,6 +20,12 @@ export function useAuthRedirect() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Skip redirect processing on apex domain - let main.tsx handle it
+    if (isApexDomain()) {
+      console.log("useAuthRedirect - Detected apex domain, skipping auth redirects");
+      return;
+    }
+    
     const handleAuthChange = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();

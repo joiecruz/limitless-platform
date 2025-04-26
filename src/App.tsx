@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,7 @@ import AppRoutes from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { HelmetProvider } from "react-helmet-async";
+import { isApexDomain } from "./utils/domainHelpers";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +31,13 @@ const App = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // If we're on apex domain, don't try loading the app yet
+    // The redirect in main.tsx will handle it
+    if (isApexDomain() && !sessionStorage.getItem('apex_redirect_attempted')) {
+      console.log("App - On apex domain, waiting for redirect to complete");
+      return;
+    }
+
     let mounted = true;
     
     // Get initial session
