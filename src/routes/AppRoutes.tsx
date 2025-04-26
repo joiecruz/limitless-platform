@@ -1,8 +1,11 @@
+
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { Session } from "@supabase/supabase-js";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useEffect } from "react";
+import { isAppSubdomain } from "@/utils/domainHelpers";
 
 // Public/Marketing pages
 import Index from "@/pages/Index";
@@ -55,29 +58,47 @@ interface AppRoutesProps {
 }
 
 const AppRoutes = ({ session }: AppRoutesProps) => {
+  // Log routing information for debugging
+  useEffect(() => {
+    console.log("AppRoutes: Initializing with", {
+      session: !!session,
+      isAppSubdomain: isAppSubdomain(),
+      hostname: window.location.hostname,
+      pathname: window.location.pathname
+    });
+  }, [session]);
+
   return (
     <Routes>
-      {/* Root path redirect based on authentication */}
+      {/* Root path redirect based on authentication and domain */}
       <Route
         path="/"
-        element={session ? <Navigate to="/dashboard" replace /> : <Index />}
+        element={
+          session ? 
+            <Navigate to="/dashboard" replace /> : 
+            (isAppSubdomain() ? <Navigate to="/dashboard" replace /> : <Index />)
+        }
       />
 
-      {/* Public/Marketing pages */}
-      <Route path="/product" element={<Product />} />
-      <Route path="/services" element={<Services />} />
-      <Route path="/courses" element={<CoursesLanding />} />
-      <Route path="/tools" element={<ToolsLanding />} />
-      <Route path="/tools/:id" element={<ToolDetail />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/blog/:slug" element={<BlogPost />} />
-      <Route path="/case-studies" element={<CaseStudies />} />
-      <Route path="/case-studies/:slug" element={<CaseStudy />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/privacy-policy" element={<Privacy />} />
-      <Route path="/terms-of-service" element={<Terms />} />
+      {/* Public/Marketing pages - only available on main domain */}
+      {!isAppSubdomain() && (
+        <>
+          <Route path="/product" element={<Product />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/courses" element={<CoursesLanding />} />
+          <Route path="/tools" element={<ToolsLanding />} />
+          <Route path="/tools/:id" element={<ToolDetail />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/case-studies" element={<CaseStudies />} />
+          <Route path="/case-studies/:slug" element={<CaseStudy />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy-policy" element={<Privacy />} />
+          <Route path="/terms-of-service" element={<Terms />} />
+        </>
+      )}
 
-      {/* Auth routes */}
+      {/* Auth routes - available on both domains */}
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
