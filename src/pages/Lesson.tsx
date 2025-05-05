@@ -1,13 +1,13 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LessonSidebar from "@/components/lessons/LessonSidebar";
 import LessonHeader from "@/components/lessons/LessonHeader";
 import LessonContent from "@/components/lessons/LessonContent";
 import LessonNavigation from "@/components/lessons/LessonNavigation";
+import { Button } from "@/components/ui/button";
 
 const Lesson = () => {
   const { courseId, lessonId } = useParams<{
@@ -19,7 +19,7 @@ const Lesson = () => {
   const [isOpen, setIsOpen] = useState(true);
 
   // Fetch lesson details
-  const { data: lesson, isLoading: lessonLoading } = useQuery({
+  const { data: lesson, isLoading: lessonLoading, error: lessonError } = useQuery({
     queryKey: ["lesson", lessonId],
     queryFn: async () => {
       if (!lessonId) throw new Error("Lesson ID is required");
@@ -72,6 +72,13 @@ const Lesson = () => {
     enabled: !!courseId,
   });
 
+  // Check and validate video URL when lesson data loads
+  useEffect(() => {
+    if (lesson?.video_url) {
+      console.log("Video URL loaded:", lesson.video_url);
+    }
+  }, [lesson]);
+
   const currentIndex = lessons.findIndex((l) => l.id === lessonId);
   const totalLessons = lessons.length;
   const nextLesson = lessons[currentIndex + 1];
@@ -120,11 +127,26 @@ const Lesson = () => {
   };
 
   if (lessonLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
-  if (!lesson) {
-    return <div>Lesson not found</div>;
+  if (lessonError || !lesson) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col">
+        <h2 className="text-xl font-semibold mb-2">Lesson not found</h2>
+        <p className="text-muted-foreground mb-4">The requested lesson could not be loaded.</p>
+        <Button 
+          onClick={() => navigate(`/dashboard/courses/${courseId}`)}
+          variant="outline"
+        >
+          Return to Course
+        </Button>
+      </div>
+    );
   }
 
   return (
@@ -169,6 +191,6 @@ const Lesson = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Lesson;

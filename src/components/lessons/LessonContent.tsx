@@ -1,3 +1,4 @@
+
 import React from 'react';
 import VideoPlayer from './VideoPlayer';
 import LessonBodyContent from './LessonBodyContent';
@@ -11,7 +12,7 @@ const LessonContent = ({ videoUrl, bodyContent }: LessonContentProps) => {
   return (
     <>
       {videoUrl && (
-        <div className="px-6">
+        <div className="px-6 mb-4">
           <VideoPlayer videoUrl={videoUrl} />
         </div>
       )}

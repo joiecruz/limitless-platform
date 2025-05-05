@@ -2,7 +2,7 @@
 import { Settings, Cast, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactPlayer from "react-player";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -10,9 +10,33 @@ interface VideoPlayerProps {
 
 const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // Check if it's a YouTube URL using a more robust method
+  // Check if it's a YouTube URL
   const isYouTubeUrl = videoUrl?.match(/(youtube\.com|youtu\.be)/i) !== null;
+  
+  // Check if it's a Supabase Storage URL
+  const isSupabaseUrl = videoUrl?.includes('supabase.co/storage/v1/object/public') || false;
+  
+  useEffect(() => {
+    if (videoUrl) {
+      setError(null);
+      setIsReady(false);
+    }
+  }, [videoUrl]);
+
+  const handleVideoError = (e: any) => {
+    console.error("Video player error:", e);
+    setError("Failed to load video. Please try again later.");
+  };
+  
+  if (!videoUrl) {
+    return (
+      <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden mb-8 flex items-center justify-center text-white">
+        No video available
+      </div>
+    );
+  }
   
   return (
     <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
@@ -25,7 +49,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
             controls
             playing={false}
             onReady={() => setIsReady(true)}
-            onError={(e) => console.error("Video player error:", e)}
+            onError={handleVideoError}
             config={{
               youtube: {
                 playerVars: {
@@ -35,24 +59,38 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
               },
             }}
           />
-          {!isReady && (
+          {!isReady && !error && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
             </div>
           )}
         </div>
-      ) : videoUrl ? (
-        <video
-          src={videoUrl}
-          controls
-          className="absolute inset-0 w-full h-full"
-          onError={(e) => console.error("Native video error:", e)}
-        >
-          Your browser does not support the video tag.
-        </video>
       ) : (
-        <div className="flex items-center justify-center h-full text-white">
-          No video available
+        <div className="w-full h-full relative">
+          <video
+            src={videoUrl}
+            controls
+            className="absolute inset-0 w-full h-full"
+            onLoadedData={() => setIsReady(true)}
+            onError={handleVideoError}
+          >
+            Your browser does not support the video tag.
+          </video>
+          
+          {!isReady && !error && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            </div>
+          )}
+        </div>
+      )}
+      
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center flex-col bg-gray-900">
+          <p className="text-red-400 mb-2">{error}</p>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Retry
+          </Button>
         </div>
       )}
       
