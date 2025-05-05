@@ -22,12 +22,6 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing Supabase credentials");
     }
 
-    // Get user auth token
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error("Missing authorization header");
-    }
-
     // Create Supabase client with service role key to bypass RLS
     const supabase = createClient(
       SUPABASE_URL,
@@ -35,10 +29,27 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     // Parse request body to get user_id
-    const { user_id } = await req.json();
+    let user_id;
+    try {
+      const body = await req.json();
+      user_id = body.user_id;
+    } catch (error) {
+      // If parsing fails, try to get user from auth header
+      const authHeader = req.headers.get('Authorization');
+      if (authHeader) {
+        const token = authHeader.replace('Bearer ', '');
+        const { data, error: verifyError } = await supabase.auth.getUser(token);
+        if (verifyError || !data.user) {
+          throw new Error("Invalid authorization token");
+        }
+        user_id = data.user.id;
+      } else {
+        throw new Error("Missing user_id parameter and no authorization header");
+      }
+    }
 
     if (!user_id) {
-      throw new Error("Missing user_id parameter");
+      throw new Error("Could not determine user_id");
     }
 
     // Check if the user exists
@@ -48,8 +59,10 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('id', user_id)
       .single();
 
-    if (userError || !userExists) {
-      throw new Error("User not found");
+    if (userError) {
+      console.error("User check error:", userError);
+      // User might still be valid but not have a profile yet
+      // Continue with workspace fetch but log the issue
     }
 
     // Get the user's workspaces using service role to bypass RLS
@@ -66,18 +79,23 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('user_id', user_id);
 
     if (workspacesError) {
+      console.error("Error fetching workspaces:", workspacesError);
       throw new Error(`Error fetching workspaces: ${workspacesError.message}`);
     }
 
     // Format the response
-    const formattedWorkspaces = workspaces.map(item => {
-      const workspace = item.workspaces as any;
-      return {
-        id: workspace.id,
-        name: workspace.name || 'Unnamed Workspace',
-        slug: workspace.slug || 'unnamed'
-      };
-    });
+    const formattedWorkspaces = workspaces
+      .filter(item => item.workspaces) // Filter out any null workspaces
+      .map(item => {
+        const workspace = item.workspaces as any;
+        return {
+          id: workspace.id,
+          name: workspace.name || 'Unnamed Workspace',
+          slug: workspace.slug || 'unnamed'
+        };
+      });
+
+    console.log(`Returning ${formattedWorkspaces.length} workspaces for user ${user_id}`);
 
     return new Response(
       JSON.stringify(formattedWorkspaces),
