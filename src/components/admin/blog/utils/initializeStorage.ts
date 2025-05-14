@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { BLOG_ASSETS_BUCKET } from "@/config/env";
 
 export async function initializeBlogStorage() {
   try {
@@ -8,23 +9,23 @@ export async function initializeBlogStorage() {
       .storage
       .listBuckets();
     
-    const bucketExists = buckets?.some(bucket => bucket.name === 'blog-assets');
+    const bucketExists = buckets?.some(bucket => bucket.name === BLOG_ASSETS_BUCKET);
     
     if (!bucketExists) {
       // Create the bucket
       const { error } = await supabase
         .storage
-        .createBucket('blog-assets', {
+        .createBucket(BLOG_ASSETS_BUCKET, {
           public: true,
           fileSizeLimit: 10485760, // 10MB
         });
       
       if (error) {
-        console.error("Error creating blog-assets bucket:", error);
+        console.error(`Error creating ${BLOG_ASSETS_BUCKET} bucket:`, error);
         return false;
       }
       
-      console.log("Created blog-assets bucket");
+      console.log(`Created ${BLOG_ASSETS_BUCKET} bucket`);
     }
     
     return true;

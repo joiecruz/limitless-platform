@@ -16,6 +16,8 @@
 
 [context.production.environment]
   VITE_APP_URL = "https://limitlesslab.org"
+  VITE_WWW_URL = "https://www.limitlesslab.org"
+  VITE_FORCE_WWW_REDIRECT = "true"
 
 # Specific configuration for www subdomain
 [[headers]]

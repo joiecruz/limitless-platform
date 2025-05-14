@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { isApexDomain } from './utils/domainHelpers.ts'
+import { getWwwUrl } from './utils/domainHelpers.ts'
 
 // Ensure the root element exists
 const rootElement = document.getElementById("root");
@@ -28,7 +29,7 @@ const hasRedirected = sessionStorage.getItem('apex_redirect_attempted');
 if (isApexDomain() && !hasRedirected) {
   console.log("Redirecting from apex domain to www subdomain");
   sessionStorage.setItem('apex_redirect_attempted', 'true');
-  window.location.href = `https://www.limitlesslab.org${window.location.pathname}${window.location.search}`;
+  window.location.href = `${getWwwUrl()}${window.location.pathname}${window.location.search}`;
 } else {
   // Mount React application
   const root = createRoot(document.getElementById("root")!);
