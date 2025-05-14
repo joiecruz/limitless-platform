@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Member, WorkspaceMember } from "./types";
@@ -37,7 +38,10 @@ export function useMembers(workspaceId?: string) {
         throw activeMembersError;
       }
 
-      // Fetch pending invitations
+      console.log('Active members data:', activeMembers);
+
+      // Fetch pending invitations - with RLS, this should only return invitations for this workspace
+      // that the current user has permission to see
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
         .from('workspace_invitations')
         .select(`

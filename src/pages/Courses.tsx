@@ -1,8 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { courseService } from "@/api";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import CourseCard from "@/components/courses/CourseCard";
 import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 
@@ -29,10 +28,12 @@ const Courses = () => {
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
-      try {
-        const data = await courseService.getCourses();
-        return data as Course[];
-      } catch (error: any) {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .in('format', ['Online', 'Hybrid']); // Filter for Online and Hybrid courses only
+      
+      if (error) {
         console.error('Error fetching courses:', error);
         toast({
           title: "Error",
@@ -41,29 +42,23 @@ const Courses = () => {
         });
         return [];
       }
+      
+      return data as Course[];
     },
   });
 
-  // Query for user enrollments
   const { data: enrollments } = useQuery({
     queryKey: ["enrollments"],
     queryFn: async () => {
-      try {
-        const { data: userSession } = await supabase.auth.getSession();
-        if (!userSession?.session?.user?.id) return [];
+      const { data: userSession } = await supabase.auth.getSession();
+      if (!userSession?.session?.user?.id) return [];
 
-        const { data, error } = await supabase
-          .from('enrollments')
-          .select('course_id, progress')
-          .eq('user_id', userSession.session.user.id);
-        
-        if (error) {
-          console.error('Error fetching enrollments:', error);
-          throw error;
-        }
-        
-        return data as Enrollment[];
-      } catch (error: any) {
+      const { data, error } = await supabase
+        .from('enrollments')
+        .select('course_id, progress')
+        .eq('user_id', userSession.session.user.id);
+      
+      if (error) {
         console.error('Error fetching enrollments:', error);
         toast({
           title: "Error",
@@ -72,18 +67,41 @@ const Courses = () => {
         });
         return [];
       }
+      
+      return data as Enrollment[];
     },
   });
 
-  // Mutation for enrolling in courses
   const enrollMutation = useMutation({
     mutationFn: async (courseId: string) => {
-      return await courseService.enrollInCourse(courseId);
+      const { data: userSession } = await supabase.auth.getSession();
+      if (!userSession?.session?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+
+      const { data, error } = await supabase
+        .from('enrollments')
+        .insert([
+          {
+            course_id: courseId,
+            user_id: userSession.session.user.id,
+            progress: 0
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error enrolling in course:', error);
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["enrollments"] });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       console.error('Error enrolling in course:', error);
       toast({
         title: "Error",

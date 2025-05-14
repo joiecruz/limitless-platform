@@ -1,187 +1,245 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { courseService, workspaceService } from "@/api";
-import { useToast } from "@/hooks/use-toast";
-import { WorkspaceList } from "@/components/workspace/WorkspaceList";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, Building } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Course } from "../types";
-import { Workspace, WorkspaceMemberWithWorkspace } from "@/components/workspace/types";
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { WorkspaceList } from "@/components/workspace/WorkspaceList";
+import { useWorkspaces } from "@/components/workspace/useWorkspaces";
+import { Workspace } from "@/components/workspace/types";
 
 interface CourseWorkspacesProps {
   courseId: string;
 }
 
-export function CourseWorkspaces({ courseId }: CourseWorkspacesProps) {
+const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [currentWorkspaces, setCurrentWorkspaces] = useState<Workspace[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { data: workspaces, isError: workspacesError } = useWorkspaces();
 
-  // Fetch course details
-  const { data: course, isLoading: isCourseLoading } = useQuery({
-    queryKey: ['course', courseId],
-    queryFn: () => courseService.getCourse(courseId),
-    enabled: !!courseId,
-  });
-
-  // Fetch workspaces with access to the course
-  const { data: workspacesWithAccess, isLoading: isWorkspacesWithAccessLoading } = useQuery({
-    queryKey: ['course-workspaces', courseId],
+  // Query to check if user is superadmin
+  const { data: currentUser } = useQuery({
+    queryKey: ["current-user"],
     queryFn: async () => {
-      const data = await workspaceService.getUserWorkspaces();
-      return (data as WorkspaceMemberWithWorkspace[]).map(wm => wm.workspace);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No authenticated user");
+      
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+        
+      if (error) throw error;
+      return profile;
     },
-    enabled: !!courseId,
-    onSuccess: (data) => {
-      if (data) {
-        setCurrentWorkspaces(data);
+  });
+
+  const { data: workspaceAccess, isLoading, refetch } = useQuery({
+    queryKey: ["course-workspaces", courseId],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("workspace_course_access")
+          .select(`
+            *,
+            workspaces:workspace_id (
+              id,
+              name,
+              slug,
+              workspace_members (
+                count
+              )
+            )
+          `)
+          .eq("course_id", courseId);
+
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error("Error fetching workspace access:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load workspace access data",
+          variant: "destructive",
+        });
+        return [];
       }
     },
   });
 
-  // Fetch all workspaces
-  const { data: allWorkspaces, isLoading: isAllWorkspacesLoading } = useQuery({
-    queryKey: ['workspaces'],
-    queryFn: () => workspaceService.getUserWorkspaces(),
-  });
-
-  useEffect(() => {
-    if (workspacesWithAccess) {
-      setCurrentWorkspaces(workspacesWithAccess);
-    }
-  }, [workspacesWithAccess]);
-
-  const handleAddWorkspaceAccess = async (workspace: Workspace) => {
+  const handleAddWorkspace = async (workspace: Workspace) => {
     try {
-      // Optimistically update the state
-      setCurrentWorkspaces(prev => [...prev, workspace]);
+      // Check if access already exists
+      const { data: existingAccess } = await supabase
+        .from("workspace_course_access")
+        .select("id")
+        .eq("workspace_id", workspace.id)
+        .eq("course_id", courseId)
+        .single();
 
-      // Call the edge function to add workspace access
-      const response = await fetch('/api/add-workspace-access', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ courseId, workspaceId: workspace.id }),
-      });
-
-      if (!response.ok) {
-        // If the API call fails, revert the state update
-        setCurrentWorkspaces(prev => prev.filter(w => w.id !== workspace.id));
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to add workspace access');
+      if (existingAccess) {
+        toast({
+          title: "Error",
+          description: "This workspace already has access to the course",
+          variant: "destructive",
+        });
+        return;
       }
+
+      const { error } = await supabase
+        .from("workspace_course_access")
+        .insert({
+          workspace_id: workspace.id,
+          course_id: courseId,
+        });
+
+      if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Workspace access added successfully",
+        description: "Workspace access granted successfully",
       });
+      
+      queryClient.invalidateQueries({ queryKey: ["course-workspaces", courseId] });
+      setIsDialogOpen(false);
     } catch (error: any) {
-      console.error('Error adding workspace access:', error);
+      console.error("Error granting workspace access:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to add workspace access",
+        description: "Failed to grant workspace access",
         variant: "destructive",
       });
     }
   };
 
-  const handleRemoveWorkspaceAccess = async (workspace: Workspace) => {
+  const handleRevokeAccess = async (accessId: string) => {
     try {
-      // Optimistically update the state
-      setCurrentWorkspaces(prev => prev.filter(w => w.id !== workspace.id));
+      const { error } = await supabase
+        .from("workspace_course_access")
+        .delete()
+        .eq("id", accessId);
 
-      // Call the edge function to remove workspace access
-      const response = await fetch('/api/remove-workspace-access', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ courseId, workspaceId: workspace.id }),
-      });
-
-      if (!response.ok) {
-        // If the API call fails, revert the state update
-        setCurrentWorkspaces(prev => [...prev, workspace]);
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to remove workspace access');
-      }
+      if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Workspace access removed successfully",
+        description: "Workspace access revoked successfully",
       });
-    } catch (error: any) {
-      console.error('Error removing workspace access:', error);
+      refetch();
+    } catch (error) {
+      console.error("Error revoking access:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to remove workspace access",
+        description: "Failed to revoke workspace access",
         variant: "destructive",
       });
     }
   };
 
-  if (isCourseLoading || isWorkspacesWithAccessLoading || isAllWorkspacesLoading) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
-  // Filter out workspaces that already have access
-  const availableWorkspaces = (allWorkspaces as WorkspaceMemberWithWorkspace[] || [])
-    .map(wm => wm.workspace)
-    .filter(workspace => !currentWorkspaces.find(cw => cw.id === workspace.id));
+  if (workspacesError) {
+    return (
+      <div className="p-4 text-center text-red-500">
+        Failed to load workspaces. Please try again later.
+      </div>
+    );
+  }
+
+  // Only show the interface if user is superadmin or admin
+  if (!currentUser?.is_superadmin && !currentUser?.is_admin) {
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        You don't have permission to manage workspace access.
+      </div>
+    );
+  }
+
+  // Extract workspace IDs that already have access
+  const existingWorkspaceIds = workspaceAccess?.map(access => access.workspaces?.id) || [];
 
   return (
-    <div>
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold">Workspaces with Access</h2>
-        <p className="text-muted-foreground">Manage which workspaces have access to this course.</p>
+    <div className="space-y-6 p-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Workspace Access</h2>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Building className="h-4 w-4 mr-2" />
+            Add Workspace
+          </Button>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Workspace Access</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <WorkspaceList
+                workspaces={workspaces}
+                onSelect={handleAddWorkspace}
+                existingWorkspaceIds={existingWorkspaceIds}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <div className="mb-4">
-        {workspacesWithAccess && workspacesWithAccess.length > 0 ? (
-          <Table>
-            <TableCaption>Workspaces that have access to this course.</TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-[150px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {workspacesWithAccess.map((workspace) => (
-                <TableRow key={workspace.id}>
-                  <TableCell>{workspace.name}</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => handleRemoveWorkspaceAccess(workspace)}>
-                      Remove Access
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <p className="text-muted-foreground">No workspaces have access to this course</p>
-        )}
-      </div>
-
-      <div>
-        <h3 className="text-md font-semibold mb-2">Add Workspace Access</h3>
-        <WorkspaceList 
-          workspaces={availableWorkspaces || []} 
-          onSelect={handleAddWorkspaceAccess} 
-          existingWorkspaceIds={currentWorkspaces.map(w => w.id)}
-        />
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Workspace</TableHead>
+            <TableHead>Slug</TableHead>
+            <TableHead>Members</TableHead>
+            <TableHead>Granted At</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {workspaceAccess?.map((access) => (
+            <TableRow key={access.id}>
+              <TableCell>{access.workspaces?.name}</TableCell>
+              <TableCell>{access.workspaces?.slug}</TableCell>
+              <TableCell>
+                {access.workspaces?.workspace_members?.[0]?.count || 0}
+              </TableCell>
+              <TableCell>
+                {new Date(access.created_at).toLocaleDateString()}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleRevokeAccess(access.id)}
+                >
+                  Revoke Access
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
-}
+};
+
+export default CourseWorkspaces;

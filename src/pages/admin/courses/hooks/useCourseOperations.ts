@@ -1,6 +1,5 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { courseService } from "@/api";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useCourseOperations = () => {
@@ -10,14 +9,40 @@ export const useCourseOperations = () => {
   const { data: courses, isLoading: isLoadingCourses } = useQuery({
     queryKey: ["admin-courses"],
     queryFn: async () => {
-      return await courseService.getAdminCourses();
+      const { data: coursesData, error: coursesError } = await supabase
+        .from("courses")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (coursesError) throw coursesError;
+
+      const coursesWithCounts = await Promise.all(
+        coursesData.map(async (course) => {
+          const { count } = await supabase
+            .from("enrollments")
+            .select("*", { count: "exact" })
+            .eq("course_id", course.id);
+
+          return {
+            ...course,
+            enrollee_count: count || 0
+          };
+        })
+      );
+
+      return coursesWithCounts;
     },
   });
 
   const handleToggleLock = async (courseId: string, currentLockState: boolean) => {
     try {
-      await courseService.toggleLock(courseId, currentLockState);
-      
+      const { error } = await supabase
+        .from("courses")
+        .update({ locked: !currentLockState })
+        .eq("id", courseId);
+
+      if (error) throw error;
+
       await queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
 
       toast({
