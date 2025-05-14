@@ -23,7 +23,7 @@ interface WorkspaceSelectorProps {
 export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: WorkspaceSelectorProps) {
   const queryClient = useQueryClient();
   const { data: workspaces, isLoading, error, refetch } = useWorkspaces();
-
+  
   // Set initial workspace
   useEffect(() => {
     console.log('WorkspaceSelector useEffect - currentWorkspace:', currentWorkspace);
@@ -63,7 +63,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
             <span className="text-destructive">Failed to load workspaces</span>
           ) : (
             <span className="truncate">
-              {currentWorkspace?.name || (workspaces?.length === 0 ? "No workspaces available" : "Select workspace")}
+              {currentWorkspace?.name || (workspaces && workspaces.length === 0 ? "No workspaces available" : "Select workspace")}
             </span>
           )}
           <ChevronDown className="h-4 w-4 opacity-50" />

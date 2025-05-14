@@ -5,7 +5,8 @@ export async function verifyInvitation(token: string) {
   console.log("🔍 Verifying invitation token:", token);
 
   try {
-    const { invitation } = await authService.verifyInvitation(token);
+    const response = await authService.verifyInvitation(token);
+    const invitation = response?.invitation;
 
     if (!invitation) {
       console.error("❌ No invitation found for token:", token);

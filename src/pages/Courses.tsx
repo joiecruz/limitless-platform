@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { courseService } from "@/api";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import CourseCard from "@/components/courses/CourseCard";
 import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 

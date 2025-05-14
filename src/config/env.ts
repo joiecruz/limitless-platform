@@ -8,8 +8,13 @@ export const APP_URL = import.meta.env.VITE_APP_URL || 'https://limitlesslab.org
 export const DASHBOARD_URL = `${APP_URL}/dashboard`;
 export const ADMIN_URL = `${APP_URL}/admin`;
 
-// Blog storage bucket name
+// Domain configuration
+export const WWW_URL = import.meta.env.VITE_WWW_URL || 'https://www.limitlesslab.org';
+export const FORCE_WWW_REDIRECT = import.meta.env.VITE_FORCE_WWW_REDIRECT === 'true';
+
+// Blog storage bucket names
 export const BLOG_COVERS_BUCKET = 'blog-covers';
+export const BLOG_ASSETS_BUCKET = 'blog-assets';
 
 // File upload limits (in bytes)
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB

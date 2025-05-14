@@ -1,5 +1,5 @@
 
-import { WWW_URL, APP_URL, FORCE_WWW_REDIRECT } from '@/config/env';
+import { APP_URL, WWW_URL, FORCE_WWW_REDIRECT } from '@/config/env';
 
 /**
  * Checks if the current hostname is the apex domain (without www)
