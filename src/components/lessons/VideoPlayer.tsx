@@ -36,7 +36,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
           Your browser does not support the video tag.
         </video>
       )}
-      <div className="absolute bottom-4 right-4 flex gap-2">
+      {/* <div className="absolute bottom-4 right-4 flex gap-2">
         <Button
           size="icon"
           variant="ghost"
@@ -58,7 +58,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
         >
           <Maximize2 className="w-4 h-4" />
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };
