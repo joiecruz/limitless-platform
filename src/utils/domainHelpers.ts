@@ -26,6 +26,40 @@ export function isApexDomain(): boolean {
 }
 
 /**
+ * Checks if the current hostname is an app subdomain (app.domain.com)
+ * @returns {boolean} True if current hostname is an app subdomain
+ */
+export function isAppSubdomain(): boolean {
+  const hostname = window.location.hostname;
+  
+  // If we're in development mode, consider it as an app subdomain for testing
+  if (hostname === 'localhost' || hostname.includes('127.0.0.1')) {
+    return true;
+  }
+
+  // Check if the hostname starts with "app."
+  return hostname.startsWith('app.');
+}
+
+/**
+ * Gets the normalized domain name without subdomain
+ * @returns {string} The normalized domain (e.g., domain.com)
+ */
+export function getNormalizedDomain(): string {
+  const hostname = window.location.hostname;
+  
+  // If we're in development mode, return a placeholder
+  if (hostname === 'localhost' || hostname.includes('127.0.0.1')) {
+    return 'localhost';
+  }
+
+  // Extract domain without subdomain
+  const domainRegex = /(?:.*\.)?([^.]+\.[^.]+)$/;
+  const match = hostname.match(domainRegex);
+  return match ? match[1] : hostname;
+}
+
+/**
  * Gets the base URL for the current environment
  * @returns {string} The base URL
  */
