@@ -6,8 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Content Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; media-src *; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co https://www.googletagmanager.com; connect-src 'self' https://crllgygjuqpluvdpwayi.supabase.co wss://crllgygjuqpluvdpwayi.supabase.co https://www.googletagmanager.com https://*.supabase.co https://limitlesslab.org https://www.limitlesslab.org https://app.limitlesslab.org; style-src 'self' 'unsafe-inline'; img-src 'self' https://crllgygjuqpluvdpwayi.supabase.co data: blob:; font-src 'self' data:; frame-src 'self'; base-uri 'self';">
-
+    <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' https://cdn.gpteng.co https://www.googletagmanager.com 'unsafe-inline';
+    style-src 'self' 'unsafe-inline';
+    media-src *;
+    connect-src 'self' https://crllgygjuqpluvdpwayi.supabase.co wss://crllgygjuqpluvdpwayi.supabase.co https://www.googletagmanager.com https://*.supabase.co https://limitlesslab.org https://www.limitlesslab.org https://app.limitlesslab.org;
+    img-src 'self' https://crllgygjuqpluvdpwayi.supabase.co https://api.dicebear.com https://uploads-ssl.webflow.com https://cdn.prod.website-files.com data: blob:;
+    font-src 'self' data:;
+    frame-src 'self';
+    base-uri 'self';
+  ">
     <!-- Base metadata - will be overridden by server middleware -->
     <title>Limitless Lab</title>
     <meta name="description" content="Limitless Lab's all-in-one innovation platform" />
