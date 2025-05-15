@@ -10,7 +10,6 @@ export function useWorkspaces() {
   return useQuery({
     queryKey: ['workspaces'],
     queryFn: async () => {
-      console.log('Fetching workspaces...');
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
@@ -20,53 +19,21 @@ export function useWorkspaces() {
         }
 
         if (!user) {
-          console.log("No user found");
           return [];
         }
 
-        console.log("User found:", user.id);
-
-        // First check if user is superadmin - use edge function to bypass RLS
-        const { data: profile, error: profileError } = await supabase
-          .functions.invoke('get-user-profile', {
+        // Use a single edge function call to determine if user is superadmin and get workspaces
+        const { data, error } = await supabase
+          .functions.invoke('get-user-workspaces', {
             body: { user_id: user.id }
           });
 
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-          throw profileError;
+        if (error) {
+          console.error('Error fetching workspaces:', error);
+          throw error;
         }
-
-        let workspacesData;
-
-        if (profile?.is_superadmin) {
-          // If superadmin, fetch all workspaces using edge function
-          const { data, error } = await supabase
-            .functions.invoke('get-admin-workspaces');
           
-          if (error) {
-            console.error('Error fetching all workspaces:', error);
-            throw error;
-          }
-          
-          workspacesData = data;
-        } else {
-          // Otherwise fetch only member workspaces using edge function
-          const { data, error } = await supabase
-            .functions.invoke('get-user-workspaces', {
-              body: { user_id: user.id }
-            });
-
-          if (error) {
-            console.error('Error fetching member workspaces:', error);
-            throw error;
-          }
-          
-          workspacesData = data;
-        }
-
-        console.log('Formatted workspaces:', workspacesData);
-        return workspacesData || [];
+        return data || [];
       } catch (error: any) {
         console.error('Error in fetchWorkspaces:', error);
         toast({
@@ -77,7 +44,7 @@ export function useWorkspaces() {
         return [];
       }
     },
-    refetchOnWindowFocus: true,
-    staleTime: 1000, 
+    refetchOnWindowFocus: false, // Only fetch when component mounts
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }

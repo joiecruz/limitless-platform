@@ -8,13 +8,21 @@ import { Features } from "@/components/site-config/Features";
 import { BlogSection } from "@/components/site-config/BlogSection";
 import { CTASection } from "@/components/site-config/CTASection";
 import { LoadingPage } from "@/components/common/LoadingPage";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
 
 export default function Index() {
   const navigate = useNavigate();
+  const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+  
+  // Preload hero image
+  useEffect(() => {
+    const img = new Image();
+    img.src = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z";
+    img.onload = () => setHeroImageLoaded(true);
+  }, []);
   
   // Query to check if user is authenticated
   const { data: session } = useQuery({
@@ -22,7 +30,8 @@ export default function Index() {
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       return session;
-    }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const handleCreateAccount = () => {
@@ -38,6 +47,7 @@ export default function Index() {
       <Helmet>
         <title>Limitless Lab: All-in-One Innovation Platform</title>
         <meta name="description" content="Transform your innovation journey with Limitless Lab's comprehensive platform for learning, tools, and community." />
+        <link rel="preload" href="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z" as="image" />
       </Helmet>
       
       <MainNav />
@@ -70,12 +80,16 @@ export default function Index() {
             </div>
           </div>
           
-          {/* Hero Image */}
+          {/* Hero Image with loading placeholder */}
           <div className="relative -mt-[30px]">
+            {!heroImageLoaded && (
+              <div className="w-full aspect-[16/9] bg-gray-100 rounded-lg animate-pulse"></div>
+            )}
             <img 
               src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z"
               alt="Limitless Lab Platform"
-              className="w-full rounded-lg"
+              className={`w-full rounded-lg ${!heroImageLoaded ? 'invisible absolute' : 'visible'}`}
+              loading="eager"
             />
           </div>
         </div>

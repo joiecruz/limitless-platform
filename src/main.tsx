@@ -12,15 +12,6 @@ if (!rootElement) {
   document.body.appendChild(newRoot);
 }
 
-// Log information about the current environment
-console.log("App initializing with:", {
-  hostname: window.location.hostname,
-  pathname: window.location.pathname,
-  protocol: window.location.protocol,
-  href: window.location.href,
-  isApexDomain: isApexDomain()
-});
-
 // Set a session storage flag to prevent redirect loops
 const hasRedirected = sessionStorage.getItem('apex_redirect_attempted');
 
