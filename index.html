@@ -8,7 +8,8 @@
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' https://cdn.gpteng.co https://www.googletagmanager.com 'unsafe-inline';
+    script-src-elem 'self' https://cdn.gpteng.co https://www.googletagmanager.com https://static.cloudflareinsights.com;
+    script-src 'self';
     style-src 'self' 'unsafe-inline';
     media-src *;
     connect-src 'self' https://crllgygjuqpluvdpwayi.supabase.co wss://crllgygjuqpluvdpwayi.supabase.co https://www.googletagmanager.com https://*.supabase.co https://limitlesslab.org https://www.limitlesslab.org https://app.limitlesslab.org;

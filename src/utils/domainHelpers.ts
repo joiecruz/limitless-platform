@@ -9,17 +9,17 @@
  */
 export const getNormalizedDomain = (): string => {
   const hostname = window.location.hostname;
-  
+
   // If in development environment
   if (hostname === 'localhost' || hostname.includes('127.0.0.1')) {
     return 'localhost';
   }
-  
+
   // Extract root domain from various subdomains
   if (hostname.includes('limitlesslab.org')) {
     return 'limitlesslab.org';
   }
-  
+
   // For preview domains like Lovable app domain
   return hostname;
 };
