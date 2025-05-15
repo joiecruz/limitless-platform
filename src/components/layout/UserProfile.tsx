@@ -1,4 +1,3 @@
-
 import { ProfileDisplay } from "./ProfileDisplay";
 import { ProfileMenu } from "./ProfileMenu";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,10 +10,17 @@ export function UserProfile() {
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-      return user;
-    }
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.user) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No user found');
+        return user;
+      }
+      return data.session.user;
+    },
+    staleTime: 0, // Always refetch on mount
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useQuery({
@@ -41,7 +47,9 @@ export function UserProfile() {
 
       return data;
     },
-    enabled: !!session?.id
+    enabled: !!session?.id,
+    staleTime: 0,
+    refetchOnMount: true
   });
 
   // Handle profile loading success
@@ -49,15 +57,27 @@ export function UserProfile() {
     if (!profileLoading && profile && isInitialLoad) {
       setIsInitialLoad(false);
     }
-  }, []);
+  }, [profile, profileLoading, isInitialLoad]);
 
   // Reset initial load flag when user changes
   useEffect(() => {
     if (session?.id) {
-      setIsInitialLoad(true);
       refetchProfile(); // Force refetch profile when session changes
     }
   }, [session?.id, refetchProfile]);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, _session) => {
+      if (_session?.user) {
+        refetchProfile();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [refetchProfile]);
 
   const getInitials = () => {
     if (profile?.first_name || profile?.last_name) {
