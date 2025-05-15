@@ -39,13 +39,13 @@ const App = () => {
     }
 
     let mounted = true;
-    
+
     // Get initial session
     const getInitialSession = async () => {
       try {
         console.log("Getting initial session...");
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        
+
         if (error) {
           console.error("Error getting session:", error);
           if (mounted) {
@@ -87,7 +87,7 @@ const App = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("Auth state changed:", event, currentSession);
-      
+
       if (!mounted) return;
 
       if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !currentSession) {
@@ -107,30 +107,18 @@ const App = () => {
         setSession(currentSession);
 
         // Add user to systeme.io mailing list
-        try {
-          console.log("Calling systeme-signup function for user:", currentSession.user.id);
-          const { data, error } = await supabase.functions.invoke('handle-systeme-signup', {
-            body: { user_id: currentSession.user.id }
-          });
-          
-          if (error) {
-            console.error('Error adding user to mailing list:', error);
-            toast({
-              title: "Warning",
-              description: "Failed to add you to our mailing list. This won't affect your account.",
-              variant: "destructive",
-            });
-          } else {
-            console.log('Successfully added user to mailing list:', data);
-          }
-        } catch (error) {
-          console.error('Error calling systeme-signup function:', error);
+        // Don't await - fire and forget
+        console.log("Calling systeme-signup function for user:", currentSession.user.id);
+        supabase.functions.invoke('handle-systeme-signup', {
+          body: { user_id: currentSession.user.id }
+        }).catch(error => {
+          console.error('Mailing list error:', error);
           toast({
             title: "Warning",
-            description: "There was an issue with our mailing list service. This won't affect your account.",
+            description: "Failed to add you to our mailing list. This won't affect your account.",
             variant: "destructive",
           });
-        }
+        });
         return;
       }
 
