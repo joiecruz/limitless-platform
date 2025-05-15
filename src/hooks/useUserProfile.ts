@@ -7,6 +7,7 @@ interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   avatar_url: string | null;
+  is_superadmin?: boolean | null;
 }
 
 export function useUserSession() {
@@ -38,7 +39,7 @@ export function useUserProfile(userId?: string) {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('first_name, last_name, avatar_url')
+        .select('first_name, last_name, avatar_url, is_superadmin')
         .eq('id', userId)
         .single();
 
