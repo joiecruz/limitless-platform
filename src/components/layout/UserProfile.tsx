@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 export function UserProfile() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  
+
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
@@ -16,7 +16,7 @@ export function UserProfile() {
       return user;
     }
   });
-  
+
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useQuery({
     queryKey: ['profile', session?.id],
     queryFn: async () => {
@@ -29,7 +29,7 @@ export function UserProfile() {
         .select('first_name, last_name, avatar_url')
         .eq('id', session.id)
         .single();
-    
+
       if (error) {
         console.error('Error fetching profile:', error);
         return {
@@ -38,7 +38,7 @@ export function UserProfile() {
           avatar_url: null
         };
       }
-    
+
       return data;
     },
     enabled: !!session?.id
@@ -49,7 +49,7 @@ export function UserProfile() {
     if (!profileLoading && profile && isInitialLoad) {
       setIsInitialLoad(false);
     }
-  }, [profileLoading, profile, isInitialLoad]);
+  }, []);
 
   // Reset initial load flag when user changes
   useEffect(() => {
