@@ -1,9 +1,13 @@
+
 import { ProfileDisplay } from "./ProfileDisplay";
 import { ProfileMenu } from "./ProfileMenu";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 export function UserProfile() {
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
@@ -37,8 +41,19 @@ export function UserProfile() {
     
       return data;
     },
-    enabled: !!session?.id
+    enabled: !!session?.id,
+    onSuccess: () => {
+      // Once profile is loaded successfully, turn off initial load flag
+      setIsInitialLoad(false);
+    }
   });
+
+  // Reset initial load flag when user changes
+  useEffect(() => {
+    if (session?.id) {
+      setIsInitialLoad(true);
+    }
+  }, [session?.id]);
 
   const getInitials = () => {
     if (profile?.first_name || profile?.last_name) {
@@ -58,7 +73,9 @@ export function UserProfile() {
     return `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`;
   };
 
-  if (sessionLoading || profileLoading) {
+  const isLoading = sessionLoading || profileLoading || isInitialLoad;
+
+  if (isLoading) {
     return (
       <div className="mt-auto px-3 py-4 border-t border-gray-200">
         <div className="flex items-center gap-3 px-2">
