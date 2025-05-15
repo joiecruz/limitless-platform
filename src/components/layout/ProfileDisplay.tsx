@@ -1,5 +1,4 @@
-
-import React, { memo, useState } from "react";
+import React, { useState } from "react";
 
 interface ProfileDisplayProps {
   avatarUrl: string;
@@ -8,7 +7,7 @@ interface ProfileDisplayProps {
   email: string;
 }
 
-export const ProfileDisplay = memo(function ProfileDisplay({
+export const ProfileDisplay = function ProfileDisplay({
   avatarUrl,
   initials,
   displayName,
@@ -20,9 +19,9 @@ export const ProfileDisplay = memo(function ProfileDisplay({
     <div className="flex items-center gap-3 px-2 py-1 rounded-lg w-full hover:bg-gray-100 transition-colors">
       <div className="relative h-10 w-10 rounded-full overflow-hidden flex items-center justify-center bg-primary/10 text-primary font-medium">
         {avatarUrl && !imageError ? (
-          <img 
-            src={avatarUrl} 
-            alt={displayName || email} 
+          <img
+            src={avatarUrl}
+            alt={displayName || email}
             className="h-full w-full object-cover"
             onError={() => setImageError(true)}
           />
@@ -36,4 +35,4 @@ export const ProfileDisplay = memo(function ProfileDisplay({
       </div>
     </div>
   );
-});
+};
