@@ -64,4 +64,3 @@ verify_jwt = true
 
 [functions.handle-email-verification]
 verify_jwt = true
-
