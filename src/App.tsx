@@ -120,16 +120,6 @@ const App = () => {
       if (event === 'SIGNED_IN' && currentSession) {
         console.log("User signed in:", currentSession);
         setSession(currentSession);
-
-        // Add user to systeme.io mailing list - don't await
-        setTimeout(() => {
-          console.log("Calling systeme-signup function for user:", currentSession.user.id);
-          supabase.functions.invoke('handle-systeme-signup', {
-            body: { user_id: currentSession.user.id }
-          }).catch(error => {
-            console.error('Mailing list error:', error);
-          });
-        }, 0);
         return;
       }
 

@@ -13,6 +13,7 @@ import { OnboardingData } from "../onboarding/types";
 import { useOnboardingSubmit } from "../onboarding/hooks/useOnboardingSubmit";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InvitedUserOnboardingModalProps {
   open?: boolean;
@@ -48,6 +49,22 @@ export function InvitedUserOnboardingModal({
         console.log("Onboarding completed, navigating to workspace:", workspaceId);
         // Add workspace to localStorage to ensure it's selected on dashboard
         localStorage.setItem('selectedWorkspace', workspaceId);
+        
+        // After onboarding is complete, add user to Systeme.io
+        try {
+          const { data: { user } } = supabase.auth.getUser();
+          if (user) {
+            // Call Systeme.io integration but don't await it
+            supabase.functions.invoke('handle-systeme-signup', {
+              body: { user_id: user.id }
+            }).catch(error => {
+              console.error('Mailing list error:', error);
+            });
+          }
+        } catch (error) {
+          console.error("Error getting user for Systeme.io:", error);
+        }
+        
         navigate(`/dashboard?workspace=${workspaceId}`);
         toast({
           title: "Welcome!",

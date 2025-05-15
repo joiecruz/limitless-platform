@@ -55,31 +55,6 @@ const SignupSteps = () => {
     return isValid;
   };
 
-  const addUserToSysteme = async (userId: string) => {
-    try {
-      console.log("[SignupSteps] Adding user to Systeme.io:", userId);
-      const { data, error } = await supabase.functions.invoke('handle-systeme-signup', {
-        body: { user_id: userId }
-      });
-      
-      if (error) {
-        console.error('[SignupSteps] Error adding user to Systeme.io:', error);
-        return false;
-      }
-      
-      if (data && !data.success) {
-        console.warn('[SignupSteps] Systeme.io integration responded with non-success:', data);
-        return false;
-      }
-      
-      console.log('[SignupSteps] Successfully added user to Systeme.io:', data);
-      return true;
-    } catch (e) {
-      console.error('[SignupSteps] Exception adding user to Systeme.io:', e);
-      return false;
-    }
-  };
-
   const handleSignup = async (email: string, password: string) => {
     try {
       setIsLoading(true);
@@ -105,13 +80,6 @@ const SignupSteps = () => {
       if (error) throw error;
 
       if (data?.user) {
-        // Try to add the user to Systeme.io right after signup
-        // But don't block the signup flow or show errors if it fails
-        addUserToSysteme(data.user.id).catch(err => {
-          console.error("[SignupSteps] Background Systeme.io error:", err);
-          // Don't show an error toast as this is non-critical
-        });
-        
         localStorage.setItem("verificationEmail", email);
         navigate("/verify-email", { replace: true });
         toast({

@@ -35,31 +35,6 @@ export default function Register() {
     }
   };
 
-  const addUserToSysteme = async (userId: string) => {
-    try {
-      console.log("[SignUp] Adding user to Systeme.io:", userId);
-      const { data, error } = await supabase.functions.invoke('handle-systeme-signup', {
-        body: { user_id: userId }
-      });
-      
-      if (error) {
-        console.error('[SignUp] Error adding user to Systeme.io:', error);
-        return false;
-      }
-      
-      if (data && !data.success) {
-        console.warn('[SignUp] Systeme.io integration responded with non-success:', data);
-        return false;
-      }
-      
-      console.log('[SignUp] Successfully added user to Systeme.io:', data);
-      return true;
-    } catch (e) {
-      console.error('[SignUp] Exception adding user to Systeme.io:', e);
-      return false;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -71,16 +46,6 @@ export default function Register() {
       });
 
       if (error) throw error;
-
-      // Try to add the user to Systeme.io right after signup
-      // But don't block the signup flow if it fails
-      if (data?.user) {
-        // Call the function but don't await or depend on its result
-        addUserToSysteme(data.user.id).catch(err => {
-          console.error('[SignUp] Background Systeme.io error:', err);
-          // Don't show an error toast as this is non-critical
-        });
-      }
 
       toast({
         title: "Registration successful!",
