@@ -52,17 +52,22 @@ export function InvitedUserOnboardingModal({
         
         // After onboarding is complete, add user to Systeme.io
         try {
-          const { data: { user } } = supabase.auth.getUser();
-          if (user) {
-            // Call Systeme.io integration but don't await it
-            supabase.functions.invoke('handle-systeme-signup', {
-              body: { user_id: user.id }
-            }).catch(error => {
-              console.error('Mailing list error:', error);
-            });
-          }
+          // Get current user asynchronously
+          supabase.auth.getUser().then(({ data }) => {
+            const user = data?.user;
+            if (user) {
+              // Call Systeme.io integration but don't await it
+              supabase.functions.invoke('handle-systeme-signup', {
+                body: { user_id: user.id }
+              }).catch(error => {
+                console.error('Mailing list error:', error);
+              });
+            }
+          }).catch(error => {
+            console.error("Error getting user for Systeme.io:", error);
+          });
         } catch (error) {
-          console.error("Error getting user for Systeme.io:", error);
+          console.error("Error processing Systeme.io integration:", error);
         }
         
         navigate(`/dashboard?workspace=${workspaceId}`);
