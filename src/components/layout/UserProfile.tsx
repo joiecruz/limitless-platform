@@ -1,56 +1,25 @@
+
 import { ProfileDisplay } from "./ProfileDisplay";
 import { ProfileMenu } from "./ProfileMenu";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useUserProfile, useUserSession, getInitials, getDisplayName, getDefaultAvatar } from "@/hooks/useUserProfile";
 
 export function UserProfile() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const { data: session, isLoading: sessionLoading } = useQuery({
-    queryKey: ['session'],
-    queryFn: async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session?.user) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('No user found');
-        return user;
-      }
-      return data.session.user;
-    },
-    staleTime: 0, // Always refetch on mount
-    refetchOnMount: true,
-    refetchOnWindowFocus: true
-  });
+  const { 
+    data: session, 
+    isLoading: sessionLoading,
+    refetch: refetchSession
+  } = useUserSession();
 
-  const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useQuery({
-    queryKey: ['profile', session?.id],
-    queryFn: async () => {
-      if (!session?.id) {
-        throw new Error('No user found');
-      }
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, avatar_url')
-        .eq('id', session.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return {
-          first_name: '',
-          last_name: '',
-          avatar_url: null
-        };
-      }
-
-      return data;
-    },
-    enabled: !!session?.id,
-    staleTime: 0,
-    refetchOnMount: true
-  });
+  const { 
+    data: profile, 
+    isLoading: profileLoading, 
+    refetch: refetchProfile,
+    error: profileError
+  } = useUserProfile(session?.id);
 
   // Handle profile loading success
   useEffect(() => {
@@ -62,13 +31,17 @@ export function UserProfile() {
   // Reset initial load flag when user changes
   useEffect(() => {
     if (session?.id) {
-      refetchProfile(); // Force refetch profile when session changes
+      refetchProfile();
     }
   }, [session?.id, refetchProfile]);
 
   // Listen for auth state changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, _session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        refetchSession();
+      }
+      
       if (_session?.user) {
         refetchProfile();
       }
@@ -77,25 +50,11 @@ export function UserProfile() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [refetchProfile]);
+  }, [refetchProfile, refetchSession]);
 
-  const getInitials = () => {
-    if (profile?.first_name || profile?.last_name) {
-      return `${(profile.first_name?.[0] || '').toUpperCase()}${(profile.last_name?.[0] || '').toUpperCase()}`;
-    }
-    return session?.email?.[0]?.toUpperCase() || '?';
-  };
-
-  const getDisplayName = () => {
-    if (profile?.first_name || profile?.last_name) {
-      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-    }
-    return session?.email || '';
-  };
-
-  const getDefaultAvatar = () => {
-    return `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`;
-  };
+  const initials = getInitials(profile?.first_name, profile?.last_name, session?.email);
+  const displayName = getDisplayName(profile?.first_name, profile?.last_name, session?.email);
+  const avatarUrl = profile?.avatar_url || getDefaultAvatar(initials);
 
   const isLoading = sessionLoading || (profileLoading && isInitialLoad);
 
@@ -113,14 +72,18 @@ export function UserProfile() {
     );
   }
 
+  if (profileError) {
+    console.error('Error loading profile:', profileError);
+  }
+
   return (
     <div className="mt-auto px-3 py-4 border-t border-gray-200">
       <div className="flex justify-center">
         <ProfileMenu>
           <ProfileDisplay
-            avatarUrl={profile?.avatar_url || getDefaultAvatar()}
-            initials={getInitials()}
-            displayName={getDisplayName()}
+            avatarUrl={avatarUrl}
+            initials={initials}
+            displayName={displayName}
             email={session?.email || ''}
           />
         </ProfileMenu>
