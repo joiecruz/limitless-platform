@@ -41,12 +41,15 @@ export function UserProfile() {
     
       return data;
     },
-    enabled: !!session?.id,
-    onSuccess: () => {
-      // Once profile is loaded successfully, turn off initial load flag
+    enabled: !!session?.id
+  });
+
+  // Handle profile loading success
+  useEffect(() => {
+    if (!profileLoading && profile && isInitialLoad) {
       setIsInitialLoad(false);
     }
-  });
+  }, [profileLoading, profile, isInitialLoad]);
 
   // Reset initial load flag when user changes
   useEffect(() => {
