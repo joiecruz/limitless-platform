@@ -1,19 +1,17 @@
-
-import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
 import { Home, Mail } from "lucide-react";
+import { useEffect } from "react";
 
 export default function NotFound() {
+  useEffect(() => {
+    document.title = "404 - Page Not Found";
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>404 - Page Not Found</title>
-        <meta name="description" content="Sorry, we couldn't find the page you're looking for." />
-      </Helmet>
-
       <MainNav />
 
       <main className="flex-grow flex items-center justify-center px-6 py-24 sm:py-32 lg:px-8">
