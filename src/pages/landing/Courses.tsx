@@ -1,3 +1,4 @@
+
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import CourseCard from "@/components/courses/CourseCard";
@@ -7,9 +8,14 @@ import { useToast } from "@/hooks/use-toast";
 import { TestimonialsSection } from "@/components/site-config/TestimonialsSection";
 import { WorkshopsSection } from "@/components/site-config/WorkshopsSection";
 import { CTASection } from "@/components/site-config/CTASection";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function Courses() {
   const { toast } = useToast();
+  
+  // Set the page title
+  usePageTitle("Courses & Learning | Limitless Lab");
 
   const { data: courses } = useQuery({
     queryKey: ["featured-courses"],
@@ -57,6 +63,14 @@ export default function Courses() {
 
   return (
     <div className="min-h-screen bg-white">
+      <OpenGraphTags
+        title="Courses & Learning | Limitless Lab"
+        description="Gain the knowledge and skills to innovate with confidence through our transformative courses and workshops."
+        imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+        url={`${window.location.origin}/courses`}
+        type="website"
+      />
+      
       <MainNav />
       
       {/* Hero Section */}

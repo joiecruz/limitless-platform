@@ -7,7 +7,8 @@ import { LoadingQuotes } from "@/components/common/LoadingQuotes";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Helmet } from "react-helmet";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 const fetchTool = async (toolId: string) => {
   const { data, error } = await supabase
@@ -31,6 +32,9 @@ export default function ToolDetails() {
     enabled: !!id,
   });
 
+  // Set the page title based on the tool data
+  usePageTitle(tool ? `${tool.name} | Innovation Tool` : 'Loading Tool | Limitless Lab');
+
   const handleDownload = async () => {
     if (!tool?.download_url) {
       toast({
@@ -53,10 +57,13 @@ export default function ToolDetails() {
   if (error || !tool) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Helmet>
-          <title>Tool Not Found</title>
-          <meta name="description" content="Sorry, the requested tool could not be found." />
-        </Helmet>
+        <OpenGraphTags
+          title="Tool Not Found"
+          description="Sorry, the requested tool could not be found."
+          imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+          url={window.location.href}
+          type="website"
+        />
         <div className="text-center">
           <h2 className="text-2xl font-semibold mb-4">Tool not found</h2>
           <Link 
@@ -72,10 +79,13 @@ export default function ToolDetails() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Helmet>
-        <title>{`${tool.name} | Innovation Tool`}</title>
-        <meta name="description" content={tool.brief_description || ""} />
-      </Helmet>
+      <OpenGraphTags
+        title={`${tool.name} | Innovation Tool`}
+        description={tool.brief_description || ""}
+        imageUrl={tool.cover_image || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"}
+        url={window.location.href}
+        type="website"
+      />
       
       <Link 
         to="/dashboard/tools" 

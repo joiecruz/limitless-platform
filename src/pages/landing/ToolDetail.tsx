@@ -9,7 +9,8 @@ import { ToolHeader } from "@/components/tools/detail/ToolHeader";
 import { ToolAbout } from "@/components/tools/detail/ToolAbout";
 import { ToolUsage } from "@/components/tools/detail/ToolUsage";
 import { ToolDownloadCTA } from "@/components/tools/detail/ToolDownloadCTA";
-import { Helmet } from "react-helmet";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function ToolDetail() {
   const { id } = useParams();
@@ -29,6 +30,9 @@ export default function ToolDetail() {
       return data;
     },
   });
+
+  // Set the page title based on the tool data
+  usePageTitle(tool ? `${tool.name} | Limitless Lab Tools` : 'Loading Tool | Limitless Lab');
 
   const handleDownload = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -86,13 +90,13 @@ export default function ToolDetail() {
   if (!tool) {
     return (
       <div className="min-h-screen bg-white">
-        <Helmet>
-          <title>Tool Not Found</title>
-          <meta name="description" content="Sorry, we couldn't find the tool you're looking for." />
-          <meta property="og:title" content="Tool Not Found" />
-          <meta property="og:description" content="Sorry, we couldn't find the tool you're looking for." />
-          <meta property="og:type" content="website" />
-        </Helmet>
+        <OpenGraphTags
+          title="Tool Not Found"
+          description="Sorry, we couldn't find the tool you're looking for."
+          imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+          url={window.location.href}
+          type="website"
+        />
         <MainNav />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <h2 className="text-2xl font-semibold">Tool not found</h2>
@@ -108,25 +112,13 @@ export default function ToolDetail() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Helmet>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        <link rel="canonical" href={canonicalUrl} />
-        
-        {/* OpenGraph tags */}
-        <meta property="og:title" content={tool.name} />
-        <meta property="og:description" content={pageDescription} />
-        <meta property="og:image" content={pageImage} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:site_name" content="Limitless Lab" />
-        
-        {/* Twitter Card tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={tool.name} />
-        <meta name="twitter:description" content={pageDescription} />
-        <meta name="twitter:image" content={pageImage} />
-      </Helmet>
+      <OpenGraphTags
+        title={pageTitle}
+        description={pageDescription}
+        imageUrl={pageImage}
+        url={canonicalUrl}
+        type="website"
+      />
       
       <MainNav />
       
