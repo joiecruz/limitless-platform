@@ -14,7 +14,9 @@ export function UserProfile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
       return user;
-    }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    cacheTime: 1000 * 60 * 10, // 10 minutes
   });
   
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useQuery({
@@ -41,7 +43,10 @@ export function UserProfile() {
     
       return data;
     },
-    enabled: !!session?.id
+    enabled: !!session?.id,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    cacheTime: 1000 * 60 * 10, // 10 minutes
+    retry: 2,
   });
 
   // Handle profile loading success
@@ -51,13 +56,23 @@ export function UserProfile() {
     }
   }, [profileLoading, profile, isInitialLoad]);
 
-  // Reset initial load flag when user changes
+  // Reset initial load flag when user changes and trigger immediate refetch
   useEffect(() => {
     if (session?.id) {
-      setIsInitialLoad(true);
-      refetchProfile(); // Force refetch profile when session changes
+      refetchProfile();
     }
   }, [session?.id, refetchProfile]);
+
+  // Make sure we always have the latest session data
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      refetchProfile();
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [refetchProfile]);
 
   const getInitials = () => {
     if (profile?.first_name || profile?.last_name) {
@@ -70,13 +85,14 @@ export function UserProfile() {
     if (profile?.first_name || profile?.last_name) {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     }
-    return session?.email || '';
+    return session?.email?.split('@')[0] || 'User';
   };
 
   const getDefaultAvatar = () => {
     return `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`;
   };
 
+  // Only consider it loading during initial load, not during background refetches
   const isLoading = sessionLoading || (profileLoading && isInitialLoad);
 
   if (isLoading) {

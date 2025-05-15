@@ -10,7 +10,8 @@ export function MainNav() {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       return user;
-    }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: profile } = useQuery({
@@ -26,7 +27,8 @@ export function MainNav() {
       
       return data;
     },
-    enabled: !!session?.id
+    enabled: !!session?.id,
+    staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
   const getInitials = () => {
