@@ -16,7 +16,7 @@ export function UserProfile() {
       return user;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    cacheTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
   });
   
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useQuery({
@@ -45,7 +45,7 @@ export function UserProfile() {
     },
     enabled: !!session?.id,
     staleTime: 1000 * 60 * 2, // 2 minutes
-    cacheTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
     retry: 2,
   });
 
