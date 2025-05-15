@@ -17,7 +17,7 @@ export default function SignIn() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  
+
   // Query to check if user is authenticated
   const { data: session } = useQuery({
     queryKey: ['session'],
@@ -31,17 +31,17 @@ export default function SignIn() {
     const handleAuthChange = async () => {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
-        
+
         if (currentSession?.user) {
           setIsLoading(true);
           console.log("User authenticated, checking workspace membership...");
-          
+
           try {
             // Check for workspace membership using edge function to bypass RLS
             const { data: workspaces, error } = await supabase.functions.invoke('get-user-workspaces', {
               body: { user_id: currentSession.user.id }
             });
-            
+
             if (error) {
               console.error("Error checking workspace membership:", error);
               toast({
@@ -55,9 +55,9 @@ export default function SignIn() {
             // If user has no workspace, show onboarding with workspace creation
             if (!workspaces || workspaces.length === 0) {
               console.log("No workspace found, redirecting to onboarding...");
-              navigate('/onboarding', { 
+              navigate('/dashboard', {
                 replace: true,
-                state: { 
+                state: {
                   showOnboarding: true
                 }
               });
@@ -70,7 +70,6 @@ export default function SignIn() {
             navigate('/dashboard', { replace: true });
           } catch (error) {
             console.error("Error fetching workspaces:", error);
-            navigate('/onboarding', { replace: true });
           }
         }
       } catch (error) {
@@ -89,7 +88,7 @@ export default function SignIn() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
-      
+
       if (event === 'SIGNED_IN' && session) {
         setIsLoading(true);
         try {
@@ -97,7 +96,7 @@ export default function SignIn() {
           const { data: workspaces, error } = await supabase.functions.invoke('get-user-workspaces', {
             body: { user_id: session.user.id }
           });
-          
+
           if (error) {
             console.error("Error handling sign in:", error);
             throw error;
@@ -105,10 +104,10 @@ export default function SignIn() {
 
           // If user has no workspace, show onboarding with workspace creation
           if (!workspaces || workspaces.length === 0) {
-            navigate('/onboarding', { 
-              replace: true, 
-              state: { 
-                showOnboarding: true 
+            navigate('/dashboard', {
+              replace: true,
+              state: {
+                showOnboarding: true
               }
             });
             return;
@@ -163,7 +162,7 @@ export default function SignIn() {
         {/* Sign In Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 animate-fade-in">
           {showPasswordReset ? (
-            <ForgotPasswordForm 
+            <ForgotPasswordForm
               onCancel={() => setShowPasswordReset(false)}
               initialEmail={getEmailFromForm()}
             />

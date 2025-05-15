@@ -25,7 +25,7 @@ export function useAuthRedirect() {
       console.log("useAuthRedirect - Detected apex domain, skipping auth redirects");
       return;
     }
-    
+
     const handleAuthChange = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -39,8 +39,8 @@ export function useAuthRedirect() {
 
         if (!session) {
           // If no session and not on auth pages, redirect to signin
-          if (!location.pathname.includes('/signin') && 
-              !location.pathname.includes('/signup') && 
+          if (!location.pathname.includes('/signin') &&
+              !location.pathname.includes('/signup') &&
               !location.pathname.includes('/verify-email') &&
               !location.pathname.includes('/invite')) {
             navigate('/signin');
@@ -51,18 +51,18 @@ export function useAuthRedirect() {
         // Check if user needs to complete onboarding
         const needsOnboarding = await checkUserProfile(session);
         console.log("useAuthRedirect - Needs onboarding:", needsOnboarding);
-        
-        if (needsOnboarding && 
-            !location.pathname.includes('/onboarding') && 
+
+        if (needsOnboarding &&
+            !location.pathname.includes('/dashboard') &&
             !location.pathname.includes('/invite')) {
-          navigate('/onboarding');
+          navigate('/dashboard');
           return;
         }
 
         // If user is authenticated and on auth pages, redirect to dashboard
-        if (location.pathname.includes('/signin') || 
+        if (location.pathname.includes('/signin') ||
             location.pathname.includes('/signup')) {
-          
+
           try {
             // Check workspace membership with service role to bypass RLS
             const { data: memberData, error: memberError } = await supabase.functions.invoke('get-user-workspaces', {
@@ -85,7 +85,7 @@ export function useAuthRedirect() {
                 title: "Welcome!",
                 description: "Let's create your first workspace",
               });
-              navigate('/onboarding', { replace: true });
+              navigate('/dashboard', { replace: true });
               return;
             }
 
@@ -102,15 +102,14 @@ export function useAuthRedirect() {
           } catch (error) {
             console.error("Error fetching workspaces:", error);
             // Fall back to onboarding if there's an error
-            navigate('/onboarding', { replace: true });
+            navigate('/dashboard', { replace: true });
             return;
           }
         }
 
         // Force redirect to dashboard if authenticated and not in special routes
-        if (session && 
-            !location.pathname.includes('/dashboard') && 
-            !location.pathname.includes('/onboarding') && 
+        if (session &&
+            !location.pathname.includes('/dashboard') &&
             !location.pathname.includes('/invite')) {
           try {
             const { data: memberData } = await supabase.functions.invoke('get-user-workspaces', {
@@ -121,12 +120,9 @@ export function useAuthRedirect() {
               const workspace = memberData[0];
               localStorage.setItem('selectedWorkspace', workspace.id);
               navigate('/dashboard', { replace: true });
-            } else {
-              navigate('/onboarding', { replace: true });
             }
           } catch (error) {
             console.error("Error in redirect:", error);
-            navigate('/onboarding', { replace: true });
           }
           return;
         }
@@ -147,12 +143,9 @@ export function useAuthRedirect() {
                 description: `Welcome to ${workspace.name || 'your workspace'}`,
               });
               navigate('/dashboard', { replace: true });
-            } else {
-              navigate('/onboarding', { replace: true });
             }
           } catch (error) {
             console.error("Error handling email verification:", error);
-            navigate('/onboarding', { replace: true });
           }
         }
 

@@ -26,21 +26,21 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   const { toast } = useToast();
-  
+
   // Get state from location or set defaults
   const isInvitedUser = location.state?.isInvited === true;
   const showOnboarding = location.state?.showOnboarding ?? true;
-  
+
   console.log('[OnboardingModal] isIncompleteProfile:', isIncompleteProfile);
   console.log('[OnboardingModal] isInvitedUser:', isInvitedUser);
   console.log('[OnboardingModal] location.state:', location.state);
   console.log('[OnboardingModal] showOnboarding:', showOnboarding);
-  
+
   // Only hide workspace creation step if user is invited (they'll be added to an existing workspace)
   // Incomplete profile users should still see workspace step unless they're invited users
   const shouldShowWorkspaceStep = !isInvitedUser;
   const TOTAL_STEPS = shouldShowWorkspaceStep ? 4 : 3;
-  
+
   console.log('[OnboardingModal] shouldShowWorkspaceStep:', shouldShowWorkspaceStep);
   console.log('[OnboardingModal] TOTAL_STEPS:', TOTAL_STEPS);
 
@@ -70,19 +70,19 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
       const { data, error } = await supabase.functions.invoke('handle-systeme-signup', {
         body: { user_id: userId }
       });
-      
+
       if (error) {
         console.error('[Onboarding] Error adding user to Systeme.io:', error);
         // Don't show an error toast as this is non-critical
         return;
       }
-      
+
       if (!data.success) {
         console.warn('[Onboarding] Systeme.io integration responded with non-success:', data);
         // Don't show an error toast as this is non-critical
         return;
       }
-      
+
       console.log('[Onboarding] Successfully added user to Systeme.io:', data);
     } catch (e) {
       console.error('[Onboarding] Exception adding user to Systeme.io:', e);
@@ -111,7 +111,7 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
       } catch (error) {
         console.error("Error getting current user:", error);
       }
-      
+
       await handleSubmit(updatedData);
     } else {
       setCurrentStep(prev => prev + 1);
@@ -157,7 +157,7 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
     if (!value && (isIncompleteProfile || (open && currentStep < TOTAL_STEPS))) {
       return;
     }
-    
+
     if (onOpenChange) {
       onOpenChange(value);
     }
