@@ -13,16 +13,19 @@ import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { HelmetProvider } from "react-helmet-async";
 import { isApexDomain } from "./utils/domainHelpers";
 
+// Create a new query client with more aggressive retry settings
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
+      retryDelay: 1000,
       networkMode: 'always',
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
 
-// Create a new helmet context
+// Create a helmet context
 const helmetContext = {};
 
 const App = () => {
@@ -39,8 +42,9 @@ const App = () => {
     }
 
     let mounted = true;
+    let sessionTimeoutId: number;
 
-    // Get initial session
+    // Get initial session with timeout
     const getInitialSession = async () => {
       try {
         console.log("Getting initial session...");
@@ -60,8 +64,7 @@ const App = () => {
           console.error("Error getting session:", error);
           if (mounted) {
             setSession(null);
-            localStorage.clear();
-            await supabase.auth.signOut();
+            localStorage.removeItem('selectedWorkspace');
           }
           return;
         }
@@ -82,9 +85,6 @@ const App = () => {
         console.error("Error in getInitialSession:", error);
         if (mounted) {
           setSession(null);
-          setLoading(false); // Ensure loading is set to false even on timeout
-          localStorage.clear();
-          await supabase.auth.signOut();
         }
       } finally {
         if (mounted) {
@@ -92,6 +92,19 @@ const App = () => {
         }
       }
     };
+
+    // Clear any previous timeouts
+    if (sessionTimeoutId) {
+      clearTimeout(sessionTimeoutId);
+    }
+
+    // Set a timeout to force-complete loading regardless of session status
+    sessionTimeoutId = window.setTimeout(() => {
+      console.log("Session check timed out, continuing with app initialization");
+      if (mounted) {
+        setLoading(false);
+      }
+    }, 6000) as unknown as number;
 
     getInitialSession();
 
@@ -105,7 +118,7 @@ const App = () => {
         console.log("User signed out or token refresh failed - Clearing session and cache");
         setSession(null);
         queryClient.clear();
-        localStorage.clear();
+        localStorage.removeItem('selectedWorkspace');
         toast({
           title: "Session Expired",
           description: "Please sign in again to continue.",
@@ -117,19 +130,15 @@ const App = () => {
         console.log("User signed in:", currentSession);
         setSession(currentSession);
 
-        // Add user to systeme.io mailing list
-        // Don't await - fire and forget
-        console.log("Calling systeme-signup function for user:", currentSession.user.id);
-        supabase.functions.invoke('handle-systeme-signup', {
-          body: { user_id: currentSession.user.id }
-        }).catch(error => {
-          console.error('Mailing list error:', error);
-          toast({
-            title: "Warning",
-            description: "Failed to add you to our mailing list. This won't affect your account.",
-            variant: "destructive",
+        // Add user to systeme.io mailing list - don't await
+        setTimeout(() => {
+          console.log("Calling systeme-signup function for user:", currentSession.user.id);
+          supabase.functions.invoke('handle-systeme-signup', {
+            body: { user_id: currentSession.user.id }
+          }).catch(error => {
+            console.error('Mailing list error:', error);
           });
-        });
+        }, 0);
         return;
       }
 
@@ -147,12 +156,20 @@ const App = () => {
 
     return () => {
       mounted = false;
+      if (sessionTimeoutId) {
+        clearTimeout(sessionTimeoutId);
+      }
       subscription.unsubscribe();
     };
   }, [toast]);
 
+  // Show a simple loading indicator if still initializing
   if (loading) {
-    return null;
+    return (
+      <div className="flex items-center justify-center h-screen w-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#393CA0]"></div>
+      </div>
+    );
   }
 
   return (
