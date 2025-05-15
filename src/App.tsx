@@ -44,7 +44,17 @@ const App = () => {
     const getInitialSession = async () => {
       try {
         console.log("Getting initial session...");
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+
+        // Add timeout to prevent hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Session fetch timeout")), 5000)
+        );
+
+        const { data: { session: initialSession }, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as Awaited<typeof sessionPromise>;
 
         if (error) {
           console.error("Error getting session:", error);
@@ -72,6 +82,7 @@ const App = () => {
         console.error("Error in getInitialSession:", error);
         if (mounted) {
           setSession(null);
+          setLoading(false); // Ensure loading is set to false even on timeout
           localStorage.clear();
           await supabase.auth.signOut();
         }
