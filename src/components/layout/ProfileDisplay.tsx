@@ -1,5 +1,5 @@
 
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 
 interface ProfileDisplayProps {
   avatarUrl: string;
@@ -14,18 +14,17 @@ export const ProfileDisplay = memo(function ProfileDisplay({
   displayName,
   email
 }: ProfileDisplayProps) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <div className="flex items-center gap-3 px-2 py-1 rounded-lg w-full hover:bg-gray-100 transition-colors">
       <div className="relative h-10 w-10 rounded-full overflow-hidden flex items-center justify-center bg-primary/10 text-primary font-medium">
-        {avatarUrl ? (
+        {avatarUrl && !imageError ? (
           <img 
             src={avatarUrl} 
             alt={displayName || email} 
             className="h-full w-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-              (e.target as HTMLImageElement).parentElement!.innerText = initials;
-            }}
+            onError={() => setImageError(true)}
           />
         ) : (
           initials

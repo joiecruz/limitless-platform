@@ -17,7 +17,7 @@ export function UserProfile() {
     }
   });
   
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useQuery({
     queryKey: ['profile', session?.id],
     queryFn: async () => {
       if (!session?.id) {
@@ -55,8 +55,9 @@ export function UserProfile() {
   useEffect(() => {
     if (session?.id) {
       setIsInitialLoad(true);
+      refetchProfile(); // Force refetch profile when session changes
     }
-  }, [session?.id]);
+  }, [session?.id, refetchProfile]);
 
   const getInitials = () => {
     if (profile?.first_name || profile?.last_name) {
@@ -76,7 +77,7 @@ export function UserProfile() {
     return `https://api.dicebear.com/7.x/initials/svg?seed=${getInitials()}`;
   };
 
-  const isLoading = sessionLoading || profileLoading || isInitialLoad;
+  const isLoading = sessionLoading || (profileLoading && isInitialLoad);
 
   if (isLoading) {
     return (
