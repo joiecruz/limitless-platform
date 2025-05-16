@@ -109,54 +109,87 @@ export function usePasswordReset() {
       // At this point we should have a valid session from the token verification
       // or a pre-existing session, so attempt to update the password
       console.log("Attempting to update password");
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      });
+      
+      // First try direct password update approach
+      try {
+        const { error } = await supabase.auth.updateUser({
+          password: password
+        });
 
-      if (error) {
-        console.error("Password update direct error:", error);
+        if (!error) {
+          // Success!
+          console.log("Password updated successfully");
+          success = true;
+        } else {
+          // Handle specific errors
+          if (error.status === 401 || error.message?.includes('session')) {
+            throw error; // Let the catch block handle session errors
+          } else {
+            console.error("Password update error:", error);
+            throw error;
+          }
+        }
+      } catch (updateError: any) {
+        console.log("Password update direct error:", updateError);
         
         // Special case for expired sessions
-        if (error.message?.includes('session') || error.status === 401) {
-          // Try another approach - direct token usage without a session
-          const { error: updateError } = await supabase.auth.resetPasswordForEmail(email || '', {
-            redirectTo: `${window.location.origin}/reset-password`,
-          });
-          
-          if (updateError) {
-            throw updateError;
+        if (updateError.message?.includes('session') || updateError.status === 401) {
+          // Try second approach - send a new reset email
+          if (email) {
+            try {
+              const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+              });
+              
+              if (!resetError) {
+                toast({
+                  title: "Session Expired",
+                  description: "Your reset session has expired. We've sent you a new password reset link.",
+                  variant: "destructive",
+                });
+                
+                setTimeout(() => {
+                  navigate('/signin?reset_sent=true');
+                }, 2000);
+                
+                return false;
+              }
+            } catch (e) {
+              console.error("Failed to send new password reset email:", e);
+            }
           }
           
+          // If we couldn't send a new email, show generic error
           toast({
             title: "Session Expired",
-            description: "Your reset session has expired. We've sent you a new password reset link.",
+            description: "Your reset session has expired. Please request a new password reset link.",
             variant: "destructive",
           });
           
           setTimeout(() => {
-            navigate('/signin?reset_sent=true');
+            navigate('/signin?reset_expired=true');
           }, 2000);
           
           return false;
         }
         
-        throw error;
+        throw updateError;
       }
 
-      toast({
-        title: "Password Updated",
-        description: "Your password has been updated successfully. You can now sign in with your new password.",
-      });
+      if (success) {
+        toast({
+          title: "Password Updated",
+          description: "Your password has been updated successfully. You can now sign in with your new password.",
+        });
 
-      // Clear any stored email
-      localStorage.removeItem('passwordResetEmail');
+        // Clear any stored email
+        localStorage.removeItem('passwordResetEmail');
 
-      // Redirect to sign in page after short delay
-      setTimeout(() => {
-        navigate('/signin?reset_success=true');
-      }, 1500);
-      
-      success = true;
+        // Redirect to sign in page after short delay
+        setTimeout(() => {
+          navigate('/signin?reset_success=true');
+        }, 1500);
+      }
     } catch (error: any) {
       console.error("Password update error:", error);
       
