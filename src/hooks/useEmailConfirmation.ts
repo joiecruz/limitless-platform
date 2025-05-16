@@ -104,24 +104,50 @@ export const extractEmailFromUrl = (): string | null => {
   return email;
 };
 
-// Utility function to attempt token verification
+// Utility function to attempt token verification via direct auth exchange
 export const verifyResetToken = async (token: string, email?: string | null): Promise<boolean> => {
   try {
-    if (email) {
-      await supabase.auth.verifyOtp({
-        email,
-        token,
-        type: 'recovery'
-      });
-    } else {
-      // For newer Supabase API versions, we need to use token verification format
-      // that doesn't require an email (if email is not provided)
-      await supabase.auth.verifyOtp({
-        token_hash: token,
-        type: 'recovery'
-      });
+    console.log(`Attempting to exchange token for session`);
+    
+    // First, try to directly exchange the token for a session
+    const { data, error } = await supabase.auth.exchangeCodeForSession(token);
+    
+    if (data?.session) {
+      console.log("Successfully exchanged token for session");
+      return true;
     }
-    return true;
+    
+    if (error) {
+      console.log("Token exchange failed, trying verifyOtp methods", error);
+      
+      // If exchange failed, try the classic verifyOtp approaches
+      if (email) {
+        try {
+          await supabase.auth.verifyOtp({
+            email,
+            token,
+            type: 'recovery'
+          });
+          return true;
+        } catch (otpError) {
+          console.error("Email+token verification failed:", otpError);
+        }
+      }
+      
+      try {
+        await supabase.auth.verifyOtp({
+          token_hash: token,
+          type: 'recovery'
+        });
+        return true;
+      } catch (hashError) {
+        console.error("Token hash verification failed:", hashError);
+      }
+      
+      return false;
+    }
+    
+    return !!data?.session;
   } catch (error) {
     console.error("Token verification failed:", error);
     return false;

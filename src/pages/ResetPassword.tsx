@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLogo } from "@/components/auth/AuthLogo";
 import { Eye, EyeOff } from "lucide-react";
-import { extractTokenFromUrl, extractEmailFromUrl } from '@/hooks/useEmailConfirmation';
+import { extractTokenFromUrl, extractEmailFromUrl, verifyResetToken } from '@/hooks/useEmailConfirmation';
 import { usePasswordReset } from '@/hooks/usePasswordReset';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -75,54 +76,24 @@ export default function ResetPassword() {
           return;
         }
 
-        // Check if we have an active session
-        const { data: { session } } = await supabase.auth.getSession();
+        // Try to verify the token directly
+        console.log("Attempting to verify token validity");
+        const isValid = await verifyResetToken(accessToken, email);
         
-        if (!session) {
-          console.log("No session found, trying to verify token");
-          
-          try {
-            // Attempt to verify the token - this may fail if the token is expired
-            // We're just checking here, not actually using it yet
-            if (email) {
-              await supabase.auth.verifyOtp({
-                email,
-                token: accessToken,
-                type: 'recovery'
-              });
-            } else {
-              await supabase.auth.verifyOtp({
-                token_hash: accessToken,
-                type: 'recovery'
-              });
-            }
-            
-            // If we get here, token is valid
-            setValidToken(true);
-          } catch (error: any) {
-            console.error("verifyOtp error:", error);
-            
-            // Handle expired token
-            if (error.message?.includes('expired') || 
-                error.message?.includes('invalid') ||
-                error.code === 'otp_expired') {
-              setTokenExpired(true);
-              setValidToken(false);
-            } else {
-              // Token not verified but present - will try during password update
-              console.log("Token not verified but present - will try during password update");
-              setValidToken(true);
-            }
-          }
-        } else {
-          // If we have a session, we can reset the password
+        if (isValid) {
+          console.log("Token is valid");
           setValidToken(true);
+        } else {
+          console.log("Token verification failed");
+          setTokenExpired(true);
+          setValidToken(false);
         }
-        
+
       } catch (error: any) {
         console.error("Token verification error:", error);
-        // We'll still let them try if the token is present
-        setValidToken(!!tokenFromUrl);
+        // If the token is present but verification failed, we'll show an expired message
+        setTokenExpired(!!tokenFromUrl);
+        setValidToken(false);
       } finally {
         setVerifying(false);
       }

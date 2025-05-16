@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
-import { extractTokenFromUrl, extractEmailFromUrl } from './useEmailConfirmation';
+import { extractTokenFromUrl, extractEmailFromUrl, verifyResetToken } from './useEmailConfirmation';
 
 export function usePasswordReset() {
   const [loading, setLoading] = useState(false);
@@ -87,47 +87,27 @@ export function usePasswordReset() {
       if (!session) {
         console.log("No session found, attempting to use token to update password");
         
-        // Try different verification approaches
-        try {
-          if (email) {
-            console.log("Using email and token for verification");
-            // First try to verify the OTP
-            await supabase.auth.verifyOtp({
-              email,
-              token,
-              type: 'recovery'
-            });
-          } else {
-            console.log("No email found, using token for verification");
-            // Try without email - using token_hash for newer Supabase API
-            await supabase.auth.verifyOtp({
-              token_hash: token,
-              type: 'recovery'
-            });
-          }
-        } catch (verifyError: any) {
-          console.log("Token verification error:", verifyError.message);
+        // Try to create a session from the token
+        const isValid = await verifyResetToken(token, email);
+        
+        if (!isValid) {
+          console.log("Token could not be verified, requesting new password reset");
+          toast({
+            title: "Reset Link Expired",
+            description: "Your password reset link has expired. Please request a new one.",
+            variant: "destructive",
+          });
           
-          // If token verification fails because it's expired, offer a clear message
-          if (verifyError.message?.includes('expired') || 
-              verifyError.message?.includes('invalid') ||
-              verifyError.message?.includes('otp_expired')) {
-            toast({
-              title: "Reset Link Expired",
-              description: "Your password reset link has expired. Please request a new one.",
-              variant: "destructive",
-            });
-            
-            setTimeout(() => {
-              navigate('/signin?reset_expired=true');
-            }, 2000);
-            
-            return false;
-          }
+          setTimeout(() => {
+            navigate('/signin?reset_expired=true');
+          }, 2000);
+          
+          return false;
         }
       }
 
-      // Attempt to update the password directly
+      // At this point we should have a valid session from the token verification
+      // or a pre-existing session, so attempt to update the password
       console.log("Attempting to update password");
       const { error } = await supabase.auth.updateUser({
         password: password
@@ -136,16 +116,25 @@ export function usePasswordReset() {
       if (error) {
         console.error("Password update direct error:", error);
         
-        // If password update fails due to session, show appropriate message
-        if (error.message?.includes('session')) {
+        // Special case for expired sessions
+        if (error.message?.includes('session') || error.status === 401) {
+          // Try another approach - direct token usage without a session
+          const { error: updateError } = await supabase.auth.resetPasswordForEmail(email || '', {
+            redirectTo: `${window.location.origin}/reset-password`,
+          });
+          
+          if (updateError) {
+            throw updateError;
+          }
+          
           toast({
             title: "Session Expired",
-            description: "Your reset session has expired. Please request a new password reset link.",
+            description: "Your reset session has expired. We've sent you a new password reset link.",
             variant: "destructive",
           });
           
           setTimeout(() => {
-            navigate('/signin?reset_expired=true');
+            navigate('/signin?reset_sent=true');
           }, 2000);
           
           return false;
