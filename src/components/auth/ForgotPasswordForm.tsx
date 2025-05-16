@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,20 +32,25 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
 
     try {
       const cleanEmail = email.toLowerCase().trim();
+      
+      // Get current origin to ensure proper redirect URL
+      const redirectTo = `${window.location.origin}/reset-password`;
+      console.log("Password reset redirect URL:", redirectTo);
 
       // Use Supabase Auth API to send password reset email
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectTo,
       });
 
       if (error) throw error;
 
       toast({
         title: "Password Reset Email Sent",
-        description: "Check your inbox for a password reset link.",
+        description: "Check your inbox for a password reset link. If you don't see it, check your spam folder.",
       });
       onCancel(); // Return to login form after successful submission
     } catch (error: any) {
+      console.error("Password reset error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to send reset password email",

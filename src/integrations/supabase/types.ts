@@ -638,6 +638,27 @@ export type Database = {
           },
         ]
       }
+      password_reset_tokens: {
+        Row: {
+          email: string
+          expires_at: string
+          id: number
+          token: string
+        }
+        Insert: {
+          email: string
+          expires_at: string
+          id?: number
+          token: string
+        }
+        Update: {
+          email?: string
+          expires_at?: string
+          id?: number
+          token?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -76,11 +76,31 @@ const handler = async (req: Request): Promise<Response> => {
 // Helper function to extract the reset link from the original email
 function extractResetLink(html: string): string {
   // Use a more robust regex to find the password reset URL
-  const resetLinkMatch = html.match(/https:\/\/[^"'\s]+type=recovery[^"'\s]*/g);
+  // Match recovery links from Supabase email templates
+  const resetLinkMatch = html.match(/https:\/\/[^"'\s]+(?:type=recovery|\/reset-password)[^"'\s]*/g);
+  
   if (resetLinkMatch && resetLinkMatch.length > 0) {
     console.log("Found reset link:", resetLinkMatch[0]);
     return resetLinkMatch[0];
   }
+  
+  // Sometimes Supabase sends the link differently in the email - try another pattern
+  const alternateMatch = html.match(/(https:\/\/[^"'\s]+)/g);
+  if (alternateMatch && alternateMatch.length > 0) {
+    // Filter to only include likely reset links
+    const possibleResetLinks = alternateMatch.filter(link => 
+      link.includes('token=') || 
+      link.includes('type=recovery') || 
+      link.includes('reset-password')
+    );
+    
+    if (possibleResetLinks.length > 0) {
+      console.log("Found alternate reset link:", possibleResetLinks[0]);
+      return possibleResetLinks[0];
+    }
+  }
+  
+  console.warn("No reset link found in email HTML!");
   return "#"; // Fallback if no link is found
 }
 
@@ -146,6 +166,9 @@ function generateSimplePasswordResetEmail(resetLink: string): string {
       <p>We received a request to reset your password for your Limitless Lab account. Click the button below to set a new password:</p>
       
       <a href="${resetLink}" class="button">Reset Password</a>
+      
+      <p>If the button doesn't work, copy and paste this link into your browser:</p>
+      <p style="word-break: break-all; font-size: 12px;">${resetLink}</p>
       
       <p>If you didn't request a password reset, you can safely ignore this email.</p>
       
