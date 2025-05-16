@@ -32,54 +32,52 @@ export const extractTokenFromUrl = (): string | null => {
   
   if (accessToken) {
     console.log("Found token in hash parameters");
+    return accessToken;
   }
   
   // Method 2: Check for token in query parameters (custom redirect handling)
-  if (!accessToken) {
-    const queryParams = new URLSearchParams(window.location.search);
-    accessToken = queryParams.get('token');
+  const queryParams = new URLSearchParams(window.location.search);
+  accessToken = queryParams.get('token');
     
-    if (accessToken) {
-      console.log("Found token in query parameters");
-    }
+  if (accessToken) {
+    console.log("Found token in query parameters");
+    return accessToken;
   }
   
   // Method 3: Check for specific hash format with key=value pairs but without '?'
-  if (!accessToken && window.location.hash) {
+  if (window.location.hash) {
     const hashParts = window.location.hash.substring(1).split('&');
     for (const part of hashParts) {
       if (part.startsWith('access_token=')) {
         accessToken = part.split('=')[1];
         console.log("Found token in raw hash string");
-        break;
+        return accessToken;
       }
     }
   }
   
   // Method 4: Check for token in URL path for direct password reset links
   // Example: /reset-password/TOKEN
-  if (!accessToken && window.location.pathname.includes('/reset-password/')) {
+  if (window.location.pathname.includes('/reset-password/')) {
     const pathParts = window.location.pathname.split('/');
     if (pathParts.length > 2) {
       const possibleToken = pathParts[pathParts.length - 1];
       // Basic validation: token should be at least 10 chars
       if (possibleToken && possibleToken.length > 10) {
-        accessToken = possibleToken;
         console.log("Found token in URL path");
+        return possibleToken;
       }
     }
   }
   
   // Method 5: Check URL for JWT-like string (last resort)
-  if (!accessToken) {
-    const jwtPattern = /([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)/;
-    const fullUrl = window.location.href;
-    const jwtMatch = fullUrl.match(jwtPattern);
-    
-    if (jwtMatch && jwtMatch[0]) {
-      accessToken = jwtMatch[0];
-      console.log("Found JWT-like token in URL");
-    }
+  const jwtPattern = /([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)/;
+  const fullUrl = window.location.href;
+  const jwtMatch = fullUrl.match(jwtPattern);
+  
+  if (jwtMatch && jwtMatch[0]) {
+    console.log("Found JWT-like token in URL");
+    return jwtMatch[0];
   }
   
   console.log("Extracted token:", accessToken ? "Found token" : "No token found");

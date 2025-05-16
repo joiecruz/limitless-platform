@@ -68,64 +68,81 @@ export function usePasswordReset() {
     let success = false;
 
     try {
-      // Get the token from the URL if it exists
+      // Get the token from the URL
       const token = extractTokenFromUrl();
       console.log("Updating password with token:", token ? "Token exists" : "No token found");
 
       // Get the email that might be needed for verification
       const email = extractEmailFromUrl();
+      console.log("Email for verification:", email || "No email found");
 
-      // If we have a token but no session, try to create one
-      if (token) {
-        const { data: currentSession } = await supabase.auth.getSession();
-        
-        if (!currentSession.session) {
-          console.log("No active session, attempting to use token to update password");
-          
-          try {
-            // We need to provide email for proper OTP verification if it's available
-            if (email) {
-              console.log("Using email and token for verification");
-              const { error: verifyError } = await supabase.auth.verifyOtp({
-                email: email,
-                token: token,
-                type: 'recovery',
-              });
-              
-              if (verifyError) {
-                console.error("Token verification with email error:", verifyError);
-                // Continue anyway as updateUser may still work
-              }
-            } else {
-              console.log("No email found for verification, trying token_hash method");
-              
-              // Try using token hash method when email is not available
-              try {
-                const { error: verifyError } = await supabase.auth.verifyOtp({
-                  token_hash: token,
-                  type: 'recovery',
-                });
-                
-                if (verifyError) {
-                  console.error("Token hash verification error:", verifyError);
-                }
-              } catch (verifyHashError) {
-                console.warn("Token hash verification failed:", verifyHashError);
-              }
-            }
-          } catch (verifyError) {
-            console.warn("Token verification attempt failed:", verifyError);
-            // Continue anyway as updateUser may still work
-          }
-        }
+      // If there's no token, we can't proceed
+      if (!token) {
+        throw new Error("No valid reset token found. Please request a new password reset link.");
       }
 
-      // Update the user's password
-      const { error } = await supabase.auth.updateUser({
+      // Try different approaches to use the token for password reset
+      try {
+        // First try: If we have email, use it with the token
+        if (email) {
+          console.log("Attempting to verify with email and token");
+          // First, try to sign in with the OTP
+          const { error: signInError } = await supabase.auth.verifyOtp({
+            email,
+            token,
+            type: 'recovery',
+          });
+          
+          if (signInError) {
+            console.warn("Email+token verification failed:", signInError.message);
+            // Continue anyway, we'll try other methods
+          } else {
+            console.log("Successfully verified with email and token");
+          }
+        } 
+        // Second try: If no email or previous attempt failed, try token_hash method
+        else {
+          console.log("Attempting token_hash verification");
+          try {
+            const { error: verifyError } = await supabase.auth.verifyOtp({
+              token_hash: token,
+              type: 'recovery',
+            });
+            
+            if (verifyError) {
+              console.warn("Token hash verification failed:", verifyError.message);
+            } else {
+              console.log("Successfully verified with token_hash");
+            }
+          } catch (err) {
+            console.warn("Token hash verification error:", err);
+          }
+        }
+      } catch (verifyError) {
+        console.warn("All token verification methods failed:", verifyError);
+      }
+
+      // Even if verification failed, try to update the password anyway
+      // This might work if the token was valid but verification had other issues
+      console.log("Attempting to update password");
+      const { data, error } = await supabase.auth.updateUser({
         password: password
       });
 
-      if (error) throw error;
+      if (error) {
+        // If updating with just the password fails, try one more time with the token
+        if (email) {
+          console.log("Attempting direct password update with recovery token");
+          const { error: tokenUpdateError } = await supabase.auth.updateUser({
+            email: email, 
+            password: password,
+          });
+          
+          if (tokenUpdateError) throw tokenUpdateError;
+        } else {
+          throw error;
+        }
+      }
 
       toast({
         title: "Password updated",

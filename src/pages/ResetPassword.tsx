@@ -32,16 +32,15 @@ export default function ResetPassword() {
         setVerifying(true);
         console.log("Checking for reset token...");
         
-        // Extract token and email from URL using our improved utility
+        // Extract token from URL using our improved utility
         const accessToken = extractTokenFromUrl();
         setTokenFromUrl(accessToken);
         
         // Extract email from URL or localStorage
         const email = extractEmailFromUrl();
         if (email) {
+          console.log("Found email for verification:", email);
           setUserEmail(email);
-          // Ensure email is in localStorage for the updatePassword function
-          localStorage.setItem('passwordResetEmail', email);
         }
         
         // Log what we found for debugging
@@ -65,84 +64,26 @@ export default function ResetPassword() {
           return;
         }
 
-        // Try to verify the token/session
-        try {
-          // Check if we already have a valid session
-          const { data: sessionData } = await supabase.auth.getSession();
-          
-          if (sessionData.session) {
-            console.log("Existing session found");
-            setValidToken(true);
-          } else {
-            console.log("No session found, trying to verify token");
-            
-            // Try different approaches to verify the token
-            let tokenVerified = false;
-            
-            // Approach 1: Try to verify OTP if we have an email
-            if (email) {
-              try {
-                const { error: verifyError } = await supabase.auth.verifyOtp({
-                  email: email,
-                  token: accessToken,
-                  type: 'recovery',
-                });
-                
-                if (!verifyError) {
-                  console.log("Token verified with verifyOtp");
-                  tokenVerified = true;
-                } else {
-                  console.warn("verifyOtp error:", verifyError);
-                }
-              } catch (verifyError) {
-                console.warn("verifyOtp attempt failed:", verifyError);
-              }
-            } else {
-              // Try token hash method
-              try {
-                const { error: verifyError } = await supabase.auth.verifyOtp({
-                  token_hash: accessToken,
-                  type: 'recovery',
-                });
-                
-                if (!verifyError) {
-                  console.log("Token verified with token_hash");
-                  tokenVerified = true;
-                } else {
-                  console.warn("token_hash verification error:", verifyError);
-                }
-              } catch (verifyError) {
-                console.warn("token_hash verification failed:", verifyError);
-              }
-            }
-            
-            // Set token validity based on verification result
-            setValidToken(tokenVerified);
-            
-            // If we couldn't verify the token but we have one, still allow the attempt
-            // The updateUser API will be the final verification
-            if (!tokenVerified && accessToken) {
-              console.log("Token not verified but present - will try during password update");
-              setValidToken(true);
-            }
-          }
-        } catch (error: any) {
-          console.error("Token verification error:", error);
-          toast({
-            title: "Error",
-            description: "There was a problem validating your reset link. You can still attempt to reset your password.",
-            variant: "destructive",
-          });
-          // We'll still let them try if the token is present
-          setValidToken(!!accessToken);
-        }
+        // If we found a token, we'll allow the user to reset their password
+        // The actual verification will happen when they submit the form
+        setValidToken(true);
+        
+      } catch (error: any) {
+        console.error("Token verification error:", error);
+        toast({
+          title: "Error",
+          description: "There was a problem validating your reset link. You can still attempt to reset your password.",
+          variant: "destructive",
+        });
+        // We'll still let them try if the token is present
+        setValidToken(!!tokenFromUrl);
       } finally {
         setVerifying(false);
       }
     };
 
     checkResetToken();
-  }, [navigate, toast]);
+  }, [navigate, toast, tokenFromUrl]);
 
   const validatePassword = () => {
     if (password.length < 6) {
@@ -169,12 +110,10 @@ export default function ResetPassword() {
     // Use the updatePassword function from our hook
     const success = await updatePassword(password);
     
-    if (success) {
-      // Success case is handled inside the hook (shows toast and redirects)
-    } else {
-      // Error case is also handled in the hook
+    if (!success) {
       setLoading(false);
     }
+    // Success case is handled inside the hook
   };
 
   if (verifying) {
@@ -227,6 +166,12 @@ export default function ResetPassword() {
 
           {(validToken || tokenFromUrl) && (
             <form onSubmit={handlePasswordReset} className="space-y-6">
+              {userEmail && (
+                <div className="text-sm text-gray-500 bg-gray-50 p-2 rounded text-center">
+                  Resetting password for: <span className="font-medium">{userEmail}</span>
+                </div>
+              )}
+              
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}

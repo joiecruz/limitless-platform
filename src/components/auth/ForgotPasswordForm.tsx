@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,9 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
     e.preventDefault();
     
     // Store the email in localStorage so we can use it for token verification later
-    localStorage.setItem('passwordResetEmail', email);
+    if (email) {
+      localStorage.setItem('passwordResetEmail', email.trim().toLowerCase());
+    }
     
     // Use our hook to send password reset email
     const success = await sendPasswordResetEmail(email);
