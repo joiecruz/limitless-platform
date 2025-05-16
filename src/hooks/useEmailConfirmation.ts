@@ -24,16 +24,24 @@ export const extractTokenFromUrl = (): string | null => {
     pathname: window.location.pathname
   });
 
-  // Enhanced token extraction approach
+  // Enhanced token extraction approach with detailed logging
   
   // Method 1: Check for token in hash parameters (Supabase default method)
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
   let accessToken = hashParams.get('access_token');
   
+  if (accessToken) {
+    console.log("Found token in hash parameters");
+  }
+  
   // Method 2: Check for token in query parameters (custom redirect handling)
   if (!accessToken) {
     const queryParams = new URLSearchParams(window.location.search);
     accessToken = queryParams.get('token');
+    
+    if (accessToken) {
+      console.log("Found token in query parameters");
+    }
   }
   
   // Method 3: Check for specific hash format with key=value pairs but without '?'
@@ -42,19 +50,22 @@ export const extractTokenFromUrl = (): string | null => {
     for (const part of hashParts) {
       if (part.startsWith('access_token=')) {
         accessToken = part.split('=')[1];
+        console.log("Found token in raw hash string");
         break;
       }
     }
   }
   
   // Method 4: Check for token in URL path for direct password reset links
+  // Example: /reset-password/TOKEN
   if (!accessToken && window.location.pathname.includes('/reset-password/')) {
     const pathParts = window.location.pathname.split('/');
     if (pathParts.length > 2) {
       const possibleToken = pathParts[pathParts.length - 1];
-      // Basic validation: token should be at least 10 chars and contain typical JWT characters
-      if (possibleToken && possibleToken.length > 10 && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(possibleToken)) {
+      // Basic validation: token should be at least 10 chars
+      if (possibleToken && possibleToken.length > 10) {
         accessToken = possibleToken;
+        console.log("Found token in URL path");
       }
     }
   }
@@ -67,6 +78,7 @@ export const extractTokenFromUrl = (): string | null => {
     
     if (jwtMatch && jwtMatch[0]) {
       accessToken = jwtMatch[0];
+      console.log("Found JWT-like token in URL");
     }
   }
   

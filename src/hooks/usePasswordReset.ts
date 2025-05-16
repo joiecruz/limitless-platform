@@ -83,7 +83,7 @@ export function usePasswordReset() {
           console.log("No active session, attempting to use token to update password");
           
           try {
-            // We need to provide email for proper OTP verification
+            // We need to provide email for proper OTP verification if it's available
             if (email) {
               console.log("Using email and token for verification");
               const { error: verifyError } = await supabase.auth.verifyOtp({
@@ -97,7 +97,7 @@ export function usePasswordReset() {
                 // Continue anyway as updateUser may still work
               }
             } else {
-              console.log("No email found for verification, using token hash method");
+              console.log("No email found for verification, trying token_hash method");
               
               // Try using token hash method when email is not available
               try {
