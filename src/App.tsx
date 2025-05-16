@@ -42,35 +42,6 @@ const App = () => {
     try {
       console.log("Getting initial session...");
 
-      // If on reset password page, we still need to check for token in URL
-      if (isResetPasswordPage) {
-        console.log("On reset password page, checking for token");
-        const urlParams = new URLSearchParams(window.location.search);
-        const accessToken = urlParams.get('token');
-
-        if (accessToken) {
-          try {
-            // Try to set the session using the token from URL
-            const { error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: '',
-            });
-
-            if (error) {
-              console.error("Error setting session from token:", error);
-            } else {
-              console.log("Session set from reset password token");
-              const { data } = await supabase.auth.getSession();
-              setSession(data.session);
-            }
-          } catch (error) {
-            console.error("Error setting session from token:", error);
-          }
-        }
-        setLoading(false);
-        return;
-      }
-
       // Add timeout to prevent hanging
       const sessionPromise = supabase.auth.getSession();
       const timeoutPromise = new Promise((_, reject) =>
@@ -103,7 +74,7 @@ const App = () => {
     } finally {
       setLoading(false);
     }
-  }, [isResetPasswordPage]);
+  }, []);
 
   useEffect(() => {
     // If we're on apex domain, don't try loading the app yet
@@ -121,23 +92,29 @@ const App = () => {
     }
 
     // Set a timeout to force-complete loading regardless of session status
-    // Skip timeout if on reset password page
-    if (!isResetPasswordPage) {
-      sessionTimeoutId = window.setTimeout(() => {
-        console.log("Session check timed out, continuing with app initialization");
-        if (mounted) {
-          setLoading(false);
-        }
-      }, 6000) as unknown as number;
-    }
+    sessionTimeoutId = window.setTimeout(() => {
+      console.log("Session check timed out, continuing with app initialization");
+      if (mounted) {
+        setLoading(false);
+      }
+    }, 6000) as unknown as number;
 
     getInitialSession();
 
-    // Listen for auth changes (even on reset password page)
+    // Listen for auth changes (including password recovery events)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("Auth state changed:", event, currentSession);
 
       if (!mounted) return;
+
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log("Password recovery event detected");
+        // Don't set session to null on password recovery event
+        if (currentSession) {
+          setSession(currentSession);
+        }
+        return;
+      }
 
       if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !currentSession)) {
         console.log("User signed out or token refresh failed - Clearing session and cache");
@@ -176,7 +153,7 @@ const App = () => {
       }
       subscription.unsubscribe();
     };
-  }, [toast, getInitialSession, isResetPasswordPage]);
+  }, [toast, getInitialSession]);
 
   // Show a simple loading indicator if still initializing
   if (loading) {
