@@ -76,16 +76,27 @@ export function usePasswordReset() {
         if (!currentSession.session) {
           console.log("No active session, attempting to use token to update password");
           
-          // For recovery tokens, attempt to verify token first
+          // For recovery tokens, we need to use the correct approach based on token type
           try {
-            const { error: verifyError } = await supabase.auth.verifyOtp({
-              token,
-              type: 'recovery',
-            });
+            // Get the email from localStorage if available (from previous steps)
+            // This is a workaround since we don't have the email in the URL
+            const recoveryEmail = localStorage.getItem('passwordResetEmail');
             
-            if (verifyError) {
-              console.error("Token verification error:", verifyError);
-              // Continue anyway as updateUser may still work
+            if (recoveryEmail) {
+              // Use verifyOtp with email for recovery type
+              const { error: verifyError } = await supabase.auth.verifyOtp({
+                email: recoveryEmail,
+                token: token,
+                type: 'recovery',
+              });
+              
+              if (verifyError) {
+                console.error("Token verification error:", verifyError);
+                // Continue anyway as updateUser may still work
+              }
+            } else {
+              // Try to use the token directly with updateUser
+              console.log("No email found for verification, will try direct password update");
             }
           } catch (verifyError) {
             console.warn("Token verification attempt failed:", verifyError);
@@ -105,6 +116,9 @@ export function usePasswordReset() {
         title: "Password updated",
         description: "Your password has been updated successfully.",
       });
+
+      // Clear any stored email
+      localStorage.removeItem('passwordResetEmail');
 
       // Redirect to sign in page after short delay
       setTimeout(() => {

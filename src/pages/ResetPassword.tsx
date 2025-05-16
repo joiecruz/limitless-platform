@@ -19,6 +19,7 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [tokenFromUrl, setTokenFromUrl] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -38,9 +39,18 @@ export default function ResetPassword() {
         const queryParams = new URLSearchParams(window.location.search);
         let tokenType = hashParams.get('type') || queryParams.get('type') || 'recovery';
         
+        // Try to get email from URL or hash
+        const email = hashParams.get('email') || queryParams.get('email');
+        if (email) {
+          setUserEmail(email);
+          // Store email in localStorage for the updatePassword function
+          localStorage.setItem('passwordResetEmail', email);
+        }
+        
         console.log("Token validation:", {
           hasToken: !!accessToken,
           tokenType,
+          email,
           fromHash: !!hashParams.get('access_token'),
           fromQuery: !!queryParams.get('token')
         });
@@ -72,21 +82,24 @@ export default function ResetPassword() {
             // Try different approaches to verify the token
             let tokenVerified = false;
             
-            // Approach 1: Try to verify OTP
-            try {
-              const { error: verifyError } = await supabase.auth.verifyOtp({
-                token: accessToken,
-                type: 'recovery',
-              });
-              
-              if (!verifyError) {
-                console.log("Token verified with verifyOtp");
-                tokenVerified = true;
-              } else {
-                console.warn("verifyOtp error:", verifyError);
+            // Approach 1: Try to verify OTP if we have an email
+            if (email) {
+              try {
+                const { error: verifyError } = await supabase.auth.verifyOtp({
+                  email: email,
+                  token: accessToken,
+                  type: 'recovery',
+                });
+                
+                if (!verifyError) {
+                  console.log("Token verified with verifyOtp");
+                  tokenVerified = true;
+                } else {
+                  console.warn("verifyOtp error:", verifyError);
+                }
+              } catch (verifyError) {
+                console.warn("verifyOtp attempt failed:", verifyError);
               }
-            } catch (verifyError) {
-              console.warn("verifyOtp attempt failed:", verifyError);
             }
             
             // Approach 2: Check if we can set session from token
@@ -160,9 +173,10 @@ export default function ResetPassword() {
 
     try {
       // If we have a token from URL but validation failed, try again directly here
-      if (tokenFromUrl && !validToken) {
+      if (tokenFromUrl && !validToken && userEmail) {
         try {
           const { error: verifyError } = await supabase.auth.verifyOtp({
+            email: userEmail,
             token: tokenFromUrl,
             type: 'recovery',
           });
@@ -188,6 +202,9 @@ export default function ResetPassword() {
         title: "Password updated",
         description: "Your password has been updated successfully. Please sign in with your new password.",
       });
+
+      // Clear any stored email
+      localStorage.removeItem('passwordResetEmail');
 
       // Redirect to sign in page after a short delay
       setTimeout(() => {
