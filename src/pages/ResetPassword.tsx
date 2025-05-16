@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLogo } from "@/components/auth/AuthLogo";
 import { Eye, EyeOff } from "lucide-react";
+import { extractTokenFromUrl } from '@/hooks/useEmailConfirmation';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -17,6 +18,7 @@ export default function ResetPassword() {
   const [verifying, setVerifying] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [tokenFromUrl, setTokenFromUrl] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -27,19 +29,14 @@ export default function ResetPassword() {
         setVerifying(true);
         console.log("Checking for reset token...");
         
-        // Check for token in both hash and query parameters
+        // Extract token from URL using our utility
+        const accessToken = extractTokenFromUrl();
+        setTokenFromUrl(accessToken);
+        
+        // Check if we have a token type
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const queryParams = new URLSearchParams(window.location.search);
-        
-        // First, check hash (Supabase default method)
-        let tokenType = hashParams.get('type');
-        let accessToken = hashParams.get('access_token');
-        
-        // If not found in hash, check query params (our custom redirect handling)
-        if (!accessToken) {
-          accessToken = queryParams.get('token');
-          tokenType = queryParams.get('type') || 'recovery';
-        }
+        let tokenType = hashParams.get('type') || queryParams.get('type') || 'recovery';
         
         console.log("Token validation:", {
           hasToken: !!accessToken,
@@ -53,69 +50,84 @@ export default function ResetPassword() {
           console.error("No reset token found in URL");
           toast({
             title: "Invalid Reset Link",
-            description: "This password reset link is invalid or has expired.",
+            description: "This password reset link is invalid or has expired. Please request a new one.",
             variant: "destructive",
           });
-          navigate('/signin');
-          return;
-        }
-        
-        // For hash-based tokens, verify it's a recovery type
-        if (tokenType && tokenType !== 'recovery') {
-          console.error("Invalid token type:", tokenType);
-          toast({
-            title: "Invalid Reset Link",
-            description: "This password reset link is invalid or has expired.",
-            variant: "destructive",
-          });
-          navigate('/signin');
+          // Don't redirect immediately, allow user to see message and try again if needed
+          setValidToken(false);
           return;
         }
 
-        // If we have the token, verify the session is valid
-        if (accessToken) {
-          try {
-            // Get current session
-            const { data: currentSession } = await supabase.auth.getSession();
+        // Try to verify the token/session
+        try {
+          // Check if we already have a valid session
+          const { data: sessionData } = await supabase.auth.getSession();
+          
+          if (sessionData.session) {
+            console.log("Existing session found");
+            setValidToken(true);
+          } else {
+            console.log("No session found, trying to verify token");
             
-            // If there's no session, try to set it from the token
-            if (!currentSession.session) {
-              if (hashParams.get('refresh_token')) {
-                // If we have both access and refresh tokens (from hash)
+            // Try different approaches to verify the token
+            let tokenVerified = false;
+            
+            // Approach 1: Try to verify OTP
+            try {
+              const { error: verifyError } = await supabase.auth.verifyOtp({
+                token: accessToken,
+                type: 'recovery',
+              });
+              
+              if (!verifyError) {
+                console.log("Token verified with verifyOtp");
+                tokenVerified = true;
+              } else {
+                console.warn("verifyOtp error:", verifyError);
+              }
+            } catch (verifyError) {
+              console.warn("verifyOtp attempt failed:", verifyError);
+            }
+            
+            // Approach 2: Check if we can set session from token
+            if (!tokenVerified && hashParams.get('refresh_token')) {
+              try {
                 const { error: sessionError } = await supabase.auth.setSession({
                   access_token: accessToken,
                   refresh_token: hashParams.get('refresh_token') || '',
                 });
                 
-                if (sessionError) {
-                  console.error("Error setting session from hash tokens:", sessionError);
-                  throw sessionError;
+                if (!sessionError) {
+                  console.log("Session set successfully");
+                  tokenVerified = true;
+                } else {
+                  console.warn("setSession error:", sessionError);
                 }
-              } else {
-                // For recovery tokens from email, we only need verify the token
-                // The session will be created when the password is reset
+              } catch (sessionError) {
+                console.warn("setSession attempt failed:", sessionError);
               }
             }
             
-            setValidToken(true);
-          } catch (error) {
-            console.error("Error validating reset token:", error);
-            toast({
-              title: "Invalid Reset Link",
-              description: "This password reset link is invalid or has expired.",
-              variant: "destructive",
-            });
-            navigate('/signin');
+            // Set token validity based on verification result
+            setValidToken(tokenVerified);
+            
+            // If we couldn't verify the token but we have one, still allow the attempt
+            // The updateUser API will be the final verification
+            if (!tokenVerified && accessToken) {
+              console.log("Token not verified but present - will try during password update");
+              setValidToken(true);
+            }
           }
+        } catch (error: any) {
+          console.error("Token verification error:", error);
+          toast({
+            title: "Error",
+            description: "There was a problem validating your reset link. You can still attempt to reset your password.",
+            variant: "destructive",
+          });
+          // We'll still let them try if the token is present
+          setValidToken(!!accessToken);
         }
-      } catch (error) {
-        console.error("Token verification error:", error);
-        toast({
-          title: "Error",
-          description: "There was a problem processing your reset link.",
-          variant: "destructive",
-        });
-        navigate('/signin');
       } finally {
         setVerifying(false);
       }
@@ -140,13 +152,32 @@ export default function ResetPassword() {
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validatePassword() || !validToken) {
+    if (!validatePassword()) {
       return;
     }
 
     setLoading(true);
 
     try {
+      // If we have a token from URL but validation failed, try again directly here
+      if (tokenFromUrl && !validToken) {
+        try {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            token: tokenFromUrl,
+            type: 'recovery',
+          });
+          
+          if (verifyError) {
+            console.warn("Last attempt verifyOtp error:", verifyError);
+            // Continue anyway as updateUser may still work
+          }
+        } catch (verifyError) {
+          console.warn("Last attempt token verification failed:", verifyError);
+          // Continue anyway as updateUser may still work
+        }
+      }
+
+      // Update the password
       const { error } = await supabase.auth.updateUser({
         password: password
       });
@@ -161,12 +192,12 @@ export default function ResetPassword() {
       // Redirect to sign in page after a short delay
       setTimeout(() => {
         navigate('/signin');
-      }, 1500);
+      }, 2000);
     } catch (error: any) {
       console.error("Password reset error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update password",
+        description: error.message || "Failed to update password. The reset link may have expired.",
         variant: "destructive",
       });
     } finally {
@@ -209,7 +240,7 @@ export default function ResetPassword() {
             </p>
           </div>
 
-          {!validToken ? (
+          {!validToken && !tokenFromUrl && (
             <div className="text-center text-red-500">
               <p>Invalid or expired reset link. Please request a new password reset.</p>
               <Button
@@ -220,7 +251,9 @@ export default function ResetPassword() {
                 Back to sign in
               </Button>
             </div>
-          ) : (
+          )}
+
+          {(validToken || tokenFromUrl) && (
             <form onSubmit={handlePasswordReset} className="space-y-6">
               <div className="relative">
                 <Input
@@ -271,6 +304,16 @@ export default function ResetPassword() {
               >
                 {loading ? "Updating..." : "Set new password"}
               </Button>
+
+              <div className="text-center text-sm">
+                <button 
+                  type="button" 
+                  className="text-blue-600 hover:underline"
+                  onClick={() => navigate('/signin')}
+                >
+                  Back to sign in
+                </button>
+              </div>
             </form>
           )}
         </div>

@@ -29,10 +29,18 @@ const handler = async (req: Request): Promise<Response> => {
     // Check if this is a password reset email
     if (emailRequest.subject.includes("Reset Your Password") || 
         emailRequest.html.includes("reset your password")) {
+      console.log("Processing password reset email");
+      
+      // Extract the reset link from the email
+      const resetLink = extractResetLink(emailRequest.html);
+      console.log("Extracted reset link:", resetLink);
+      
       // Replace with our simplified template
-      emailRequest.html = generateSimplePasswordResetEmail(
-        extractResetLink(emailRequest.html)
-      );
+      if (resetLink) {
+        emailRequest.html = generateSimplePasswordResetEmail(resetLink);
+      } else {
+        console.warn("Could not extract reset link from email HTML");
+      }
     }
     
     const res = await fetch("https://api.resend.com/emails", {
@@ -75,33 +83,82 @@ const handler = async (req: Request): Promise<Response> => {
 
 // Helper function to extract the reset link from the original email
 function extractResetLink(html: string): string {
-  // Use a more robust regex to find the password reset URL
-  // Match recovery links from Supabase email templates
-  const resetLinkMatch = html.match(/https:\/\/[^"'\s]+(?:type=recovery|\/reset-password)[^"'\s]*/g);
+  console.log("Extracting reset link from HTML");
   
-  if (resetLinkMatch && resetLinkMatch.length > 0) {
-    console.log("Found reset link:", resetLinkMatch[0]);
-    return resetLinkMatch[0];
-  }
-  
-  // Sometimes Supabase sends the link differently in the email - try another pattern
-  const alternateMatch = html.match(/(https:\/\/[^"'\s]+)/g);
-  if (alternateMatch && alternateMatch.length > 0) {
-    // Filter to only include likely reset links
-    const possibleResetLinks = alternateMatch.filter(link => 
-      link.includes('token=') || 
-      link.includes('type=recovery') || 
-      link.includes('reset-password')
-    );
+  // First, look for template variables that didn't get replaced
+  if (html.includes("{{ .RedirectTo }}")) {
+    console.log("Found template variable that wasn't replaced");
     
-    if (possibleResetLinks.length > 0) {
-      console.log("Found alternate reset link:", possibleResetLinks[0]);
-      return possibleResetLinks[0];
+    // Try to extract the reset token from other parts of the HTML
+    const tokenMatch = html.match(/token=([^&"'\s]+)/);
+    const typeMatch = html.match(/type=([^&"'\s]+)/);
+    
+    if (tokenMatch && tokenMatch[1] && typeMatch && typeMatch[1] === "recovery") {
+      const token = tokenMatch[1];
+      // Construct our own reset URL
+      const resetUrl = `${getDomainFromHtml(html)}/reset-password?token=${token}&type=recovery`;
+      console.log("Constructed reset URL:", resetUrl);
+      return resetUrl;
     }
   }
   
-  console.warn("No reset link found in email HTML!");
+  // Try different patterns for finding the recovery link
+  const patterns = [
+    // Standard Supabase hash format
+    /href=["'](https:\/\/[^"'\s]+#access_token=[^"'\s]+type=recovery[^"'\s]*)/i,
+    // URL with token and type as query params
+    /href=["'](https:\/\/[^"'\s]+\?(?:[^"'\s]*&)?token=[^"'\s]+&type=recovery[^"'\s]*)/i,
+    // URL with just token as query param
+    /href=["'](https:\/\/[^"'\s]+\?(?:[^"'\s]*&)?token=[^"'\s]+)/i,
+    // Any URL with recovery in it
+    /href=["'](https:\/\/[^"'\s]+(?:recovery)[^"'\s]*)/i,
+    // Last resort: any URL that might be a reset link
+    /href=["'](https:\/\/[^"'\s]+reset-password[^"'\s]*)/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      console.log("Found reset link with pattern:", pattern);
+      return match[1];
+    }
+  }
+  
+  // If all else fails, try to find any URL
+  const anyUrlMatch = html.match(/https:\/\/[^"'\s]+/g);
+  if (anyUrlMatch && anyUrlMatch.length > 0) {
+    // Filter to URLs that might be reset links
+    const possibleResetLinks = anyUrlMatch.filter(url => 
+      url.includes('token=') || 
+      url.includes('access_token=') || 
+      url.includes('type=recovery') || 
+      url.includes('reset-password')
+    );
+    
+    if (possibleResetLinks.length > 0) {
+      console.log("Found possible reset link:", possibleResetLinks[0]);
+      return possibleResetLinks[0];
+    }
+    
+    // If no reset-specific URLs found, return the first URL
+    console.log("No specific reset link found, using first URL:", anyUrlMatch[0]);
+    return anyUrlMatch[0];
+  }
+  
+  console.warn("No reset link or URL found in email HTML!");
   return "#"; // Fallback if no link is found
+}
+
+// Helper function to extract domain from HTML
+function getDomainFromHtml(html: string): string {
+  // Try to extract domain from any URL in the HTML
+  const urlMatch = html.match(/https?:\/\/([^\/]+)/i);
+  if (urlMatch && urlMatch[0]) {
+    return urlMatch[0]; // Return the full protocol + domain
+  }
+  
+  // Fallback to current domain
+  return `${self.location.protocol}//${self.location.host}`;
 }
 
 // Function to generate simple password reset email

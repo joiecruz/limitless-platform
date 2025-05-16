@@ -3,8 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { usePasswordReset } from "@/hooks/usePasswordReset";
 
 interface ForgotPasswordFormProps {
   onCancel: () => void;
@@ -13,51 +12,17 @@ interface ForgotPasswordFormProps {
 
 export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswordFormProps) => {
   const [email, setEmail] = useState(initialEmail);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const { loading, sendPasswordResetEmail } = usePasswordReset();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!email || !email.trim()) {
-      toast({
-        title: "Email Required",
-        description: "Please enter your email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const cleanEmail = email.toLowerCase().trim();
-      
-      // Get current origin to ensure proper redirect URL
-      const redirectTo = `${window.location.origin}/reset-password`;
-      console.log("Password reset redirect URL:", redirectTo);
-
-      // Use Supabase Auth API to send password reset email
-      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-        redirectTo: redirectTo,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Password Reset Email Sent",
-        description: "Check your inbox for a password reset link. If you don't see it, check your spam folder.",
-      });
-      onCancel(); // Return to login form after successful submission
-    } catch (error: any) {
-      console.error("Password reset error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send reset password email",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    
+    // Use our hook to send password reset email
+    const success = await sendPasswordResetEmail(email);
+    
+    if (success) {
+      // Return to login form after successful submission
+      onCancel(); 
     }
   };
 

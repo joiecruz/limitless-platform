@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
+import { extractTokenFromUrl } from './useEmailConfirmation';
 
 export function usePasswordReset() {
   const [loading, setLoading] = useState(false);
@@ -28,6 +29,7 @@ export function usePasswordReset() {
       
       // Get current origin for proper redirect
       const redirectTo = `${window.location.origin}/reset-password`;
+      console.log("Password reset redirect URL:", redirectTo);
 
       // Use Supabase Auth API to send password reset email
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
@@ -38,7 +40,7 @@ export function usePasswordReset() {
 
       toast({
         title: "Password Reset Email Sent",
-        description: "Check your inbox for a password reset link.",
+        description: "Check your inbox for a password reset link. If you don't see it, check your spam folder.",
       });
       
       success = true;
@@ -63,6 +65,36 @@ export function usePasswordReset() {
     let success = false;
 
     try {
+      // Get the token from the URL if it exists
+      const token = extractTokenFromUrl();
+      console.log("Updating password with token:", token ? "Token exists" : "No token found");
+
+      // If we have a token but no session, try to create one
+      if (token) {
+        const { data: currentSession } = await supabase.auth.getSession();
+        
+        if (!currentSession.session) {
+          console.log("No active session, attempting to use token to update password");
+          
+          // For recovery tokens, attempt to verify token first
+          try {
+            const { error: verifyError } = await supabase.auth.verifyOtp({
+              token,
+              type: 'recovery',
+            });
+            
+            if (verifyError) {
+              console.error("Token verification error:", verifyError);
+              // Continue anyway as updateUser may still work
+            }
+          } catch (verifyError) {
+            console.warn("Token verification attempt failed:", verifyError);
+            // Continue anyway as updateUser may still work
+          }
+        }
+      }
+
+      // Update the user's password
       const { error } = await supabase.auth.updateUser({
         password: password
       });
