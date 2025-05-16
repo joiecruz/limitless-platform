@@ -114,8 +114,10 @@ export const verifyResetToken = async (token: string, email?: string | null): Pr
         type: 'recovery'
       });
     } else {
+      // For newer Supabase API versions, we need to use token verification format
+      // that doesn't require an email (if email is not provided)
       await supabase.auth.verifyOtp({
-        token,
+        token_hash: token,
         type: 'recovery'
       });
     }

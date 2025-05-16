@@ -85,7 +85,7 @@ export function usePasswordReset() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        console.log("No active session, attempting to use token to update password");
+        console.log("No session found, attempting to use token to update password");
         
         // Try different verification approaches
         try {
@@ -99,9 +99,9 @@ export function usePasswordReset() {
             });
           } else {
             console.log("No email found, using token for verification");
-            // Try without email
+            // Try without email - using token_hash for newer Supabase API
             await supabase.auth.verifyOtp({
-              token,
+              token_hash: token,
               type: 'recovery'
             });
           }

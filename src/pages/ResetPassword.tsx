@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +7,7 @@ import { AuthLogo } from "@/components/auth/AuthLogo";
 import { Eye, EyeOff } from "lucide-react";
 import { extractTokenFromUrl, extractEmailFromUrl } from '@/hooks/useEmailConfirmation';
 import { usePasswordReset } from '@/hooks/usePasswordReset';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Dialog,
   DialogContent,
@@ -92,7 +92,7 @@ export default function ResetPassword() {
               });
             } else {
               await supabase.auth.verifyOtp({
-                token: accessToken,
+                token_hash: accessToken,
                 type: 'recovery'
               });
             }
