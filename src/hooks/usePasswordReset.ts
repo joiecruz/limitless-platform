@@ -82,7 +82,7 @@ export function usePasswordReset() {
       }
 
       // We'll try multiple methods to update the password - this is our new approach
-      console.log("Attempting direct password update through multiple methods");
+      console.log("No session found, attempting to use token to update password");
       
       // Method 1: Using direct setSession first
       try {
@@ -115,25 +115,30 @@ export function usePasswordReset() {
       
       // If first method failed, try another
       if (!success) {
-        // Method 2: Try using the resetPassword API directly with the token
+        // Method 2: Try using a direct API call
         try {
-          const { error } = await fetch(`${supabase.auth.url}/recover`, {
+          console.log("Attempting to update password");
+          
+          // Use fetch to directly call the API
+          const response = await fetch("https://crllgygjuqpluvdpwayi.supabase.co/auth/v1/recover", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'apikey': supabase.supabaseKey,
+              'apikey': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1NDQ1MjksImV4cCI6MjA0OTEyMDUyOX0.-L1Kc059oqFdOacRh9wcbf5wBCOqqTHBzvmIFKqlWU8",
             },
             body: JSON.stringify({
               token,
               password,
             }),
-          }).then(res => res.json());
+          });
           
-          if (!error) {
+          const data = await response.json();
+          
+          if (response.ok) {
             console.log("Password updated successfully via direct API call");
             success = true;
           } else {
-            console.log("Direct API call failed:", error);
+            console.log("Direct API call failed:", data);
           }
         } catch (apiError) {
           console.log("API method failed:", apiError);
@@ -204,7 +209,7 @@ export function usePasswordReset() {
       }, 1500);
       
     } catch (error: any) {
-      console.error("Password update error:", error);
+      console.error("Password update direct error:", error);
       
       // Check for specific error conditions
       if (error.message?.includes('expired') || error.message?.includes('invalid token')) {
