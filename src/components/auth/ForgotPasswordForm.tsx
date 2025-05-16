@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,7 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !email.trim()) {
       toast({
         title: "Email Required",
@@ -31,8 +30,10 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
     setLoading(true);
 
     try {
-      // Use the correct redirect URL pointing to our reset-password page
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const cleanEmail = email.toLowerCase().trim();
+
+      // Use Supabase Auth API to send password reset email
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
@@ -86,7 +87,7 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
           >
             {loading ? "Sending..." : "Reset password"}
           </Button>
-          
+
           <Button
             type="button"
             variant="outline"

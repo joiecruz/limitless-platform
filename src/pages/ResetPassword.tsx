@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -17,14 +16,20 @@ export default function ResetPassword() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we have a hash token when the component mounts
+    // Check for token in both hash and query parameters
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const queryParams = new URLSearchParams(window.location.search);
+
     const type = hashParams.get('type');
-    const accessToken = hashParams.get('access_token');
-    
-    console.log('Reset password page loaded with hash params', { type, accessToken: !!accessToken });
-    
-    if (!accessToken || type !== 'recovery') {
+    const accessToken = hashParams.get('access_token') || queryParams.get('token');
+
+    console.log('Reset password page loaded', {
+      hashType: type,
+      hasHashToken: !!hashParams.get('access_token'),
+      hasQueryToken: !!queryParams.get('token')
+    });
+
+    if (!accessToken) {
       toast({
         title: "Invalid Reset Link",
         description: "This password reset link is invalid or has expired.",
@@ -33,7 +38,25 @@ export default function ResetPassword() {
       navigate('/signin');
       return;
     }
-    
+
+    // If we have a token in query params, we need to exchange it
+    if (queryParams.get('token')) {
+      // The App.tsx already handles setting the session from the token
+      setValidToken(true);
+      return;
+    }
+
+    // For hash-based tokens, verify it's a recovery type
+    if (type !== 'recovery') {
+      toast({
+        title: "Invalid Reset Link",
+        description: "This password reset link is invalid or has expired.",
+        variant: "destructive",
+      });
+      navigate('/signin');
+      return;
+    }
+
     setValidToken(true);
   }, [navigate, toast]);
 
@@ -52,11 +75,11 @@ export default function ResetPassword() {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validatePassword() || !validToken) {
       return;
     }
-    
+
     setLoading(true);
 
     try {
@@ -105,7 +128,7 @@ export default function ResetPassword() {
           {!validToken ? (
             <div className="text-center text-red-500">
               <p>Invalid or expired reset link. Please request a new password reset.</p>
-              <Button 
+              <Button
                 className="mt-4 w-full"
                 onClick={() => navigate('/signin')}
                 style={{ backgroundColor: "rgb(69, 66, 158)" }}
@@ -126,7 +149,7 @@ export default function ResetPassword() {
                   minLength={6}
                 />
               </div>
-              
+
               <div>
                 <Input
                   type="password"

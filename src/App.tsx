@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -35,10 +34,42 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Check if we're on the reset password page
+  const isResetPasswordPage = window.location.pathname.includes('/reset-password');
+
   // Memoize the getInitialSession function to avoid recreation on each render
   const getInitialSession = useCallback(async () => {
     try {
       console.log("Getting initial session...");
+
+      // If on reset password page, we still need to check for token in URL
+      if (isResetPasswordPage) {
+        console.log("On reset password page, checking for token");
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get('token');
+
+        if (accessToken) {
+          try {
+            // Try to set the session using the token from URL
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: '',
+            });
+
+            if (error) {
+              console.error("Error setting session from token:", error);
+            } else {
+              console.log("Session set from reset password token");
+              const { data } = await supabase.auth.getSession();
+              setSession(data.session);
+            }
+          } catch (error) {
+            console.error("Error setting session from token:", error);
+          }
+        }
+        setLoading(false);
+        return;
+      }
 
       // Add timeout to prevent hanging
       const sessionPromise = supabase.auth.getSession();
@@ -72,7 +103,7 @@ const App = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isResetPasswordPage]);
 
   useEffect(() => {
     // If we're on apex domain, don't try loading the app yet
@@ -90,16 +121,19 @@ const App = () => {
     }
 
     // Set a timeout to force-complete loading regardless of session status
-    sessionTimeoutId = window.setTimeout(() => {
-      console.log("Session check timed out, continuing with app initialization");
-      if (mounted) {
-        setLoading(false);
-      }
-    }, 6000) as unknown as number;
+    // Skip timeout if on reset password page
+    if (!isResetPasswordPage) {
+      sessionTimeoutId = window.setTimeout(() => {
+        console.log("Session check timed out, continuing with app initialization");
+        if (mounted) {
+          setLoading(false);
+        }
+      }, 6000) as unknown as number;
+    }
 
     getInitialSession();
 
-    // Listen for auth changes
+    // Listen for auth changes (even on reset password page)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("Auth state changed:", event, currentSession);
 
@@ -142,7 +176,7 @@ const App = () => {
       }
       subscription.unsubscribe();
     };
-  }, [toast, getInitialSession]);
+  }, [toast, getInitialSession, isResetPasswordPage]);
 
   // Show a simple loading indicator if still initializing
   if (loading) {
