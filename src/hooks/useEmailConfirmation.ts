@@ -20,10 +20,11 @@ export const useEmailConfirmation = () => {
 export const extractTokenFromUrl = (): string | null => {
   console.log("Extracting token from URL:", {
     hash: window.location.hash,
-    search: window.location.search
+    search: window.location.search,
+    pathname: window.location.pathname
   });
 
-  // Try multiple methods to find the token
+  // Enhanced token extraction approach
   
   // Method 1: Check for token in hash parameters (Supabase default method)
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -46,7 +47,19 @@ export const extractTokenFromUrl = (): string | null => {
     }
   }
   
-  // Method 4: Check URL for JWT-like string (last resort)
+  // Method 4: Check for token in URL path for direct password reset links
+  if (!accessToken && window.location.pathname.includes('/reset-password/')) {
+    const pathParts = window.location.pathname.split('/');
+    if (pathParts.length > 2) {
+      const possibleToken = pathParts[pathParts.length - 1];
+      // Basic validation: token should be at least 10 chars and contain typical JWT characters
+      if (possibleToken && possibleToken.length > 10 && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(possibleToken)) {
+        accessToken = possibleToken;
+      }
+    }
+  }
+  
+  // Method 5: Check URL for JWT-like string (last resort)
   if (!accessToken) {
     const jwtPattern = /([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)/;
     const fullUrl = window.location.href;
@@ -58,5 +71,29 @@ export const extractTokenFromUrl = (): string | null => {
   }
   
   console.log("Extracted token:", accessToken ? "Found token" : "No token found");
+  if (accessToken) {
+    console.log("Token (first 10 chars):", accessToken.substring(0, 10) + "...");
+  }
+  
   return accessToken;
+};
+
+// Extract email from URL (for password reset)
+export const extractEmailFromUrl = (): string | null => {
+  // Check hash parameters
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  let email = hashParams.get('email');
+  
+  // Check query parameters if not in hash
+  if (!email) {
+    const queryParams = new URLSearchParams(window.location.search);
+    email = queryParams.get('email');
+  }
+  
+  // Check localStorage (may have been stored during forgot password step)
+  if (!email) {
+    email = localStorage.getItem('passwordResetEmail');
+  }
+  
+  return email;
 };

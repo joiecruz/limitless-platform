@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
-import { extractTokenFromUrl } from './useEmailConfirmation';
+import { extractTokenFromUrl, extractEmailFromUrl } from './useEmailConfirmation';
 
 export function usePasswordReset() {
   const [loading, setLoading] = useState(false);
@@ -26,6 +26,9 @@ export function usePasswordReset() {
 
     try {
       const cleanEmail = email.toLowerCase().trim();
+      
+      // Store the email in localStorage so we can use it for token verification later
+      localStorage.setItem('passwordResetEmail', cleanEmail);
       
       // Get current origin for proper redirect
       const redirectTo = `${window.location.origin}/reset-password`;
@@ -69,6 +72,9 @@ export function usePasswordReset() {
       const token = extractTokenFromUrl();
       console.log("Updating password with token:", token ? "Token exists" : "No token found");
 
+      // Get the email that might be needed for verification
+      const email = extractEmailFromUrl();
+
       // If we have a token but no session, try to create one
       if (token) {
         const { data: currentSession } = await supabase.auth.getSession();
@@ -76,27 +82,36 @@ export function usePasswordReset() {
         if (!currentSession.session) {
           console.log("No active session, attempting to use token to update password");
           
-          // For recovery tokens, we need to use the correct approach based on token type
           try {
-            // Get the email from localStorage if available (from previous steps)
-            // This is a workaround since we don't have the email in the URL
-            const recoveryEmail = localStorage.getItem('passwordResetEmail');
-            
-            if (recoveryEmail) {
-              // Use verifyOtp with email for recovery type
+            // We need to provide email for proper OTP verification
+            if (email) {
+              console.log("Using email and token for verification");
               const { error: verifyError } = await supabase.auth.verifyOtp({
-                email: recoveryEmail,
+                email: email,
                 token: token,
                 type: 'recovery',
               });
               
               if (verifyError) {
-                console.error("Token verification error:", verifyError);
+                console.error("Token verification with email error:", verifyError);
                 // Continue anyway as updateUser may still work
               }
             } else {
-              // Try to use the token directly with updateUser
-              console.log("No email found for verification, will try direct password update");
+              console.log("No email found for verification, using token hash method");
+              
+              // Try using token hash method when email is not available
+              try {
+                const { error: verifyError } = await supabase.auth.verifyOtp({
+                  token_hash: token,
+                  type: 'recovery',
+                });
+                
+                if (verifyError) {
+                  console.error("Token hash verification error:", verifyError);
+                }
+              } catch (verifyHashError) {
+                console.warn("Token hash verification failed:", verifyHashError);
+              }
             }
           } catch (verifyError) {
             console.warn("Token verification attempt failed:", verifyError);

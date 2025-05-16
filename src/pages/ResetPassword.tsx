@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLogo } from "@/components/auth/AuthLogo";
 import { Eye, EyeOff } from "lucide-react";
-import { extractTokenFromUrl } from '@/hooks/useEmailConfirmation';
+import { extractTokenFromUrl, extractEmailFromUrl } from '@/hooks/useEmailConfirmation';
+import { usePasswordReset } from '@/hooks/usePasswordReset';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -22,6 +23,7 @@ export default function ResetPassword() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { updatePassword } = usePasswordReset();
 
   useEffect(() => {
     // Function to check for and validate token
@@ -30,32 +32,28 @@ export default function ResetPassword() {
         setVerifying(true);
         console.log("Checking for reset token...");
         
-        // Extract token from URL using our utility
+        // Extract token and email from URL using our improved utility
         const accessToken = extractTokenFromUrl();
         setTokenFromUrl(accessToken);
         
-        // Check if we have a token type
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const queryParams = new URLSearchParams(window.location.search);
-        let tokenType = hashParams.get('type') || queryParams.get('type') || 'recovery';
-        
-        // Try to get email from URL or hash
-        const email = hashParams.get('email') || queryParams.get('email');
+        // Extract email from URL or localStorage
+        const email = extractEmailFromUrl();
         if (email) {
           setUserEmail(email);
-          // Store email in localStorage for the updatePassword function
+          // Ensure email is in localStorage for the updatePassword function
           localStorage.setItem('passwordResetEmail', email);
         }
         
+        // Log what we found for debugging
         console.log("Token validation:", {
           hasToken: !!accessToken,
-          tokenType,
           email,
-          fromHash: !!hashParams.get('access_token'),
-          fromQuery: !!queryParams.get('token')
+          pathname: window.location.pathname,
+          search: window.location.search,
+          hash: window.location.hash
         });
 
-        // No token found in either location
+        // No token found in any location
         if (!accessToken) {
           console.error("No reset token found in URL");
           toast({
@@ -63,7 +61,6 @@ export default function ResetPassword() {
             description: "This password reset link is invalid or has expired. Please request a new one.",
             variant: "destructive",
           });
-          // Don't redirect immediately, allow user to see message and try again if needed
           setValidToken(false);
           return;
         }
@@ -100,24 +97,22 @@ export default function ResetPassword() {
               } catch (verifyError) {
                 console.warn("verifyOtp attempt failed:", verifyError);
               }
-            }
-            
-            // Approach 2: Check if we can set session from token
-            if (!tokenVerified && hashParams.get('refresh_token')) {
+            } else {
+              // Try token hash method
               try {
-                const { error: sessionError } = await supabase.auth.setSession({
-                  access_token: accessToken,
-                  refresh_token: hashParams.get('refresh_token') || '',
+                const { error: verifyError } = await supabase.auth.verifyOtp({
+                  token_hash: accessToken,
+                  type: 'recovery',
                 });
                 
-                if (!sessionError) {
-                  console.log("Session set successfully");
+                if (!verifyError) {
+                  console.log("Token verified with token_hash");
                   tokenVerified = true;
                 } else {
-                  console.warn("setSession error:", sessionError);
+                  console.warn("token_hash verification error:", verifyError);
                 }
-              } catch (sessionError) {
-                console.warn("setSession attempt failed:", sessionError);
+              } catch (verifyError) {
+                console.warn("token_hash verification failed:", verifyError);
               }
             }
             
@@ -171,53 +166,13 @@ export default function ResetPassword() {
 
     setLoading(true);
 
-    try {
-      // If we have a token from URL but validation failed, try again directly here
-      if (tokenFromUrl && !validToken && userEmail) {
-        try {
-          const { error: verifyError } = await supabase.auth.verifyOtp({
-            email: userEmail,
-            token: tokenFromUrl,
-            type: 'recovery',
-          });
-          
-          if (verifyError) {
-            console.warn("Last attempt verifyOtp error:", verifyError);
-            // Continue anyway as updateUser may still work
-          }
-        } catch (verifyError) {
-          console.warn("Last attempt token verification failed:", verifyError);
-          // Continue anyway as updateUser may still work
-        }
-      }
-
-      // Update the password
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Password updated",
-        description: "Your password has been updated successfully. Please sign in with your new password.",
-      });
-
-      // Clear any stored email
-      localStorage.removeItem('passwordResetEmail');
-
-      // Redirect to sign in page after a short delay
-      setTimeout(() => {
-        navigate('/signin');
-      }, 2000);
-    } catch (error: any) {
-      console.error("Password reset error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update password. The reset link may have expired.",
-        variant: "destructive",
-      });
-    } finally {
+    // Use the updatePassword function from our hook
+    const success = await updatePassword(password);
+    
+    if (success) {
+      // Success case is handled inside the hook (shows toast and redirects)
+    } else {
+      // Error case is also handled in the hook
       setLoading(false);
     }
   };

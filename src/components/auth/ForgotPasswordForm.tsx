@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,7 @@ interface ForgotPasswordFormProps {
 
 export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswordFormProps) => {
   const [email, setEmail] = useState(initialEmail);
+  const [resetSent, setResetSent] = useState(false);
   const { loading, sendPasswordResetEmail } = usePasswordReset();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,8 +24,11 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
     const success = await sendPasswordResetEmail(email);
     
     if (success) {
-      // Return to login form after successful submission
-      onCancel(); 
+      setResetSent(true);
+      // Keep the form open for a moment to show the success state
+      setTimeout(() => {
+        onCancel(); // Return to login form after a brief delay
+      }, 3000);
     }
   };
 
@@ -38,40 +41,47 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-          <Input
-            type="email"
-            placeholder="Email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="pl-10"
-          />
+      {resetSent ? (
+        <div className="text-center text-sm p-4 bg-green-50 rounded-md">
+          <p className="text-green-800 font-medium mb-2">Reset link sent!</p>
+          <p className="text-gray-600">Check your inbox for instructions on how to reset your password.</p>
         </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <Input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="pl-10"
+            />
+          </div>
 
-        <div className="flex flex-col gap-3">
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading}
-            variant="default"
-            style={{ backgroundColor: "rgb(69, 66, 158)" }}
-          >
-            {loading ? "Sending..." : "Reset password"}
-          </Button>
+          <div className="flex flex-col gap-3">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+              variant="default"
+              style={{ backgroundColor: "rgb(69, 66, 158)" }}
+            >
+              {loading ? "Sending..." : "Reset password"}
+            </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            className="w-full"
-          >
-            Back to sign in
-          </Button>
-        </div>
-      </form>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="w-full"
+            >
+              Back to sign in
+            </Button>
+          </div>
+        </form>
+      )}
     </div>
   );
 };
