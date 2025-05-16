@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
-import { extractTokenFromUrl, extractEmailFromUrl, verifyResetToken } from './useEmailConfirmation';
+import { extractTokenFromUrl } from './useEmailConfirmation';
 
 export function usePasswordReset() {
   const [loading, setLoading] = useState(false);
@@ -26,9 +26,6 @@ export function usePasswordReset() {
 
     try {
       const cleanEmail = email.toLowerCase().trim();
-      
-      // Store the email in localStorage so we can use it for token verification later
-      localStorage.setItem('passwordResetEmail', cleanEmail);
       
       // Get current origin for proper redirect
       const redirectTo = `${window.location.origin}/reset-password`;
@@ -72,127 +69,34 @@ export function usePasswordReset() {
       const token = extractTokenFromUrl();
       console.log("Updating password with token:", token ? "Token exists" : "No token found");
 
-      // Get the email that might be needed for verification
-      const email = extractEmailFromUrl();
-      console.log("Email for password reset:", email || "No email found");
-
       // If there's no token, we can't proceed
       if (!token) {
         throw new Error("No valid reset token found. Please request a new password reset link.");
       }
-
-      // We'll try multiple methods to update the password - this is our new approach
-      console.log("No session found, attempting to use token to update password");
       
-      // Method 1: Using direct setSession first
-      try {
-        // Try to establish a session using the token
-        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-          access_token: token,
-          refresh_token: '',
-        });
-        
-        if (sessionError) {
-          console.log("Failed to set session with token:", sessionError);
-        } else if (sessionData?.session) {
-          console.log("Successfully set session, now updating password");
-          
-          // Now that we have a session, update the password
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: password
-          });
-          
-          if (!updateError) {
-            console.log("Password updated successfully via setSession method");
-            success = true;
-          } else {
-            console.log("Failed to update password after setting session:", updateError);
-          }
-        }
-      } catch (sessionMethodError) {
-        console.log("Session method failed:", sessionMethodError);
+      // Try to establish a session using the token
+      const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+        access_token: token,
+        refresh_token: '',
+      });
+      
+      if (sessionError) {
+        console.log("Failed to set session with token:", sessionError);
+        throw sessionError;
       }
       
-      // If first method failed, try another
-      if (!success) {
-        // Method 2: Try using a direct API call
-        try {
-          console.log("Attempting to update password");
-          
-          // Use fetch to directly call the API
-          const response = await fetch("https://crllgygjuqpluvdpwayi.supabase.co/auth/v1/recover", {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1NDQ1MjksImV4cCI6MjA0OTEyMDUyOX0.-L1Kc059oqFdOacRh9wcbf5wBCOqqTHBzvmIFKqlWU8",
-            },
-            body: JSON.stringify({
-              token,
-              password,
-            }),
-          });
-          
-          const data = await response.json();
-          
-          if (response.ok) {
-            console.log("Password updated successfully via direct API call");
-            success = true;
-          } else {
-            console.log("Direct API call failed:", data);
-          }
-        } catch (apiError) {
-          console.log("API method failed:", apiError);
-        }
+      // Now that we have a session, update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: password
+      });
+      
+      if (updateError) {
+        console.log("Failed to update password after setting session:", updateError);
+        throw updateError;
       }
       
-      // Method 3: Fallback to older versions of Supabase
-      if (!success && email) {
-        try {
-          // For some versions of Supabase, we need to use the recovery flow
-          console.log("Trying email recovery flow method");
-          
-          // First try to get session
-          const { error: recoveryError } = await supabase.auth.verifyOtp({
-            email,
-            token,
-            type: 'recovery'
-          });
-          
-          if (!recoveryError) {
-            // Now update password
-            const { error: updateError } = await supabase.auth.updateUser({
-              password
-            });
-            
-            if (!updateError) {
-              console.log("Password updated successfully via email recovery flow");
-              success = true;
-            } else {
-              console.log("Password update failed after recovery flow:", updateError);
-            }
-          } else {
-            console.log("Recovery flow verification failed:", recoveryError);
-          }
-        } catch (recoveryError) {
-          console.log("Recovery method failed:", recoveryError);
-        }
-      }
-
-      // If everything failed, inform the user
-      if (!success) {
-        toast({
-          title: "Password Reset Failed",
-          description: "The password reset link may have expired. Please request a new one.",
-          variant: "destructive",
-        });
-        
-        // Redirect to sign in page with expired flag
-        setTimeout(() => {
-          navigate('/signin?reset_expired=true');
-        }, 2000);
-        
-        return false;
-      }
+      console.log("Password updated successfully");
+      success = true;
 
       // Success case
       toast({
@@ -200,33 +104,25 @@ export function usePasswordReset() {
         description: "Your password has been updated successfully. You can now sign in with your new password.",
       });
 
-      // Clear any stored email
-      localStorage.removeItem('passwordResetEmail');
-
       // Redirect to sign in page after short delay
       setTimeout(() => {
         navigate('/signin?reset_success=true');
       }, 1500);
       
     } catch (error: any) {
-      console.error("Password update direct error:", error);
+      console.error("Password update error:", error);
       
-      // Check for specific error conditions
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update password",
+        variant: "destructive",
+      });
+      
+      // Redirect to sign in page with expired flag if token is invalid
       if (error.message?.includes('expired') || error.message?.includes('invalid token')) {
-        toast({
-          title: "Reset Link Expired",
-          description: "Your password reset link has expired. Please request a new one.",
-          variant: "destructive",
-        });
         setTimeout(() => {
           navigate('/signin?reset_expired=true');
         }, 2000);
-      } else {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to update password",
-          variant: "destructive",
-        });
       }
       
       success = false;

@@ -24,8 +24,6 @@ export const extractTokenFromUrl = (): string | null => {
     search: window.location.search,
     pathname: window.location.pathname
   });
-
-  // Enhanced token extraction approach with detailed logging
   
   // Method 1: Check for token in hash parameters (Supabase default method)
   if (window.location.hash) {
@@ -92,91 +90,5 @@ export const extractEmailFromUrl = (): string | null => {
     email = queryParams.get('email');
   }
   
-  // Check localStorage (may have been stored during forgot password step)
-  if (!email) {
-    email = localStorage.getItem('passwordResetEmail');
-  }
-  
   return email;
-};
-
-// Verify if a token is valid (not expired)
-export const verifyResetToken = async (token: string, email?: string | null): Promise<boolean> => {
-  if (!token) {
-    console.log("No token provided to verify");
-    return false;
-  }
-
-  try {
-    // We'll use a completely different approach - try to get a session directly
-    // This is more reliable than token verification in newer Supabase versions
-    console.log("Attempting direct session check with token");
-    
-    // First approach: try to set the session with the token
-    try {
-      const { data, error } = await supabase.auth.setSession({
-        access_token: token,
-        refresh_token: ''
-      });
-      
-      if (data?.session) {
-        console.log("Successfully created session from token");
-        return true;
-      }
-      
-      if (error) {
-        console.log("Failed to create session from token:", error);
-        // Continue to other methods
-      }
-    } catch (sessionError) {
-      console.log("Session creation error:", sessionError);
-    }
-    
-    // Second approach: Try direct updateUser as a way to test token
-    try {
-      // We're not actually updating the password here, just testing if the token is valid
-      // by seeing if we can execute an updateUser operation (will fail if token is invalid)
-      const { error } = await supabase.auth.updateUser({});
-      
-      if (!error) {
-        console.log("Token verification successful via updateUser test");
-        return true;
-      }
-    } catch (updateError) {
-      console.log("Token verification via updateUser failed:", updateError);
-    }
-    
-    // Third approach: For newer Supabase versions
-    if (token.includes('.')) {
-      try {
-        const { data, error } = await supabase.auth.getUser(token);
-        
-        if (data?.user && !error) {
-          console.log("Token verification successful via getUser");
-          return true;
-        }
-      } catch (getUserError) {
-        console.log("Get user with token failed:", getUserError);
-      }
-    }
-    
-    // Fallback to older methods - some versions of Supabase require these
-    if (email) {
-      try {
-        // This is a special edge case for old Supabase versions
-        await supabase.auth.resetPasswordForEmail(email);
-        console.log("Fallback verification via resetPasswordForEmail successful");
-        return true;
-      } catch (emailResetError) {
-        console.log("Fallback resetPasswordForEmail failed:", emailResetError);
-      }
-    }
-    
-    console.log("All token verification methods failed");
-    return false;
-    
-  } catch (error) {
-    console.error("Token verification failed with exception:", error);
-    return false;
-  }
 };

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -6,9 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLogo } from "@/components/auth/AuthLogo";
 import { Eye, EyeOff } from "lucide-react";
-import { extractTokenFromUrl, extractEmailFromUrl, verifyResetToken } from '@/hooks/useEmailConfirmation';
+import { extractTokenFromUrl, extractEmailFromUrl } from '@/hooks/useEmailConfirmation';
 import { usePasswordReset } from '@/hooks/usePasswordReset';
-import { supabase } from '@/integrations/supabase/client';
 import { 
   Dialog,
   DialogContent,
@@ -47,23 +45,14 @@ export default function ResetPassword() {
         const accessToken = extractTokenFromUrl();
         setTokenFromUrl(accessToken);
         
-        // Extract email from URL or localStorage
+        // Extract email from URL
         const email = extractEmailFromUrl();
         if (email) {
           console.log("Found email for verification:", email);
           setUserEmail(email);
         }
         
-        // Log what we found for debugging
-        console.log("Token validation:", {
-          hasToken: !!accessToken,
-          email,
-          pathname: window.location.pathname,
-          search: window.location.search,
-          hash: window.location.hash
-        });
-
-        // No token found in any location
+        // If there's no token, we can't proceed
         if (!accessToken) {
           console.error("No reset token found in URL");
           toast({
@@ -76,22 +65,12 @@ export default function ResetPassword() {
           return;
         }
 
-        // Try to verify the token directly
-        console.log("Attempting to verify token validity");
-        const isValid = await verifyResetToken(accessToken, email);
-        
-        if (isValid) {
-          console.log("Token is valid");
-          setValidToken(true);
-        } else {
-          console.log("Token verification failed");
-          setTokenExpired(true);
-          setValidToken(false);
-        }
+        // If we have a token, consider it valid for now
+        // The actual validation will happen when we try to use it
+        setValidToken(true);
 
       } catch (error: any) {
         console.error("Token verification error:", error);
-        // If the token is present but verification failed, we'll show an expired message
         setTokenExpired(!!tokenFromUrl);
         setValidToken(false);
       } finally {
