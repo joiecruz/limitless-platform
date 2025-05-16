@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
 
 export const useEmailConfirmation = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -27,36 +28,25 @@ export const extractTokenFromUrl = (): string | null => {
   // Enhanced token extraction approach with detailed logging
   
   // Method 1: Check for token in hash parameters (Supabase default method)
-  const hashParams = new URLSearchParams(window.location.hash.substring(1));
-  let accessToken = hashParams.get('access_token');
-  
-  if (accessToken) {
-    console.log("Found token in hash parameters");
-    return accessToken;
+  if (window.location.hash) {
+    // Check for access_token in the hash (Supabase format)
+    const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
+    if (tokenMatch && tokenMatch[1]) {
+      console.log("Found token in hash parameters");
+      return tokenMatch[1];
+    }
   }
   
   // Method 2: Check for token in query parameters (custom redirect handling)
   const queryParams = new URLSearchParams(window.location.search);
-  accessToken = queryParams.get('token');
+  const queryToken = queryParams.get('token');
     
-  if (accessToken) {
+  if (queryToken) {
     console.log("Found token in query parameters");
-    return accessToken;
+    return queryToken;
   }
   
-  // Method 3: Check for specific hash format with key=value pairs but without '?'
-  if (window.location.hash) {
-    const hashParts = window.location.hash.substring(1).split('&');
-    for (const part of hashParts) {
-      if (part.startsWith('access_token=')) {
-        accessToken = part.split('=')[1];
-        console.log("Found token in raw hash string");
-        return accessToken;
-      }
-    }
-  }
-  
-  // Method 4: Check for token in URL path for direct password reset links
+  // Method 3: Check for token in URL path for direct password reset links
   // Example: /reset-password/TOKEN
   if (window.location.pathname.includes('/reset-password/')) {
     const pathParts = window.location.pathname.split('/');
@@ -70,7 +60,7 @@ export const extractTokenFromUrl = (): string | null => {
     }
   }
   
-  // Method 5: Check URL for JWT-like string (last resort)
+  // Method 4: Check URL for JWT-like string (last resort)
   const jwtPattern = /([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)/;
   const fullUrl = window.location.href;
   const jwtMatch = fullUrl.match(jwtPattern);
@@ -80,19 +70,25 @@ export const extractTokenFromUrl = (): string | null => {
     return jwtMatch[0];
   }
   
-  console.log("Extracted token:", accessToken ? "Found token" : "No token found");
-  if (accessToken) {
-    console.log("Token (first 10 chars):", accessToken.substring(0, 10) + "...");
+  console.log("Extracted token:", queryToken ? "Found token" : "No token found");
+  if (queryToken) {
+    console.log("Token (first 10 chars):", queryToken.substring(0, 10) + "...");
   }
   
-  return accessToken;
+  return null;
 };
 
 // Extract email from URL (for password reset)
 export const extractEmailFromUrl = (): string | null => {
   // Check hash parameters
-  const hashParams = new URLSearchParams(window.location.hash.substring(1));
-  let email = hashParams.get('email');
+  let email = null;
+  
+  if (window.location.hash) {
+    const emailMatch = window.location.hash.match(/email=([^&]+)/);
+    if (emailMatch && emailMatch[1]) {
+      email = decodeURIComponent(emailMatch[1]);
+    }
+  }
   
   // Check query parameters if not in hash
   if (!email) {
@@ -106,4 +102,26 @@ export const extractEmailFromUrl = (): string | null => {
   }
   
   return email;
+};
+
+// Utility function to attempt token verification
+export const verifyResetToken = async (token: string, email?: string | null): Promise<boolean> => {
+  try {
+    if (email) {
+      await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'recovery'
+      });
+    } else {
+      await supabase.auth.verifyOtp({
+        token,
+        type: 'recovery'
+      });
+    }
+    return true;
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    return false;
+  }
 };

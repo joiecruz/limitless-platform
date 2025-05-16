@@ -74,79 +74,89 @@ export function usePasswordReset() {
 
       // Get the email that might be needed for verification
       const email = extractEmailFromUrl();
-      console.log("Email for verification:", email || "No email found");
+      console.log("Email for password reset:", email || "No email found");
 
       // If there's no token, we can't proceed
       if (!token) {
         throw new Error("No valid reset token found. Please request a new password reset link.");
       }
 
-      // Try different approaches to use the token for password reset
-      try {
-        // First try: If we have email, use it with the token
-        if (email) {
-          console.log("Attempting to verify with email and token");
-          // First, try to sign in with the OTP
-          const { error: signInError } = await supabase.auth.verifyOtp({
-            email,
-            token,
-            type: 'recovery',
-          });
-          
-          if (signInError) {
-            console.warn("Email+token verification failed:", signInError.message);
-            // Continue anyway, we'll try other methods
+      // Check if we have an active session already
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log("No active session, attempting to use token to update password");
+        
+        // Try different verification approaches
+        try {
+          if (email) {
+            console.log("Using email and token for verification");
+            // First try to verify the OTP
+            await supabase.auth.verifyOtp({
+              email,
+              token,
+              type: 'recovery'
+            });
           } else {
-            console.log("Successfully verified with email and token");
+            console.log("No email found, using token for verification");
+            // Try without email
+            await supabase.auth.verifyOtp({
+              token,
+              type: 'recovery'
+            });
           }
-        } 
-        // Second try: If no email or previous attempt failed, try token_hash method
-        else {
-          console.log("Attempting token_hash verification");
-          try {
-            const { error: verifyError } = await supabase.auth.verifyOtp({
-              token_hash: token,
-              type: 'recovery',
+        } catch (verifyError: any) {
+          console.log("Token verification error:", verifyError.message);
+          
+          // If token verification fails because it's expired, offer a clear message
+          if (verifyError.message?.includes('expired') || 
+              verifyError.message?.includes('invalid') ||
+              verifyError.message?.includes('otp_expired')) {
+            toast({
+              title: "Reset Link Expired",
+              description: "Your password reset link has expired. Please request a new one.",
+              variant: "destructive",
             });
             
-            if (verifyError) {
-              console.warn("Token hash verification failed:", verifyError.message);
-            } else {
-              console.log("Successfully verified with token_hash");
-            }
-          } catch (err) {
-            console.warn("Token hash verification error:", err);
+            setTimeout(() => {
+              navigate('/signin?reset_expired=true');
+            }, 2000);
+            
+            return false;
           }
         }
-      } catch (verifyError) {
-        console.warn("All token verification methods failed:", verifyError);
       }
 
-      // Even if verification failed, try to update the password anyway
-      // This might work if the token was valid but verification had other issues
+      // Attempt to update the password directly
       console.log("Attempting to update password");
-      const { data, error } = await supabase.auth.updateUser({
+      const { error } = await supabase.auth.updateUser({
         password: password
       });
 
       if (error) {
-        // If updating with just the password fails, try one more time with the token
-        if (email) {
-          console.log("Attempting direct password update with recovery token");
-          const { error: tokenUpdateError } = await supabase.auth.updateUser({
-            email: email, 
-            password: password,
+        console.error("Password update direct error:", error);
+        
+        // If password update fails due to session, show appropriate message
+        if (error.message?.includes('session')) {
+          toast({
+            title: "Session Expired",
+            description: "Your reset session has expired. Please request a new password reset link.",
+            variant: "destructive",
           });
           
-          if (tokenUpdateError) throw tokenUpdateError;
-        } else {
-          throw error;
+          setTimeout(() => {
+            navigate('/signin?reset_expired=true');
+          }, 2000);
+          
+          return false;
         }
+        
+        throw error;
       }
 
       toast({
-        title: "Password updated",
-        description: "Your password has been updated successfully.",
+        title: "Password Updated",
+        description: "Your password has been updated successfully. You can now sign in with your new password.",
       });
 
       // Clear any stored email
@@ -154,17 +164,31 @@ export function usePasswordReset() {
 
       // Redirect to sign in page after short delay
       setTimeout(() => {
-        navigate('/signin');
+        navigate('/signin?reset_success=true');
       }, 1500);
       
       success = true;
     } catch (error: any) {
       console.error("Password update error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update password",
-        variant: "destructive",
-      });
+      
+      // Check for specific error conditions
+      if (error.message?.includes('expired') || error.message?.includes('invalid token')) {
+        toast({
+          title: "Reset Link Expired",
+          description: "Your password reset link has expired. Please request a new one.",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          navigate('/signin?reset_expired=true');
+        }, 2000);
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update password",
+          variant: "destructive",
+        });
+      }
+      
       success = false;
     } finally {
       setLoading(false);

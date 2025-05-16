@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from "@/integrations/supabase/client";
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,14 @@ import { AuthLogo } from "@/components/auth/AuthLogo";
 import { Eye, EyeOff } from "lucide-react";
 import { extractTokenFromUrl, extractEmailFromUrl } from '@/hooks/useEmailConfirmation';
 import { usePasswordReset } from '@/hooks/usePasswordReset';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
+import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -17,11 +24,14 @@ export default function ResetPassword() {
   const [passwordError, setPasswordError] = useState('');
   const [validToken, setValidToken] = useState(false);
   const [verifying, setVerifying] = useState(true);
+  const [tokenExpired, setTokenExpired] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [tokenFromUrl, setTokenFromUrl] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { updatePassword } = usePasswordReset();
 
@@ -61,20 +71,56 @@ export default function ResetPassword() {
             variant: "destructive",
           });
           setValidToken(false);
+          setTokenExpired(true);
           return;
         }
 
-        // If we found a token, we'll allow the user to reset their password
-        // The actual verification will happen when they submit the form
-        setValidToken(true);
+        // Check if we have an active session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          console.log("No session found, trying to verify token");
+          
+          try {
+            // Attempt to verify the token - this may fail if the token is expired
+            // We're just checking here, not actually using it yet
+            if (email) {
+              await supabase.auth.verifyOtp({
+                email,
+                token: accessToken,
+                type: 'recovery'
+              });
+            } else {
+              await supabase.auth.verifyOtp({
+                token: accessToken,
+                type: 'recovery'
+              });
+            }
+            
+            // If we get here, token is valid
+            setValidToken(true);
+          } catch (error: any) {
+            console.error("verifyOtp error:", error);
+            
+            // Handle expired token
+            if (error.message?.includes('expired') || 
+                error.message?.includes('invalid') ||
+                error.code === 'otp_expired') {
+              setTokenExpired(true);
+              setValidToken(false);
+            } else {
+              // Token not verified but present - will try during password update
+              console.log("Token not verified but present - will try during password update");
+              setValidToken(true);
+            }
+          }
+        } else {
+          // If we have a session, we can reset the password
+          setValidToken(true);
+        }
         
       } catch (error: any) {
         console.error("Token verification error:", error);
-        toast({
-          title: "Error",
-          description: "There was a problem validating your reset link. You can still attempt to reset your password.",
-          variant: "destructive",
-        });
         // We'll still let them try if the token is present
         setValidToken(!!tokenFromUrl);
       } finally {
@@ -83,7 +129,7 @@ export default function ResetPassword() {
     };
 
     checkResetToken();
-  }, [navigate, toast, tokenFromUrl]);
+  }, [navigate, toast, tokenFromUrl, location]);
 
   const validatePassword = () => {
     if (password.length < 6) {
@@ -116,6 +162,10 @@ export default function ResetPassword() {
     // Success case is handled inside the hook
   };
 
+  const handleRequestNewLink = () => {
+    setShowForgotPasswordDialog(true);
+  };
+
   if (verifying) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -143,17 +193,50 @@ export default function ResetPassword() {
 
         <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 animate-fade-in">
           <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-              Set new password
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Create a new password for your account
-            </p>
+            {tokenExpired ? (
+              <>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+                  Reset link expired
+                </h2>
+                <p className="mt-2 text-sm text-gray-600">
+                  Your password reset link has expired or is invalid.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+                  Set new password
+                </h2>
+                <p className="mt-2 text-sm text-gray-600">
+                  Create a new password for your account
+                </p>
+              </>
+            )}
           </div>
 
-          {!validToken && !tokenFromUrl && (
+          {tokenExpired ? (
+            <div className="text-center">
+              <p className="mb-4 text-gray-600">
+                Password reset links are only valid for a limited time for security reasons.
+              </p>
+              <Button
+                className="w-full mb-3"
+                onClick={handleRequestNewLink}
+                style={{ backgroundColor: "rgb(69, 66, 158)" }}
+              >
+                Request new reset link
+              </Button>
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() => navigate('/signin')}
+              >
+                Back to sign in
+              </Button>
+            </div>
+          ) : !validToken && !tokenFromUrl ? (
             <div className="text-center text-red-500">
-              <p>Invalid or expired reset link. Please request a new password reset.</p>
+              <p>Invalid reset link. Please request a new password reset.</p>
               <Button
                 className="mt-4 w-full"
                 onClick={() => navigate('/signin')}
@@ -162,9 +245,7 @@ export default function ResetPassword() {
                 Back to sign in
               </Button>
             </div>
-          )}
-
-          {(validToken || tokenFromUrl) && (
+          ) : (
             <form onSubmit={handlePasswordReset} className="space-y-6">
               {userEmail && (
                 <div className="text-sm text-gray-500 bg-gray-50 p-2 rounded text-center">
@@ -235,6 +316,22 @@ export default function ResetPassword() {
           )}
         </div>
       </div>
+
+      {/* Dialog for requesting a new password reset */}
+      <Dialog open={showForgotPasswordDialog} onOpenChange={setShowForgotPasswordDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Request a new password reset link.
+            </DialogDescription>
+          </DialogHeader>
+          <ForgotPasswordForm 
+            onCancel={() => setShowForgotPasswordDialog(false)} 
+            initialEmail={userEmail || ""}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
