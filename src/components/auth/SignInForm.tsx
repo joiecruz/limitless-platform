@@ -1,29 +1,33 @@
-
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export function SignInForm() {
   const { toast } = useToast();
 
+  // Memoize the toast function to prevent re-creating the subscription
+  const showSuccessToast = useCallback(() => {
+    toast({
+      title: "Success",
+      description: "You have been signed in successfully.",
+    });
+  }, [toast]);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("SignInForm - Auth state changed:", event, session);
-      
+
       if (event === 'SIGNED_IN' && session) {
-        toast({
-          title: "Success",
-          description: "You have been signed in successfully.",
-        });
+        showSuccessToast();
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [showSuccessToast]);
 
   return (
     <Auth

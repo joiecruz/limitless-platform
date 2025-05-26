@@ -42,6 +42,18 @@ const App = () => {
     try {
       console.log("Getting initial session...");
 
+      // Check if we're in a password recovery context
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const isPasswordRecovery = urlParams.get('type') === 'recovery' || hashParams.get('type') === 'recovery';
+
+      if (isPasswordRecovery) {
+        console.log("Password recovery context detected, skipping session initialization");
+        setSession(null);
+        setLoading(false);
+        return;
+      }
+
       // Add timeout to prevent hanging
       const sessionPromise = supabase.auth.getSession();
       const timeoutPromise = new Promise((_, reject) =>
@@ -109,14 +121,12 @@ const App = () => {
 
       if (event === 'PASSWORD_RECOVERY') {
         console.log("Password recovery event detected");
-        // Don't set session to null on password recovery event
-        if (currentSession) {
-          setSession(currentSession);
-        }
+        // Don't set session or sign in the user during password recovery
+        // Let them proceed to the reset password page without authentication
         return;
       }
 
-      if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !currentSession)) {
+      if (event === 'TOKEN_REFRESHED' && !currentSession) {
         console.log("User signed out or token refresh failed - Clearing session and cache");
         setSession(null);
         queryClient.clear();
@@ -125,6 +135,14 @@ const App = () => {
           title: "Session Expired",
           description: "Please sign in again to continue.",
         });
+        return;
+      }
+
+      if (event === 'SIGNED_OUT') {
+        console.log("User signed out or token refresh failed - Clearing session and cache");
+        setSession(null);
+        queryClient.clear();
+        localStorage.removeItem('selectedWorkspace');
         return;
       }
 
@@ -142,7 +160,15 @@ const App = () => {
 
       if (event === 'USER_UPDATED' && currentSession) {
         console.log("User updated:", currentSession);
-        setSession(currentSession);
+        // Don't set session, show success toast
+        setSession(null);
+        queryClient.clear();
+        localStorage.removeItem('selectedWorkspace');
+        toast({
+          title: "Password Updated",
+          description: "Your password has been updated successfully. Please sign in with your new password.",
+        });
+        return;
       }
     });
 
