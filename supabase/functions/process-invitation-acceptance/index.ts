@@ -57,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
       // User is already a member, update the invitation status anyway
       const { error: updateError } = await supabase
         .from('workspace_invitations')
-        .update({ 
+        .update({
           status: 'accepted',
           accepted_at: new Date().toISOString()
         })
@@ -68,14 +68,14 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           success: true,
-          message: "User is already a member of this workspace" 
+          message: "User is already a member of this workspace"
         }),
-        { 
-          headers: { 
-            ...corsHeaders, 
-            "Content-Type": "application/json" 
+        {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json"
           },
           status: 200
         }
@@ -98,7 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Update invitation status
     const { error: updateError } = await supabase
       .from('workspace_invitations')
-      .update({ 
+      .update({
         status: 'accepted',
         accepted_at: new Date().toISOString()
       })
@@ -111,27 +111,27 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
         message: "User successfully added to workspace"
       }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json" 
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
         },
         status: 200
       }
     );
   } catch (error: any) {
     console.error("Error in process-invitation-acceptance function:", error);
-    
+
     return new Response(
       JSON.stringify({ error: error.message || "An error occurred" }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json" 
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
         },
         status: 500
       }

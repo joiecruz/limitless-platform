@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface InviteSubmitProps {
   token?: string | null;
@@ -9,11 +10,12 @@ interface InviteSubmitProps {
 export function useInviteSubmit(token?: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (data: { password: string; email: string }) => {
     console.log("Starting invite submission process");
     setIsLoading(true);
-    
+
     try {
       if (!token) {
         throw new Error("No invitation token provided");
@@ -51,69 +53,53 @@ export function useInviteSubmit(token?: string | null) {
 
       console.log("User signed up successfully:", authData.user.id);
 
-      // Create a basic profile immediately
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          id: authData.user.id,
-          email: data.email,
-          role: inviteData.role || null,
-        });
+      // Profile is automatically created by database trigger, so we skip manual creation
 
-      if (profileError) {
-        console.error("Error creating profile:", profileError);
-        // Don't throw here - the user can still complete their profile later
-        toast({
-          title: "Notice",
-          description: "Profile creation incomplete. You can complete it later in settings.",
-          variant: "default",
-        });
-      }
-
-      // Add user to workspace immediately
-      const { error: memberError } = await supabase
-        .from("workspace_members")
-        .insert({
-          workspace_id: inviteData.workspace_id,
+      // Use edge function to add user to workspace and update invitation
+      const { error: processError } = await supabase.functions.invoke('process-invitation-acceptance', {
+        body: {
+          invitation_id: inviteData.id,
           user_id: authData.user.id,
+          workspace_id: inviteData.workspace_id,
           role: inviteData.role
-        });
-
-      if (memberError) {
-        console.error("Error adding to workspace:", memberError);
-        // Don't throw - not critical at this point
-      }
-
-      // Update invitation status
-      const { error: updateError } = await supabase
-        .from("workspace_invitations")
-        .update({
-          status: "accepted",
-          accepted_at: new Date().toISOString(),
-        })
-        .eq("id", inviteData.id);
-
-      if (updateError) {
-        console.error("Error updating invitation:", updateError);
-        // Don't throw - not critical
-      }
-
-      // Confirm the email using the Edge Function
-      const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user', {
-        body: { user_id: authData.user.id }
+        }
       });
 
-      if (confirmError) {
-        console.error("Error confirming email:", confirmError);
-        // Don't throw - not critical
+      if (processError) {
+        console.error("Error processing invitation:", processError);
+        throw new Error(processError.message || "Failed to join workspace");
       }
 
-      // Sign out the user so they can sign in fresh
-      await supabase.auth.signOut();
+      // Confirm the email for invited users
+      try {
+        const { error: confirmError } = await supabase.functions.invoke('confirm-invited-user', {
+          body: { user_id: authData.user.id }
+        });
+
+        if (confirmError) {
+          console.error("Error confirming email:", confirmError);
+          // Don't throw - user can still continue
+        }
+      } catch (confirmError) {
+        console.error("Error confirming email:", confirmError);
+        // Continue anyway
+      }
+
+      // Set the workspace in localStorage for immediate access
+      localStorage.setItem('selectedWorkspace', inviteData.workspace_id);
 
       toast({
-        title: "Success",
-        description: "Your account has been created. Please sign in with your email and password.",
+        title: "Welcome!",
+        description: "Your account has been created and you've joined the workspace successfully.",
+      });
+
+      // Redirect to dashboard - user is already signed in
+      navigate("/dashboard", {
+        replace: true,
+        state: {
+          showOnboarding: false,
+          workspace: inviteData.workspace_id
+        }
       });
 
     } catch (error: any) {

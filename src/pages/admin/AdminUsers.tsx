@@ -61,7 +61,7 @@ export default function AdminUsers() {
     setIsDeleting(true);
     try {
       const user = users?.find(u => u.id === userToDelete);
-      
+
       if (!user) {
         throw new Error("User not found");
       }
@@ -75,24 +75,36 @@ export default function AdminUsers() {
         return;
       }
 
-      // Delete from profiles table first (this will cascade to other tables)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userToDelete);
+      // Get current session for authentication
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      if (profileError) throw profileError;
+      if (sessionError || !session) {
+        throw new Error("Authentication required");
+      }
 
-      // Delete from auth.users
-      const { error: authError } = await supabase.auth.admin.deleteUser(userToDelete);
-      
-      if (authError) throw authError;
+      // Use edge function to delete user with proper permissions
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: {
+          userId: userToDelete
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || "Failed to delete user");
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || "Failed to delete user");
+      }
 
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      
+
       toast({
         title: "Success",
-        description: "User deleted successfully",
+        description: data.message || "User deleted successfully",
       });
     } catch (error: any) {
       console.error('Error deleting user:', error);

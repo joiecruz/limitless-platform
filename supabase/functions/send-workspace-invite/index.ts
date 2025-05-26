@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
@@ -6,6 +5,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -82,27 +82,20 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Create clients
-    // Client with user's JWT (to respect RLS policies)
-    const userSupabase = createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY,
-      {
-        global: {
-          headers: {
-            Authorization: authHeader
-          }
+    // Service role client for admin operations
+    const serviceSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // User client for user-scoped operations (use anon key with user's JWT)
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: authHeader
         }
       }
-    );
+    });
 
-    // Service role client to bypass RLS when necessary
-    const serviceSupabase = createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY
-    );
-
-    // Verify the user has admin or owner role in the workspace
-    const { data: userRole, error: roleError } = await userSupabase
+    // Verify the user has admin or owner role in the workspace (using service role for reliability)
+    const { data: userRole, error: roleError } = await serviceSupabase
       .from('workspace_members')
       .select('role')
       .eq('workspace_id', workspaceId)
@@ -153,8 +146,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create invitations only for new emails (using user client to respect RLS)
-    const { data: invitations, error: inviteError } = await userSupabase
+    // Create invitations only for new emails (using service role to avoid permission issues)
+    const { data: invitations, error: inviteError } = await serviceSupabase
       .from('workspace_invitations')
       .insert(
         newEmails.map(email => ({
@@ -184,11 +177,11 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPromises = invitations.map(async (invitation) => {
       try {
         const inviteUrl = `${req.headers.get("origin")}/invite?token=${invitation.magic_link_token}`;
-        
-        console.log("Sending email for invitation:", { 
-          email: invitation.email, 
+
+        console.log("Sending email for invitation:", {
+          email: invitation.email,
           token: invitation.magic_link_token,
-          inviteUrl 
+          inviteUrl
         });
 
         const response = await fetch("https://api.resend.com/emails", {
@@ -233,7 +226,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Sending invitation emails");
-    
+
     try {
       await Promise.all(emailPromises);
       console.log("Successfully sent all invitation emails");
@@ -246,11 +239,11 @@ const handler = async (req: Request): Promise<Response> => {
     const invitedCount = newEmails.length;
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         invitedCount,
         skippedCount,
-        message: skippedCount > 0 
+        message: skippedCount > 0
           ? `Sent ${invitedCount} new invitation(s). Skipped ${skippedCount} existing invitation(s).`
           : `Successfully sent ${invitedCount} invitation(s).`
       }),
@@ -261,9 +254,9 @@ const handler = async (req: Request): Promise<Response> => {
     );
   } catch (error: any) {
     console.error("Error in send-workspace-invite function:", error);
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
         error: error.message || "An unexpected error occurred",
         details: error.toString()

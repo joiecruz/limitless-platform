@@ -42,19 +42,20 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
   return (
     <div>
       <DropdownMenu>
-        <DropdownMenuTrigger 
-          className="flex w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
+        <DropdownMenuTrigger
+          className="flex w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={isLoading}
         >
           <span className="truncate">
-            {isLoading ? "Loading workspaces..." : currentWorkspace?.name || "No workspace"}
+            {isLoading ? "Loading workspaces..." : currentWorkspace?.name ? `${currentWorkspace.name} Space` : "No workspace"}
           </span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          <WorkspaceList 
-            workspaces={workspaces} 
+          <WorkspaceList
+            workspaces={workspaces}
             onSelect={handleWorkspaceSelect}
+            existingWorkspaceIds={currentWorkspace ? [currentWorkspace.id] : []}
           />
           <Separator className="my-2" />
           <CreateWorkspaceDialog />

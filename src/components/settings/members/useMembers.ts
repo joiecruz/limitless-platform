@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Member, WorkspaceMember } from "./types";
@@ -40,24 +39,17 @@ export function useMembers(workspaceId?: string) {
 
       console.log('Active members data:', activeMembers);
 
-      // Fetch pending invitations - with RLS, this should only return invitations for this workspace
-      // that the current user has permission to see
+      // Fetch pending invitations - avoid FK validation by selecting specific fields
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
         .from('workspace_invitations')
-        .select(`
-          id,
-          email,
-          role,
-          status,
-          created_at,
-          workspace_id
-        `)
+        .select('id, email, role, status, created_at, workspace_id')
         .eq('workspace_id', workspaceId)
-        .eq('status', 'pending');
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
       if (pendingInvitesError) {
         console.error('Error fetching pending invites:', pendingInvitesError);
-        throw pendingInvitesError;
+        // Don't throw error, just log it and continue with empty pending invites
       }
 
       // Transform active members data
@@ -77,7 +69,7 @@ export function useMembers(workspaceId?: string) {
       }));
 
       // Transform pending invites data
-      const pendingMembers: Member[] = pendingInvites.map(invite => ({
+      const pendingMembers: Member[] = (pendingInvites || []).map(invite => ({
         id: invite.id,
         workspace_id: invite.workspace_id,
         email: invite.email,
@@ -121,35 +113,55 @@ export function useMembers(workspaceId?: string) {
       const isOwner = currentUserRole.role === 'owner';
       const isAdmin = currentUserRole.role === 'admin';
 
-      // Check permissions
-      if (member.role === 'owner' && !isOwner) {
-        throw new Error('Only owners can remove other owners');
-      }
-
+      // Only admin or owner can delete members
       if (!isOwner && !isAdmin) {
         throw new Error('You do not have permission to remove members');
       }
 
+      // Check permissions for removing owners
+      if (member.role === 'owner' && !isOwner) {
+        throw new Error('Only owners can remove other owners');
+      }
+
+      // Prevent self-deletion
+      if (member.status === 'Active' && member.user_id === user.id) {
+        throw new Error('You cannot remove yourself from the workspace');
+      }
+
       if (member.status === 'Active') {
-        const { error } = await supabase
+        // Delete from workspace_members table
+        const { error: memberError } = await supabase
           .from('workspace_members')
           .delete()
           .eq('workspace_id', workspaceId)
           .eq('user_id', member.id);
 
-        if (error) {
-          console.error('Error deleting member:', error);
-          throw error;
+        if (memberError) {
+          console.error('Error deleting member:', memberError);
+          throw memberError;
+        }
+
+        // Also delete any pending invitations for this user's email
+        const { error: inviteError } = await supabase
+          .from('workspace_invitations')
+          .delete()
+          .eq('workspace_id', workspaceId)
+          .eq('email', member.email);
+
+        if (inviteError) {
+          console.error('Error deleting related invitations:', inviteError);
+          // Don't throw - this is not critical
         }
       } else {
-        const { error } = await supabase
+        // Delete pending invitation
+        const { error: inviteError } = await supabase
           .from('workspace_invitations')
           .delete()
           .eq('id', member.id);
 
-        if (error) {
-          console.error('Error cancelling invitation:', error);
-          throw error;
+        if (inviteError) {
+          console.error('Error cancelling invitation:', inviteError);
+          throw inviteError;
         }
       }
 
@@ -160,7 +172,7 @@ export function useMembers(workspaceId?: string) {
 
       toast({
         title: "Success",
-        description: member.status === 'Active' 
+        description: member.status === 'Active'
           ? "Member has been removed from the workspace"
           : "Invitation has been cancelled",
       });
