@@ -24,7 +24,7 @@ if (isApexDomain() && !hasRedirected) {
   // Mount React application
   const root = createRoot(document.getElementById("root")!);
   root.render(<App />);
-  
+
   // Clear the redirect flag after successful mount
   if (hasRedirected) {
     sessionStorage.removeItem('apex_redirect_attempted');

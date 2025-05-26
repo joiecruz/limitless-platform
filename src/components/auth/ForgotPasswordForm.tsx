@@ -17,15 +17,11 @@ export const ForgotPasswordForm = ({ onCancel, initialEmail = "" }: ForgotPasswo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Store the email in localStorage so we can use it for token verification later
-    if (email) {
-      localStorage.setItem('passwordResetEmail', email.trim().toLowerCase());
-    }
-    
+
+
     // Use our hook to send password reset email
     const success = await sendPasswordResetEmail(email);
-    
+
     if (success) {
       setResetSent(true);
       // Keep the form open for a moment to show the success state

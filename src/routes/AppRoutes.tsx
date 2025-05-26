@@ -74,8 +74,8 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route
         path="/"
         element={
-          session ? 
-            <Navigate to="/dashboard" replace /> : 
+          session ?
+            <Navigate to="/dashboard" replace /> :
             (isAppSubdomain() ? <Navigate to="/dashboard" replace /> : <Index />)
         }
       />

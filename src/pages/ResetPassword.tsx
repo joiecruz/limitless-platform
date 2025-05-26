@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLogo } from "@/components/auth/AuthLogo";
+import { LoadingPage } from "@/components/common/LoadingPage";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -12,6 +13,7 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [validToken, setValidToken] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -35,7 +37,8 @@ export default function ResetPassword() {
         description: "This password reset link is invalid or has expired.",
         variant: "destructive",
       });
-      navigate('/signin');
+      setIsNavigating(true);
+      setTimeout(() => navigate('/signin'), 2000);
       return;
     }
 
@@ -53,7 +56,8 @@ export default function ResetPassword() {
         description: "This password reset link is invalid or has expired.",
         variant: "destructive",
       });
-      navigate('/signin');
+      setIsNavigating(true);
+      setTimeout(() => navigate('/signin'), 2000);
       return;
     }
 
@@ -89,13 +93,12 @@ export default function ResetPassword() {
 
       if (error) throw error;
 
-      toast({
-        title: "Password updated",
-        description: "Your password has been updated successfully. Please sign in with your new password.",
-      });
+      // Sign out the user to clear the session before navigating
+      await supabase.auth.signOut();
 
-      // Redirect to sign in page
-      navigate('/signin');
+      // Show loading and navigate after 2 seconds
+      setIsNavigating(true);
+      setTimeout(() => navigate('/signin'), 2000);
     } catch (error: any) {
       console.error("Password reset error:", error);
       toast({
@@ -107,6 +110,10 @@ export default function ResetPassword() {
       setLoading(false);
     }
   };
+
+  if (isNavigating) {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -130,7 +137,10 @@ export default function ResetPassword() {
               <p>Invalid or expired reset link. Please request a new password reset.</p>
               <Button
                 className="mt-4 w-full"
-                onClick={() => navigate('/signin')}
+                onClick={() => {
+                  setIsNavigating(true);
+                  setTimeout(() => navigate('/signin'), 2000);
+                }}
                 style={{ backgroundColor: "rgb(69, 66, 158)" }}
               >
                 Back to sign in

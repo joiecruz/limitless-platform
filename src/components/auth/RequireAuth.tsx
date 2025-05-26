@@ -12,7 +12,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   useEffect(() => {
     console.log("RequireAuth: Initial render, current location:", location.pathname);
     console.log("RequireAuth: Current hostname:", window.location.hostname);
@@ -25,8 +25,8 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     }
 
     // Skip auth check for certain pages
-    if (location.pathname === '/verify-email' || 
-        location.pathname === '/signup' || 
+    if (location.pathname === '/verify-email' ||
+        location.pathname === '/signup' ||
         location.pathname === '/reset-password' ||
         location.pathname === '/invite') {
       console.log("RequireAuth: Skipping auth check for special routes");
@@ -38,7 +38,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
       try {
         console.log("RequireAuth: Checking session...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
+
         console.log("RequireAuth: Session details:", {
           session: !!session,
           sessionError,
@@ -90,7 +90,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("RequireAuth: Auth state changed:", event, session);
       console.log("RequireAuth: Current hostname:", window.location.hostname);
-      
+
       if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
         console.log("RequireAuth: Token refreshed or signed in");
         setIsAuthenticated(true);
@@ -99,8 +99,8 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
       }
 
       // Skip auth redirects for certain pages
-      if (location.pathname === '/verify-email' || 
-          location.pathname === '/signup' || 
+      if (location.pathname === '/verify-email' ||
+          location.pathname === '/signup' ||
           location.pathname === '/reset-password' ||
           location.pathname === '/invite') {
         return;
@@ -132,7 +132,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 
   // Skip auth check for reset-password and other non-auth-required pages
   if (location.pathname === '/reset-password' ||
-      location.pathname === '/verify-email' || 
+      location.pathname === '/verify-email' ||
       location.pathname === '/signup' ||
       location.pathname === '/invite') {
     return <>{children}</>;
