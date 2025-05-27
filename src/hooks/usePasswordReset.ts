@@ -27,8 +27,7 @@ export function usePasswordReset() {
       const cleanEmail = email.toLowerCase().trim();
 
       // Get current origin for proper redirect
-      const redirectTo = `https://limitlesslab.org/reset-password`;
-      console.log("Password reset redirect URL:", redirectTo);
+      const redirectTo = `${window.location.origin}/reset-password`;
 
       // Use Supabase Auth API to send password reset email
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
