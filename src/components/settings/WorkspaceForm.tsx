@@ -115,12 +115,6 @@ export function WorkspaceForm({
             Only workspace owners and admins can change the workspace name.
           </p>
         )}
-
-        {canEditWorkspace && !hasChanges && (
-          <p className="text-sm text-muted-foreground">
-            Make changes to the workspace name to enable saving.
-          </p>
-        )}
       </form>
 
       {/*
