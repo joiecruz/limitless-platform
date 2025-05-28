@@ -5,6 +5,7 @@ const FROM_EMAIL = Deno.env.get("FROM_EMAIL");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
@@ -75,6 +76,26 @@ const handler = async (req)=>{
     });
     // Verify the user has admin or owner role in the workspace (using service role for reliability)
     const { data: userRole, error: roleError } = await serviceSupabase.from('workspace_members').select('role').eq('workspace_id', workspaceId).eq('user_id', inviterId).single();
+    // Service role client for admin operations
+    const serviceSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // User client for user-scoped operations (use anon key with user's JWT)
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: authHeader
+        }
+      }
+    });
+
+    // Verify the user has admin or owner role in the workspace (using service role for reliability)
+    const { data: userRole, error: roleError } = await serviceSupabase
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', workspaceId)
+      .eq('user_id', inviterId)
+      .single();
+
     if (roleError) {
       console.error("Error checking user role:", roleError);
       throw new Error("Failed to verify your permissions");
@@ -109,16 +130,23 @@ const handler = async (req)=>{
         status: 400
       });
     }
+
     // Create invitations only for new emails (using service role to avoid permission issues)
-    const { data: invitations, error: inviteError } = await serviceSupabase.from('workspace_invitations').insert(newEmails.map((email)=>({
-        workspace_id: workspaceId,
-        email: email.toLowerCase(),
-        role,
-        invited_by: inviterId,
-        status: 'pending',
-        batch_id: batchId,
-        emails: newEmails
-      }))).select();
+    const { data: invitations, error: inviteError } = await serviceSupabase
+      .from('workspace_invitations')
+      .insert(
+        newEmails.map(email => ({
+          workspace_id: workspaceId,
+          email: email.toLowerCase(),
+          role,
+          invited_by: inviterId,
+          status: 'pending',
+          batch_id: batchId,
+          emails: newEmails
+        }))
+      )
+      .select();
+
     if (inviteError) {
       console.error("Error creating invitations:", inviteError);
       throw new Error(`Failed to create invitations: ${inviteError.message}`);
@@ -131,9 +159,11 @@ const handler = async (req)=>{
     const emailPromises = invitations.map(async (invitation)=>{
       try {
         const inviteUrl = `${req.headers.get("origin")}/invite?token=${invitation.magic_link_token}`;
+
         console.log("Sending email for invitation:", {
           email: invitation.email,
           token: invitation.magic_link_token,
+          inviteUrl
           inviteUrl
         });
         const response = await fetch("https://api.resend.com/emails", {
@@ -250,6 +280,7 @@ const handler = async (req)=>{
       }
     });
     console.log("Sending invitation emails");
+
     try {
       await Promise.all(emailPromises);
       console.log("Successfully sent all invitation emails");
@@ -259,31 +290,35 @@ const handler = async (req)=>{
     }
     const skippedCount = existingEmails.size;
     const invitedCount = newEmails.length;
-    return new Response(JSON.stringify({
-      success: true,
-      invitedCount,
-      skippedCount,
-      message: skippedCount > 0 ? `Sent ${invitedCount} new invitation(s). Skipped ${skippedCount} existing invitation(s).` : `Successfully sent ${invitedCount} invitation(s).`
-    }), {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json"
-      },
-      status: 200
-    });
-  } catch (error) {
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        invitedCount,
+        skippedCount,
+        message: skippedCount > 0
+          ? `Sent ${invitedCount} new invitation(s). Skipped ${skippedCount} existing invitation(s).`
+          : `Successfully sent ${invitedCount} invitation(s).`
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
+  } catch (error: any) {
     console.error("Error in send-workspace-invite function:", error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message || "An unexpected error occurred",
-      details: error.toString()
-    }), {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json"
-      },
-      status: 500
-    });
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || "An unexpected error occurred",
+        details: error.toString()
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
   }
 };
 serve(handler);

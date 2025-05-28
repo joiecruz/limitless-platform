@@ -1,19 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, UserPlus } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface WorkspaceHeaderProps {
   workspaceName: string;
   search: string;
   onSearchChange: (value: string) => void;
   onInviteClick: () => void;
+  canInvite?: boolean;
 }
 
-export function WorkspaceHeader({ 
-  workspaceName, 
-  search, 
-  onSearchChange, 
-  onInviteClick 
+export function WorkspaceHeader({
+  workspaceName,
+  search,
+  onSearchChange,
+  onInviteClick,
+  canInvite = true
 }: WorkspaceHeaderProps) {
   return (
     <div className="flex justify-between items-center">
@@ -31,10 +39,27 @@ export function WorkspaceHeader({
             className="w-64"
           />
         </div>
-        <Button onClick={onInviteClick}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Invite Member
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="inline-block">
+                <Button
+                  onClick={onInviteClick}
+                  disabled={!canInvite}
+                  className={!canInvite ? "cursor-not-allowed" : ""}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Invite Member
+                </Button>
+              </div>
+            </TooltipTrigger>
+            {!canInvite && (
+              <TooltipContent>
+                <p>Only admin/owner can invite members</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );

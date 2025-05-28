@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -52,10 +51,9 @@ export default function Register() {
         description: "Please check your email to verify your account.",
       });
 
-      // After signing up, redirect to dashboard with onboarding flag
-      navigate("/dashboard", { 
-        state: { showOnboarding: true },
-        replace: true 
+      // After signing up, redirect to dashboard
+      navigate("/dashboard", {
+        replace: true
       });
     } catch (error: any) {
       toast({
@@ -70,8 +68,8 @@ export default function Register() {
 
   // Check if form is valid
   const isFormValid = () => {
-    return email.trim() !== "" && 
-           /\S+@\S+\.\S+/.test(email) && 
+    return email.trim() !== "" &&
+           /\S+@\S+\.\S+/.test(email) &&
            password.length >= 8 &&
            /[a-z]/.test(password) &&
            /[A-Z]/.test(password) &&
@@ -124,9 +122,9 @@ export default function Register() {
               />
               <PasswordRequirements password={password} />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full"
               disabled={loading || !isFormValid()}
               variant={isFormValid() ? "default" : "secondary"}
             >

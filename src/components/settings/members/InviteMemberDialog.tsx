@@ -13,11 +13,11 @@ interface InviteMemberDialogProps {
   workspaceName: string;
 }
 
-export function InviteMemberDialog({ 
-  isOpen, 
-  onOpenChange, 
-  workspaceId, 
-  workspaceName 
+export function InviteMemberDialog({
+  isOpen,
+  onOpenChange,
+  workspaceId,
+  workspaceName
 }: InviteMemberDialogProps) {
   const [selectedRole, setSelectedRole] = useState("member");
   const [isInviting, setIsInviting] = useState(false);
@@ -29,13 +29,13 @@ export function InviteMemberDialog({
 
     setIsInviting(true);
     try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      const { data: { session }, error: userError } = await supabase.auth.getSession();
+      if (userError || !session) throw userError || new Error("No session");
 
       const { data: profileData } = await supabase
         .from('profiles')
         .select('first_name, last_name')
-        .eq('id', userData.user.id)
+        .eq('id', session.user.id)
         .single();
 
       const inviterName = profileData?.first_name && profileData?.last_name
@@ -48,17 +48,20 @@ export function InviteMemberDialog({
         workspaceName,
         inviterName,
         role: selectedRole,
-        inviterId: userData.user.id,
+        inviterId: session.user.id,
       });
 
       const { data, error } = await supabase.functions.invoke('send-workspace-invite', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: {
           emails,
           workspaceId,
           workspaceName,
           inviterName,
           role: selectedRole,
-          inviterId: userData.user.id,
+          inviterId: session.user.id,
         },
       });
 
@@ -76,11 +79,11 @@ export function InviteMemberDialog({
         title: "Invitations Processed",
         description: data.message || `Invitations have been sent to ${data.invitedCount} email${data.invitedCount === 1 ? '' : 's'}`,
       });
-      
+
       queryClient.invalidateQueries({
         queryKey: ['workspace-members', workspaceId]
       });
-      
+
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error sending invites:', error);

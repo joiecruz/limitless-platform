@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -103,7 +102,7 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
       if (formData.workspaceName && !isInvitedUser) {
         console.log('Creating workspace:', formData.workspaceName);
         const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
-        
+
         try {
           // Use the RPC function to create workspace with owner role
           const { data: workspace, error: workspaceError } = await supabase
@@ -122,7 +121,7 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
 
           // Invalidate queries to refresh workspace data
           await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-          
+
           // Set the newly created workspace as the selected one
           if (workspace) {
             const workspaceObj = typeof workspace === 'string' ? JSON.parse(workspace) : workspace;
@@ -133,7 +132,7 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
           throw error;
         }
       } else {
-        console.log('No workspace creation needed:', 
+        console.log('No workspace creation needed:',
           formData.workspaceName ? 'Has workspace name' : 'No workspace name',
           isInvitedUser ? 'Is invited user' : 'Not invited user');
       }
@@ -142,6 +141,9 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
         title: "Setup complete",
         description: "Your profile has been created successfully.",
       });
+
+      // Mark onboarding as completed to prevent double triggering
+      localStorage.setItem('onboardingCompleted', Date.now().toString());
 
       if (onOpenChange) onOpenChange(false);
       if (onSuccess) onSuccess();

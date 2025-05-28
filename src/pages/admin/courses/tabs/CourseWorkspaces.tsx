@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { WorkspaceList } from "@/components/workspace/WorkspaceList";
+import { CreateWorkspaceDialog } from "@/components/admin/workspaces/CreateWorkspaceDialog";
 import { useWorkspaces } from "@/components/workspace/useWorkspaces";
 import { Workspace } from "@/components/workspace/types";
 
@@ -30,6 +31,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { data: workspaces, isError: workspacesError } = useWorkspaces();
 
   // Query to check if user is superadmin
@@ -38,13 +40,13 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No authenticated user");
-      
+
       const { data: profile, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
-        
+
       if (error) throw error;
       return profile;
     },
@@ -115,7 +117,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
         title: "Success",
         description: "Workspace access granted successfully",
       });
-      
+
       queryClient.invalidateQueries({ queryKey: ["course-workspaces", courseId] });
       setIsDialogOpen(false);
     } catch (error: any) {
@@ -150,6 +152,11 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleCreateNewWorkspace = () => {
+    setIsDialogOpen(false);
+    setShowCreateDialog(true);
   };
 
   if (isLoading) {
@@ -197,6 +204,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
               <WorkspaceList
                 workspaces={workspaces}
                 onSelect={handleAddWorkspace}
+                onCreateNew={handleCreateNewWorkspace}
                 existingWorkspaceIds={existingWorkspaceIds}
               />
             </div>
@@ -238,6 +246,11 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
           ))}
         </TableBody>
       </Table>
+
+      <CreateWorkspaceDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+      />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
@@ -54,25 +53,39 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("This invitation has already been used or has expired.");
     }
 
+    // Check if user already exists with this email using service role
+    // Try to get user by checking the profiles table which should have the email
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', invitation.email)
+      .maybeSingle();
+
+    // User exists if we found a profile record
+    const userExists = !profileError && existingProfile;
+
     return new Response(
-      JSON.stringify(invitation),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json" 
+      JSON.stringify({
+        ...invitation,
+        userExists: !!userExists
+      }),
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
         },
         status: 200
       }
     );
   } catch (error: any) {
     console.error("Error in verify-invitation function:", error);
-    
+
     return new Response(
       JSON.stringify({ error: error.message || "An error occurred" }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json" 
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
         },
         status: 500
       }
