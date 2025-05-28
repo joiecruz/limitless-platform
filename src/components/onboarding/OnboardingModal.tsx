@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -29,12 +28,11 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
 
   // Get state from location or set defaults
   const isInvitedUser = location.state?.isInvited === true;
-  const showOnboarding = location.state?.showOnboarding ?? true;
 
   console.log('[OnboardingModal] isIncompleteProfile:', isIncompleteProfile);
   console.log('[OnboardingModal] isInvitedUser:', isInvitedUser);
   console.log('[OnboardingModal] location.state:', location.state);
-  console.log('[OnboardingModal] showOnboarding:', showOnboarding);
+  console.log('[OnboardingModal] open prop:', open);
 
   // Only hide workspace creation step if user is invited (they'll be added to an existing workspace)
   // Incomplete profile users should still see workspace step unless they're invited users
@@ -145,11 +143,6 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
         return null;
     }
   };
-
-  // Don't show modal if showOnboarding is false
-  if (!showOnboarding) {
-    return null;
-  }
 
   // When modal attempts to close, only allow it if it's not mandatory
   const handleOpenChange = (value: boolean) => {

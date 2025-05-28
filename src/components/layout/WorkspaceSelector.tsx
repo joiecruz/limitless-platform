@@ -47,7 +47,7 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
           disabled={isLoading}
         >
           <span className="truncate">
-            {isLoading ? "Loading workspaces..." : currentWorkspace?.name ? `${currentWorkspace.name} Space` : "No workspace"}
+            {isLoading ? "Loading workspaces..." : currentWorkspace?.name ? currentWorkspace.name : "No workspace"}
           </span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </DropdownMenuTrigger>

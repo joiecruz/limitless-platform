@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -12,6 +11,7 @@ export default function Dashboard() {
   const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isIncompleteProfile, setIsIncompleteProfile] = useState(location.state?.isIncompleteProfile || false);
+  const [onboardingJustCompleted, setOnboardingJustCompleted] = useState(false);
 
   // Query to get user profile data
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -41,12 +41,12 @@ export default function Dashboard() {
         .from("workspace_members")
         .select("workspace_id")
         .eq("user_id", user.id);
-      
+
       if (error) {
         console.error("Error fetching workspace memberships:", error);
         return [];
       }
-      
+
       return data || [];
     }
   });
@@ -55,7 +55,7 @@ export default function Dashboard() {
     const checkAuth = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
       console.log("Dashboard - Current session:", session);
-      
+
       if (error || !session) {
         console.log("Dashboard - No session found, redirecting to signin");
         navigate("/signin", { replace: true });
@@ -66,44 +66,74 @@ export default function Dashboard() {
     checkAuth();
   }, [navigate]);
 
+  // Check for recent onboarding completion
+  useEffect(() => {
+    const checkOnboardingCompletion = () => {
+      const completionFlag = localStorage.getItem('onboardingCompleted');
+      if (completionFlag) {
+        const completionTime = parseInt(completionFlag);
+        const now = Date.now();
+
+        // If onboarding was completed within the last 10 seconds, set flag
+        if (now - completionTime < 10000) {
+          console.log("Dashboard - Onboarding was recently completed, preventing retrigger");
+          setOnboardingJustCompleted(true);
+
+          // Clear the flag after 10 seconds
+          setTimeout(() => {
+            setOnboardingJustCompleted(false);
+            localStorage.removeItem('onboardingCompleted');
+          }, 10000);
+        } else {
+          // Clear old completion flag
+          localStorage.removeItem('onboardingCompleted');
+        }
+      }
+    };
+
+    checkOnboardingCompletion();
+  }, []);
+
   // Check if onboarding is needed
   useEffect(() => {
-    if (profileLoading || workspacesLoading) return;
-    
+    // Don't proceed if queries are still loading
+    if (profileLoading || workspacesLoading) {
+      console.log("Dashboard - Queries still loading, waiting...");
+      return;
+    }
+
+    // Don't show onboarding if it was just completed
+    if (onboardingJustCompleted) {
+      console.log("Dashboard - Onboarding just completed, skipping");
+      setShowOnboarding(false);
+      return;
+    }
+
     console.log("Dashboard - Profile:", profile);
     console.log("Dashboard - Workspace memberships:", workspaceMemberships);
-    
+
     // Check if profile is incomplete
-    const profileIncomplete = !profile?.first_name || 
-                          !profile?.last_name || 
-                          !profile?.role || 
-                          !profile?.company_size || 
-                          !profile?.goals || 
+    const profileIncomplete = !profile?.first_name ||
+                          !profile?.last_name ||
+                          !profile?.role ||
+                          !profile?.company_size ||
+                          !profile?.goals ||
                           !profile?.referral_source;
-    
+
     // Check if user has no workspaces
     const noWorkspaces = !workspaceMemberships || workspaceMemberships.length === 0;
-    
-    // Determine if onboarding should be shown
+
+    // Determine if onboarding should be shown based on actual data only
     const needsOnboarding = profileIncomplete || noWorkspaces;
-    const shouldShowOnboarding = needsOnboarding || location.state?.showOnboarding;
-    
+
     console.log("Dashboard - Profile incomplete:", profileIncomplete);
     console.log("Dashboard - No workspaces:", noWorkspaces);
-    console.log("Dashboard - Should show onboarding:", shouldShowOnboarding);
-    
-    setShowOnboarding(shouldShowOnboarding);
+    console.log("Dashboard - Needs onboarding:", needsOnboarding);
+
+    setShowOnboarding(needsOnboarding);
     setIsIncompleteProfile(profileIncomplete);
-    
-    // Update location state if needed
-    if (shouldShowOnboarding && !location.state?.isIncompleteProfile) {
-      navigate(location.pathname, { 
-        state: { ...location.state, isIncompleteProfile: profileIncomplete },
-        replace: true 
-      });
-    }
-    
-  }, [profile, profileLoading, workspaceMemberships, workspacesLoading, location.state, navigate, location.pathname]);
+
+  }, [profile, profileLoading, workspaceMemberships, workspacesLoading, onboardingJustCompleted]);
 
   const quickLinks = [
     {
@@ -143,6 +173,15 @@ export default function Dashboard() {
     return '';
   };
 
+  const handleOnboardingClose = (open: boolean) => {
+    setShowOnboarding(open);
+    if (!open) {
+      // Mark onboarding as completed when user closes it
+      localStorage.setItem('onboardingCompleted', Date.now().toString());
+      setOnboardingJustCompleted(true);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Section */}
@@ -160,8 +199,8 @@ export default function Dashboard() {
       {/* Quick Links Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {quickLinks.map((link, index) => (
-          <Card 
-            key={index} 
+          <Card
+            key={index}
             className="overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
             onClick={() => navigate(link.link)}
           >
@@ -191,9 +230,9 @@ export default function Dashboard() {
       </div>
 
       {/* Onboarding Modal */}
-      <OnboardingModal 
-        open={showOnboarding} 
-        onOpenChange={setShowOnboarding}
+      <OnboardingModal
+        open={showOnboarding}
+        onOpenChange={handleOnboardingClose}
         isIncompleteProfile={isIncompleteProfile}
       />
     </div>

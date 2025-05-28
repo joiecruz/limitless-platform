@@ -1,4 +1,3 @@
-
 import { useAuthRedirect } from "@/components/auth/useAuthRedirect";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { AuthLogo } from "@/components/auth/AuthLogo";
@@ -56,10 +55,7 @@ export default function SignIn() {
             if (!workspaces || workspaces.length === 0) {
               console.log("No workspace found, redirecting to onboarding...");
               navigate('/dashboard', {
-                replace: true,
-                state: {
-                  showOnboarding: true
-                }
+                replace: true
               });
               return;
             }
@@ -105,10 +101,7 @@ export default function SignIn() {
           // If user has no workspace, show onboarding with workspace creation
           if (!workspaces || workspaces.length === 0) {
             navigate('/dashboard', {
-              replace: true,
-              state: {
-                showOnboarding: true
-              }
+              replace: true
             });
             return;
           }

@@ -1,11 +1,32 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { WorkspaceForm } from "./WorkspaceForm";
 import { useWorkspaceUpdate } from "@/hooks/useWorkspaceUpdate";
+import { useWorkspaceDelete } from "@/components/admin/workspaces/useWorkspaceDelete";
+import { useWorkspaceRole } from "@/hooks/useWorkspaceRole";
+import { useWorkspaces } from "@/components/workspace/useWorkspaces";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export function GeneralSettings() {
   const { currentWorkspace, setCurrentWorkspace } = useContext(WorkspaceContext);
   const { updateWorkspace, isLoading } = useWorkspaceUpdate(currentWorkspace, setCurrentWorkspace);
+  const { handleDeleteWorkspace } = useWorkspaceDelete();
+  const { data: userRole } = useWorkspaceRole(currentWorkspace?.id);
+  const { data: userWorkspaces } = useWorkspaces();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
+
+  // Get current user
+  const { data: currentUser } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+      return user;
+    }
+  });
 
   console.log('GeneralSettings - currentWorkspace:', currentWorkspace);
 
@@ -13,6 +34,27 @@ export function GeneralSettings() {
   useEffect(() => {
     console.log('Workspace changed in settings:', currentWorkspace);
   }, [currentWorkspace]);
+
+  const handleDelete = async () => {
+    if (!currentWorkspace?.id) return;
+
+    setIsDeleting(true);
+    try {
+      const success = await handleDeleteWorkspace(currentWorkspace.id);
+      if (success) {
+        // Navigate to dashboard or workspace selection after successful deletion
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Error deleting workspace:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Check if user has multiple workspaces
+  const hasMultipleWorkspaces = userWorkspaces && userWorkspaces.length > 1;
+  const canDelete = hasMultipleWorkspaces;
 
   if (!currentWorkspace) {
     return (
@@ -30,14 +72,20 @@ export function GeneralSettings() {
           Update your workspace information.
         </p>
       </div>
-      
-      <WorkspaceForm 
+
+      <WorkspaceForm
         key={currentWorkspace.id}
         defaultValues={{
           name: currentWorkspace.name,
         }}
         onSubmit={updateWorkspace}
         isLoading={isLoading}
+        currentUserId={currentUser?.id}
+        userRole={userRole}
+        workspaceId={currentWorkspace.id}
+        onDelete={canDelete ? handleDelete : undefined}
+        isDeleting={isDeleting}
+        hasMultipleWorkspaces={hasMultipleWorkspaces}
       />
     </div>
   );

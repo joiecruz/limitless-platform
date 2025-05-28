@@ -42,7 +42,7 @@ export function WorkspaceList({ workspaces, onSelect, onCreateNew, existingWorks
               className="cursor-pointer"
             >
               <Building className="h-4 w-4 mr-2" />
-              {workspace.name || 'Unnamed Workspace'} Space
+              {workspace.name || 'Unnamed Workspace'}
             </DropdownMenuItem>
           ))}
         </>
