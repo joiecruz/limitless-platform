@@ -25,10 +25,9 @@ export function usePasswordReset() {
 
     try {
       const cleanEmail = email.toLowerCase().trim();
-      
+
       // Get current origin for proper redirect
       const redirectTo = `${window.location.origin}/reset-password`;
-      console.log("Password reset redirect URL:", redirectTo);
 
       // Use Supabase Auth API to send password reset email
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
@@ -41,7 +40,7 @@ export function usePasswordReset() {
         title: "Password Reset Email Sent",
         description: "Check your inbox for a password reset link. If you don't see it, check your spam folder.",
       });
-      
+
       success = true;
     } catch (error: any) {
       console.error("Password reset error:", error);
@@ -70,7 +69,7 @@ export function usePasswordReset() {
       });
 
       if (error) throw error;
-      
+
       console.log("Password updated successfully");
       success = true;
 
@@ -84,16 +83,16 @@ export function usePasswordReset() {
       setTimeout(() => {
         navigate('/signin?reset_success=true');
       }, 1500);
-      
+
     } catch (error: any) {
       console.error("Password update error:", error);
-      
+
       toast({
         title: "Error",
         description: error.message || "Failed to update password",
         variant: "destructive",
       });
-      
+
       success = false;
     } finally {
       setLoading(false);
