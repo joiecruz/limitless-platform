@@ -2,21 +2,23 @@ import { useContext, useEffect, useState } from "react";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { WorkspaceForm } from "./WorkspaceForm";
 import { useWorkspaceUpdate } from "@/hooks/useWorkspaceUpdate";
-import { useWorkspaceDelete } from "@/components/admin/workspaces/useWorkspaceDelete";
+// DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
+// import { useWorkspaceDelete } from "@/components/admin/workspaces/useWorkspaceDelete";
 import { useWorkspaceRole } from "@/hooks/useWorkspaceRole";
-import { useWorkspaces } from "@/components/workspace/useWorkspaces";
+// import { useWorkspaces } from "@/components/workspace/useWorkspaces";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 export function GeneralSettings() {
   const { currentWorkspace, setCurrentWorkspace } = useContext(WorkspaceContext);
   const { updateWorkspace, isLoading } = useWorkspaceUpdate(currentWorkspace, setCurrentWorkspace);
-  const { handleDeleteWorkspace } = useWorkspaceDelete();
+  // DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
+  // const { handleDeleteWorkspace } = useWorkspaceDelete();
   const { data: userRole } = useWorkspaceRole(currentWorkspace?.id);
-  const { data: userWorkspaces } = useWorkspaces();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const navigate = useNavigate();
+  // const { data: userWorkspaces } = useWorkspaces();
+  // const [isDeleting, setIsDeleting] = useState(false);
+  // const navigate = useNavigate();
 
   // Get current user
   const { data: currentUser } = useQuery({
@@ -35,26 +37,27 @@ export function GeneralSettings() {
     console.log('Workspace changed in settings:', currentWorkspace);
   }, [currentWorkspace]);
 
-  const handleDelete = async () => {
-    if (!currentWorkspace?.id) return;
-
-    setIsDeleting(true);
-    try {
-      const success = await handleDeleteWorkspace(currentWorkspace.id);
-      if (success) {
-        // Navigate to dashboard or workspace selection after successful deletion
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      console.error('Error deleting workspace:', error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  // DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
+  // const handleDelete = async () => {
+  //   if (!currentWorkspace?.id) return;
+  //
+  //   setIsDeleting(true);
+  //   try {
+  //     const success = await handleDeleteWorkspace(currentWorkspace.id);
+  //     if (success) {
+  //       // Navigate to dashboard or workspace selection after successful deletion
+  //       navigate('/dashboard');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error deleting workspace:', error);
+  //   } finally {
+  //     setIsDeleting(false);
+  //   }
+  // };
 
   // Check if user has multiple workspaces
-  const hasMultipleWorkspaces = userWorkspaces && userWorkspaces.length > 1;
-  const canDelete = hasMultipleWorkspaces;
+  // const hasMultipleWorkspaces = userWorkspaces && userWorkspaces.length > 1;
+  // const canDelete = hasMultipleWorkspaces;
 
   if (!currentWorkspace) {
     return (
@@ -83,9 +86,10 @@ export function GeneralSettings() {
         currentUserId={currentUser?.id}
         userRole={userRole}
         workspaceId={currentWorkspace.id}
-        onDelete={canDelete ? handleDelete : undefined}
-        isDeleting={isDeleting}
-        hasMultipleWorkspaces={hasMultipleWorkspaces}
+        // DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
+        // onDelete={canDelete ? handleDelete : undefined}
+        // isDeleting={isDeleting}
+        // hasMultipleWorkspaces={hasMultipleWorkspaces}
       />
     </div>
   );
