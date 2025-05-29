@@ -49,11 +49,22 @@ export function ChannelSidebar({
             <h2 className="text-gray-500 uppercase text-xs font-semibold">
               Private Channels
             </h2>
-            <CreateChannelDialog 
-              onCreateChannel={onCreatePrivateChannel} 
+            <CreateChannelDialog
+              onCreateChannel={onCreatePrivateChannel}
               workspaceId={workspaceId}
-              comingSoon
             />
+          </div>
+          <div className="space-y-1">
+            {privateChannels.map((channel) => (
+              <ChannelButton
+                key={channel.id}
+                channel={channel}
+                isPrivate={true}
+                isActive={activeChannel?.id === channel.id}
+                unreadCount={unreadCounts[channel.id] || 0}
+                onClick={() => onChannelSelect(channel)}
+              />
+            ))}
           </div>
         </div>
       </ScrollArea>

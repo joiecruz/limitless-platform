@@ -3,6 +3,8 @@ import { Image } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { Channel } from "@/types/community";
 import {
   Command,
   CommandEmpty,
@@ -12,10 +14,13 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { ImageIcon, SendHorizontal } from "lucide-react";
 
 interface MessageInputProps {
   channelName: string;
   onSendMessage: (content: string, imageUrl?: string) => void;
+  activeChannel: Channel;
 }
 
 interface User {
@@ -23,8 +28,8 @@ interface User {
   id: string;
 }
 
-export function MessageInput({ channelName, onSendMessage }: MessageInputProps) {
-  const [newMessage, setNewMessage] = useState("");
+export function MessageInput({ channelName, onSendMessage, activeChannel }: MessageInputProps) {
+  const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [mentionSearch, setMentionSearch] = useState("");
   const [showMentions, setShowMentions] = useState(false);
@@ -33,6 +38,8 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { setTyping } = useTypingIndicator(activeChannel);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -49,17 +56,44 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
     fetchUsers();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newMessage.trim()) {
-      onSendMessage(newMessage);
-      setNewMessage("");
+  const handleTyping = () => {
+    console.log("[MessageInput] User is typing");
+    setTyping(true);
+
+    // Clear any existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set a new timeout to stop typing after 3 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      console.log("[MessageInput] User stopped typing");
+      setTyping(false);
+    }, 3000);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      onSendMessage(message);
+      setMessage("");
+      setTyping(false);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setNewMessage(value);
+    setMessage(value);
+    handleTyping();
 
     // Check for @ mentions
     const lastAtSymbol = value.lastIndexOf("@");
@@ -81,19 +115,29 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
   };
 
   const handleMentionSelect = (username: string) => {
-    const lastAtSymbol = newMessage.lastIndexOf("@");
-    const newValue = newMessage.slice(0, lastAtSymbol) + `@${username} `;
-    setNewMessage(newValue);
+    const lastAtSymbol = message.lastIndexOf("@");
+    const newValue = message.slice(0, lastAtSymbol) + `@${username} `;
+    setMessage(newValue);
     setShowMentions(false);
     inputRef.current?.focus();
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "Image size should be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
       toast({
         title: "Error",
         description: "Please upload an image file",
@@ -102,39 +146,30 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
       return;
     }
 
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "Error",
-        description: "Image must be less than 5MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('message-attachments')
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const filePath = `message-images/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("message-images")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('message-attachments')
+        .from("message-images")
         .getPublicUrl(filePath);
 
-      onSendMessage("", publicUrl);
-      
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
+      onSendMessage(message, publicUrl);
+      setMessage("");
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error("Error uploading image:", error);
       toast({
         title: "Error",
         description: "Failed to upload image",
@@ -143,20 +178,30 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
 
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <form onSubmit={handleSubmit} className="flex items-center space-x-2 relative">
-      <input
+    <div className="flex items-center gap-2">
+      <Input
         ref={inputRef}
-        type="text"
-        value={newMessage}
+        value={message}
         onChange={handleInputChange}
-        placeholder={`Message ${channelName || ''}`}
-        className="flex-1 rounded-lg border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        onKeyDown={handleKeyDown}
+        placeholder={`Message #${channelName}`}
+        className="flex-1"
+        disabled={isUploading}
       />
       {showMentions && (
         <div className="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200">
@@ -166,7 +211,7 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
               <CommandEmpty>No users found</CommandEmpty>
               <CommandGroup>
                 {users
-                  .filter(user => 
+                  .filter(user =>
                     user.username?.toLowerCase().includes(mentionSearch.toLowerCase())
                   )
                   .map(user => (
@@ -186,22 +231,26 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
       <input
         type="file"
         ref={fileInputRef}
-        onChange={handleFileUpload}
+        onChange={handleImageUpload}
         accept="image/*"
         className="hidden"
+        disabled={isUploading}
       />
       <Button
-        type="button"
         variant="ghost"
         size="icon"
         onClick={() => fileInputRef.current?.click()}
         disabled={isUploading}
       >
-        <Image className="h-5 w-5" />
+        <ImageIcon className="h-5 w-5" />
       </Button>
-      <Button type="submit" disabled={!newMessage.trim() || isUploading}>
-        Send
+      <Button
+        onClick={handleSendMessage}
+        disabled={!message.trim() || isUploading}
+        size="icon"
+      >
+        <SendHorizontal className="h-5 w-5" />
       </Button>
-    </form>
+    </div>
   );
 }

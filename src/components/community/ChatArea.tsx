@@ -15,14 +15,32 @@ interface ChatAreaProps {
 export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [localMessages, setLocalMessages] = useState<Message[]>(messages);
+  const [lastMessageId, setLastMessageId] = useState<string | null>(null);
 
   useEffect(() => {
     setLocalMessages(messages);
+
+    // Check if we have new messages
+    if (messages.length > 0) {
+      const latestMessage = messages[messages.length - 1];
+      if (latestMessage.id !== lastMessageId) {
+        setLastMessageId(latestMessage.id);
+      }
+    }
   }, [messages]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+      const scrollElement = scrollAreaRef.current;
+      const shouldAutoScroll =
+        scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight < 100;
+
+      if (shouldAutoScroll) {
+        scrollElement.scrollTo({
+          top: scrollElement.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
     }
   }, [localMessages]);
 
@@ -35,9 +53,10 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
           <ChatHeader channel={activeChannel} />
           <ScrollArea className="flex-1" ref={scrollAreaRef}>
             <div className="p-6">
-              <MessageList 
+              <MessageList
                 messages={localMessages}
                 onReaction={handleReaction}
+                highlightMessageId={lastMessageId}
               />
             </div>
           </ScrollArea>
@@ -45,6 +64,7 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
             <MessageInput
               channelName={activeChannel.name}
               onSendMessage={onSendMessage}
+              activeChannel={activeChannel}
             />
           </div>
         </>

@@ -60,41 +60,40 @@ export function useCommunityChannels(workspaceId: string | null) {
     return data;
   }, [workspaceId, toast]);
 
-  const handleWorkspaceChange = useCallback(async () => {
-    console.log("Handling workspace change. Current workspace:", workspaceId);
-    
-    // Reset private channels when workspace changes
-    setPrivateChannels([]);
-    
-    // Reset active channel if it was private
-    if (activeChannel && !activeChannel.is_public) {
-      console.log("Resetting active channel as it was private");
-      setActiveChannel(null);
-    }
+  // Initial fetch of channels
+  useEffect(() => {
+    const initializeChannels = async () => {
+      // Fetch public channels
+      const publicData = await fetchPublicChannels();
+      if (publicData) {
+        setPublicChannels(publicData);
+      }
 
-    // Fetch public channels
-    const publicData = await fetchPublicChannels();
-    if (publicData) {
-      setPublicChannels(publicData);
-    }
+      // Fetch private channels only if workspace is selected
+      if (workspaceId) {
+        const privateData = await fetchPrivateChannels();
+        setPrivateChannels(privateData || []);
+      }
 
-    // Fetch private channels only if workspace is selected
-    if (workspaceId) {
-      const privateData = await fetchPrivateChannels();
-      setPrivateChannels(privateData || []);
-    }
+      // Set default active channel if none is selected
+      if (!activeChannel && publicData && publicData.length > 0) {
+        console.log("Setting default active channel");
+        setActiveChannel(publicData[0]);
+      }
+    };
 
-    // Set default active channel if none is selected
-    if (!activeChannel && publicData && publicData.length > 0) {
-      console.log("Setting default active channel");
-      setActiveChannel(publicData[0]);
-    }
-  }, [workspaceId, activeChannel, fetchPublicChannels, fetchPrivateChannels]);
+    initializeChannels();
+  }, [workspaceId, fetchPublicChannels, fetchPrivateChannels, activeChannel]);
 
   // Subscribe to channel changes
   useEffect(() => {
+    if (!workspaceId) {
+      console.log("No workspace ID, skipping channel subscription");
+      return;
+    }
+
     console.log("Setting up channel subscription for workspace:", workspaceId);
-    
+
     // Set up the channel subscription with workspace filter
     const channelSubscription = supabase
       .channel('channels')
@@ -104,22 +103,18 @@ export function useCommunityChannels(workspaceId: string | null) {
           event: '*',
           schema: 'public',
           table: 'channels',
-          filter: workspaceId ? `workspace_id=eq.${workspaceId}` : undefined
+          filter: `workspace_id=eq.${workspaceId}`
         },
         async (payload) => {
           console.log('Channel change received:', payload);
-          
+
           // Handle different types of changes
           if (payload.eventType === 'DELETE') {
             const deletedId = payload.old?.id;
             if (deletedId) {
-              // For private channels, only remove if it belongs to current workspace
-              if (!payload.old.is_public && payload.old.workspace_id !== workspaceId) {
-                return;
-              }
               setPrivateChannels(prev => prev.filter(channel => channel.id !== deletedId));
               setPublicChannels(prev => prev.filter(channel => channel.id !== deletedId));
-              
+
               // Reset active channel if it was deleted
               if (activeChannel?.id === deletedId) {
                 setActiveChannel(null);
@@ -129,32 +124,96 @@ export function useCommunityChannels(workspaceId: string | null) {
             const newChannel = payload.new as Channel;
             if (newChannel.is_public) {
               setPublicChannels(prev => [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name)));
-            } else if (newChannel.workspace_id === workspaceId) {
-              console.log("Adding new private channel to workspace:", workspaceId);
-              setPrivateChannels(prev => [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name)));
+            } else {
+              // For private channels, add to the list if it belongs to current workspace
+              if (newChannel.workspace_id === workspaceId) {
+                console.log("Adding new private channel to workspace:", workspaceId);
+                setPrivateChannels(prev => [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name)));
+              }
             }
           } else if (payload.eventType === 'UPDATE' && payload.new) {
             const updatedChannel = payload.new as Channel;
-            // For private channels, only update if it belongs to current workspace
-            if (!updatedChannel.is_public && updatedChannel.workspace_id !== workspaceId) {
-              return;
+            console.log("Channel update received:", updatedChannel);
+
+            // Update the specific channel in the appropriate list
+            if (updatedChannel.is_public) {
+              setPublicChannels(prev => {
+                const updated = prev.map(channel =>
+                  channel.id === updatedChannel.id ? { ...channel, ...updatedChannel } : channel
+                );
+                return updated.sort((a, b) => a.name.localeCompare(b.name));
+              });
+            } else if (updatedChannel.workspace_id === workspaceId) {
+              setPrivateChannels(prev => {
+                const updated = prev.map(channel =>
+                  channel.id === updatedChannel.id ? { ...channel, ...updatedChannel } : channel
+                );
+                return updated.sort((a, b) => a.name.localeCompare(b.name));
+              });
             }
-            // Refresh channels to ensure proper filtering
-            console.log("Refreshing channels after update");
-            await handleWorkspaceChange();
+
+            // Update active channel if it was modified
+            if (activeChannel?.id === updatedChannel.id) {
+              setActiveChannel(prev => prev ? { ...prev, ...updatedChannel } : null);
+            }
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Channel subscription status:', status);
+      });
 
-    // Initial fetch
-    handleWorkspaceChange();
+    // Set up a separate subscription for unread counts
+    const unreadSubscription = supabase
+      .channel('unread_counts')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'channel_unread_counts',
+          filter: `workspace_id=eq.${workspaceId}`
+        },
+        async (payload) => {
+          console.log('Unread count update received:', payload);
+
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const { channel_id, unread_count } = payload.new;
+
+            // Update the unread count in both public and private channels
+            setPublicChannels(prev =>
+              prev.map(channel =>
+                channel.id === channel_id
+                  ? { ...channel, unread_count }
+                  : channel
+              )
+            );
+
+            setPrivateChannels(prev =>
+              prev.map(channel =>
+                channel.id === channel_id
+                  ? { ...channel, unread_count }
+                  : channel
+              )
+            );
+
+            // Update active channel if it was modified
+            if (activeChannel?.id === channel_id) {
+              setActiveChannel(prev => prev ? { ...prev, unread_count } : null);
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Unread count subscription status:', status);
+      });
 
     return () => {
-      console.log("Cleaning up channel subscription");
+      console.log("Cleaning up channel subscriptions");
       channelSubscription.unsubscribe();
+      unreadSubscription.unsubscribe();
     };
-  }, [workspaceId, handleWorkspaceChange, activeChannel]);
+  }, [workspaceId, activeChannel]);
 
   return {
     publicChannels,
