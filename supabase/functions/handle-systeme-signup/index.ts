@@ -91,26 +91,26 @@ serve(async (req) => {
       console.log('Calling Systeme.io API at: https://api.systeme.io/api/contacts');
 
       const response = await fetch('https://api.systeme.io/api/contacts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-KEY': SYSTEME_API_KEY,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(systemePayload),
-      });
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-KEY': SYSTEME_API_KEY,
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(systemePayload),
+        });
 
-      // Read response text regardless of status
+        // Read response text regardless of status
       const responseText = await response.text();
       console.log('API response status:', response.status);
       console.log('API raw response:', responseText);
 
-      // Handle common error statuses
-      if (response.status === 429) {
-        console.error('Rate limit error from Systeme.io API');
+        // Handle common error statuses
+        if (response.status === 429) {
+          console.error('Rate limit error from Systeme.io API');
         throw new Error('Rate limit exceeded with Systeme.io API');
-      } else if (response.status === 401 || response.status === 403) {
-        console.error('Authentication error from Systeme.io API');
+        } else if (response.status === 401 || response.status === 403) {
+          console.error('Authentication error from Systeme.io API');
         throw new Error('Authentication failed with Systeme.io API');
       } else if (response.status === 400) {
         console.error('Invalid input error from Systeme.io API:', responseText);
@@ -121,7 +121,7 @@ serve(async (req) => {
       } else if (response.status !== 201) {
         console.error('Failed API call:', response.status, responseText);
         throw new Error(`Failed with status ${response.status}`);
-      }
+        }
 
       // Success case (201 status)
       console.log('Success with Systeme.io contact creation!');
@@ -129,9 +129,9 @@ serve(async (req) => {
       let contactResult;
       let contactId = null;
 
-      try {
-        // Check if the response is actually JSON before parsing
-        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+        try {
+          // Check if the response is actually JSON before parsing
+          if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
           contactResult = JSON.parse(responseText);
           // Extract contact ID from response
           contactId = contactResult.id || contactResult.contact_id || contactResult.contactId;
@@ -180,7 +180,7 @@ serve(async (req) => {
         } catch (tagError) {
           console.error('Error during tag assignment:', tagError);
           tagAssignmentResult = { success: false, message: `Error during tag assignment: ${tagError.message}` };
-        }
+      }
       } else {
         console.warn('No contact ID found in response, skipping tag assignment');
       }
@@ -203,19 +203,19 @@ serve(async (req) => {
     } catch (apiError) {
       console.error('Error with Systeme.io API:', apiError);
 
-      // Return a softer error that doesn't break the user experience
-      // We don't want signup to fail just because Systeme.io integration failed
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Failed to add user to newsletter, but account was created successfully',
+    // Return a softer error that doesn't break the user experience
+    // We don't want signup to fail just because Systeme.io integration failed
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Failed to add user to newsletter, but account was created successfully',
           technical_details: apiError.message || 'Unknown error',
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200, // Return 200 even though there was an error with Systeme.io
-        }
-      );
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200, // Return 200 even though there was an error with Systeme.io
+      }
+    );
     }
 
   } catch (error) {
