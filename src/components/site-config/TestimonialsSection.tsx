@@ -1,3 +1,4 @@
+
 import { Quote } from "lucide-react";
 import {
   Carousel,
@@ -9,7 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Autoplay from "embla-carousel-autoplay";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 interface Testimonial {
   id: string;
@@ -21,7 +22,7 @@ interface Testimonial {
 }
 
 export function TestimonialsSection() {
-  const autoplayRef = useRef(
+  const plugin = useRef(
     Autoplay({ delay: 5000, stopOnInteraction: true })
   );
 
@@ -59,7 +60,7 @@ export function TestimonialsSection() {
               align: "start",
               loop: true,
             }}
-            plugins={[autoplayRef.current]}
+            plugins={[plugin.current]}
             className="w-full"
           >
             <CarouselContent className="-ml-2 md:-ml-4">
