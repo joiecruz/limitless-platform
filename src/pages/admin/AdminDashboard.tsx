@@ -1,29 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+
+import { useState } from "react";
+import { useAdminAnalytics } from "@/hooks/useAdminAnalytics";
+import { MetricCard } from "@/components/admin/analytics/MetricCard";
+import { SignupsChart } from "@/components/admin/analytics/SignupsChart";
+import { FeatureUsageChart } from "@/components/admin/analytics/FeatureUsageChart";
+import { RetentionChart } from "@/components/admin/analytics/RetentionChart";
+import { ActiveUsersTable } from "@/components/admin/analytics/ActiveUsersTable";
+import { DateFilter } from "@/components/admin/analytics/DateFilter";
+import { Loader2, Users, UserPlus, Activity, TrendingUp, Target, Clock } from "lucide-react";
 
 export default function AdminDashboard() {
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ['admin-stats'],
-    queryFn: async () => {
-      const [
-        { count: usersCount },
-        { count: workspacesCount },
-        { count: coursesCount }
-      ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('workspaces').select('*', { count: 'exact', head: true }),
-        supabase.from('courses').select('*', { count: 'exact', head: true })
-      ]);
-
-      return {
-        users: usersCount,
-        workspaces: workspacesCount,
-        courses: coursesCount
-      };
-    }
-  });
+  const [dateFilter, setDateFilter] = useState("7d");
+  const { data: analytics, isLoading } = useAdminAnalytics(dateFilter);
 
   if (isLoading) {
     return (
@@ -33,25 +21,83 @@ export default function AdminDashboard() {
     );
   }
 
+  if (!analytics) {
+    return (
+      <div className="flex items-center justify-center h-[400px]">
+        <p className="text-muted-foreground">Failed to load analytics data</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <DateFilter value={dateFilter} onChange={setDateFilter} />
+      </div>
       
+      {/* Key Metrics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard
+          title="Total Users"
+          value={analytics.totalUsers.toLocaleString()}
+          subtitle="Registered accounts"
+          icon={<Users className="h-5 w-5" />}
+        />
+        
+        <MetricCard
+          title="Daily Active Users"
+          value={analytics.activeUsers.dau.toLocaleString()}
+          subtitle={`WAU: ${analytics.activeUsers.wau.toLocaleString()}`}
+          icon={<Activity className="h-5 w-5" />}
+        />
+        
+        <MetricCard
+          title="Activation Rate"
+          value={`${analytics.activationRate.toFixed(1)}%`}
+          subtitle="Users who created projects"
+          icon={<Target className="h-5 w-5" />}
+        />
+        
+        <MetricCard
+          title="Avg Sessions/User"
+          value={analytics.sessionFrequency.toFixed(1)}
+          subtitle="Last 7 days"
+          icon={<Clock className="h-5 w-5" />}
+        />
+      </div>
+
+      {/* New Signups Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6">
-          <h3 className="text-lg font-medium mb-2">Total Users</h3>
-          <p className="text-3xl font-bold text-primary">{stats?.users || 0}</p>
-        </Card>
+        <MetricCard
+          title="New Signups Today"
+          value={analytics.newSignups.daily.toLocaleString()}
+          icon={<UserPlus className="h-5 w-5" />}
+        />
         
-        <Card className="p-6">
-          <h3 className="text-lg font-medium mb-2">Total Workspaces</h3>
-          <p className="text-3xl font-bold text-primary">{stats?.workspaces || 0}</p>
-        </Card>
+        <MetricCard
+          title="New Signups This Week"
+          value={analytics.newSignups.weekly.toLocaleString()}
+          icon={<UserPlus className="h-5 w-5" />}
+        />
         
-        <Card className="p-6">
-          <h3 className="text-lg font-medium mb-2">Total Courses</h3>
-          <p className="text-3xl font-bold text-primary">{stats?.courses || 0}</p>
-        </Card>
+        <MetricCard
+          title="New Signups This Month"
+          value={analytics.newSignups.monthly.toLocaleString()}
+          icon={<UserPlus className="h-5 w-5" />}
+        />
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SignupsChart data={analytics.signupsOverTime} />
+        <FeatureUsageChart data={analytics.topFeatures} />
+      </div>
+
+      {/* Bottom Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RetentionChart data={analytics.retentionRates} />
+        <ActiveUsersTable users={analytics.mostActiveUsers} />
       </div>
     </div>
   );
