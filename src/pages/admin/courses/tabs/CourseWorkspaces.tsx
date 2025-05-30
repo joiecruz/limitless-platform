@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -63,16 +64,35 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
             workspaces:workspace_id (
               id,
               name,
-              slug,
-              workspace_members (
-                count
-              )
+              slug
             )
           `)
           .eq("course_id", courseId);
 
         if (error) throw error;
-        return data;
+        
+        // Get member counts for each workspace
+        const enrichedData = await Promise.all(
+          (data || []).map(async (access) => {
+            if (access.workspaces?.id) {
+              const { count } = await supabase
+                .from("workspace_members")
+                .select("*", { count: 'exact', head: true })
+                .eq("workspace_id", access.workspaces.id);
+              
+              return {
+                ...access,
+                workspaces: {
+                  ...access.workspaces,
+                  memberCount: count || 0
+                }
+              };
+            }
+            return access;
+          })
+        );
+
+        return enrichedData;
       } catch (error) {
         console.error("Error fetching workspace access:", error);
         toast({
@@ -228,7 +248,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
               <TableCell>{access.workspaces?.name}</TableCell>
               <TableCell>{access.workspaces?.slug}</TableCell>
               <TableCell>
-                {access.workspaces?.workspace_members?.[0]?.count || 0}
+                {(access.workspaces as any)?.memberCount || 0}
               </TableCell>
               <TableCell>
                 {new Date(access.created_at).toLocaleDateString()}

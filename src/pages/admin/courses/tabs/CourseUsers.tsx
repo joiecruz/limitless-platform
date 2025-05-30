@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -66,19 +67,23 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
             id,
             email,
             first_name,
-            last_name,
-            workspace_members (
-              workspace:workspace_id (
-                id,
-                name
-              )
-            )
+            last_name
           )
         `)
         .eq("course_id", courseId);
 
       if (error) throw error;
-      return data;
+      
+      // Transform the data to match the expected type
+      const transformedData = data?.map(enrollment => ({
+        ...enrollment,
+        profiles: {
+          ...enrollment.profiles,
+          workspace_members: [] // Provide empty array since we removed this complex query
+        }
+      }));
+
+      return transformedData;
     },
   });
 

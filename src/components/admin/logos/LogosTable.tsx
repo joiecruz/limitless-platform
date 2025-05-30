@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export function LogosTable() {
       const { data, error } = await supabase
         .from('client_logos')
         .select('*')
-        .order('order_index', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data;
@@ -61,7 +62,6 @@ export function LogosTable() {
         <TableRow>
           <TableHead>Logo</TableHead>
           <TableHead>Name</TableHead>
-          <TableHead>Category</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -76,7 +76,6 @@ export function LogosTable() {
               />
             </TableCell>
             <TableCell>{logo.name}</TableCell>
-            <TableCell>{logo.category}</TableCell>
             <TableCell>
               <div className="flex space-x-2">
                 <Button
