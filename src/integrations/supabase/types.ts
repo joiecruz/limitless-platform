@@ -285,6 +285,33 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       idea_comments: {
         Row: {
           content: string
@@ -637,27 +664,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      password_reset_tokens: {
-        Row: {
-          email: string
-          expires_at: string
-          id: number
-          token: string
-        }
-        Insert: {
-          email: string
-          expires_at: string
-          id?: number
-          token: string
-        }
-        Update: {
-          email?: string
-          expires_at?: string
-          id?: number
-          token?: string
-        }
-        Relationships: []
       }
       profiles: {
         Row: {
@@ -1034,6 +1040,33 @@ export type Database = {
           name?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1477,7 +1510,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      workspace_members_info: {
+        Row: {
+          email: string | null
+          user_id: string | null
+          workspace_id: string | null
+          workspace_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       cleanup_expired_invitations: {
