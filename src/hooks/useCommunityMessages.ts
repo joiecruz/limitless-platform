@@ -79,25 +79,25 @@ export function useCommunityMessages(activeChannel: Channel | null) {
           const needsProfileData = !newMessage.profiles;
 
           if (needsProfileData) {
-            // Fetch the complete message with profiles and reactions
-            const { data, error } = await supabase
-              .from("messages")
-              .select(`
-                *,
-                profiles (
-                  username,
-                  avatar_url,
-                  first_name,
-                  last_name
-                ),
-                message_reactions (
-                  id,
-                  emoji,
-                  user_id
-                )
-              `)
+          // Fetch the complete message with profiles and reactions
+          const { data, error } = await supabase
+            .from("messages")
+            .select(`
+              *,
+              profiles (
+                username,
+                avatar_url,
+                first_name,
+                last_name
+              ),
+              message_reactions (
+                id,
+                emoji,
+                user_id
+              )
+            `)
               .eq("id", newMessage.id)
-              .single();
+            .single();
 
             if (error) {
               console.error("Error fetching new message details:", error);
@@ -106,8 +106,8 @@ export function useCommunityMessages(activeChannel: Channel | null) {
 
             if (data) {
               console.log("Adding new message with fetched profile data:", data);
-              setMessages(current => [...current, data]);
-            }
+            setMessages(current => [...current, data]);
+          }
           } else {
             // Use the message data directly from the payload
             console.log("Adding new message from payload:", newMessage);
@@ -151,65 +151,6 @@ export function useCommunityMessages(activeChannel: Channel | null) {
           );
         }
       )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'message_reactions',
-          filter: `message_id=in.(select id from messages where channel_id=eq.${activeChannel.id})`
-        },
-        (payload) => {
-          console.log('Reaction added:', payload);
-          const newReaction = payload.new as { id: string; emoji: string; user_id: string; message_id: string };
-
-          setMessages(current =>
-            current.map(msg => {
-              if (msg.id !== newReaction.message_id) return msg;
-
-              // Check if reaction already exists by ID to prevent duplicates
-              const reactionExists = (msg.message_reactions || []).some(
-                reaction => reaction.id === newReaction.id
-              );
-
-              if (reactionExists) return msg;
-
-              return {
-                ...msg,
-                message_reactions: [
-                  ...(msg.message_reactions || []),
-                  newReaction
-                ]
-              };
-            })
-          );
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'message_reactions',
-          filter: `message_id=in.(select id from messages where channel_id=eq.${activeChannel.id})`
-        },
-        (payload) => {
-          console.log('Reaction removed:', payload);
-          const deletedReaction = payload.old as { id: string; emoji: string; user_id: string; message_id: string };
-
-          setMessages(current =>
-            current.map(msg => {
-              if (msg.id !== deletedReaction.message_id) return msg;
-
-              return {
-                ...msg,
-                message_reactions: (msg.message_reactions || [])
-                  .filter(reaction => reaction.id !== deletedReaction.id)
-              };
-            })
-          );
-        }
-      )
       .subscribe((status) => {
         console.log('Subscription status for channel:', activeChannel.id, 'Status:', status);
 
@@ -245,18 +186,18 @@ export function useCommunityMessages(activeChannel: Channel | null) {
         throw new Error("User not authenticated");
       }
 
-      const { error } = await supabase
-        .from("messages")
-        .insert([
-          {
-            content,
-            image_url: imageUrl,
-            channel_id: activeChannel.id,
+    const { error } = await supabase
+      .from("messages")
+      .insert([
+        {
+          content,
+          image_url: imageUrl,
+          channel_id: activeChannel.id,
             user_id: userData.user.id,
-          },
-        ]);
+        },
+      ]);
 
-      if (error) {
+    if (error) {
         throw error;
       }
 

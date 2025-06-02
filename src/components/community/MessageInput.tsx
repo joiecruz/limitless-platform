@@ -74,7 +74,7 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
+    e.preventDefault();
       handleSendMessage();
     }
   };

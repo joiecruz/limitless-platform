@@ -12,14 +12,16 @@ interface ChatAreaProps {
   onSendMessage: (content: string, imageUrl?: string) => void;
 }
 
-export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaProps) {
+export function ChatArea({ activeChannel, messages: initialMessages, onSendMessage }: ChatAreaProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [localMessages, setLocalMessages] = useState<Message[]>(messages);
   const [lastMessageId, setLastMessageId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
 
   useEffect(() => {
-    setLocalMessages(messages);
+    setMessages(initialMessages);
+  }, [initialMessages]);
 
+  useEffect(() => {
     // Check if we have new messages
     if (messages.length > 0) {
       const latestMessage = messages[messages.length - 1];
@@ -42,9 +44,19 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
         });
       }
     }
-  }, [localMessages]);
+  }, [messages]);
 
-  const { handleReaction } = useReactionOperations(localMessages, setLocalMessages);
+  const { handleReaction } = useReactionOperations({
+    onMessageUpdate: (updatedMessage) => {
+      setMessages(current =>
+        current.map(msg =>
+          msg.id === updatedMessage.id
+            ? updatedMessage
+            : msg
+        )
+      );
+    }
+  });
 
   return (
     <div className="flex-1 flex flex-col bg-white h-full">
@@ -54,7 +66,7 @@ export function ChatArea({ activeChannel, messages, onSendMessage }: ChatAreaPro
           <ScrollArea className="flex-1" ref={scrollAreaRef}>
             <div className="p-6">
               <MessageList
-                messages={localMessages}
+                messages={messages}
                 onReaction={handleReaction}
                 highlightMessageId={lastMessageId}
               />

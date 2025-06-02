@@ -45,10 +45,10 @@ export function ChatHeader({ channel }: ChatHeaderProps) {
   return (
     <div className="border-b px-6 py-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <Hash className="h-5 w-5 text-gray-400 mr-2" />
-          <h1 className="text-xl font-semibold text-gray-900">{channel.name}</h1>
-        </div>
+      <div className="flex items-center">
+        <Hash className="h-5 w-5 text-gray-400 mr-2" />
+        <h1 className="text-xl font-semibold text-gray-900">{channel.name}</h1>
+      </div>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm" className="flex items-center gap-2 hover:bg-green-50">
@@ -87,9 +87,9 @@ export function ChatHeader({ channel }: ChatHeaderProps) {
         </Popover>
       </div>
       <div className="flex items-center gap-2 mt-1">
-        {channel.description && (
+      {channel.description && (
           <p className="text-sm text-gray-500">{channel.description}</p>
-        )}
+      )}
         {typingText && (
           <p className="text-sm text-green-600 animate-pulse flex items-center gap-1">
             <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-bounce"></span>
