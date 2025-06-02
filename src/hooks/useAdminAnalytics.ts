@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -78,34 +77,33 @@ export const useAdminAnalytics = (dateFilter: string = "7d") => {
           .gte('created_at', monthAgo)
       ]);
 
-      // Daily Active Users (users with events today)
+      // Daily Active Users (users with messages today)
       const { count: dau } = await supabase
-        .from('events')
+        .from('messages')
         .select('user_id', { count: 'exact', head: true })
-        .gte('timestamp', today);
+        .gte('created_at', today);
 
       // Weekly Active Users
       const { count: wau } = await supabase
-        .from('events')
+        .from('messages')
         .select('user_id', { count: 'exact', head: true })
-        .gte('timestamp', weekAgo);
+        .gte('created_at', weekAgo);
 
-      // Activation Rate (users who created a project)
+      // Activation Rate (users who created a workspace)
       const { count: activatedUsers } = await supabase
-        .from('events')
-        .select('user_id', { count: 'exact', head: true })
-        .eq('event_type', 'project_created');
+        .from('workspace_members')
+        .select('user_id', { count: 'exact', head: true });
 
       const activationRate = totalUsers ? (activatedUsers || 0) / totalUsers * 100 : 0;
 
-      // Top Features Used
+      // Top Features Used (based on message reactions)
       const { data: featureData } = await supabase
-        .from('events')
-        .select('event_type')
-        .gte('timestamp', filterDate);
+        .from('message_reactions')
+        .select('emoji')
+        .gte('created_at', filterDate);
 
       const featureCounts = featureData?.reduce((acc, event) => {
-        acc[event.event_type] = (acc[event.event_type] || 0) + 1;
+        acc[event.emoji] = (acc[event.emoji] || 0) + 1;
         return acc;
       }, {} as Record<string, number>) || {};
 
@@ -114,7 +112,7 @@ export const useAdminAnalytics = (dateFilter: string = "7d") => {
         .slice(0, 5)
         .map(([feature, count]) => ({ feature, count }));
 
-      // Retention Rates (simplified calculation)
+      // Retention Rates (optimized calculation)
       const { data: recentUsers } = await supabase
         .from('profiles')
         .select('id, created_at')
@@ -123,74 +121,82 @@ export const useAdminAnalytics = (dateFilter: string = "7d") => {
       let day1Retention = 0, day7Retention = 0, day30Retention = 0;
 
       if (recentUsers && recentUsers.length > 0) {
+        // Get all user activities in a single query
+        const { data: userActivities } = await supabase
+          .from('messages')
+          .select('user_id, created_at')
+          .in('user_id', recentUsers.map(user => user.id))
+          .gte('created_at', getDateFilter(30));
+
+        // Process activities in memory
+        const userActivityMap = new Map<string, Set<string>>();
+
+        userActivities?.forEach(activity => {
+          const date = new Date(activity.created_at).toISOString().split('T')[0];
+          if (!userActivityMap.has(activity.user_id)) {
+            userActivityMap.set(activity.user_id, new Set());
+          }
+          userActivityMap.get(activity.user_id)?.add(date);
+        });
+
+        // Calculate retention rates
         for (const user of recentUsers) {
           const userCreated = new Date(user.created_at);
+          const userCreatedDate = userCreated.toISOString().split('T')[0];
+
           const day1After = new Date(userCreated);
           day1After.setDate(day1After.getDate() + 1);
-          
+          const day1AfterDate = day1After.toISOString().split('T')[0];
+
           const day7After = new Date(userCreated);
           day7After.setDate(day7After.getDate() + 7);
-          
+          const day7AfterDate = day7After.toISOString().split('T')[0];
+
           const day30After = new Date(userCreated);
           day30After.setDate(day30After.getDate() + 30);
+          const day30AfterDate = day30After.toISOString().split('T')[0];
+
+          const userDates = userActivityMap.get(user.id) || new Set();
 
           // Check if user was active on these dates
-          const { count: day1Activity } = await supabase
-            .from('events')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .gte('timestamp', day1After.toISOString())
-            .lt('timestamp', new Date(day1After.getTime() + 24 * 60 * 60 * 1000).toISOString());
-
-          const { count: day7Activity } = await supabase
-            .from('events')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .gte('timestamp', day7After.toISOString());
-
-          const { count: day30Activity } = await supabase
-            .from('events')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .gte('timestamp', day30After.toISOString());
-
-          if (day1Activity && day1Activity > 0) day1Retention++;
-          if (day7Activity && day7Activity > 0) day7Retention++;
-          if (day30Activity && day30Activity > 0) day30Retention++;
+          if (userDates.has(day1AfterDate)) day1Retention++;
+          if (userDates.has(day7AfterDate)) day7Retention++;
+          if (userDates.has(day30AfterDate)) day30Retention++;
         }
 
+        // Calculate percentages
         day1Retention = (day1Retention / recentUsers.length) * 100;
         day7Retention = (day7Retention / recentUsers.length) * 100;
         day30Retention = (day30Retention / recentUsers.length) * 100;
       }
 
-      // Session Frequency
-      const { data: sessionsData } = await supabase
-        .from('sessions')
+      // Session Frequency (based on message frequency)
+      const { data: messagesData } = await supabase
+        .from('messages')
         .select('user_id')
-        .gte('started_at', getDateFilter(7));
+        .gte('created_at', getDateFilter(7));
 
-      const userSessionCounts = sessionsData?.reduce((acc, session) => {
-        acc[session.user_id] = (acc[session.user_id] || 0) + 1;
+      const userMessageCounts = messagesData?.reduce((acc, message) => {
+        acc[message.user_id] = (acc[message.user_id] || 0) + 1;
         return acc;
       }, {} as Record<string, number>) || {};
 
-      const sessionFrequency = Object.keys(userSessionCounts).length > 0 
-        ? Object.values(userSessionCounts).reduce((a, b) => a + b, 0) / Object.keys(userSessionCounts).length 
+      const sessionFrequency = Object.keys(userMessageCounts).length > 0
+        ? Object.values(userMessageCounts).reduce((a, b) => a + b, 0) / Object.keys(userMessageCounts).length
         : 0;
 
       // Most Active Users
       const { data: activeUsersData } = await supabase
-        .from('events')
+        .from('messages')
         .select('user_id, profiles!inner(email)')
-        .gte('timestamp', getDateFilter(7));
+        .gte('created_at', getDateFilter(7));
 
-      const userActivityCounts = activeUsersData?.reduce((acc, event) => {
-        const userId = event.user_id;
+      const userActivityCounts = activeUsersData?.reduce((acc, message) => {
+        const userId = message.user_id;
         if (!acc[userId]) {
           acc[userId] = {
             id: userId,
-            email: (event.profiles as any)?.email || 'Unknown',
+            email: (message.profiles as any)?.email || 'Unknown',
             actionCount: 0
           };
         }
