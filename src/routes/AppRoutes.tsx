@@ -83,8 +83,8 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         <Route path="/invite/:token" element={<InvitePage />} />
 
         {/* Protected routes */}
-        <Route element={<RequireAuth />}>
-          <Route element={<DashboardLayout />}>
+        <Route element={<RequireAuth><></></RequireAuth>}>
+          <Route element={<DashboardLayout><></></DashboardLayout>}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/tools" element={<Tools />} />
             <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
@@ -100,8 +100,8 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         </Route>
 
         {/* Admin routes */}
-        <Route element={<RequireAuth />}>
-          <Route element={<AdminLayout />}>
+        <Route element={<RequireAuth><></></RequireAuth>}>
+          <Route element={<AdminLayout><></></AdminLayout>}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/content" element={<AdminContent />} />
@@ -109,7 +109,7 @@ export default function AppRoutes({ session }: AppRoutesProps) {
             <Route path="/admin/content/blog/:id/edit" element={<EditBlog />} />
             <Route path="/admin/content/case-studies/:id/edit" element={<EditCaseStudy />} />
             <Route path="/admin/courses" element={<AdminCourses />} />
-            <Route path="/admin/courses/:id" element={<CourseDetails courseId="" />} />
+            <Route path="/admin/courses/:id" element={<CourseDetails />} />
             <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
             <Route path="/admin/workspaces/:id" element={<AdminWorkspaceDetails />} />
             <Route path="/admin/pages" element={<AdminPages />} />
