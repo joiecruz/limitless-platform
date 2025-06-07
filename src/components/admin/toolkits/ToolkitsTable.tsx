@@ -14,7 +14,6 @@ import {
 import { Loader2, Plus, Edit, Trash2, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { EditToolkitDialog } from "./EditToolkitDialog";
 import { ManageToolkitItemsDialog } from "./ManageToolkitItemsDialog";
 
 interface Toolkit {
@@ -31,7 +30,6 @@ export function ToolkitsTable() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [selectedToolkitId, setSelectedToolkitId] = useState<string | null>(null);
   const [manageItemsToolkitId, setManageItemsToolkitId] = useState<string | null>(null);
 
   const { data: toolkits, isLoading } = useQuery({
@@ -120,7 +118,7 @@ export function ToolkitsTable() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedToolkitId(toolkit.id)}
+                    onClick={() => navigate(`/admin/content/toolkits/edit/${toolkit.id}`)}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -138,14 +136,6 @@ export function ToolkitsTable() {
         </TableBody>
       </Table>
       
-      {selectedToolkitId && (
-        <EditToolkitDialog
-          toolkitId={selectedToolkitId}
-          open={!!selectedToolkitId}
-          onOpenChange={(open) => !open && setSelectedToolkitId(null)}
-        />
-      )}
-
       {manageItemsToolkitId && (
         <ManageToolkitItemsDialog
           toolkitId={manageItemsToolkitId}

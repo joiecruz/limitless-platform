@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { SortableContainer, SortableElement, arrayMove } from "react-sortable-hoc";
+import { SortableContainer, arrayMove } from "react-sortable-hoc";
 import { ToolkitItemForm } from "./ToolkitItemForm";
 import { SortableToolkitItem } from "./SortableToolkitItem";
 
@@ -23,8 +23,17 @@ interface ToolkitItemsManagerProps {
   toolkitId: string;
 }
 
-const SortableList = SortableContainer(({ children }: { children: React.ReactNode }) => (
-  <div className="space-y-4">{children}</div>
+const SortableList = SortableContainer(({ items, onDelete }: { items: ToolkitItem[]; onDelete: (id: string) => void }) => (
+  <div className="space-y-4">
+    {items.map((item, index) => (
+      <SortableToolkitItem
+        key={item.id}
+        index={index}
+        item={item}
+        onDelete={onDelete}
+      />
+    ))}
+  </div>
 ));
 
 export function ToolkitItemsManager({ toolkitId }: ToolkitItemsManagerProps) {
@@ -189,16 +198,12 @@ export function ToolkitItemsManager({ toolkitId }: ToolkitItemsManagerProps) {
           </CardContent>
         </Card>
       ) : (
-        <SortableList onSortEnd={onSortEnd} useDragHandle>
-          {items.map((item, index) => (
-            <SortableToolkitItem
-              key={item.id}
-              index={index}
-              item={item}
-              onDelete={handleDelete}
-            />
-          ))}
-        </SortableList>
+        <SortableList 
+          items={items}
+          onDelete={handleDelete}
+          onSortEnd={onSortEnd} 
+          useDragHandle
+        />
       )}
     </div>
   );

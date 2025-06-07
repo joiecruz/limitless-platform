@@ -1,150 +1,65 @@
-
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import RequireAuth from "@/components/auth/RequireAuth";
+import { Routes, Route } from "react-router-dom";
+import { Home } from "@/pages/Home";
+import { About } from "@/pages/About";
+import { Contact } from "@/pages/Contact";
+import { Community } from "@/pages/Community";
+import { Courses } from "@/pages/Courses";
+import { Course } from "@/pages/Course";
+import { Lesson } from "@/pages/Lesson";
+import { Dashboard } from "@/pages/Dashboard";
+import { Admin } from "@/pages/Admin";
+import { NotFound } from "@/pages/NotFound";
+import { Onboarding } from "@/pages/Onboarding";
+import { InvitedUserOnboarding } from "@/pages/InvitedUserOnboarding";
+import { Pricing } from "@/pages/Pricing";
+import { Checkout } from "@/pages/Checkout";
+import { Success } from "@/pages/Success";
+import { Cancel } from "@/pages/Cancel";
 import { AdminLayout } from "@/layouts/AdminLayout";
-import { Session } from "@supabase/supabase-js";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { useEffect } from "react";
-import { isAppSubdomain } from "@/utils/domainHelpers";
-
-// Public/Marketing pages
-import Index from "@/pages/Index";
-import Product from "@/pages/landing/Product";
-import Services from "@/pages/landing/Services";
-import CoursesLanding from "@/pages/landing/Courses";
-import ToolsLanding from "@/pages/landing/Tools";
-import ToolDetail from "@/pages/landing/ToolDetail";
-import Blog from "@/pages/landing/Blog";
-import BlogPost from "@/pages/BlogPost";
-import CaseStudies from "@/pages/landing/CaseStudies";
-import CaseStudy from "@/pages/CaseStudy";
-import About from "@/pages/About";
-import Privacy from "@/pages/Privacy";
-import Terms from "@/pages/Terms";
-import NotFound from "@/pages/NotFound";
-
-// App pages
-import Dashboard from "@/pages/Dashboard";
-import Projects from "@/pages/Projects";
-import Courses from "@/pages/Courses";
-import Tools from "@/pages/Tools";
-import ToolDetails from "@/pages/ToolDetails";
-import Community from "@/pages/Community";
-import Settings from "@/pages/Settings";
-import AccountSettings from "@/pages/AccountSettings";
-import SignIn from "@/pages/SignIn";
-import SignUp from "@/pages/SignUp";
-import ResetPassword from "@/pages/ResetPassword";
-import VerifyEmail from "@/pages/VerifyEmail";
-import InvitePage from "@/pages/InvitePage";
-import Lessons from "@/pages/Lessons";
-import Lesson from "@/pages/Lesson";
-
-// Admin pages
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminUsers from "@/pages/admin/AdminUsers";
-import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
-import AdminWorkspaceDetails from "@/pages/admin/AdminWorkspaceDetails";
-import AdminCourses from "@/pages/admin/AdminCourses";
-import AdminPages from "@/pages/admin/AdminPages";
-import AdminContent from "@/pages/admin/AdminContent";
-import CreateBlog from "@/pages/admin/blog/CreateBlog";
-import EditBlog from "@/pages/admin/blog/EditBlog";
-import AdminSettings from "@/pages/admin/AdminSettings";
-import EditCaseStudy from "@/pages/admin/case-studies/EditCaseStudy";
+import { Content } from "@/pages/admin/Content";
+import { Users } from "@/pages/admin/Users";
+import { CreateCourse } from "@/pages/admin/courses/CreateCourse";
+import { EditCourse } from "@/pages/admin/courses/EditCourse";
+import { CreateLesson } from "@/pages/admin/lessons/CreateLesson";
+import { EditLesson } from "@/pages/admin/lessons/EditLesson";
 import CreateToolkit from "@/pages/admin/toolkits/CreateToolkit";
+import EditToolkit from "@/pages/admin/toolkits/EditToolkit";
 
-interface AppRoutesProps {
-  session: Session | null;
-}
-
-const AppRoutes = ({ session }: AppRoutesProps) => {
-  // Log routing information for debugging
-  useEffect(() => {
-    console.log("AppRoutes: Initializing with", {
-      session: !!session,
-      isAppSubdomain: isAppSubdomain(),
-      hostname: window.location.hostname,
-      pathname: window.location.pathname
-    });
-  }, [session]);
-
+export function AppRoutes() {
   return (
     <Routes>
-      {/* Root path redirect based on authentication and domain */}
-      <Route
-        path="/"
-        element={
-          session ?
-            <Navigate to="/dashboard" replace /> :
-            (isAppSubdomain() ? <Navigate to="/dashboard" replace /> : <Index />)
-        }
-      />
-
-      {/* Public/Marketing pages - only available on main domain */}
-      {!isAppSubdomain() && (
-        <>
-          <Route path="/product" element={<Product />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/courses" element={<CoursesLanding />} />
-          <Route path="/tools" element={<ToolsLanding />} />
-          <Route path="/tools/:id" element={<ToolDetail />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/case-studies" element={<CaseStudies />} />
-          <Route path="/case-studies/:slug" element={<CaseStudy />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/privacy-policy" element={<Privacy />} />
-          <Route path="/terms-of-service" element={<Terms />} />
-        </>
-      )}
-
-      {/* Auth routes - available on both domains */}
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/invite" element={<InvitePage />} />
-
-      {/* Protected app routes */}
-      <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/dashboard/projects" element={<Projects />} />
-        <Route path="/dashboard/courses" element={<Courses />} />
-        <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />
-        <Route path="/dashboard/tools" element={<Tools />} />
-        <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
-        <Route path="/dashboard/community" element={<Community />} />
-        <Route path="/dashboard/settings" element={<Settings />} />
-        <Route path="/dashboard/account-settings" element={<AccountSettings />} />
-      </Route>
-
-      {/* Lesson routes - separate from dashboard layout */}
-      <Route element={<RequireAuth>{session && <Outlet />}</RequireAuth>}>
-        <Route path="/dashboard/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
-      </Route>
-
-      {/* Protected admin routes */}
-      <Route element={<RequireAuth>{session && <AdminLayout />}</RequireAuth>}>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
-        <Route path="/admin/workspaces/:workspaceId" element={<AdminWorkspaceDetails />} />
-        <Route path="/admin/courses" element={<AdminCourses />} />
-        <Route path="/admin/pages" element={<AdminPages />} />
-        <Route path="/admin/content" element={<AdminContent />} />
-        <Route path="/admin/blog/create" element={<CreateBlog />} />
-        <Route path="/admin/content/blog/create" element={<CreateBlog />} />
-        <Route path="/admin/content/blog/:id" element={<EditBlog />} />
-        <Route path="/admin/content/case-studies/:id" element={<EditCaseStudy />} />
-        <Route path="/admin/content/toolkits/create" element={<CreateToolkit />} />
-        <Route path="/admin/settings" element={<AdminSettings />} />
-      </Route>
-
-      {/* 404 catch-all route */}
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/community" element={<Community />} />
+      <Route path="/courses" element={<Courses />} />
+      <Route path="/courses/:courseId" element={<Course />} />
+      <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/success" element={<Success />} />
+      <Route path="/cancel" element={<Cancel />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/invited-user-onboarding" element={<InvitedUserOnboarding />} />
+      <Route path="/admin" element={<Admin />} />
       <Route path="*" element={<NotFound />} />
+      
+      {/* Admin Routes */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Content />} />
+        <Route path="content" element={<Content />} />
+        <Route path="users" element={<Users />} />
+        <Route path="content/courses/create" element={<CreateCourse />} />
+        <Route path="content/courses/edit/:id" element={<EditCourse />} />
+        <Route path="content/lessons/create" element={<CreateLesson />} />
+        <Route path="content/lessons/edit/:id" element={<EditLesson />} />
+        <Route path="content/toolkits/create" element={<CreateToolkit />} />
+        <Route path="content/toolkits/edit/:id" element={<EditToolkit />} />
+      </Route>
+      
+      {/* Dashboard Routes */}
+      <Route path="/dashboard" element={<Dashboard />} />
     </Routes>
   );
-};
-
-export default AppRoutes;
+}
