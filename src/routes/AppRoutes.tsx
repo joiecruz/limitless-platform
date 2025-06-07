@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
@@ -23,28 +24,28 @@ import Terms from "@/pages/Terms";
 import LandingCourses from "@/pages/landing/Courses";
 import LandingTools from "@/pages/landing/Tools";
 import LandingToolDetail from "@/pages/landing/ToolDetail";
-import Services from "@/pages/Services";
-import Product from "@/pages/Product";
-import Blog from "@/pages/Blog";
+import Services from "@/pages/landing/Services";
+import Product from "@/pages/landing/Product";
+import Blog from "@/pages/landing/Blog";
 import BlogPost from "@/pages/BlogPost";
-import CaseStudies from "@/pages/CaseStudies";
+import CaseStudies from "@/pages/landing/CaseStudies";
 import CaseStudy from "@/pages/CaseStudy";
 
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminContent from "@/pages/admin/AdminContent";
-import CreateBlog from "@/pages/admin/CreateBlog";
-import EditBlog from "@/pages/admin/EditBlog";
-import EditCaseStudy from "@/pages/admin/EditCaseStudy";
+import CreateBlog from "@/pages/admin/blog/CreateBlog";
+import EditBlog from "@/pages/admin/blog/EditBlog";
+import EditCaseStudy from "@/pages/admin/case-studies/EditCaseStudy";
 import AdminCourses from "@/pages/admin/AdminCourses";
-import CourseDetails from "@/pages/admin/CourseDetails";
+import CourseDetails from "@/pages/admin/courses/CourseDetails";
 import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
 import AdminWorkspaceDetails from "@/pages/admin/AdminWorkspaceDetails";
 import AdminPages from "@/pages/admin/AdminPages";
 import AdminSettings from "@/pages/admin/AdminSettings";
 
-import { RequireAuth } from "@/components/auth/RequireAuth";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import RequireAuth from "@/components/auth/RequireAuth";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
 
