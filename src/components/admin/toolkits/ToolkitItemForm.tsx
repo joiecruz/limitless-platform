@@ -29,9 +29,9 @@ export function ToolkitItemForm({ onSubmit, defaultValues, isLoading }: ToolkitI
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>File Title</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Enter item title" />
+                <Input {...field} placeholder="Enter file title (e.g., 'Canvas Template', 'Guide PDF')" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -43,9 +43,13 @@ export function ToolkitItemForm({ onSubmit, defaultValues, isLoading }: ToolkitI
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>File Description</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder="Enter item description" />
+                <Textarea 
+                  {...field} 
+                  placeholder="Describe what this file contains and how it should be used" 
+                  rows={3}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -59,7 +63,7 @@ export function ToolkitItemForm({ onSubmit, defaultValues, isLoading }: ToolkitI
             <FormItem>
               <FormLabel>File URL</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Enter file URL" />
+                <Input {...field} placeholder="Enter the URL to download this file" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -71,13 +75,13 @@ export function ToolkitItemForm({ onSubmit, defaultValues, isLoading }: ToolkitI
           name="order_index"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Order Index</FormLabel>
+              <FormLabel>Display Order</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
                   {...field} 
                   onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                  placeholder="Enter order index"
+                  placeholder="Enter display order (0 = first)"
                 />
               </FormControl>
               <FormMessage />

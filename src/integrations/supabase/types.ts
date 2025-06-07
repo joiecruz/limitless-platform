@@ -1173,31 +1173,43 @@ export type Database = {
       }
       toolkits: {
         Row: {
+          about_this_tool: string | null
           category: string | null
           cover_image_url: string | null
           created_at: string
           description: string | null
+          how_to_use: string | null
           id: string
           name: string
           updated_at: string
+          use_cases: string | null
+          when_to_use: string | null
         }
         Insert: {
+          about_this_tool?: string | null
           category?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          how_to_use?: string | null
           id?: string
           name: string
           updated_at?: string
+          use_cases?: string | null
+          when_to_use?: string | null
         }
         Update: {
+          about_this_tool?: string | null
           category?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          how_to_use?: string | null
           id?: string
           name?: string
           updated_at?: string
+          use_cases?: string | null
+          when_to_use?: string | null
         }
         Relationships: []
       }
