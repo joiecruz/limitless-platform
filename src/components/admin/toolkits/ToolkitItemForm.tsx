@@ -9,9 +9,10 @@ interface ToolkitItemFormProps {
   onSubmit: (data: any) => void;
   defaultValues?: any;
   isLoading?: boolean;
+  onCancel?: () => void;
 }
 
-export function ToolkitItemForm({ onSubmit, defaultValues, isLoading }: ToolkitItemFormProps) {
+export function ToolkitItemForm({ onSubmit, defaultValues, isLoading, onCancel }: ToolkitItemFormProps) {
   const form = useForm({
     defaultValues: defaultValues || {
       title: "",
@@ -70,26 +71,12 @@ export function ToolkitItemForm({ onSubmit, defaultValues, isLoading }: ToolkitI
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="order_index"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Display Order</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  {...field} 
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                  placeholder="Enter display order (0 = first)"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        <div className="flex justify-end gap-2">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
           )}
-        />
-
-        <div className="flex justify-end">
           <Button type="submit" disabled={isLoading}>
             {isLoading ? "Saving..." : "Save"}
           </Button>
