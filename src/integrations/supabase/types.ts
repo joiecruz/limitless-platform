@@ -1133,6 +1133,74 @@ export type Database = {
         }
         Relationships: []
       }
+      toolkit_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_url: string
+          id: string
+          order_index: number | null
+          title: string
+          toolkit_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_url: string
+          id?: string
+          order_index?: number | null
+          title: string
+          toolkit_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_url?: string
+          id?: string
+          order_index?: number | null
+          title?: string
+          toolkit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "toolkit_items_toolkit_id_fkey"
+            columns: ["toolkit_id"]
+            isOneToOne: false
+            referencedRelation: "toolkits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      toolkits: {
+        Row: {
+          category: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_course_access: {
         Row: {
           course_id: string
