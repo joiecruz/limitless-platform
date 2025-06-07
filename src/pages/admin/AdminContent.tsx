@@ -5,6 +5,7 @@ import BlogsTable from "@/components/admin/blog/BlogsTable";
 import { CaseStudiesTable } from "@/components/admin/case-studies/CaseStudiesTable";
 import { LogosTable } from "@/components/admin/logos/LogosTable";
 import { ToolsTable } from "@/components/admin/tools/ToolsTable";
+import { ToolkitsTable } from "@/components/admin/toolkits/ToolkitsTable";
 import { useNavigate } from "react-router-dom";
 import { CreateCaseStudyDialog } from "@/components/admin/case-studies/CreateCaseStudyDialog";
 import { AddLogoDialog } from "@/components/admin/logos/AddLogoDialog";
@@ -18,7 +19,7 @@ export default function AdminContent() {
       <div>
         <h1 className="text-2xl font-bold">Content Management</h1>
         <p className="text-muted-foreground">
-          Manage your website content including blog posts, case studies, and more.
+          Manage your website content including blog posts, case studies, tools, and toolkits.
         </p>
       </div>
 
@@ -27,6 +28,7 @@ export default function AdminContent() {
           <TabsTrigger value="blog">Blog</TabsTrigger>
           <TabsTrigger value="case-studies">Case Studies</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
+          <TabsTrigger value="toolkits">Toolkits</TabsTrigger>
           <TabsTrigger value="logos">Client Logos</TabsTrigger>
         </TabsList>
         
@@ -49,6 +51,10 @@ export default function AdminContent() {
         
         <TabsContent value="tools" className="space-y-4">
           <ToolsTable />
+        </TabsContent>
+
+        <TabsContent value="toolkits" className="space-y-4">
+          <ToolkitsTable />
         </TabsContent>
         
         <TabsContent value="logos" className="space-y-4">
