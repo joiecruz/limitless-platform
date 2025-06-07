@@ -1,4 +1,3 @@
-
 import { OnboardingData } from "../../onboarding/types";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -19,9 +18,7 @@ const GOALS = [
 ];
 
 export function InviteStep2({ onNext, onBack, data, loading }: InviteStep2Props) {
-  const [selectedGoals, setSelectedGoals] = useState<string[]>(
-    Array.isArray(data.goals) ? data.goals : data.goals ? [data.goals] : []
-  );
+  const [selectedGoals, setSelectedGoals] = useState<string[]>(data.goals || []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

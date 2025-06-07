@@ -1,5 +1,3 @@
-
-import { useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,18 +8,13 @@ import CourseUsers from "./tabs/CourseUsers";
 import CourseWorkspaces from "./tabs/CourseWorkspaces";
 
 interface CourseDetailsProps {
-  courseId?: string;
+  courseId: string;
 }
 
-const CourseDetails = ({ courseId: propCourseId }: CourseDetailsProps) => {
-  const { id } = useParams();
-  const courseId = propCourseId || id;
-
+const CourseDetails = ({ courseId }: CourseDetailsProps) => {
   const { data: course, isLoading } = useQuery({
     queryKey: ["admin-course", courseId],
     queryFn: async () => {
-      if (!courseId) throw new Error("No course ID provided");
-      
       const { data, error } = await supabase
         .from("courses")
         .select("*")
@@ -31,7 +24,6 @@ const CourseDetails = ({ courseId: propCourseId }: CourseDetailsProps) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!courseId,
   });
 
   if (isLoading) {
@@ -42,7 +34,7 @@ const CourseDetails = ({ courseId: propCourseId }: CourseDetailsProps) => {
     );
   }
 
-  if (!course || !courseId) {
+  if (!course) {
     return <div>Course not found</div>;
   }
 

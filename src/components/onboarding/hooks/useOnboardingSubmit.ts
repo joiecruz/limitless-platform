@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -52,7 +51,7 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
               last_name: formData.lastName,
               role: formData.role,
               company_size: formData.companySize,
-              goals: Array.isArray(formData.goals) ? formData.goals.join(', ') : formData.goals,
+              goals: formData.goals,
               referral_source: formData.referralSource
             });
 
@@ -73,7 +72,7 @@ export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: On
             last_name: formData.lastName,
             role: formData.role,
             company_size: formData.companySize,
-            goals: Array.isArray(formData.goals) ? formData.goals.join(', ') : formData.goals,
+            goals: formData.goals,
             referral_source: formData.referralSource
           })
           .eq("id", user.id);

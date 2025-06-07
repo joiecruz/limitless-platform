@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -67,21 +66,19 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
             id,
             email,
             first_name,
-            last_name
+            last_name,
+            workspace_members (
+              workspace:workspace_id (
+                id,
+                name
+              )
+            )
           )
         `)
         .eq("course_id", courseId);
 
       if (error) throw error;
-      
-      // Transform the data to match expected type
-      return data.map(enrollment => ({
-        ...enrollment,
-        profiles: {
-          ...enrollment.profiles,
-          workspace_members: []
-        }
-      }));
+      return data;
     },
   });
 

@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,26 +16,9 @@ export function CreateToolDialog({ open, onOpenChange }: CreateToolDialogProps) 
 
   const handleSubmit = async (data: Partial<Tool>) => {
     try {
-      // Ensure required fields are present
-      const toolData = {
-        name: data.name || "",
-        type: data.type || "",
-        category: data.category || "Innovation Process and Tools",
-        brief_description: data.brief_description,
-        long_description: data.long_description,
-        use_case_1: data.use_case_1,
-        use_case_2: data.use_case_2,
-        use_case_3: data.use_case_3,
-        how_to_use: data.how_to_use,
-        when_to_use: data.when_to_use,
-        price: data.price,
-        cover_image: data.cover_image,
-        download_url: data.download_url,
-      };
-
       const { error } = await supabase
         .from("innovation_tools")
-        .insert(toolData);
+        .insert([data]);
 
       if (error) throw error;
 

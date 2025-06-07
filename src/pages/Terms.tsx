@@ -46,16 +46,6 @@ export default function Terms() {
     );
   }
 
-  const getContentHtml = (content: any) => {
-    if (typeof content === 'object' && content !== null && 'html' in content) {
-      return content.html;
-    }
-    if (typeof content === 'string') {
-      return content.replace(/\n/g, '<br />');
-    }
-    return '';
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <MainNav />
@@ -66,7 +56,9 @@ export default function Terms() {
             <div 
               className="prose prose-lg max-w-none dark:prose-invert [&>p]:mb-6 [&>h2]:mt-12 [&>h2]:mb-6"
               dangerouslySetInnerHTML={{ 
-                __html: getContentHtml(page.content)
+                __html: typeof page.content === 'object' && page.content.html 
+                  ? page.content.html 
+                  : page.content.replace(/\n/g, '<br />') 
               }}
             />
           </div>

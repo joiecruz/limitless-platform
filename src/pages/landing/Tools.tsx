@@ -8,8 +8,6 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Helmet } from "react-helmet";
-import { ToolkitCard } from "@/components/tools/ToolkitCard";
-import { Toolkit } from "@/types/toolkit";
 
 const categories = [
   "All tools",
@@ -43,25 +41,8 @@ export default function Tools() {
     },
   });
 
-  const { data: toolkits } = useQuery({
-    queryKey: ["toolkits"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('toolkits')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as Toolkit[];
-    },
-  });
-
   const filteredTools = tools?.filter(tool => 
     selectedCategory === "All tools" || tool.category === selectedCategory
-  );
-
-  const filteredToolkits = toolkits?.filter(toolkit => 
-    selectedCategory === "All tools" || toolkit.category === selectedCategory
   );
 
   return (
@@ -100,7 +81,7 @@ export default function Tools() {
             <div>
               <p className="text-white/90 text-xl leading-relaxed">
                 Empower your creative process with our collection of free worksheets,
-                toolkits, canvases, and downloadable resources. Whether you're brainstorming new
+                canvases, and downloadable resources. Whether you're brainstorming new
                 ideas or planning your next big project, our tools are designed to help you
                 structure your thoughts and innovate effectively.
               </p>
@@ -130,16 +111,10 @@ export default function Tools() {
         </div>
       </div>
 
-      {/* Tools and Toolkits Grid */}
+      {/* Tools Grid */}
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Render Toolkits */}
-            {filteredToolkits?.map((toolkit) => (
-              <ToolkitCard key={`toolkit-${toolkit.id}`} toolkit={toolkit} />
-            ))}
-            
-            {/* Render Individual Tools */}
             {filteredTools?.map((tool) => (
               <div key={tool.id} className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
                 <div className="aspect-[16/9] relative">

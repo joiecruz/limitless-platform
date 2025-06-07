@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,9 +20,7 @@ const GOALS = [
 ];
 
 export function Step2({ onNext, onBack, data, loading }: Step2Props) {
-  const [selectedGoals, setSelectedGoals] = useState<string[]>(
-    Array.isArray(data.goals) ? data.goals : data.goals ? [data.goals] : []
-  );
+  const [selectedGoals, setSelectedGoals] = useState<string[]>(data.goals || []);
 
   const handleGoalChange = (goal: string, checked: boolean) => {
     setSelectedGoals(prev => 
