@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ export function CreateToolDialog({ open, onOpenChange }: CreateToolDialogProps) 
     try {
       const { error } = await supabase
         .from("innovation_tools")
-        .insert([data]);
+        .insert(data);
 
       if (error) throw error;
 

@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -63,10 +64,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
             workspaces:workspace_id (
               id,
               name,
-              slug,
-              workspace_members (
-                count
-              )
+              slug
             )
           `)
           .eq("course_id", courseId);
@@ -217,7 +215,6 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
           <TableRow>
             <TableHead>Workspace</TableHead>
             <TableHead>Slug</TableHead>
-            <TableHead>Members</TableHead>
             <TableHead>Granted At</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -227,9 +224,6 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
             <TableRow key={access.id}>
               <TableCell>{access.workspaces?.name}</TableCell>
               <TableCell>{access.workspaces?.slug}</TableCell>
-              <TableCell>
-                {access.workspaces?.workspace_members?.[0]?.count || 0}
-              </TableCell>
               <TableCell>
                 {new Date(access.created_at).toLocaleDateString()}
               </TableCell>

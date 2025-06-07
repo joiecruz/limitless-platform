@@ -1,5 +1,6 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Session } from "@supabase/supabase-js";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import SignIn from "@/pages/SignIn";
@@ -49,7 +50,11 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
 
-export default function AppRoutes() {
+interface AppRoutesProps {
+  session: Session | null;
+}
+
+export default function AppRoutes({ session }: AppRoutesProps) {
   return (
     <BrowserRouter>
       <ScrollToTop />
@@ -104,7 +109,7 @@ export default function AppRoutes() {
             <Route path="/admin/content/blog/:id/edit" element={<EditBlog />} />
             <Route path="/admin/content/case-studies/:id/edit" element={<EditCaseStudy />} />
             <Route path="/admin/courses" element={<AdminCourses />} />
-            <Route path="/admin/courses/:id" element={<CourseDetails />} />
+            <Route path="/admin/courses/:id" element={<CourseDetails courseId="" />} />
             <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
             <Route path="/admin/workspaces/:id" element={<AdminWorkspaceDetails />} />
             <Route path="/admin/pages" element={<AdminPages />} />
