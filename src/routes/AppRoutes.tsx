@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
@@ -56,7 +56,7 @@ interface AppRoutesProps {
 
 export default function AppRoutes({ session }: AppRoutesProps) {
   return (
-    <BrowserRouter>
+    <>
       <ScrollToTop />
       <Routes>
         {/* Public routes */}
@@ -120,6 +120,6 @@ export default function AppRoutes({ session }: AppRoutesProps) {
         {/* 404 route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
