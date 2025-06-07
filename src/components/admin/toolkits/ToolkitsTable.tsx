@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Loader2, Plus, Edit, Trash2, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { CreateToolkitDialog } from "./CreateToolkitDialog";
+import { useNavigate } from "react-router-dom";
 import { EditToolkitDialog } from "./EditToolkitDialog";
 import { ManageToolkitItemsDialog } from "./ManageToolkitItemsDialog";
 
@@ -30,8 +30,8 @@ interface Toolkit {
 export function ToolkitsTable() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [selectedToolkitId, setSelectedToolkitId] = useState<string | null>(null);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [manageItemsToolkitId, setManageItemsToolkitId] = useState<string | null>(null);
 
   const { data: toolkits, isLoading } = useQuery({
@@ -84,7 +84,7 @@ export function ToolkitsTable() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Toolkits</h2>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
+        <Button onClick={() => navigate("/admin/content/toolkits/create")}>
           <Plus className="mr-2 h-4 w-4" />
           Add Toolkit
         </Button>
@@ -137,11 +137,6 @@ export function ToolkitsTable() {
           ))}
         </TableBody>
       </Table>
-
-      <CreateToolkitDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-      />
       
       {selectedToolkitId && (
         <EditToolkitDialog
