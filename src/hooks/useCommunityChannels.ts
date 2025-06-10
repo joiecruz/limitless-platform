@@ -6,8 +6,37 @@ import { Channel } from "@/types/community";
 export function useCommunityChannels(workspaceId: string | null) {
   const [publicChannels, setPublicChannels] = useState<Channel[]>([]);
   const [privateChannels, setPrivateChannels] = useState<Channel[]>([]);
-  const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
+  const [activeChannel, setActiveChannel] = useState<Channel | null>(() => {
+    // Initialize from localStorage if available and we're in community
+    try {
+      const savedChannel = localStorage.getItem('limitless-active-channel');
+      const savedWorkspaceId = localStorage.getItem('limitless-active-channel-workspace');
+
+      // Only restore if the workspace matches
+      if (savedChannel && savedWorkspaceId === workspaceId) {
+        return JSON.parse(savedChannel);
+      }
+    } catch {
+      // Ignore errors
+    }
+    return null;
+  });
   const { toast } = useToast();
+
+  // Custom setActiveChannel that persists to localStorage
+  const setActiveChannelWithPersistence = useCallback((channel: Channel | null) => {
+    setActiveChannel(channel);
+
+    if (channel && workspaceId) {
+      localStorage.setItem('limitless-active-channel', JSON.stringify(channel));
+      localStorage.setItem('limitless-active-channel-workspace', workspaceId);
+      console.log('Saved active channel to localStorage:', channel.name);
+    } else {
+      localStorage.removeItem('limitless-active-channel');
+      localStorage.removeItem('limitless-active-channel-workspace');
+      console.log('Removed active channel from localStorage');
+    }
+  }, [workspaceId]);
 
   const fetchPublicChannels = useCallback(async () => {
     console.log("Fetching public channels...");
@@ -63,9 +92,6 @@ export function useCommunityChannels(workspaceId: string | null) {
   // Initial fetch of channels
   useEffect(() => {
     const initializeChannels = async () => {
-      // Reset active channel when workspace changes
-      setActiveChannel(null);
-
       // Fetch public channels
       const publicData = await fetchPublicChannels();
       if (publicData) {
@@ -73,31 +99,52 @@ export function useCommunityChannels(workspaceId: string | null) {
       }
 
       // Fetch private channels only if workspace is selected
+      let privateData: Channel[] = [];
       if (workspaceId) {
-        const privateData = await fetchPrivateChannels();
-        setPrivateChannels(privateData || []);
+        privateData = await fetchPrivateChannels() || [];
+        setPrivateChannels(privateData);
+      } else {
+        setPrivateChannels([]);
+      }
 
+      // Check if we have a persisted active channel that still exists
+      const allChannels = [...(publicData || []), ...privateData];
+      const persistedChannel = activeChannel;
+
+      if (persistedChannel && allChannels.some(ch => ch.id === persistedChannel.id)) {
+        // Persisted channel still exists, keep it
+        console.log('Keeping persisted active channel:', persistedChannel.name);
+        return;
+      }
+
+      // No valid persisted channel, set to first available channel
+      if (workspaceId) {
         // Set active channel to first available channel in the workspace
         // Prioritize public channels, then private channels
         if (publicData && publicData.length > 0) {
           console.log("Setting active channel to first public channel");
-          setActiveChannel(publicData[0]);
+          setActiveChannelWithPersistence(publicData[0]);
         } else if (privateData && privateData.length > 0) {
           console.log("Setting active channel to first private channel");
-          setActiveChannel(privateData[0]);
+          setActiveChannelWithPersistence(privateData[0]);
+        } else {
+          console.log("No channels available");
+          setActiveChannelWithPersistence(null);
         }
       } else {
         // If no workspace, clear private channels and set to first public channel
-        setPrivateChannels([]);
         if (publicData && publicData.length > 0) {
           console.log("Setting active channel to first public channel (no workspace)");
-          setActiveChannel(publicData[0]);
+          setActiveChannelWithPersistence(publicData[0]);
+        } else {
+          console.log("No public channels available");
+          setActiveChannelWithPersistence(null);
         }
       }
     };
 
     initializeChannels();
-  }, [workspaceId, fetchPublicChannels, fetchPrivateChannels]); // Removed activeChannel dependency
+  }, [workspaceId, fetchPublicChannels, fetchPrivateChannels, setActiveChannelWithPersistence]); // Added setActiveChannelWithPersistence to deps
 
   // Subscribe to channel changes
   useEffect(() => {
@@ -131,7 +178,7 @@ export function useCommunityChannels(workspaceId: string | null) {
 
               // Reset active channel if it was deleted
               if (activeChannel?.id === deletedId) {
-                setActiveChannel(null);
+                setActiveChannelWithPersistence(null);
               }
             }
           } else if (payload.eventType === 'INSERT' && payload.new) {
@@ -168,7 +215,7 @@ export function useCommunityChannels(workspaceId: string | null) {
 
             // Update active channel if it was modified
             if (activeChannel?.id === updatedChannel.id) {
-              setActiveChannel(prev => prev ? { ...prev, ...updatedChannel } : null);
+              setActiveChannelWithPersistence({ ...activeChannel, ...updatedChannel });
             }
           }
         }
@@ -213,7 +260,8 @@ export function useCommunityChannels(workspaceId: string | null) {
 
             // Update active channel if it was modified
             if (activeChannel?.id === channel_id) {
-              setActiveChannel(prev => prev ? { ...prev, unread_count } : null);
+              // Note: unread_count is not part of Channel type, handled separately
+              console.log('Unread count updated for active channel:', channel_id);
             }
           }
         }
@@ -233,6 +281,6 @@ export function useCommunityChannels(workspaceId: string | null) {
     publicChannels,
     privateChannels,
     activeChannel,
-    setActiveChannel
+    setActiveChannel: setActiveChannelWithPersistence
   };
 }

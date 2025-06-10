@@ -24,7 +24,15 @@ export const WorkspaceContext = createContext<WorkspaceContextType>({
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(() => {
+    // Initialize from localStorage if available
+    try {
+      const savedWorkspace = localStorage.getItem('limitless-current-workspace');
+      return savedWorkspace ? JSON.parse(savedWorkspace) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,6 +51,45 @@ export default function DashboardLayout() {
       setIsLoading(false);
     }, 1000);
   };
+
+  // Persist workspace to localStorage when it changes
+  useEffect(() => {
+    if (currentWorkspace) {
+      localStorage.setItem('limitless-current-workspace', JSON.stringify(currentWorkspace));
+      console.log('Saved workspace to localStorage:', currentWorkspace);
+    } else {
+      localStorage.removeItem('limitless-current-workspace');
+      console.log('Removed workspace from localStorage');
+    }
+  }, [currentWorkspace]);
+
+  // Persist current route if in community section
+  useEffect(() => {
+    if (location.pathname === '/dashboard/community') {
+      localStorage.setItem('limitless-last-community-visit', 'true');
+      console.log('Marked community as last visited page');
+    } else if (location.pathname.startsWith('/dashboard/') && location.pathname !== '/dashboard/community') {
+      // Clear community flag when navigating to other dashboard pages
+      localStorage.removeItem('limitless-last-community-visit');
+      console.log('Cleared community visit flag - navigated to other page');
+    }
+  }, [location.pathname]);
+
+  // Restore community route on initial load if user was there before
+  useEffect(() => {
+    const wasInCommunity = localStorage.getItem('limitless-last-community-visit');
+    const hasWorkspace = localStorage.getItem('limitless-current-workspace');
+    const hasChannel = localStorage.getItem('limitless-active-channel');
+
+    // Only auto-navigate to community if:
+    // 1. User was previously in community
+    // 2. We're currently on the root dashboard
+    // 3. We have workspace and channel state to restore
+    if (wasInCommunity && hasWorkspace && hasChannel && location.pathname === '/dashboard') {
+      console.log('Restoring community page from previous session');
+      navigate('/dashboard/community', { replace: true });
+    }
+  }, []); // Empty dependency array - only run on initial mount
 
   // Log workspace changes
   useEffect(() => {
