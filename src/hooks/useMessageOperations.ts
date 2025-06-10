@@ -59,11 +59,8 @@ export function useMessageOperations() {
         throw messageError;
       }
 
-      toast({
-        title: "Success",
-        description: "Message deleted successfully",
-      });
-
+      console.log("Message deleted successfully");
+      // Remove success toast - just return true for success
       return true;
     } catch (error) {
       console.error('Error in handleMessageDelete:', error);

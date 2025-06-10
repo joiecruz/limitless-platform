@@ -3,7 +3,6 @@ import { Separator } from "@/components/ui/separator";
 import { Channel } from "@/types/community";
 import { ChannelButton } from "./ChannelButton";
 import { CreateChannelDialog } from "./CreateChannelDialog";
-import { useChannelNotifications } from "@/hooks/useChannelNotifications";
 import { Hash, Plus, Lock, Unlock } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +30,7 @@ interface ChannelSidebarProps {
   onChannelSelect: (channel: Channel) => void;
   onCreatePrivateChannel: (name: string, workspaceId: string) => void;
   workspaceId: string;
+  unreadCounts: { [key: string]: number };
 }
 
 export function ChannelSidebar({
@@ -40,8 +40,8 @@ export function ChannelSidebar({
   onChannelSelect,
   onCreatePrivateChannel,
   workspaceId,
+  unreadCounts,
 }: ChannelSidebarProps) {
-  const { unreadCounts } = useChannelNotifications(activeChannel);
   const [isCreatePrivateDialogOpen, setIsCreatePrivateDialogOpen] = useState(false);
   const [isCreatePublicDialogOpen, setIsCreatePublicDialogOpen] = useState(false);
   const [newPrivateChannelName, setNewPrivateChannelName] = useState("");
@@ -214,18 +214,14 @@ export function ChannelSidebar({
                 <p className="text-sm text-gray-500 py-2">No public channels available</p>
               ) : (
                 publicChannels.map((channel) => (
-                  <button
+                  <ChannelButton
                     key={channel.id}
+                    channel={channel}
+                    isPrivate={false}
+                    isActive={activeChannel?.id === channel.id}
+                    unreadCount={unreadCounts[channel.id] || 0}
                     onClick={() => onChannelSelect(channel)}
-                    className={`w-full text-left px-2 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${
-                      activeChannel?.id === channel.id
-                        ? "bg-primary-50 text-primary-700 border border-primary-200"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Hash className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">{channel.name}</span>
-                  </button>
+                  />
                 ))
               )}
             </div>

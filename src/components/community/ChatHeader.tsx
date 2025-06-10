@@ -17,9 +17,10 @@ interface ChatHeaderProps {
   onChannelUpdate?: (updatedChannel: Channel) => void;
   onChannelDelete?: () => void;
   onOpenChannels?: () => void;
+  totalUnreadCount?: number;
 }
 
-export function ChatHeader({ channel, onChannelUpdate, onChannelDelete, onOpenChannels }: ChatHeaderProps) {
+export function ChatHeader({ channel, onChannelUpdate, onChannelDelete, onOpenChannels, totalUnreadCount = 0 }: ChatHeaderProps) {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const { onlineUsers, offlineUsers, allUsers } = useOnlineUsers(currentWorkspace?.id || null);
   const { typingUsers } = useTypingIndicator(channel);
@@ -64,8 +65,13 @@ export function ChatHeader({ channel, onChannelUpdate, onChannelDelete, onOpenCh
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isMobile && onOpenChannels && (
-            <Button variant="ghost" size="sm" onClick={onOpenChannels} className="mr-2">
+            <Button variant="ghost" size="sm" onClick={onOpenChannels} className="mr-2 relative">
               <Menu className="h-4 w-4" />
+              {totalUnreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                </span>
+              )}
             </Button>
           )}
           <Hash className="h-5 w-5 text-gray-500" />

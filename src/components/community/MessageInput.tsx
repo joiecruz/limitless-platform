@@ -24,6 +24,9 @@ interface MessageInputProps {
   channelName: string;
   onSendMessage: (content: string, imageUrl?: string) => void;
   activeChannel: Channel;
+  editingMessage?: {id: string, content: string} | null;
+  onCancelEdit?: () => void;
+  onUpdateMessage?: (updatedMessage: any) => void;
 }
 
 interface User {
@@ -31,7 +34,14 @@ interface User {
   id: string;
 }
 
-export function MessageInput({ channelName, onSendMessage, activeChannel }: MessageInputProps) {
+export function MessageInput({
+  channelName,
+  onSendMessage,
+  activeChannel,
+  editingMessage,
+  onCancelEdit,
+  onUpdateMessage
+}: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [mentionSearch, setMentionSearch] = useState("");
@@ -46,6 +56,30 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
   const { is_superadmin, is_admin } = useGlobalRole();
   const { currentWorkspace } = useContext(WorkspaceContext);
   const { data: workspaceRole } = useWorkspaceRole(currentWorkspace?.id || "");
+
+  // Set message content when editing
+  useEffect(() => {
+    if (editingMessage) {
+      setMessage(editingMessage.content);
+
+      // Stop typing indicator when editing starts
+      setTyping(false);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Focus and position cursor
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          const length = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(length, length);
+        }
+      }, 100);
+    } else {
+      setMessage("");
+    }
+  }, [editingMessage]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -85,8 +119,37 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
     }
   };
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+
+    if (editingMessage) {
+      // Handle editing
+      try {
+        const { error } = await supabase
+          .from('messages')
+          .update({
+            content: message.trim(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingMessage.id);
+
+        if (error) throw error;
+
+        // Clear editing state (removed success toast)
+        if (onCancelEdit) {
+          onCancelEdit();
+        }
+        setMessage("");
+      } catch (error) {
+        console.error('Error editing message:', error);
+        toast({
+          title: "Error",
+          description: "Failed to edit message",
+          variant: "destructive",
+        });
+      }
+    } else {
+      // Handle new message
       onSendMessage(message);
       setMessage("");
       setTyping(false);
@@ -96,27 +159,48 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
     }
   };
 
+  const handleCancel = () => {
+    if (onCancelEdit) {
+      onCancelEdit();
+    }
+    setMessage("");
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setMessage(value);
-    handleTyping();
 
-    // Check for @ mentions
-    const lastAtSymbol = value.lastIndexOf("@");
-    if (lastAtSymbol !== -1 && lastAtSymbol === value.length - 1) {
-      const rect = e.target.getBoundingClientRect();
-      setMentionPosition({
-        top: rect.bottom,
-        left: rect.left,
-      });
-      setShowMentions(true);
-      setMentionSearch("");
-    } else if (lastAtSymbol !== -1) {
-      const searchText = value.slice(lastAtSymbol + 1);
-      setMentionSearch(searchText);
-      setShowMentions(true);
+    // Always maintain cursor at end when editing
+    if (editingMessage) {
+      setTimeout(() => {
+        if (inputRef.current) {
+          const length = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(length, length);
+        }
+      }, 0);
     } else {
-      setShowMentions(false);
+      // Only handle typing indicator when not editing
+      handleTyping();
+    }
+
+    // Check for @ mentions (only when not editing)
+    if (!editingMessage) {
+      const lastAtSymbol = value.lastIndexOf("@");
+      if (lastAtSymbol !== -1 && lastAtSymbol === value.length - 1) {
+        const rect = e.target.getBoundingClientRect();
+        setMentionPosition({
+          top: rect.bottom,
+          left: rect.left,
+        });
+        setShowMentions(true);
+        setMentionSearch("");
+      } else if (lastAtSymbol !== -1) {
+        const searchText = value.slice(lastAtSymbol + 1);
+        setMentionSearch(searchText);
+        setShowMentions(true);
+      } else {
+        setShowMentions(false);
+      }
     }
   };
 
@@ -220,6 +304,18 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
 
   const isInputDisabled = !canPost() || isUploading;
 
+  const handleInputFocus = () => {
+    // Position cursor at end for editing
+    if (editingMessage && inputRef.current) {
+      setTimeout(() => {
+        if (inputRef.current) {
+          const length = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(length, length);
+        }
+      }, 200);
+    }
+  };
+
   return (
     <div className="flex items-center gap-2">
       <Input
@@ -227,11 +323,18 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
         value={message}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        placeholder={isInputDisabled && activeChannel.read_only ? "This channel is read-only" : `Message #${channelName}`}
+        placeholder={
+          editingMessage
+            ? "Edit your message..."
+            : isInputDisabled && activeChannel.read_only
+              ? "This channel is read-only"
+              : `Message #${channelName}`
+        }
         className="flex-1"
         disabled={isInputDisabled}
+        onFocus={handleInputFocus}
       />
-      {showMentions && (
+      {showMentions && !editingMessage && (
         <div className="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200">
           <Command>
             <CommandInput placeholder="Search users..." value={mentionSearch} onValueChange={setMentionSearch} />
@@ -256,29 +359,43 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
           </Command>
         </div>
       )}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleImageUpload}
-        accept="image/*"
-        className="hidden"
-        disabled={isInputDisabled}
-      />
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isInputDisabled}
-      >
-        <ImageIcon className="h-5 w-5" />
-      </Button>
+      {!editingMessage && (
+        <>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+            disabled={isInputDisabled}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isInputDisabled}
+          >
+            <ImageIcon className="h-5 w-5" />
+          </Button>
+        </>
+      )}
       <Button
         onClick={handleSendMessage}
         disabled={!message.trim() || isInputDisabled}
         size="icon"
+        className={editingMessage ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}
       >
         <SendHorizontal className="h-5 w-5" />
       </Button>
+      {editingMessage && (
+        <Button
+          onClick={handleCancel}
+          variant="outline"
+          size="icon"
+        >
+          ✕
+        </Button>
+      )}
     </div>
   );
 }

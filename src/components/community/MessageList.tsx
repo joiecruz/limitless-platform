@@ -16,6 +16,8 @@ interface MessageListProps {
   onMessageUpdate?: (updatedMessage: Message) => void;
   isPublicChannel?: boolean;
   activeChannelId?: string;
+  editingMessageId?: string | null;
+  onStartEdit?: (messageId: string, content: string) => void;
 }
 
 interface MessageItemProps {
@@ -24,11 +26,11 @@ interface MessageItemProps {
   isHighlighted: boolean;
   onMessageUpdate?: (updatedMessage: Message) => void;
   isPublicChannel?: boolean;
+  isEditing?: boolean;
+  onStartEdit?: (messageId: string, content: string) => void;
 }
 
-const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message, onReaction, isHighlighted, onMessageUpdate, isPublicChannel }, ref) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(message.content);
+const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message, onReaction, isHighlighted, onMessageUpdate, isPublicChannel, isEditing, onStartEdit }, ref) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -41,63 +43,9 @@ const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message
     getCurrentUser();
   }, []);
 
-  // Reset edit content when message changes
-  useEffect(() => {
-    setEditContent(message.content);
-  }, [message.content]);
-
   const handleEditStart = () => {
-    setIsEditing(true);
-    setEditContent(message.content);
-  };
-
-  const handleEditSave = async () => {
-    if (!editContent.trim() || editContent === message.content) {
-      setIsEditing(false);
-      setEditContent(message.content);
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .update({
-          content: editContent.trim(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', message.id)
-        .eq('user_id', currentUserId); // Ensure user can only edit their own messages
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Message edited successfully",
-      });
-
-      setIsEditing(false);
-      // Real-time subscription will handle the update automatically
-    } catch (error) {
-      console.error('Error editing message:', error);
-      toast({
-        title: "Error",
-        description: "Failed to edit message",
-        variant: "destructive",
-      });
-      setEditContent(message.content);
-    }
-  };
-
-  const handleEditCancel = () => {
-    setIsEditing(false);
-    setEditContent(message.content);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleEditSave();
-    } else if (e.key === 'Escape') {
-      handleEditCancel();
+    if (onStartEdit) {
+      onStartEdit(message.id, message.content);
     }
   };
 
@@ -118,7 +66,14 @@ const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message
 
   return (
     <div
-      ref={ref}
+      ref={(el) => {
+        // Handle both the forwarded ref and our internal messageRef
+        if (typeof ref === 'function') {
+          ref(el);
+        } else if (ref) {
+          ref.current = el;
+        }
+      }}
       className={`group flex items-start gap-3 p-2 rounded-lg transition-colors duration-500 hover:bg-gray-50 ${
         isHighlighted ? 'bg-primary-50' : ''
       }`}
@@ -149,22 +104,8 @@ const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message
 
         {/* Message content or editing interface */}
         {isEditing ? (
-          <div className="flex gap-2 items-center">
-            <Input
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              onKeyDown={handleKeyPress}
-              className="flex-1"
-              autoFocus
-            />
-            <Button size="sm" onClick={handleEditSave}>Save</Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleEditCancel}
-            >
-              Cancel
-            </Button>
+          <div className="bg-gray-100 px-3 py-2 rounded-lg">
+            <p className="text-sm text-gray-500 italic">(editing)</p>
           </div>
         ) : (
           <p className="text-sm text-gray-700">{message.content}</p>
@@ -205,7 +146,9 @@ export function MessageList({
   highlightMessageId,
   onMessageUpdate,
   isPublicChannel,
-  activeChannelId
+  activeChannelId,
+  editingMessageId,
+  onStartEdit
 }: MessageListProps) {
   const highlightedMessageRef = useRef<HTMLDivElement>(null);
   const [currentHighlightId, setCurrentHighlightId] = useState<string | null>(null);
@@ -290,6 +233,8 @@ export function MessageList({
           isHighlighted={message.id === currentHighlightId}
           onMessageUpdate={onMessageUpdate}
           isPublicChannel={isPublicChannel}
+          isEditing={message.id === editingMessageId}
+          onStartEdit={onStartEdit}
           ref={message.id === currentHighlightId ? highlightedMessageRef : undefined}
         />
       ))}

@@ -4,6 +4,7 @@ import { ChannelSidebar } from "@/components/community/ChannelSidebar";
 import { ChatArea } from "@/components/community/ChatArea";
 import { useCommunityChannels } from "@/hooks/useCommunityChannels";
 import { useCommunityMessages } from "@/hooks/useCommunityMessages";
+import { useChannelNotifications } from "@/hooks/useChannelNotifications";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGlobalRole } from "@/hooks/useGlobalRole";
@@ -22,6 +23,7 @@ export default function Community() {
   const isMobile = useIsMobile();
   const { publicChannels, privateChannels, activeChannel, setActiveChannel } = useCommunityChannels(currentWorkspace?.id || null);
   const { messages, sendMessage, isLoading, forceRefresh } = useCommunityMessages(activeChannel);
+  const { unreadCounts } = useChannelNotifications(activeChannel);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const { is_superadmin, is_admin } = useGlobalRole();
   const { data: workspaceRole } = useWorkspaceRole(currentWorkspace?.id || "");
@@ -46,6 +48,9 @@ export default function Community() {
   };
 
   const isReadOnlyDisabled = activeChannel?.read_only && !canPost();
+
+  // Calculate total unread count across all channels
+  const totalUnreadCount = Object.values(unreadCounts).reduce((total, count) => total + count, 0);
 
   // Update local messages when messages from hook change
   useEffect(() => {
@@ -151,6 +156,7 @@ export default function Community() {
           onChannelSelect={handleChannelSelect}
           onCreatePrivateChannel={handleCreatePrivateChannel}
           workspaceId={currentWorkspace?.id || ""}
+          unreadCounts={unreadCounts}
         />
       </div>
 
@@ -202,6 +208,7 @@ export default function Community() {
               onChannelSelect={handleChannelSelect}
               onCreatePrivateChannel={handleCreatePrivateChannel}
               workspaceId={currentWorkspace?.id || ""}
+              unreadCounts={unreadCounts}
             />
           </div>
         </>
@@ -219,6 +226,7 @@ export default function Community() {
           onOpenChannels={() => setSidebarOpen(true)}
           isLoading={isLoading}
           isReadOnlyDisabled={isReadOnlyDisabled}
+          totalUnreadCount={totalUnreadCount}
         />
       </div>
     </div>

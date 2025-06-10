@@ -1,6 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Channel, Message } from "@/types/community";
-import { useEffect, useRef, useMemo, useCallback } from "react";
+import { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { ChatHeader } from "./ChatHeader";
@@ -18,6 +18,7 @@ interface ChatAreaProps {
   onOpenChannels?: () => void;
   isLoading?: boolean;
   isReadOnlyDisabled?: boolean;
+  totalUnreadCount?: number;
 }
 
 export function ChatArea({
@@ -29,9 +30,48 @@ export function ChatArea({
   onChannelDelete,
   onOpenChannels,
   isLoading = false,
-  isReadOnlyDisabled = false
+  isReadOnlyDisabled = false,
+  totalUnreadCount = 0
 }: ChatAreaProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [editingMessage, setEditingMessage] = useState<{id: string, content: string} | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Mobile keyboard detection
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const initialHeight = window.visualViewport?.height || window.innerHeight;
+
+    const handleViewportChange = () => {
+      const currentHeight = window.visualViewport?.height || window.innerHeight;
+      const heightDiff = initialHeight - currentHeight;
+
+      // If height difference is significant (>150px), keyboard is open
+      setIsKeyboardOpen(heightDiff > 150);
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      return () => window.visualViewport?.removeEventListener('resize', handleViewportChange);
+    } else {
+      window.addEventListener('resize', handleViewportChange);
+      return () => window.removeEventListener('resize', handleViewportChange);
+    }
+  }, [isMobile]);
+
   const lastMessageId = useMemo(() =>
     messages.length > 0 ? messages[messages.length - 1].id : null,
     [messages]
@@ -71,6 +111,14 @@ export function ChatArea({
     onMessageUpdate: onMessageUpdate
   });
 
+  const handleStartEdit = (messageId: string, content: string) => {
+    setEditingMessage({ id: messageId, content });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
+  };
+
   return (
     <div className="h-full flex flex-col bg-white lg:border lg:border-gray-200 lg:rounded-lg lg:shadow-sm overflow-hidden">
       {activeChannel ? (
@@ -82,6 +130,7 @@ export function ChatArea({
               onChannelUpdate={onChannelUpdate}
               onChannelDelete={onChannelDelete}
               onOpenChannels={onOpenChannels}
+              totalUnreadCount={totalUnreadCount}
             />
           </div>
 
@@ -93,7 +142,12 @@ export function ChatArea({
           ) : (
             <>
               {/* Scrollable Messages Area */}
-              <div className="flex-1 overflow-hidden">
+              <div
+                className="flex-1 overflow-hidden"
+                style={isMobile && isKeyboardOpen ? {
+                  paddingBottom: '80px' // Space for fixed input area
+                } : {}}
+              >
                 <ScrollArea className="h-full" ref={scrollAreaRef}>
                   <div className="p-6">
                     <MessageList
@@ -103,14 +157,22 @@ export function ChatArea({
                       onMessageUpdate={onMessageUpdate}
                       isPublicChannel={activeChannel?.is_public || false}
                       activeChannelId={activeChannel.id}
+                      editingMessageId={editingMessage?.id || null}
+                      onStartEdit={handleStartEdit}
                     />
                   </div>
                 </ScrollArea>
               </div>
 
-              {/* Fixed Input Area or Read-only Message */}
+              {/* Input Area - Fixed on mobile when keyboard is open */}
               {isReadOnlyDisabled ? (
-                <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-gray-50">
+                <div
+                  className={`flex-shrink-0 p-4 border-t border-gray-200 bg-gray-50 ${
+                    isMobile && isKeyboardOpen
+                      ? 'fixed bottom-0 left-0 right-0 z-50 shadow-lg'
+                      : ''
+                  }`}
+                >
                   <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-600">
                     <Lock className="h-4 w-4" />
                     <span>
@@ -119,11 +181,20 @@ export function ChatArea({
                   </div>
                 </div>
               ) : (
-                <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-gray-50">
+                <div
+                  className={`flex-shrink-0 p-4 border-t border-gray-200 bg-gray-50 ${
+                    isMobile && isKeyboardOpen
+                      ? 'fixed bottom-0 left-0 right-0 z-50 shadow-lg'
+                      : ''
+                  }`}
+                >
                   <MessageInput
                     channelName={activeChannel.name}
                     onSendMessage={onSendMessage}
                     activeChannel={activeChannel}
+                    editingMessage={editingMessage}
+                    onCancelEdit={handleCancelEdit}
+                    onUpdateMessage={onMessageUpdate}
                   />
                 </div>
               )}

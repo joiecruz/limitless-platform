@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Channel, Message } from "@/types/community";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Global cache for messages with TTL
 interface CacheEntry {
@@ -66,16 +67,29 @@ const removeCacheMessage = (channelId: string, messageId: string) => {
   }
 };
 
+interface ReactionPayload {
+  new?: {
+    message_id: string;
+    emoji: string;
+    user_id: string;
+  };
+  old?: {
+    message_id: string;
+    emoji: string;
+    user_id: string;
+  };
+}
+
 export function useCommunityMessages(activeChannel: Channel | null) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const activeSubscription = useRef<any>(null);
   const currentChannelRef = useRef<string | null>(null);
 
-  // Cache user ID to avoid repeated auth calls
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
+  // Get current user ID
   useEffect(() => {
     const getCurrentUser = async () => {
       if (!globalUserCache.has('currentUser')) {
@@ -86,6 +100,18 @@ export function useCommunityMessages(activeChannel: Channel | null) {
     };
     getCurrentUser();
   }, []);
+
+  // Subscribe to message reactions changes
+  useEffect(() => {
+    if (!activeChannel?.id) return;
+
+    // Note: Reaction updates are now handled by the main message subscription
+    // to prevent duplicate message handling and key conflicts
+
+    return () => {
+      // No cleanup needed since we removed the separate reactions subscription
+    };
+  }, [activeChannel?.id]);
 
   // Optimized message fetching with comprehensive caching
   const fetchMessages = async (channelId: string, useCache: boolean = true): Promise<Message[]> => {
@@ -295,6 +321,52 @@ export function useCommunityMessages(activeChannel: Channel | null) {
               return updated;
             });
           }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_reactions'
+        },
+        async (payload) => {
+          console.log('Reaction change received:', payload);
+
+          const messageId = (payload.new as any)?.message_id || (payload.old as any)?.message_id;
+          if (!messageId) return;
+
+          // Only update if this reaction is for a message in the current channel
+          setMessages(current => {
+            const messageInChannel = current.find(msg => msg.id === messageId);
+            if (!messageInChannel) return current; // Message not in current channel
+
+            // Fetch updated reactions for this specific message
+            supabase
+              .from('message_reactions')
+              .select('*')
+              .eq('message_id', messageId)
+              .then(({ data: updatedReactions, error }) => {
+                if (error) {
+                  console.error('Error fetching updated reactions:', error);
+                  return;
+                }
+
+                setMessages(currentMessages =>
+                  currentMessages.map(message => {
+                    if (message.id === messageId) {
+                      return {
+                        ...message,
+                        message_reactions: updatedReactions || []
+                      };
+                    }
+                    return message;
+                  })
+                );
+              });
+
+            return current; // Return unchanged state, update will happen in the promise above
+          });
         }
       )
       .subscribe();
