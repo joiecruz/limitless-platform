@@ -1,4 +1,3 @@
-
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import CourseCard from "@/components/courses/CourseCard";
@@ -13,19 +12,19 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function Courses() {
   const { toast } = useToast();
-  
+
   // Set the page title
   usePageTitle("Courses & Learning | Limitless Lab");
 
   const { data: courses } = useQuery({
     queryKey: ["featured-courses"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: coursesData, error } = await supabase
         .from('courses')
         .select('*')
         .in('format', ['Online', 'Hybrid'])
         .limit(3);
-      
+
       if (error) {
         console.error('Error fetching courses:', error);
         toast({
@@ -35,8 +34,23 @@ export default function Courses() {
         });
         return [];
       }
-      
-      return data;
+
+      // Get real-time enrollment counts for all courses
+      const coursesWithCounts = await Promise.all(
+        coursesData.map(async (course) => {
+          const { count } = await supabase
+            .from("enrollments")
+            .select("*", { count: "exact", head: true })
+            .eq("course_id", course.id);
+
+          return {
+            ...course,
+            enrollee_count: count || 0
+          };
+        })
+      );
+
+      return coursesWithCounts;
     },
   });
 
@@ -51,12 +65,12 @@ export default function Courses() {
         .from('enrollments')
         .select('course_id, progress')
         .eq('user_id', userSession.session.user.id);
-      
+
       if (error) {
         console.error('Error fetching enrollments:', error);
         return [];
       }
-      
+
       return data;
     },
   });
@@ -70,9 +84,9 @@ export default function Courses() {
         url={`${window.location.origin}/courses`}
         type="website"
       />
-      
+
       <MainNav />
-      
+
       {/* Hero Section */}
       <div className="bg-[#40E0D0] py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -84,13 +98,13 @@ export default function Courses() {
             </div>
             <div className="space-y-4">
               <p className="text-gray-900 text-lg">
-                Empower yourself and your team with the latest in innovation education and training. 
-                Our courses are designed to equip you with practical tools and proven methodologies 
+                Empower yourself and your team with the latest in innovation education and training.
+                Our courses are designed to equip you with practical tools and proven methodologies
                 that will help you develop 21st century skills while having fun.
               </p>
               <p className="text-gray-900 text-lg">
-                Whether you prefer the hands-on experience of an in-person workshop or the 
-                flexibility of online learning, we offer transformative courses to help you build the 
+                Whether you prefer the hands-on experience of an in-person workshop or the
+                flexibility of online learning, we offer transformative courses to help you build the
                 skills and mindset for being an innovator and change agent.
               </p>
             </div>
@@ -113,7 +127,7 @@ export default function Courses() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {courses?.map((course) => {
               const enrollment = enrollments?.find((e) => e.course_id === course.id);
-              
+
               return (
                 <CourseCard
                   key={course.id}
@@ -132,13 +146,13 @@ export default function Courses() {
           </div>
         </div>
       </div>
-      
+
       {/* Testimonials Section */}
       <TestimonialsSection />
 
       {/* Workshops Section */}
       <WorkshopsSection />
-      
+
       {/* CTA Section */}
       <CTASection />
 

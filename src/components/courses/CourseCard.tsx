@@ -70,18 +70,18 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
     },
   });
 
-  // Fetch actual counts
+  // Fetch actual counts - this will be the source of truth
   const { data: actualCounts } = useQuery({
     queryKey: ["course-counts", course.id],
     queryFn: async () => {
       const [enrollmentsResult, lessonsResult] = await Promise.all([
         supabase
           .from('enrollments')
-          .select('id', { count: 'exact' })
+          .select('id', { count: 'exact', head: true })
           .eq('course_id', course.id),
         supabase
           .from('lessons')
-          .select('id', { count: 'exact' })
+          .select('id', { count: 'exact', head: true })
           .eq('course_id', course.id)
       ]);
 
@@ -90,6 +90,8 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
         lessonCount: lessonsResult.count || 0
       };
     },
+    staleTime: 1000 * 60, // Cache for 1 minute
+    refetchOnWindowFocus: true,
   });
 
   // Course is accessible if it's not locked, user has explicit access, or is enrolled
@@ -97,12 +99,12 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <CourseImage 
+      <CourseImage
         courseId={course.id}
         imageUrl={course.image_url}
         isAdmin={isAdmin || false}
       />
-      <CourseDetails 
+      <CourseDetails
         title={course.title}
         description={course.description}
         lessonCount={actualCounts?.lessonCount || 0}
@@ -110,10 +112,11 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
         isEnrolled={!!enrollment}
         isLocked={!isAccessible}
         format={course.format}
+        showEnrolleeCount={isAdmin || false}
       />
       {isAuthenticated && (
         <CardContent className="space-y-4">
-          <CourseActions 
+          <CourseActions
             courseId={course.id}
             courseTitle={course.title}
             isLocked={!isAccessible}

@@ -16,11 +16,12 @@ export const useCourseOperations = () => {
 
       if (coursesError) throw coursesError;
 
+      // Get real-time enrollment counts for all courses
       const coursesWithCounts = await Promise.all(
         coursesData.map(async (course) => {
           const { count } = await supabase
             .from("enrollments")
-            .select("*", { count: "exact" })
+            .select("*", { count: "exact", head: true })
             .eq("course_id", course.id);
 
           return {

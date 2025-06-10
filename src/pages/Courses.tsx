@@ -27,7 +27,7 @@ const Courses = () => {
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: coursesData, error } = await supabase
         .from('courses')
         .select('*')
         .in('format', ['Online', 'Hybrid']); // Filter for Online and Hybrid courses only
@@ -42,7 +42,22 @@ const Courses = () => {
         return [];
       }
 
-      return data as Course[];
+      // Get real-time enrollment counts for all courses
+      const coursesWithCounts = await Promise.all(
+        coursesData.map(async (course) => {
+          const { count } = await supabase
+            .from("enrollments")
+            .select("*", { count: "exact", head: true })
+            .eq("course_id", course.id);
+
+          return {
+            ...course,
+            enrollee_count: count || 0
+          };
+        })
+      );
+
+      return coursesWithCounts as Course[];
     },
   });
 
@@ -97,8 +112,12 @@ const Courses = () => {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["enrollments"] });
+      queryClient.invalidateQueries({ queryKey: ["course-counts", data.course_id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-courses"] });
     },
     onError: (error) => {
       console.error('Error enrolling in course:', error);

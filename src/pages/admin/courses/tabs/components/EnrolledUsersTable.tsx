@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EnrolledUser {
   id: string;
@@ -31,6 +32,7 @@ interface EnrolledUsersTableProps {
 const EnrolledUsersTable = ({ enrolledUsers, isSuperAdmin, courseId, onEnrollmentRevoked }: EnrolledUsersTableProps) => {
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleRevokeEnrollment = async (enrollmentId: string, email: string) => {
     try {
@@ -42,6 +44,13 @@ const EnrolledUsersTable = ({ enrolledUsers, isSuperAdmin, courseId, onEnrollmen
         .eq("id", enrollmentId);
 
       if (error) throw error;
+
+      // Invalidate course counts to update enrollment numbers immediately
+      queryClient.invalidateQueries({ queryKey: ["course-counts", courseId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+      queryClient.invalidateQueries({ queryKey: ["course-enrolled-users", courseId] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-courses"] });
 
       toast({
         title: "Enrollment revoked",
