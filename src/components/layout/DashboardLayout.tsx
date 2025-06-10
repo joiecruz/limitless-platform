@@ -137,8 +137,8 @@ export default function DashboardLayout() {
               <MobileHeader onOpenSidebar={() => setSidebarOpen(true)} />
             </div>
           )}
-          <main className="flex-1 overflow-hidden">
-            <div className="h-full overflow-hidden">
+          <main className="flex-1 overflow-y-auto">
+            <div className="h-full">
               <Outlet />
             </div>
           </main>

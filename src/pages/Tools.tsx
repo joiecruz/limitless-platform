@@ -27,6 +27,7 @@ const fetchTools = async () => {
     type: tool.type,
     price: tool.price,
     download_url: tool.download_url,
+    downloads_count: tool.downloads_count,
     created_at: tool.created_at,
     updated_at: tool.updated_at
   })) as Tool[];
