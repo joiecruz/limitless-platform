@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Channel } from "@/types/community";
 
 interface OnlineUser {
   id: string;
@@ -10,22 +9,56 @@ interface OnlineUser {
   avatar_url: string | null;
 }
 
-export function useOnlineUsers(activeChannel: Channel | null) {
+interface WorkspaceUsersData {
+  onlineUsers: OnlineUser[];
+  offlineUsers: OnlineUser[];
+  allUsers: OnlineUser[];
+}
+
+export function useOnlineUsers(workspaceId: string | null): WorkspaceUsersData {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
+  const [allUsers, setAllUsers] = useState<OnlineUser[]>([]);
 
   useEffect(() => {
-    if (!activeChannel) {
+    if (!workspaceId) {
       setOnlineUsers([]);
+      setAllUsers([]);
       return;
     }
 
-    const channelName = `presence:${activeChannel.id}`;
-    console.log("Setting up presence for channel:", channelName);
+    // Fetch all workspace users first
+    const fetchAllWorkspaceUsers = async () => {
+      const { data, error } = await supabase
+        .from('workspace_members')
+        .select(`
+          profiles!inner (
+            id,
+            username,
+            first_name,
+            last_name,
+            avatar_url
+          )
+        `)
+        .eq('workspace_id', workspaceId);
+
+      if (error) {
+        console.error('Error fetching workspace users:', error);
+        return;
+      }
+
+      const users = data?.map((member: any) => member.profiles).filter(Boolean) as OnlineUser[] || [];
+      setAllUsers(users);
+    };
+
+    fetchAllWorkspaceUsers();
+
+    const channelName = `workspace_presence:${workspaceId}`;
+    console.log("Setting up workspace presence for:", channelName);
 
     const presence = supabase.channel(channelName)
       .on('presence', { event: 'sync' }, () => {
         const presenceState = presence.presenceState();
-        console.log('Presence state:', presenceState);
+        console.log('Workspace presence state:', presenceState);
 
         // Get all unique user IDs from presence state
         const userIds = new Set<string>();
@@ -50,7 +83,7 @@ export function useOnlineUsers(activeChannel: Channel | null) {
             .in('id', Array.from(userIds));
 
           if (error) {
-            console.error('Error fetching online users:', error);
+            console.error('Error fetching workspace online users:', error);
             return;
           }
 
@@ -60,12 +93,13 @@ export function useOnlineUsers(activeChannel: Channel | null) {
         fetchUserProfiles();
       })
       .subscribe(async (status) => {
-        console.log('Presence subscription status:', status);
+        console.log('Workspace presence subscription status:', status);
         if (status === 'SUBSCRIBED') {
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
             await presence.track({
               user_id: user.id,
+              workspace_id: workspaceId,
               online_at: new Date().toISOString(),
             });
           }
@@ -75,7 +109,15 @@ export function useOnlineUsers(activeChannel: Channel | null) {
     return () => {
       presence.unsubscribe();
     };
-  }, [activeChannel?.id]);
+  }, [workspaceId]);
 
-  return onlineUsers;
+  // Calculate offline users
+  const onlineUserIds = new Set(onlineUsers.map(user => user.id));
+  const offlineUsers = allUsers.filter(user => !onlineUserIds.has(user.id));
+
+  return {
+    onlineUsers,
+    offlineUsers,
+    allUsers
+  };
 }

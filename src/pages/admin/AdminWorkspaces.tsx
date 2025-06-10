@@ -33,7 +33,7 @@ export default function AdminWorkspaces() {
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const { handleDeleteWorkspace } = useWorkspaceDelete();
-  
+
   const { data: workspaces, isLoading, refetch } = useQuery({
     queryKey: ['admin-workspaces', search],
     queryFn: async () => {
@@ -46,13 +46,13 @@ export default function AdminWorkspaces() {
           )
         `)
         .order('created_at', { ascending: false });
-        
+
       if (search) {
         query.ilike('name', `%${search}%`);
       }
-      
+
       const { data, error } = await query;
-      
+
       if (error) throw error;
       return data;
     }
@@ -71,7 +71,7 @@ export default function AdminWorkspaces() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Workspaces</h1>
         <div className="flex items-center space-x-4">
@@ -161,7 +161,7 @@ export default function AdminWorkspaces() {
         </div>
       )}
 
-      <CreateWorkspaceDialog 
+      <CreateWorkspaceDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
       />

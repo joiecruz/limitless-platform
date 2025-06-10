@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +18,7 @@ const fetchTool = async (toolId: string) => {
 
   if (error) throw error;
   if (!data) throw new Error('Tool not found');
-  
+
   return data as Tool;
 };
 
@@ -56,7 +55,7 @@ export default function ToolDetails() {
 
   if (error || !tool) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto pt-20 pb-10 px-4 sm:px-6 lg:px-8">
         <OpenGraphTags
           title="Tool Not Found"
           description="Sorry, the requested tool could not be found."
@@ -66,8 +65,8 @@ export default function ToolDetails() {
         />
         <div className="text-center">
           <h2 className="text-2xl font-semibold mb-4">Tool not found</h2>
-          <Link 
-            to="/dashboard/tools" 
+          <Link
+            to="/dashboard/tools"
             className="text-primary-600 hover:text-primary-700"
           >
             Back to Tools
@@ -78,7 +77,7 @@ export default function ToolDetails() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto p-6">
       <OpenGraphTags
         title={`${tool.name} | Innovation Tool`}
         description={tool.brief_description || ""}
@@ -86,9 +85,9 @@ export default function ToolDetails() {
         url={window.location.href}
         type="website"
       />
-      
-      <Link 
-        to="/dashboard/tools" 
+
+      <Link
+        to="/dashboard/tools"
         className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -102,7 +101,7 @@ export default function ToolDetails() {
               <h1 className="text-3xl font-bold mb-4">{tool.name}</h1>
               <p className="text-gray-600 mb-6">{tool.brief_description}</p>
               <div className="flex items-center gap-4">
-                <Button 
+                <Button
                   onClick={handleDownload}
                   className="inline-flex items-center"
                 >
@@ -158,7 +157,7 @@ export default function ToolDetails() {
         {tool.how_to_use && (
           <div>
             <h2 className="text-2xl font-semibold mb-4">How to Use</h2>
-            <div 
+            <div
               className="prose max-w-none text-gray-600"
               dangerouslySetInnerHTML={{ __html: tool.how_to_use }}
             />
@@ -168,7 +167,7 @@ export default function ToolDetails() {
         {tool.when_to_use && (
           <div>
             <h2 className="text-2xl font-semibold mb-4">When to Use</h2>
-            <div 
+            <div
               className="prose max-w-none text-gray-600"
               dangerouslySetInnerHTML={{ __html: tool.when_to_use }}
             />

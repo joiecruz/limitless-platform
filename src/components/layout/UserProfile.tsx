@@ -1,4 +1,3 @@
-
 import { ProfileDisplay } from "./ProfileDisplay";
 import { ProfileMenu } from "./ProfileMenu";
 import { useEffect, useState } from "react";
@@ -8,15 +7,15 @@ import { useUserProfile, useUserSession, getInitials, getDisplayName, getDefault
 export function UserProfile() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const { 
-    data: session, 
+  const {
+    data: session,
     isLoading: sessionLoading,
     refetch: refetchSession
   } = useUserSession();
 
-  const { 
-    data: profile, 
-    isLoading: profileLoading, 
+  const {
+    data: profile,
+    isLoading: profileLoading,
     refetch: refetchProfile,
     error: profileError
   } = useUserProfile(session?.id);
@@ -41,7 +40,7 @@ export function UserProfile() {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         refetchSession();
       }
-      
+
       if (_session?.user) {
         refetchProfile();
       }
@@ -60,7 +59,7 @@ export function UserProfile() {
 
   if (isLoading) {
     return (
-      <div className="mt-auto px-3 py-4 border-t border-gray-200">
+      <div className="px-3 py-4 border-t border-gray-200">
         <div className="flex items-center gap-3 px-2">
           <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
           <div className="flex flex-col flex-1">
@@ -77,7 +76,7 @@ export function UserProfile() {
   }
 
   return (
-    <div className="mt-auto px-3 py-4 border-t border-gray-200">
+    <div className="px-3 py-4 border-t border-gray-200">
       <div className="flex justify-center">
         <ProfileMenu>
           <ProfileDisplay

@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Image } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useContext } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { useGlobalRole } from "@/hooks/useGlobalRole";
+import { useWorkspaceRole } from "@/hooks/useWorkspaceRole";
+import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { Channel } from "@/types/community";
 import {
   Command,
@@ -15,7 +18,7 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { ImageIcon, SendHorizontal } from "lucide-react";
+import { ImageIcon, SendHorizontal, Lock } from "lucide-react";
 
 interface MessageInputProps {
   channelName: string;
@@ -40,6 +43,9 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
   const { toast } = useToast();
   const { setTyping } = useTypingIndicator(activeChannel);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const { is_superadmin, is_admin } = useGlobalRole();
+  const { currentWorkspace } = useContext(WorkspaceContext);
+  const { data: workspaceRole } = useWorkspaceRole(currentWorkspace?.id || "");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -192,6 +198,28 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
     };
   }, []);
 
+  // Check if user can post in this channel
+  const canPost = () => {
+    // If it's not a read-only channel, everyone can post
+    if (!activeChannel.read_only) {
+      return true;
+    }
+
+    // For read-only public channels, only superadmins and admins can post
+    if (activeChannel.is_public && activeChannel.read_only) {
+      return is_superadmin || is_admin;
+    }
+
+    // For read-only private channels, only workspace admins and owners can post
+    if (!activeChannel.is_public && activeChannel.read_only) {
+      return workspaceRole === 'admin' || workspaceRole === 'owner';
+    }
+
+    return true;
+  };
+
+  const isInputDisabled = !canPost() || isUploading;
+
   return (
     <div className="flex items-center gap-2">
       <Input
@@ -199,9 +227,9 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
         value={message}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        placeholder={`Message #${channelName}`}
+        placeholder={isInputDisabled && activeChannel.read_only ? "This channel is read-only" : `Message #${channelName}`}
         className="flex-1"
-        disabled={isUploading}
+        disabled={isInputDisabled}
       />
       {showMentions && (
         <div className="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200">
@@ -234,19 +262,19 @@ export function MessageInput({ channelName, onSendMessage, activeChannel }: Mess
         onChange={handleImageUpload}
         accept="image/*"
         className="hidden"
-        disabled={isUploading}
+        disabled={isInputDisabled}
       />
       <Button
         variant="ghost"
         size="icon"
         onClick={() => fileInputRef.current?.click()}
-        disabled={isUploading}
+        disabled={isInputDisabled}
       >
         <ImageIcon className="h-5 w-5" />
       </Button>
       <Button
         onClick={handleSendMessage}
-        disabled={!message.trim() || isUploading}
+        disabled={!message.trim() || isInputDisabled}
         size="icon"
       >
         <SendHorizontal className="h-5 w-5" />

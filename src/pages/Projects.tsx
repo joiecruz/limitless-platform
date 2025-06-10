@@ -18,7 +18,7 @@ export default function Projects() {
       image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
       projectPhases: ["DT"]
     };
-    
+
     setProjects([newProject, ...projects]);
   };
 
@@ -34,7 +34,7 @@ export default function Projects() {
       </div>
 
       <ProjectBanner onCreateProject={handleOpenCreateDialog} />
-      
+
       {projects.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <p className="mb-4">No projects created yet</p>
@@ -49,8 +49,8 @@ export default function Projects() {
           ))}
         </div>
       )}
-      
-      <CreateProjectDialog 
+
+      <CreateProjectDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onCreateProject={handleCreateProject}

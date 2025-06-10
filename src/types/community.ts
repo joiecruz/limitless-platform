@@ -4,6 +4,7 @@ export interface Channel {
   description: string | null;
   workspace_id: string | null;
   is_public: boolean;
+  read_only?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -23,6 +24,7 @@ export interface Message {
   user_id: string;
   created_at: string;
   updated_at: string;
+  edited_at?: string;
   image_url: string | null;
   parent_id: string | null;
   profiles?: {

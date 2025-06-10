@@ -65,8 +65,8 @@ export default function DashboardToolDetail() {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-semibold text-gray-900">Tool not found</h2>
-        <Link 
-          to="/dashboard/tools" 
+        <Link
+          to="/dashboard/tools"
           className="text-primary-600 hover:text-primary-700"
         >
           Back to Tools
@@ -76,11 +76,11 @@ export default function DashboardToolDetail() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6">
       {/* Header Section with white container */}
       <div className="bg-white border rounded-xl p-8 shadow-sm">
-        <Link 
-          to="/dashboard/tools" 
+        <Link
+          to="/dashboard/tools"
           className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8 group"
         >
           <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
@@ -92,7 +92,7 @@ export default function DashboardToolDetail() {
             <h1 className="text-3xl font-bold text-gray-900 mb-4">{tool.name}</h1>
             <p className="text-gray-600 mb-6">{tool.brief_description}</p>
             <div className="flex items-center gap-4">
-              <Button 
+              <Button
                 onClick={handleDownload}
                 className="inline-flex items-center"
               >
@@ -151,7 +151,7 @@ export default function DashboardToolDetail() {
       {tool.how_to_use && (
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-gray-900">How to Use</h2>
-          <div 
+          <div
             className="text-gray-600 leading-relaxed prose"
             dangerouslySetInnerHTML={{ __html: tool.how_to_use }}
           />
@@ -162,7 +162,7 @@ export default function DashboardToolDetail() {
       {tool.when_to_use && (
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-gray-900">When to Use</h2>
-          <div 
+          <div
             className="text-gray-600 leading-relaxed prose"
             dangerouslySetInnerHTML={{ __html: tool.when_to_use }}
           />

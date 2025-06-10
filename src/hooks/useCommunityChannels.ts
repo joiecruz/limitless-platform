@@ -63,6 +63,9 @@ export function useCommunityChannels(workspaceId: string | null) {
   // Initial fetch of channels
   useEffect(() => {
     const initializeChannels = async () => {
+      // Reset active channel when workspace changes
+      setActiveChannel(null);
+
       // Fetch public channels
       const publicData = await fetchPublicChannels();
       if (publicData) {
@@ -73,17 +76,28 @@ export function useCommunityChannels(workspaceId: string | null) {
       if (workspaceId) {
         const privateData = await fetchPrivateChannels();
         setPrivateChannels(privateData || []);
-      }
 
-      // Set default active channel if none is selected
-      if (!activeChannel && publicData && publicData.length > 0) {
-        console.log("Setting default active channel");
-        setActiveChannel(publicData[0]);
+        // Set active channel to first available channel in the workspace
+        // Prioritize public channels, then private channels
+        if (publicData && publicData.length > 0) {
+          console.log("Setting active channel to first public channel");
+          setActiveChannel(publicData[0]);
+        } else if (privateData && privateData.length > 0) {
+          console.log("Setting active channel to first private channel");
+          setActiveChannel(privateData[0]);
+        }
+      } else {
+        // If no workspace, clear private channels and set to first public channel
+        setPrivateChannels([]);
+        if (publicData && publicData.length > 0) {
+          console.log("Setting active channel to first public channel (no workspace)");
+          setActiveChannel(publicData[0]);
+        }
       }
     };
 
     initializeChannels();
-  }, [workspaceId, fetchPublicChannels, fetchPrivateChannels, activeChannel]);
+  }, [workspaceId, fetchPublicChannels, fetchPrivateChannels]); // Removed activeChannel dependency
 
   // Subscribe to channel changes
   useEffect(() => {
