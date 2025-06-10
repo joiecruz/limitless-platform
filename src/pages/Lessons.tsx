@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -116,7 +115,7 @@ const Lessons = () => {
   }
 
   return (
-    <div className="animate-fade-in px-4 md:px-0 max-w-3xl mx-auto">
+    <div className="animate-fade-in pt-20 pb-10 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
       <CourseHeader
         title={course.title}
         description="Track your progress and complete the lessons"

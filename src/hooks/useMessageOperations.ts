@@ -7,17 +7,31 @@ export function useMessageOperations() {
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
-  const handleMessageDelete = async (messageId: string) => {
+  const handleMessageDelete = async (messageId: string, userRole?: string, messageUserId?: string) => {
     try {
       setIsDeleting(true);
       console.log("Starting message deletion process for:", messageId);
-      
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.error("No authenticated user found");
         toast({
           title: "Error",
           description: "You must be logged in to delete messages",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      console.log("userRole:", userRole);
+      // Check permissions: user can delete their own messages, or admins/owners can delete any message
+      const canDelete = user.id === messageUserId || userRole === 'admin' || userRole === 'owner' || userRole === 'superadmin';
+
+      if (!canDelete) {
+        console.error("User doesn't have permission to delete this message");
+        toast({
+          title: "Error",
+          description: "You don't have permission to delete this message",
           variant: "destructive",
         });
         return false;
@@ -34,12 +48,11 @@ export function useMessageOperations() {
         throw reactionsError;
       }
 
-      // Then delete the message
+      // Then delete the message (remove user_id constraint for admins/owners)
       const { error: messageError } = await supabase
         .from('messages')
         .delete()
-        .eq('id', messageId)
-        .eq('user_id', user.id); // Ensure user can only delete their own messages
+        .eq('id', messageId);
 
       if (messageError) {
         console.error("Error deleting message:", messageError);
@@ -50,7 +63,7 @@ export function useMessageOperations() {
         title: "Success",
         description: "Message deleted successfully",
       });
-      
+
       return true;
     } catch (error) {
       console.error('Error in handleMessageDelete:', error);

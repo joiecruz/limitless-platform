@@ -27,6 +27,7 @@ const fetchTools = async () => {
     type: tool.type,
     price: tool.price,
     download_url: tool.download_url,
+    downloads_count: tool.downloads_count,
     created_at: tool.created_at,
     updated_at: tool.updated_at
   })) as Tool[];
@@ -51,7 +52,7 @@ export default function Tools() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in pt-20 pb-10 px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">
           Tools & Resources

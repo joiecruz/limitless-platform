@@ -9,22 +9,45 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useWorkspaceRole } from "@/hooks/useWorkspaceRole";
 
 interface CreateChannelDialogProps {
   onCreateChannel: (name: string, workspaceId: string) => void;
   workspaceId: string;
-  comingSoon?: boolean;
 }
 
-export function CreateChannelDialog({ onCreateChannel, workspaceId, comingSoon }: CreateChannelDialogProps) {
+export function CreateChannelDialog({ onCreateChannel, workspaceId }: CreateChannelDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [channelName, setChannelName] = useState("");
   const { toast } = useToast();
+  const { data: userRole } = useWorkspaceRole(workspaceId);
+
+  const canCreatePrivateChannel = userRole === 'admin' || userRole === 'owner';
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!channelName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a channel name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onCreateChannel(channelName, workspaceId);
+    setChannelName("");
+    setIsOpen(false);
+  };
 
   const handleClick = () => {
-    if (comingSoon) {
+    if (!canCreatePrivateChannel) {
       toast({
-        title: "Coming Soon",
-        description: "Private channels feature is coming soon!",
+        title: "Access Denied",
+        description: "Only admins and owners can create private channels",
+        variant: "destructive",
       });
       return;
     }
@@ -32,7 +55,7 @@ export function CreateChannelDialog({ onCreateChannel, workspaceId, comingSoon }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <>
       <Button
         variant="ghost"
         size="sm"
@@ -42,16 +65,27 @@ export function CreateChannelDialog({ onCreateChannel, workspaceId, comingSoon }
       >
         <Plus className="h-4 w-4" />
       </Button>
-      {!comingSoon && (
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Private Channel</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <p>Private channels feature is coming soon!</p>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="channelName">Channel Name</Label>
+              <Input
+                id="channelName"
+                value={channelName}
+                onChange={(e) => setChannelName(e.target.value)}
+                placeholder="Enter channel name"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit">Create Channel</Button>
           </div>
+          </form>
         </DialogContent>
-      )}
     </Dialog>
+    </>
   );
 }

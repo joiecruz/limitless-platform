@@ -183,7 +183,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in pt-20 pb-10 px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>

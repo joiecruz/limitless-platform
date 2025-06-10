@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <DateFilter value={dateFilter} onChange={setDateFilter} />
       </div>
-      
+
       {/* Key Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
@@ -44,21 +44,21 @@ export default function AdminDashboard() {
           subtitle="Registered accounts"
           icon={<Users className="h-5 w-5" />}
         />
-        
+
         <MetricCard
           title="Daily Active Users"
           value={analytics.activeUsers.dau.toLocaleString()}
           subtitle={`WAU: ${analytics.activeUsers.wau.toLocaleString()}`}
           icon={<Activity className="h-5 w-5" />}
         />
-        
+
         <MetricCard
           title="Activation Rate"
           value={`${analytics.activationRate.toFixed(1)}%`}
           subtitle="Users who created projects"
           icon={<Target className="h-5 w-5" />}
         />
-        
+
         <MetricCard
           title="Avg Sessions/User"
           value={analytics.sessionFrequency.toFixed(1)}
@@ -74,13 +74,13 @@ export default function AdminDashboard() {
           value={analytics.newSignups.daily.toLocaleString()}
           icon={<UserPlus className="h-5 w-5" />}
         />
-        
+
         <MetricCard
           title="New Signups This Week"
           value={analytics.newSignups.weekly.toLocaleString()}
           icon={<UserPlus className="h-5 w-5" />}
         />
-        
+
         <MetricCard
           title="New Signups This Month"
           value={analytics.newSignups.monthly.toLocaleString()}
