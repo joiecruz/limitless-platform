@@ -108,8 +108,29 @@ export function useCommunityMessages(activeChannel: Channel | null) {
     // Note: Reaction updates are now handled by the main message subscription
     // to prevent duplicate message handling and key conflicts
 
+    // Cleanup stale temporary messages every 10 seconds
+    const cleanupInterval = setInterval(() => {
+      setMessages(current => {
+        const now = Date.now();
+        const staleThreshold = 10000; // 10 seconds
+
+        const cleanedMessages = current.filter(msg => {
+          if (msg.id.startsWith('temp-')) {
+            const messageAge = now - new Date(msg.created_at).getTime();
+            if (messageAge > staleThreshold) {
+              console.log(`Removing stale temporary message ${msg.id} (${messageAge}ms old)`);
+              return false;
+            }
+          }
+          return true;
+        });
+
+        return cleanedMessages.length !== current.length ? cleanedMessages : current;
+      });
+    }, 10000);
+
     return () => {
-      // No cleanup needed since we removed the separate reactions subscription
+      clearInterval(cleanupInterval);
     };
   }, [activeChannel?.id]);
 
@@ -298,7 +319,34 @@ export function useCommunityMessages(activeChannel: Channel | null) {
             const completeMessage = await fetchCompleteMessage(payload.new.id);
             if (completeMessage && completeMessage.channel_id === activeChannel.id) {
               setMessages(current => {
+                // First, check if this exact message ID already exists (prevents all duplicates)
+                if (current.some(msg => msg.id === completeMessage.id)) {
+                  console.log(`Message ${completeMessage.id} already exists, skipping duplicate from subscription`);
+                  return current;
+                }
+
+                // Check if this is a message from the current user that might replace an optimistic message
+                if (completeMessage.user_id === currentUserId) {
+                  // Look for a temporary message that could be replaced
+                  const tempMessageIndex = current.findIndex(msg =>
+                    msg.id.startsWith('temp-') &&
+                    msg.user_id === currentUserId &&
+                    Math.abs(new Date(msg.created_at).getTime() - new Date(completeMessage.created_at).getTime()) < 5000 // Within 5 seconds
+                  );
+
+                  if (tempMessageIndex !== -1) {
+                    // Replace the temporary message with the real one
+                    const updated = [...current];
+                    updated[tempMessageIndex] = completeMessage;
+                    console.log(`Replaced temporary message with real message ${completeMessage.id} from subscription`);
+                    updateCacheMessage(activeChannel.id, completeMessage);
+                    return updated;
+                  }
+                }
+
+                // If no temporary message found, add the new message (could be from another user)
                 const updated = [...current, completeMessage];
+                console.log(`Added new message ${completeMessage.id} from subscription`);
                 updateCacheMessage(activeChannel.id, completeMessage);
                 return updated;
               });
@@ -443,12 +491,31 @@ export function useCommunityMessages(activeChannel: Channel | null) {
       // Replace optimistic message with real message
       if (data && data.channel_id === activeChannel.id) {
         setMessages(current => {
-          const updated = current.map(msg =>
-            msg.id === tempId ? data : msg
-          );
-          updateCacheMessage(activeChannel.id, data);
-          console.log(`Replaced temporary message ${tempId} with real message ${data.id} in channel ${activeChannel.id}`);
-          return updated;
+          // First check if the real message already exists (subscription beat us to it)
+          if (current.some(msg => msg.id === data.id)) {
+            console.log(`Real message ${data.id} already exists from subscription, removing temp message ${tempId}`);
+            // Just remove the temp message since real one already exists
+            const updated = current.filter(msg => msg.id !== tempId);
+            return updated;
+          }
+
+          // Check if the temporary message still exists
+          const hasTempMessage = current.some(msg => msg.id === tempId);
+          if (hasTempMessage) {
+            const updated = current.map(msg =>
+              msg.id === tempId ? data : msg
+            );
+            updateCacheMessage(activeChannel.id, data);
+            console.log(`Replaced temporary message ${tempId} with real message ${data.id} in sendMessage`);
+            return updated;
+          } else {
+            // Temporary message doesn't exist (might have been replaced by subscription)
+            // But real message also doesn't exist, so add it
+            const updated = [...current, data];
+            updateCacheMessage(activeChannel.id, data);
+            console.log(`Added real message ${data.id} in sendMessage (temp message not found)`);
+            return updated;
+          }
         });
       }
     } catch (error) {

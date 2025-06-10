@@ -2,6 +2,7 @@ import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState, useContext, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { useMessageOperations } from "@/hooks/useMessageOperations";
 import { useWorkspaceRole } from "@/hooks/useWorkspaceRole";
 import { useGlobalRole } from "@/hooks/useGlobalRole";
@@ -21,6 +22,8 @@ interface MessageActionsProps {
   onEditStart?: () => void;
   isEditing?: boolean;
   isPublicChannel?: boolean;
+  onMessageMarkDeleted?: (messageId: string) => void;
+  onMessageRestore?: (messageId: string) => void;
 }
 
 export function MessageActions({
@@ -28,7 +31,9 @@ export function MessageActions({
   onMessageUpdate,
   onEditStart,
   isEditing,
-  isPublicChannel = false
+  isPublicChannel = false,
+  onMessageMarkDeleted,
+  onMessageRestore
 }: MessageActionsProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -86,14 +91,32 @@ export function MessageActions({
         messageUserId: message.user_id
       });
 
-      const success = await handleMessageDelete(
+      const result = await handleMessageDelete(
         message.id,
         isPublicChannel ? (is_superadmin ? 'superadmin' : 'admin') : userRole,
-        message.user_id
+        message.user_id,
+        onMessageMarkDeleted,
+        onMessageRestore
       );
-      console.log("Delete operation result:", success);
 
-      if (!success) {
+      console.log("Delete operation result:", result);
+
+      if (result && typeof result === 'object' && result.success && result.undoFunction) {
+        // Show toast with undo button
+        toast({
+          title: "Message will be permanently deleted",
+          description: "Undo this action?",
+          duration: 3000,
+          action: (
+            <ToastAction
+              altText="Undo deletion"
+              onClick={result.undoFunction}
+            >
+              Undo
+            </ToastAction>
+          ),
+        });
+      } else if (result && typeof result === 'object' && !result.success) {
         console.log("Message deletion failed");
       }
     } catch (error) {

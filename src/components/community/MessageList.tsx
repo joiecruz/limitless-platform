@@ -28,9 +28,23 @@ interface MessageItemProps {
   isPublicChannel?: boolean;
   isEditing?: boolean;
   onStartEdit?: (messageId: string, content: string) => void;
+  isPendingDeletion?: boolean;
+  onMessageMarkDeleted?: (messageId: string) => void;
+  onMessageRestore?: (messageId: string) => void;
 }
 
-const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message, onReaction, isHighlighted, onMessageUpdate, isPublicChannel, isEditing, onStartEdit }, ref) => {
+const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({
+  message,
+  onReaction,
+  isHighlighted,
+  onMessageUpdate,
+  isPublicChannel,
+  isEditing,
+  onStartEdit,
+  isPendingDeletion,
+  onMessageMarkDeleted,
+  onMessageRestore
+}, ref) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -74,11 +88,11 @@ const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message
           ref.current = el;
         }
       }}
-      className={`group flex items-start gap-3 p-2 rounded-lg transition-colors duration-500 hover:bg-gray-50 ${
+      className={`group flex items-start gap-3 p-2 rounded-lg transition-all duration-500 hover:bg-gray-50 ${
         isHighlighted ? 'bg-primary-50' : ''
-      }`}
+      } ${isPendingDeletion ? 'opacity-50 bg-red-50' : ''}`}
     >
-      <Avatar className="h-8 w-8">
+      <Avatar className={`h-8 w-8 ${isPendingDeletion ? 'opacity-50' : ''}`}>
         <AvatarImage
           src={message.profiles?.avatar_url}
           alt={getDisplayName(message.profiles)}
@@ -89,15 +103,20 @@ const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message
       </Avatar>
       <div className="flex-1 space-y-1">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm">
+          <span className={`font-semibold text-sm ${isPendingDeletion ? 'line-through opacity-70' : ''}`}>
             {getDisplayName(message.profiles)}
           </span>
-          <span className="text-xs text-gray-500">
+          <span className={`text-xs text-gray-500 ${isPendingDeletion ? 'opacity-70' : ''}`}>
             {format(new Date(message.updated_at || message.created_at), "MMM d, h:mm a")}
           </span>
           {message.updated_at && message.updated_at !== message.created_at && (
-            <span className="text-xs text-gray-400 italic">
+            <span className={`text-xs text-gray-400 italic ${isPendingDeletion ? 'opacity-70' : ''}`}>
               (edited)
+            </span>
+          )}
+          {isPendingDeletion && (
+            <span className="text-xs text-red-500 italic">
+              (deleting...)
             </span>
           )}
         </div>
@@ -108,20 +127,22 @@ const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message
             <p className="text-sm text-gray-500 italic">(editing)</p>
           </div>
         ) : (
-          <p className="text-sm text-gray-700">{message.content}</p>
+          <p className={`text-sm text-gray-700 ${isPendingDeletion ? 'line-through opacity-70' : ''}`}>
+            {message.content}
+          </p>
         )}
 
         {message.image_url && (
           <img
             src={message.image_url}
             alt="Message attachment"
-            className="max-w-sm rounded-lg border"
+            className={`max-w-sm rounded-lg border ${isPendingDeletion ? 'opacity-50' : ''}`}
           />
         )}
         <MessageReactions
           messageId={message.id}
           reactions={message.message_reactions || []}
-          onReaction={onReaction}
+          onReaction={isPendingDeletion ? () => {} : onReaction}
         />
       </div>
       {/* Actions menu - only visible on hover */}
@@ -132,6 +153,8 @@ const MessageItem = memo(forwardRef<HTMLDivElement, MessageItemProps>(({ message
           onEditStart={handleEditStart}
           isEditing={isEditing}
           isPublicChannel={isPublicChannel}
+          onMessageMarkDeleted={onMessageMarkDeleted}
+          onMessageRestore={onMessageRestore}
         />
       </div>
     </div>
@@ -152,6 +175,7 @@ export function MessageList({
 }: MessageListProps) {
   const highlightedMessageRef = useRef<HTMLDivElement>(null);
   const [currentHighlightId, setCurrentHighlightId] = useState<string | null>(null);
+  const [pendingDeletions, setPendingDeletions] = useState<Set<string>>(new Set());
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   // STRICT CHANNEL FILTERING: Only show messages that belong to the active channel
@@ -174,6 +198,18 @@ export function MessageList({
     console.log(`MessageList: Displaying ${channelMessages.length} messages for channel ${activeChannelId}`);
     return channelMessages;
   }, [messages, activeChannelId]);
+
+  const handleMessageMarkDeleted = (messageId: string) => {
+    setPendingDeletions(prev => new Set(prev.add(messageId)));
+  };
+
+  const handleMessageRestore = (messageId: string) => {
+    setPendingDeletions(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(messageId);
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     if (highlightMessageId) {
@@ -235,6 +271,9 @@ export function MessageList({
           isPublicChannel={isPublicChannel}
           isEditing={message.id === editingMessageId}
           onStartEdit={onStartEdit}
+          isPendingDeletion={pendingDeletions.has(message.id)}
+          onMessageMarkDeleted={handleMessageMarkDeleted}
+          onMessageRestore={handleMessageRestore}
           ref={message.id === currentHighlightId ? highlightedMessageRef : undefined}
         />
       ))}
