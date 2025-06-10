@@ -17,13 +17,13 @@ export function MainNav() {
     queryKey: ['profile', session?.id],
     queryFn: async () => {
       if (!session?.id) return null;
-      
+
       const { data } = await supabase
         .from('profiles')
         .select('first_name, last_name, avatar_url')
         .eq('id', session.id)
         .single();
-      
+
       return data;
     },
     enabled: !!session?.id
@@ -53,8 +53,8 @@ export function MainNav() {
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
             <Link to="/">
-              <img 
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+              <img
+                src="/limitless-logo.svg"
                 alt="Limitless Lab"
                 className="h-10 w-auto" // Increased from h-8 to h-10
               />

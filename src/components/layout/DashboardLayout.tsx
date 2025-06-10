@@ -133,7 +133,7 @@ export default function DashboardLayout() {
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between px-4 py-4">
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+                src="/limitless-logo.svg"
                 alt="Limitless Lab"
                 className="h-12 w-auto"
               />
@@ -158,7 +158,7 @@ export default function DashboardLayout() {
           <div className="flex flex-col border-r border-gray-200 bg-white h-full">
             <div className="flex items-center px-6 py-4 flex-shrink-0">
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+                src="/limitless-logo.svg"
                 alt="Limitless Lab"
                 className="h-12 w-auto"
               />
