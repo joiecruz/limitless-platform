@@ -24,6 +24,8 @@ export default function Index() {
   const navigate = useNavigate();
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [displayText, setDisplayText] = useState("");
+  const [isTyping, setIsTyping] = useState(true);
   
   // Preload hero image
   useEffect(() => {
@@ -32,14 +34,34 @@ export default function Index() {
     img.onload = () => setHeroImageLoaded(true);
   }, []);
 
-  // Rotating text effect
+  // Typing effect
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTextIndex((prev) => (prev + 1) % rotatingTexts.length);
-    }, 3000); // Change every 3 seconds
+    const currentText = rotatingTexts[currentTextIndex];
+    let timeout: NodeJS.Timeout;
 
-    return () => clearInterval(interval);
-  }, []);
+    if (isTyping) {
+      if (displayText.length < currentText.length) {
+        timeout = setTimeout(() => {
+          setDisplayText(currentText.slice(0, displayText.length + 1));
+        }, 100);
+      } else {
+        timeout = setTimeout(() => {
+          setIsTyping(false);
+        }, 2000); // Pause before erasing
+      }
+    } else {
+      if (displayText.length > 0) {
+        timeout = setTimeout(() => {
+          setDisplayText(displayText.slice(0, -1));
+        }, 50);
+      } else {
+        setCurrentTextIndex((prev) => (prev + 1) % rotatingTexts.length);
+        setIsTyping(true);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayText, isTyping, currentTextIndex]);
   
   // Query to check if user is authenticated
   const { data: session } = useQuery({
@@ -74,14 +96,11 @@ export default function Index() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
-              We empower organizations and<br />
-              changemakers to create real impact using{" "}
+              We empower people to create real impact using{" "}
               <span className="inline-block min-w-[280px] text-left">
-                <span 
-                  key={currentTextIndex}
-                  className="text-[#393CA0] animate-fade-in"
-                >
-                  {rotatingTexts[currentTextIndex]}
+                <span className="text-[#393CA0]">
+                  {displayText}
+                  <span className="animate-pulse">|</span>
                 </span>
               </span>
             </h1>
