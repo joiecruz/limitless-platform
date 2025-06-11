@@ -30,8 +30,10 @@ interface MessageInputProps {
 }
 
 interface User {
-  username: string;
+  username: string | null;
   id: string;
+  first_name: string | null;
+  last_name: string | null;
 }
 
 export function MessageInput({
@@ -48,6 +50,7 @@ export function MessageInput({
   const [showMentions, setShowMentions] = useState(false);
   const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
   const [users, setUsers] = useState<User[]>([]);
+  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -85,8 +88,7 @@ export function MessageInput({
     const fetchUsers = async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("username, id")
-        .not("username", "is", null);
+        .select("username, id, first_name, last_name");
 
       if (!error && data) {
         setUsers(data as User[]);
@@ -113,8 +115,55 @@ export function MessageInput({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (showMentions && !editingMessage) {
+      const filteredUsers = users.filter(user => {
+        const searchLower = mentionSearch.toLowerCase();
+        const username = user.username?.toLowerCase() || '';
+        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim().toLowerCase();
+        const firstName = user.first_name?.toLowerCase() || '';
+        const lastName = user.last_name?.toLowerCase() || '';
+
+        return username.includes(searchLower) ||
+               fullName.includes(searchLower) ||
+               firstName.includes(searchLower) ||
+               lastName.includes(searchLower);
+      });
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (filteredUsers[selectedMentionIndex]) {
+          const user = filteredUsers[selectedMentionIndex];
+          const displayName = user.username || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Anonymous';
+          handleMentionSelect(displayName);
+        }
+        return;
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedMentionIndex(prev =>
+          prev < filteredUsers.length - 1 ? prev + 1 : 0
+        );
+        return;
+      }
+
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedMentionIndex(prev =>
+          prev > 0 ? prev - 1 : filteredUsers.length - 1
+        );
+        return;
+      }
+
+      if (e.key === "Escape") {
+        setShowMentions(false);
+        setSelectedMentionIndex(0);
+        return;
+      }
+    }
+
     if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
+      e.preventDefault();
       handleSendMessage();
     }
   };
@@ -186,29 +235,45 @@ export function MessageInput({
     // Check for @ mentions (only when not editing)
     if (!editingMessage) {
       const lastAtSymbol = value.lastIndexOf("@");
-      if (lastAtSymbol !== -1 && lastAtSymbol === value.length - 1) {
-        const rect = e.target.getBoundingClientRect();
-        setMentionPosition({
-          top: rect.bottom,
-          left: rect.left,
-        });
-        setShowMentions(true);
-        setMentionSearch("");
-      } else if (lastAtSymbol !== -1) {
-        const searchText = value.slice(lastAtSymbol + 1);
-        setMentionSearch(searchText);
-        setShowMentions(true);
+      if (lastAtSymbol !== -1) {
+        const textAfterAt = value.slice(lastAtSymbol + 1);
+
+        // Only show mentions if:
+        // 1. @ is at the very end (just typed), OR
+        // 2. @ is followed by text that doesn't contain a space (incomplete mention)
+        if (lastAtSymbol === value.length - 1) {
+          // Just typed @
+          const rect = e.target.getBoundingClientRect();
+          setMentionPosition({
+            top: rect.bottom,
+            left: rect.left,
+          });
+          setShowMentions(true);
+          setMentionSearch("");
+          setSelectedMentionIndex(0);
+        } else if (!textAfterAt.includes(" ")) {
+          // @ followed by text without space (incomplete mention)
+          setMentionSearch(textAfterAt);
+          setShowMentions(true);
+          setSelectedMentionIndex(0);
+        } else {
+          // @ followed by text with space (completed mention)
+          setShowMentions(false);
+          setSelectedMentionIndex(0);
+        }
       } else {
         setShowMentions(false);
+        setSelectedMentionIndex(0);
       }
     }
   };
 
-  const handleMentionSelect = (username: string) => {
+  const handleMentionSelect = (displayName: string) => {
     const lastAtSymbol = message.lastIndexOf("@");
-    const newValue = message.slice(0, lastAtSymbol) + `@${username} `;
+    const newValue = message.slice(0, lastAtSymbol) + `@${displayName} `;
     setMessage(newValue);
     setShowMentions(false);
+    setSelectedMentionIndex(0);
     inputRef.current?.focus();
   };
 
@@ -317,7 +382,7 @@ export function MessageInput({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 relative">
       <Input
         ref={inputRef}
         value={message}
@@ -335,24 +400,44 @@ export function MessageInput({
         onFocus={handleInputFocus}
       />
       {showMentions && !editingMessage && (
-        <div className="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200">
+        <div className="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
           <Command>
             <CommandInput placeholder="Search users..." value={mentionSearch} onValueChange={setMentionSearch} />
             <CommandList>
               <CommandEmpty>No users found</CommandEmpty>
               <CommandGroup>
                 {users
-                  .filter(user =>
-                    user.username?.toLowerCase().includes(mentionSearch.toLowerCase())
-                  )
-                  .map(user => (
-                    <CommandItem
-                      key={user.id}
-                      onSelect={() => handleMentionSelect(user.username)}
-                    >
-                      {user.username}
-                    </CommandItem>
-                  ))
+                  .filter(user => {
+                    const searchLower = mentionSearch.toLowerCase();
+                    const username = user.username?.toLowerCase() || '';
+                    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim().toLowerCase();
+                    const firstName = user.first_name?.toLowerCase() || '';
+                    const lastName = user.last_name?.toLowerCase() || '';
+
+                    return username.includes(searchLower) ||
+                           fullName.includes(searchLower) ||
+                           firstName.includes(searchLower) ||
+                           lastName.includes(searchLower);
+                  })
+                  .map((user, index) => {
+                    const displayName = user.username || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Anonymous';
+                    return (
+                      <CommandItem
+                        key={user.id}
+                        onSelect={() => handleMentionSelect(displayName)}
+                        className={index === selectedMentionIndex ? "bg-accent" : ""}
+                      >
+                        <div className="flex flex-col">
+                          <span>{displayName}</span>
+                          {user.username && user.first_name && (
+                            <span className="text-xs text-gray-500">
+                              {user.first_name} {user.last_name}
+                            </span>
+                          )}
+                        </div>
+                      </CommandItem>
+                    );
+                  })
                 }
               </CommandGroup>
             </CommandList>

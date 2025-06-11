@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -21,12 +20,15 @@ interface ProfileMenuProps {
 export function ProfileMenu({ children }: ProfileMenuProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const { data: session } = useUserSession();
   const { data: profile } = useUserProfile(session?.id);
 
   const handleSignOut = async () => {
     try {
+      // Clear localStorage before signing out
+      localStorage.clear();
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       navigate('/signin');

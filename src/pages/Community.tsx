@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ChannelSidebar } from "@/components/community/ChannelSidebar";
 import { ChatArea } from "@/components/community/ChatArea";
+import { UsernameCreationModal } from "@/components/community/UsernameCreationModal";
 import { useCommunityChannels } from "@/hooks/useCommunityChannels";
 import { useCommunityMessages } from "@/hooks/useCommunityMessages";
 import { useChannelNotifications } from "@/hooks/useChannelNotifications";
@@ -19,6 +20,8 @@ export default function Community() {
   const { currentWorkspace, setCurrentWorkspace } = useContext(WorkspaceContext);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNavigation, setShowNavigation] = useState(false);
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { publicChannels, privateChannels, activeChannel, setActiveChannel } = useCommunityChannels(currentWorkspace?.id || null);
@@ -27,6 +30,47 @@ export default function Community() {
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const { is_superadmin, is_admin } = useGlobalRole();
   const { data: workspaceRole } = useWorkspaceRole(currentWorkspace?.id || "");
+
+  // Check for username on component mount
+  useEffect(() => {
+    const checkUsernameSetup = async () => {
+      try {
+        // Check if user has already completed username setup
+        const hasCompletedSetup = localStorage.getItem('username_setup_completed');
+        if (hasCompletedSetup) return;
+
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        setCurrentUser(user);
+
+        // Check if user has a username
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+          return;
+        }
+
+        // Show modal if user doesn't have a username
+        if (!profile?.username) {
+          setShowUsernameModal(true);
+        } else {
+          // User has username, mark setup as completed
+          localStorage.setItem('username_setup_completed', 'true');
+        }
+      } catch (error) {
+        console.error('Error checking username setup:', error);
+      }
+    };
+
+    checkUsernameSetup();
+  }, []);
 
   // Calculate if user can post in the active channel
   const canPost = () => {
@@ -229,6 +273,13 @@ export default function Community() {
           totalUnreadCount={totalUnreadCount}
         />
       </div>
+
+      {/* Username Creation Modal */}
+      <UsernameCreationModal
+        open={showUsernameModal}
+        onClose={() => setShowUsernameModal(false)}
+        userId={currentUser?.id || ""}
+      />
     </div>
   );
 }
