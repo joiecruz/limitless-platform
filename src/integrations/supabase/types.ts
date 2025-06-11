@@ -126,6 +126,7 @@ export type Database = {
           id: string
           is_public: boolean
           name: string
+          read_only: boolean | null
           updated_at: string
           workspace_id: string | null
         }
@@ -135,6 +136,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           name: string
+          read_only?: boolean | null
           updated_at?: string
           workspace_id?: string | null
         }
@@ -144,6 +146,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           name?: string
+          read_only?: boolean | null
           updated_at?: string
           workspace_id?: string | null
         }
@@ -1130,6 +1133,86 @@ export type Database = {
           role?: string
           type?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      toolkit_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_url: string
+          id: string
+          order_index: number | null
+          title: string
+          toolkit_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_url: string
+          id?: string
+          order_index?: number | null
+          title: string
+          toolkit_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_url?: string
+          id?: string
+          order_index?: number | null
+          title?: string
+          toolkit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "toolkit_items_toolkit_id_fkey"
+            columns: ["toolkit_id"]
+            isOneToOne: false
+            referencedRelation: "toolkits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      toolkits: {
+        Row: {
+          about_this_tool: string | null
+          category: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          how_to_use: string | null
+          id: string
+          name: string
+          updated_at: string
+          use_cases: string | null
+          when_to_use: string | null
+        }
+        Insert: {
+          about_this_tool?: string | null
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          how_to_use?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          use_cases?: string | null
+          when_to_use?: string | null
+        }
+        Update: {
+          about_this_tool?: string | null
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          how_to_use?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          use_cases?: string | null
+          when_to_use?: string | null
         }
         Relationships: []
       }

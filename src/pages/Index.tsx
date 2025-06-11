@@ -13,15 +13,32 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
 
+const rotatingTexts = [
+  "design thinking",
+  "technology", 
+  "artificial intelligence",
+  "inclusive innovation"
+];
+
 export default function Index() {
   const navigate = useNavigate();
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
   
   // Preload hero image
   useEffect(() => {
     const img = new Image();
     img.src = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z";
     img.onload = () => setHeroImageLoaded(true);
+  }, []);
+
+  // Rotating text effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTextIndex((prev) => (prev + 1) % rotatingTexts.length);
+    }, 3000); // Change every 3 seconds
+
+    return () => clearInterval(interval);
   }, []);
   
   // Query to check if user is authenticated
@@ -56,11 +73,21 @@ export default function Index() {
       <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
-              The all-in-one platform<br />
-              empowering innovators to turn<br />
-              ideas into real impact
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
+              We empower organizations and<br />
+              changemakers to create real impact using{" "}
+              <span className="inline-block min-w-[280px] text-left">
+                <span 
+                  key={currentTextIndex}
+                  className="text-[#393CA0] animate-fade-in"
+                >
+                  {rotatingTexts[currentTextIndex]}
+                </span>
+              </span>
             </h1>
+            <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-4xl mx-auto">
+              We work with changemakers across sectors—from individuals and businesses to governments—to solve real-world problems using innovation, emerging tech, and human-centered design.
+            </p>
             <div className="flex justify-center gap-4">
               <Button 
                 size="lg"
