@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, BookOpen, CheckCircle } from "lucide-react";
+import { Clock, Users, BookOpen, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -14,10 +14,14 @@ export default function CourseDetail() {
   const { courseId } = useParams<{ courseId: string }>();
   const { toast } = useToast();
 
+  console.log("CourseDetail: courseId from params:", courseId);
+
   const { data: course, isLoading } = useQuery({
     queryKey: ["public-course", courseId],
     queryFn: async () => {
       if (!courseId) throw new Error("Course ID is required");
+
+      console.log("Fetching course with ID:", courseId);
 
       const { data, error } = await supabase
         .from("courses")
@@ -30,6 +34,7 @@ export default function CourseDetail() {
         throw error;
       }
 
+      console.log("Course data:", data);
       return data;
     },
     enabled: !!courseId,
@@ -39,6 +44,8 @@ export default function CourseDetail() {
     queryKey: ["course-lessons", courseId],
     queryFn: async () => {
       if (!courseId) throw new Error("Course ID is required");
+
+      console.log("Fetching lessons for course:", courseId);
 
       const { data, error } = await supabase
         .from("lessons")
@@ -51,15 +58,18 @@ export default function CourseDetail() {
         throw error;
       }
 
+      console.log("Lessons data:", data);
       return data;
     },
     enabled: !!courseId,
   });
 
-  const { data: enrollmentCount } = useQuery({
+  const { data: enrollmentCount = 0 } = useQuery({
     queryKey: ["course-enrollment-count", courseId],
     queryFn: async () => {
       if (!courseId) return 0;
+
+      console.log("Fetching enrollment count for course:", courseId);
 
       const { count, error } = await supabase
         .from("enrollments")
@@ -71,6 +81,7 @@ export default function CourseDetail() {
         return 0;
       }
 
+      console.log("Enrollment count:", count);
       return count || 0;
     },
     enabled: !!courseId,
@@ -80,6 +91,7 @@ export default function CourseDetail() {
   usePageTitle(course ? `${course.title} | Limitless Lab` : "Course | Limitless Lab");
 
   const totalDuration = lessons.reduce((acc, lesson) => acc + (lesson.duration || 0), 0);
+  const totalHours = Math.ceil(totalDuration / 60);
 
   const handleEnrollClick = () => {
     toast({
@@ -127,58 +139,65 @@ export default function CourseDetail() {
 
       <MainNav />
 
-      {/* Hero Section */}
-      <div className="bg-[#40E0D0] py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
-                {course.title}
-              </h1>
-              <p className="text-xl text-gray-900 mb-8">
-                {course.description}
-              </p>
-              <div className="flex flex-wrap gap-6 mb-8">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-gray-900" />
-                  <span className="text-gray-900">{lessons.length} lessons</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-gray-900" />
-                  <span className="text-gray-900">{Math.ceil(totalDuration / 60)} hours</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-gray-900" />
-                  <span className="text-gray-900">{enrollmentCount} enrolled</span>
-                </div>
-              </div>
-              <Button 
-                size="lg"
-                onClick={handleEnrollClick}
-                className="bg-[#393CA0] hover:bg-[#393CA0]/90 text-white px-8"
-              >
-                Enroll Now
-              </Button>
-            </div>
-            {course.image_url && (
-              <div className="relative">
-                <img
-                  src={course.image_url}
-                  alt={course.title}
-                  className="w-full rounded-lg shadow-lg"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Course Content */}
-      <div className="py-16 px-4 sm:px-6 lg:px-8">
+      {/* Course Header */}
+      <div className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
+          {/* Course Title */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl lg:text-5xl font-bold text-black leading-tight">
+              {course.title}
+            </h1>
+          </div>
+
+          {/* Course Image */}
+          {course.image_url && (
+            <div className="mb-8 flex justify-center">
+              <img
+                src={course.image_url}
+                alt={course.title}
+                className="w-full max-w-2xl rounded-lg shadow-lg"
+              />
+            </div>
+          )}
+
+          {/* Course Stats */}
+          <div className="flex flex-wrap justify-center gap-8 mb-8">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-gray-600" />
+              <span className="text-gray-600">{lessons.length} lessons</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-gray-600" />
+              <span className="text-gray-600">{totalHours} hours</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-gray-600" />
+              <span className="text-gray-600">{enrollmentCount} enrolled</span>
+            </div>
+          </div>
+
+          {/* Course Description */}
+          <div className="text-center mb-8">
+            <p className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+              {course.description}
+            </p>
+          </div>
+
+          {/* Enroll Button */}
+          <div className="text-center mb-12">
+            <Button 
+              size="lg"
+              onClick={handleEnrollClick}
+              className="bg-[#393CA0] hover:bg-[#393CA0]/90 text-white px-8"
+            >
+              Enroll Now
+            </Button>
+          </div>
+
+          {/* What You'll Learn */}
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">What You'll Learn</h2>
-            <div className="bg-gray-50 rounded-lg p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">What You'll Learn</h2>
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
               <p className="text-lg text-gray-700 leading-relaxed">
                 {course.description}
               </p>
@@ -187,24 +206,25 @@ export default function CourseDetail() {
 
           {/* Course Curriculum */}
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Course Curriculum</h2>
-            <div className="space-y-4">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Course Curriculum</h2>
+            <div className="space-y-4 max-w-3xl mx-auto">
               {lessons.map((lesson, index) => (
-                <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6">
+                <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6 opacity-75">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="bg-[#393CA0] text-white text-sm font-semibold px-2 py-1 rounded">
+                        <span className="bg-gray-400 text-white text-sm font-semibold px-2 py-1 rounded">
                           {index + 1}
                         </span>
-                        <h3 className="text-lg font-semibold text-gray-900">{lesson.title}</h3>
+                        <h3 className="text-lg font-semibold text-gray-600">{lesson.title}</h3>
+                        <Lock className="h-4 w-4 text-gray-400" />
                       </div>
                       {lesson.description && (
-                        <p className="text-gray-600 mb-3">{lesson.description}</p>
+                        <p className="text-gray-500 mb-3">{lesson.description}</p>
                       )}
                     </div>
                     {lesson.duration && (
-                      <div className="flex items-center gap-1 text-sm text-gray-500 ml-4">
+                      <div className="flex items-center gap-1 text-sm text-gray-400 ml-4">
                         <Clock className="h-4 w-4" />
                         <span>{lesson.duration} min</span>
                       </div>
