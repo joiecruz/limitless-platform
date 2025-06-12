@@ -20,9 +20,6 @@ export function WebNavProfileMenu({ avatarUrl, initials, displayName }: WebNavPr
   const { toast } = useToast();
 
   const handleSignOut = async () => {
-    // Clear localStorage before signing out
-    localStorage.clear();
-
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast({

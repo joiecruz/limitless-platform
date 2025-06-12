@@ -10,13 +10,12 @@ interface ProfileFormProps {
   loading: boolean;
   profile: any;
   userEmail: string;
-  onSubmit: (data: { firstName: string; lastName: string; username: string }) => void;
+  onSubmit: (data: { firstName: string; lastName: string }) => void;
 }
 
 export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFormProps) {
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
-  const [username, setUsername] = useState(profile?.username || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -26,7 +25,6 @@ export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFo
     if (profile) {
       setFirstName(profile.first_name || '');
       setLastName(profile.last_name || '');
-      setUsername(profile.username || '');
     }
   }, [profile]);
 
@@ -34,8 +32,7 @@ export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFo
     e.preventDefault();
     onSubmit({
       firstName,
-      lastName,
-      username
+      lastName
     });
   };
 
@@ -64,7 +61,7 @@ export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFo
         title: "Success",
         description: "Password updated successfully",
       });
-
+      
       // Reset password fields
       setPassword('');
       setConfirmPassword('');
@@ -102,17 +99,6 @@ export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFo
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             placeholder="Enter your last name"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
-          <Input
-            id="username"
-            name="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your username"
           />
         </div>
 

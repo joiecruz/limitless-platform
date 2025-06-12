@@ -36,18 +36,10 @@ export default function AccountSettings() {
 
       return data;
     },
-    enabled: !!session?.id,
-    staleTime: 0,
-    refetchOnMount: true,
+    enabled: !!session?.id
   });
 
-  useEffect(() => {
-    if (session?.id) {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    }
-  }, [session?.id, queryClient]);
-
-  const handleSubmit = async (formData: { firstName: string; lastName: string; username: string }) => {
+  const handleSubmit = async (formData: { firstName: string; lastName: string }) => {
     setLoading(true);
 
     try {
@@ -58,7 +50,6 @@ export default function AccountSettings() {
       const updates = {
         first_name: formData.firstName,
         last_name: formData.lastName,
-        username: formData.username,
         updated_at: new Date().toISOString(),
       };
 
