@@ -1,5 +1,5 @@
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
@@ -13,6 +13,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 export default function CourseDetail() {
   const { courseId } = useParams<{ courseId: string }>();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   console.log("CourseDetail: courseId from params:", courseId);
 
@@ -87,6 +88,16 @@ export default function CourseDetail() {
     enabled: !!courseId,
   });
 
+  // Check if user is authenticated
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Set the page title
   usePageTitle(course ? `${course.title} | Limitless Lab` : "Course | Limitless Lab");
 
@@ -94,6 +105,12 @@ export default function CourseDetail() {
   const totalHours = Math.ceil(totalDuration / 60);
 
   const handleEnrollClick = () => {
+    if (!session) {
+      // Redirect to signup if not authenticated
+      navigate('/signup');
+      return;
+    }
+
     toast({
       title: "Enrollment Coming Soon",
       description: "Course enrollment will be available soon. Sign up for our newsletter to be notified!",
@@ -104,7 +121,7 @@ export default function CourseDetail() {
     return (
       <div className="min-h-screen bg-white">
         <MainNav />
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center justify-center min-h-[60vh] pt-20">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#393CA0]"></div>
         </div>
         <Footer />
@@ -116,7 +133,7 @@ export default function CourseDetail() {
     return (
       <div className="min-h-screen bg-white">
         <MainNav />
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center justify-center min-h-[60vh] pt-20">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h1>
             <p className="text-gray-600">The course you're looking for doesn't exist or is no longer available.</p>
@@ -139,8 +156,8 @@ export default function CourseDetail() {
 
       <MainNav />
 
-      {/* Course Header */}
-      <div className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* Course Header with proper top padding */}
+      <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Course Title */}
           <div className="text-center mb-8">
@@ -190,7 +207,7 @@ export default function CourseDetail() {
               onClick={handleEnrollClick}
               className="bg-[#393CA0] hover:bg-[#393CA0]/90 text-white px-8"
             >
-              Enroll Now
+              {session ? "Enroll Now" : "Sign Up to Enroll"}
             </Button>
           </div>
 
@@ -207,32 +224,38 @@ export default function CourseDetail() {
           {/* Course Curriculum */}
           <div className="mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Course Curriculum</h2>
-            <div className="space-y-4 max-w-3xl mx-auto">
-              {lessons.map((lesson, index) => (
-                <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6 opacity-75">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="bg-gray-400 text-white text-sm font-semibold px-2 py-1 rounded">
-                          {index + 1}
-                        </span>
-                        <h3 className="text-lg font-semibold text-gray-600">{lesson.title}</h3>
-                        <Lock className="h-4 w-4 text-gray-400" />
+            {lessons.length > 0 ? (
+              <div className="space-y-4 max-w-3xl mx-auto">
+                {lessons.map((lesson, index) => (
+                  <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6 opacity-75">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-gray-400 text-white text-sm font-semibold px-2 py-1 rounded">
+                            {index + 1}
+                          </span>
+                          <h3 className="text-lg font-semibold text-gray-600">{lesson.title}</h3>
+                          <Lock className="h-4 w-4 text-gray-400" />
+                        </div>
+                        {lesson.description && (
+                          <p className="text-gray-500 mb-3">{lesson.description}</p>
+                        )}
                       </div>
-                      {lesson.description && (
-                        <p className="text-gray-500 mb-3">{lesson.description}</p>
+                      {lesson.duration && (
+                        <div className="flex items-center gap-1 text-sm text-gray-400 ml-4">
+                          <Clock className="h-4 w-4" />
+                          <span>{lesson.duration} min</span>
+                        </div>
                       )}
                     </div>
-                    {lesson.duration && (
-                      <div className="flex items-center gap-1 text-sm text-gray-400 ml-4">
-                        <Clock className="h-4 w-4" />
-                        <span>{lesson.duration} min</span>
-                      </div>
-                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Course curriculum is being prepared. Check back soon!</p>
+              </div>
+            )}
           </div>
 
           {/* Call to Action */}
@@ -246,7 +269,7 @@ export default function CourseDetail() {
               onClick={handleEnrollClick}
               className="bg-white text-[#393CA0] hover:bg-gray-100 px-8"
             >
-              Enroll Now
+              {session ? "Enroll Now" : "Sign Up to Enroll"}
             </Button>
           </div>
         </div>
