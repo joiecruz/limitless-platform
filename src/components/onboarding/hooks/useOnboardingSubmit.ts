@@ -1,172 +1,131 @@
-import { useState } from "react";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
 import { OnboardingData } from "../types";
-import { useLocation } from "react-router-dom";
 
-interface OnboardingSubmitProps {
-  onOpenChange?: (open: boolean) => void;
-  workspaceId?: string;
-  onSuccess?: () => void;
-}
-
-export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: OnboardingSubmitProps) {
-  const [loading, setLoading] = useState(false);
+export const useOnboardingSubmit = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const location = useLocation();
-  const isInvitedUser = location.state?.isInvited;
 
-  const handleSubmit = async (formData: OnboardingData) => {
-    console.log('Starting onboarding submission with data:', formData);
-    setLoading(true);
+  const submitOnboarding = async (data: OnboardingData) => {
     try {
+      console.log("Submitting onboarding data:", data);
+
+      // Get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (!user || userError) {
-        console.error('Error getting user:', userError);
-        throw new Error("No user found");
+      
+      if (userError || !user) {
+        throw new Error("User not found");
       }
 
-      console.log('Got user:', user.id);
+      console.log("Current user:", user);
 
-      // First, check if profile exists
-      const { data: existingProfile, error: profileCheckError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
         .single();
 
-      if (profileCheckError) {
-        console.error('Error checking profile:', profileCheckError);
-        // If profile doesn't exist, create it
-        if (profileCheckError.code === 'PGRST116') {
-          console.log('Profile does not exist, creating new profile');
-          const { error: insertError } = await supabase
-            .from("profiles")
-            .insert({
-              id: user.id,
-              email: user.email,
-              first_name: formData.firstName,
-              last_name: formData.lastName,
-              role: formData.role,
-              company_size: formData.companySize,
-              goals: formData.goals,
-              referral_source: formData.referralSource
-            });
+      console.log("Existing profile:", existingProfile);
 
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
-            throw insertError;
-          }
-        } else {
-          throw profileCheckError;
-        }
-      } else {
-        console.log('Profile exists, updating');
-        // Update existing profile
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            role: formData.role,
-            company_size: formData.companySize,
-            goals: formData.goals,
-            referral_source: formData.referralSource
-          })
-          .eq("id", user.id);
+      // Update profile with onboarding data
+      const profileUpdate = {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        role: data.role,
+        company_size: data.companySize,
+        goals: Array.isArray(data.goals) ? data.goals.join(', ') : data.goals,
+        referral_source: data.referralSource,
+      };
 
-        if (updateError) {
-          console.error('Error updating profile:', updateError);
-          throw updateError;
-        }
-      }
+      console.log("Profile update data:", profileUpdate);
 
-      // If invited user, update password
-      if (isInvitedUser && formData.password) {
-        console.log('Updating password for invited user');
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: formData.password
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          email: user.email || '',
+          ...profileUpdate
         });
 
-        if (passwordError) {
-          console.error('Error updating password:', passwordError);
-          throw passwordError;
-        }
+      if (profileError) {
+        console.error("Profile update error:", profileError);
+        throw profileError;
       }
 
-      // Create workspace only if:
-      // 1. The user has provided a workspace name AND
-      // 2. The user is not an invited user (invited users join existing workspaces)
-      if (formData.workspaceName && !isInvitedUser) {
-        console.log('Creating workspace:', formData.workspaceName);
-        const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
+      // Create workspace if provided
+      if (data.workspaceName) {
+        console.log("Creating workspace:", data.workspaceName);
+        
+        const workspaceSlug = data.workspaceName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)+/g, '');
 
-        try {
-          // Use the RPC function to create workspace with owner role
-          const { data: workspace, error: workspaceError } = await supabase
-            .rpc('create_workspace_with_owner', {
-              workspace_name: formData.workspaceName,
-              workspace_slug: slug,
-              owner_id: user.id
-            });
+        const { data: workspace, error: workspaceError } = await supabase
+          .from('workspaces')
+          .insert({
+            name: data.workspaceName,
+            slug: workspaceSlug,
+          })
+          .select()
+          .single();
 
-          if (workspaceError) {
-            console.error('Error creating workspace:', workspaceError);
-            throw workspaceError;
-          }
-
-          console.log('Workspace created successfully:', workspace);
-
-          // Invalidate queries to refresh workspace data
-          await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-
-          // Set the newly created workspace as the selected one
-          if (workspace) {
-            const workspaceObj = typeof workspace === 'string' ? JSON.parse(workspace) : workspace;
-            localStorage.setItem('selectedWorkspace', workspaceObj.id);
-          }
-        } catch (error) {
-          console.error('Error in workspace creation:', error);
-          throw error;
+        if (workspaceError) {
+          console.error("Workspace creation error:", workspaceError);
+          throw workspaceError;
         }
-      } else {
-        console.log('No workspace creation needed:',
-          formData.workspaceName ? 'Has workspace name' : 'No workspace name',
-          isInvitedUser ? 'Is invited user' : 'Not invited user');
+
+        console.log("Created workspace:", workspace);
+
+        // Add user as owner of the workspace
+        const { error: memberError } = await supabase
+          .from('workspace_members')
+          .insert({
+            user_id: user.id,
+            workspace_id: workspace.id,
+            role: 'owner',
+          });
+
+        if (memberError) {
+          console.error("Workspace member error:", memberError);
+          throw memberError;
+        }
+
+        console.log("Added user as workspace owner");
       }
 
-      toast({
-        title: "Setup complete",
-        description: "Your profile has been created successfully.",
-      });
+      // Track onboarding completion event
+      const { error: eventError } = await supabase
+        .from('events')
+        .insert({
+          user_id: user.id,
+          event_type: 'onboarding_completed',
+          event_data: {
+            goals: Array.isArray(data.goals) ? data.goals : [data.goals],
+            referral_source: data.referralSource,
+            has_workspace: !!data.workspaceName
+          }
+        });
 
-      // Mark onboarding as completed to prevent double triggering
-      localStorage.setItem('onboardingCompleted', Date.now().toString());
+      if (eventError) {
+        console.error("Event tracking error:", eventError);
+        // Don't throw here as it's not critical
+      }
 
-      if (onOpenChange) onOpenChange(false);
-      if (onSuccess) onSuccess();
+      console.log("Onboarding completed successfully");
+      return { success: true };
+
     } catch (error: any) {
-      console.error("Error in onboarding:", error);
+      console.error("Onboarding submission error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to complete setup",
+        description: error.message || "Failed to complete onboarding. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
-  const generateSlug = (name: string): string => {
-    return name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  };
-
-  return { handleSubmit, loading };
-}
+  return { submitOnboarding };
+};

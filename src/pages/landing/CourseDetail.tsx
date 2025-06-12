@@ -121,7 +121,7 @@ export default function CourseDetail() {
     return (
       <div className="min-h-screen bg-white">
         <MainNav />
-        <div className="flex items-center justify-center min-h-[60vh] pt-20">
+        <div className="flex items-center justify-center min-h-[60vh] pt-32">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#393CA0]"></div>
         </div>
         <Footer />
@@ -133,7 +133,7 @@ export default function CourseDetail() {
     return (
       <div className="min-h-screen bg-white">
         <MainNav />
-        <div className="flex items-center justify-center min-h-[60vh] pt-20">
+        <div className="flex items-center justify-center min-h-[60vh] pt-32">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h1>
             <p className="text-gray-600">The course you're looking for doesn't exist or is no longer available.</p>
@@ -157,10 +157,10 @@ export default function CourseDetail() {
       <MainNav />
 
       {/* Course Header with proper top padding */}
-      <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+      <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Course Title */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-12">
             <h1 className="text-4xl lg:text-5xl font-bold text-black leading-tight">
               {course.title}
             </h1>
@@ -168,7 +168,7 @@ export default function CourseDetail() {
 
           {/* Course Image */}
           {course.image_url && (
-            <div className="mb-8 flex justify-center">
+            <div className="mb-12 flex justify-center">
               <img
                 src={course.image_url}
                 alt={course.title}
@@ -178,7 +178,7 @@ export default function CourseDetail() {
           )}
 
           {/* Course Stats */}
-          <div className="flex flex-wrap justify-center gap-8 mb-8">
+          <div className="flex flex-wrap justify-center gap-8 mb-12">
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-gray-600" />
               <span className="text-gray-600">{lessons.length} lessons</span>
@@ -194,14 +194,14 @@ export default function CourseDetail() {
           </div>
 
           {/* Course Description */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-12">
             <p className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
               {course.description}
             </p>
           </div>
 
           {/* Enroll Button */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <Button 
               size="lg"
               onClick={handleEnrollClick}
@@ -212,8 +212,8 @@ export default function CourseDetail() {
           </div>
 
           {/* What You'll Learn */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">What You'll Learn</h2>
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What You'll Learn</h2>
             <div className="bg-gray-50 rounded-lg p-8 text-center">
               <p className="text-lg text-gray-700 leading-relaxed">
                 {course.description}
@@ -222,8 +222,8 @@ export default function CourseDetail() {
           </div>
 
           {/* Course Curriculum */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Course Curriculum</h2>
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Course Curriculum</h2>
             {lessons.length > 0 ? (
               <div className="space-y-4 max-w-3xl mx-auto">
                 {lessons.map((lesson, index) => (
