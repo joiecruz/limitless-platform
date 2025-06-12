@@ -1,6 +1,6 @@
+
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import CourseCard from "@/components/courses/CourseCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -9,9 +9,14 @@ import { WorkshopsSection } from "@/components/site-config/WorkshopsSection";
 import { CTASection } from "@/components/site-config/CTASection";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Clock, Users, BookOpen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Courses() {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Set the page title
   usePageTitle("Courses & Learning | Limitless Lab");
@@ -22,8 +27,7 @@ export default function Courses() {
       const { data: coursesData, error } = await supabase
         .from('courses')
         .select('*')
-        .in('format', ['Online', 'Hybrid'])
-        .limit(3);
+        .in('format', ['Online', 'Hybrid']);
 
       if (error) {
         console.error('Error fetching courses:', error);
@@ -43,35 +47,20 @@ export default function Courses() {
             .select("*", { count: "exact", head: true })
             .eq("course_id", course.id);
 
+          const { count: lessonCount } = await supabase
+            .from("lessons")
+            .select("*", { count: "exact", head: true })
+            .eq("course_id", course.id);
+
           return {
             ...course,
-            enrollee_count: count || 0
+            enrollee_count: count || 0,
+            lesson_count: lessonCount || 0
           };
         })
       );
 
       return coursesWithCounts;
-    },
-  });
-
-  // Fetch enrollments for authenticated user
-  const { data: enrollments } = useQuery({
-    queryKey: ["enrollments"],
-    queryFn: async () => {
-      const { data: userSession } = await supabase.auth.getSession();
-      if (!userSession?.session?.user?.id) return [];
-
-      const { data, error } = await supabase
-        .from('enrollments')
-        .select('course_id, progress')
-        .eq('user_id', userSession.session.user.id);
-
-      if (error) {
-        console.error('Error fetching enrollments:', error);
-        return [];
-      }
-
-      return data;
     },
   });
 
@@ -125,24 +114,43 @@ export default function Courses() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {courses?.map((course) => {
-              const enrollment = enrollments?.find((e) => e.course_id === course.id);
+            {courses?.map((course) => (
+              <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                {course.image_url && (
+                  <div className="w-full h-48 overflow-hidden">
+                    <img
+                      src={course.image_url}
+                      alt={course.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{course.title}</h3>
+                  <p className="text-gray-600 mb-4 line-clamp-3">{course.description}</p>
+                  
+                  <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <BookOpen className="h-4 w-4" />
+                      <span>{course.lesson_count} lessons</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      <span>{course.enrollee_count} enrolled</span>
+                    </div>
+                  </div>
 
-              return (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  enrollment={enrollment}
-                  onEnroll={() => {
-                    toast({
-                      title: "Coming Soon",
-                      description: "Course enrollment will be available soon.",
-                    });
-                  }}
-                  isEnrolling={false}
-                />
-              );
-            })}
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => navigate(`/courses/${course.id}`)}
+                      className="flex-1 bg-[#393CA0] hover:bg-[#393CA0]/90"
+                    >
+                      View Details
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </div>

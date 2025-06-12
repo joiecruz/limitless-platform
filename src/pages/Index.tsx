@@ -145,7 +145,7 @@ export default function Index() {
       <div className="py-8">
         <div className="mb-8 text-center">
           <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900">
-            Join the growing network of organizations innovating for social good
+            We've worked with
           </h3>
         </div>
         <Suspense fallback={<LoadingPage />}>

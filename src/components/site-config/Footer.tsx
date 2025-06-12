@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-200 pt-8 text-center text-gray-500 text-sm">
-          <p>© 2024 Limitless Lab Innovations Pte. Ltd. All rights reserved.</p>
+          <p>© 2024 Limitless Lab Organization, Inc. All rights reserved.</p>
         </div>
       </div>
     </footer>
