@@ -136,5 +136,5 @@ export const useOnboardingSubmit = () => {
     return submitOnboarding(data);
   };
 
-  return { submitOnboarding, handleSubmit, loading };
+  return { submitOnboarding: handleSubmit, loading };
 };

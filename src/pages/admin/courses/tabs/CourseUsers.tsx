@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-import { EnrolledUsersTable } from "./components/EnrolledUsersTable";
-import { UsersWithAccessTable } from "./components/UsersWithAccessTable";
+import EnrolledUsersTable from "./components/EnrolledUsersTable";
+import UsersWithAccessTable from "./components/UsersWithAccessTable";
 
 interface CourseUsersProps {
   courseId: string;
