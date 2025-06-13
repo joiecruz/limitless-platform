@@ -203,7 +203,7 @@ export type Database = {
           format: string
           id: string
           image_url: string | null
-          learning_outcomes: string[] | null
+          learning_outcomes: string | null
           lesson_count: number | null
           locked: boolean | null
           long_description: string | null
@@ -218,7 +218,7 @@ export type Database = {
           format?: string
           id?: string
           image_url?: string | null
-          learning_outcomes?: string[] | null
+          learning_outcomes?: string | null
           lesson_count?: number | null
           locked?: boolean | null
           long_description?: string | null
@@ -233,7 +233,7 @@ export type Database = {
           format?: string
           id?: string
           image_url?: string | null
-          learning_outcomes?: string[] | null
+          learning_outcomes?: string | null
           lesson_count?: number | null
           locked?: boolean | null
           long_description?: string | null

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, BookOpen, Lock } from "lucide-react";
+import { Clock, Users, BookOpen, Lock, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -136,6 +136,13 @@ export default function CourseDetail() {
     });
   };
 
+  // Parse learning outcomes - handle both array and string formats
+  const learningOutcomes = course?.learning_outcomes 
+    ? Array.isArray(course.learning_outcomes) 
+      ? course.learning_outcomes 
+      : course.learning_outcomes.split('\n').filter(outcome => outcome.trim())
+    : [];
+
   if (isLoading || lessonsLoading || enrollmentLoading) {
     return (
       <div className="min-h-screen bg-white">
@@ -230,15 +237,22 @@ export default function CourseDetail() {
             </Button>
           </div>
 
-          {/* What You'll Learn */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What You'll Learn</h2>
-            <div className="bg-gray-50 rounded-lg p-8 text-center">
-              <p className="text-lg text-gray-700 leading-relaxed">
-                {course.description}
-              </p>
+          {/* What You'll Learn - Using Learning Outcomes */}
+          {learningOutcomes.length > 0 && (
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What You'll Learn</h2>
+              <div className="bg-gray-50 rounded-lg p-8">
+                <ul className="space-y-4 max-w-3xl mx-auto">
+                  {learningOutcomes.map((outcome, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckCircle className="h-6 w-6 text-[#393CA0] mt-0.5 flex-shrink-0" />
+                      <span className="text-lg text-gray-700">{outcome}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Course Curriculum - Always show lessons with proper styling */}
           <div className="mb-16">

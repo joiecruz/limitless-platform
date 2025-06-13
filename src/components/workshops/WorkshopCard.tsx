@@ -1,7 +1,8 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface Workshop {
   id: string;
@@ -17,6 +18,8 @@ interface WorkshopCardProps {
 }
 
 const WorkshopCard = ({ workshop }: WorkshopCardProps) => {
+  const navigate = useNavigate();
+
   // Helper function to get badge color based on format
   const getBadgeColor = (format: string) => {
     switch (format.toLowerCase()) {
@@ -25,6 +28,10 @@ const WorkshopCard = ({ workshop }: WorkshopCardProps) => {
       default:
         return 'bg-gray-50 text-gray-600';
     }
+  };
+
+  const handleLearnMore = () => {
+    navigate(`/courses/${workshop.id}`);
   };
 
   return (
@@ -48,9 +55,9 @@ const WorkshopCard = ({ workshop }: WorkshopCardProps) => {
       <CardContent>
         <Button 
           className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90"
-          onClick={() => window.open('https://calendar.app.google/Sbztdtob1XHqj1gbA', '_blank')}
+          onClick={handleLearnMore}
         >
-          Book Exploratory Call
+          Learn More
           <ArrowRight className="ml-2" />
         </Button>
       </CardContent>
