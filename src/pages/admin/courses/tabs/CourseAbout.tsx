@@ -25,7 +25,7 @@ interface CourseAboutProps {
     created_at: string;
     locked: boolean;
     format: string;
-    learning_outcomes: string[] | null;
+    learning_outcomes: string | null;
     price: number | null;
   };
 }
@@ -36,8 +36,15 @@ const CourseAbout = ({ course }: CourseAboutProps) => {
   const [longDescription, setLongDescription] = useState(course.long_description || "");
   const [imageUrl, setImageUrl] = useState(course.image_url || "");
   const [format, setFormat] = useState(course.format || "Online");
+  
+  // Parse learning outcomes from string to array for UI
+  const parseLearningOutcomes = (outcomes: string | null): string[] => {
+    if (!outcomes) return [];
+    return outcomes.split('\n').filter(outcome => outcome.trim());
+  };
+  
   const [learningOutcomes, setLearningOutcomes] = useState<string[]>(
-    course.learning_outcomes || []
+    parseLearningOutcomes(course.learning_outcomes)
   );
   const [price, setPrice] = useState(course.price?.toString() || "0");
   const [isSaving, setIsSaving] = useState(false);
@@ -46,6 +53,11 @@ const CourseAbout = ({ course }: CourseAboutProps) => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Convert learning outcomes array back to string
+      const learningOutcomesString = learningOutcomes
+        .filter(outcome => outcome.trim())
+        .join('\n');
+
       const { error } = await supabase
         .from("courses")
         .update({
@@ -54,7 +66,7 @@ const CourseAbout = ({ course }: CourseAboutProps) => {
           long_description: longDescription,
           image_url: imageUrl,
           format,
-          learning_outcomes: learningOutcomes,
+          learning_outcomes: learningOutcomesString,
           price: parseFloat(price),
         })
         .eq("id", course.id);
