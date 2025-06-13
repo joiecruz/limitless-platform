@@ -41,10 +41,14 @@ export default function CourseDetail() {
     enabled: !!courseId,
   });
 
-  const { data: lessons = [] } = useQuery({
+  // Fetch lessons with better error handling
+  const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
     queryKey: ["course-lessons", courseId],
     queryFn: async () => {
-      if (!courseId) throw new Error("Course ID is required");
+      if (!courseId) {
+        console.log("No courseId provided for lessons query");
+        return [];
+      }
 
       console.log("Fetching lessons for course:", courseId);
 
@@ -56,19 +60,24 @@ export default function CourseDetail() {
 
       if (error) {
         console.error("Error fetching lessons:", error);
-        throw error;
+        // Don't throw, return empty array to show empty state
+        return [];
       }
 
       console.log("Lessons data:", data);
-      return data;
+      return data || [];
     },
     enabled: !!courseId,
   });
 
-  const { data: enrollmentCount = 0 } = useQuery({
+  // Fetch real-time enrollment count
+  const { data: enrollmentCount = 0, isLoading: enrollmentLoading } = useQuery({
     queryKey: ["course-enrollment-count", courseId],
     queryFn: async () => {
-      if (!courseId) return 0;
+      if (!courseId) {
+        console.log("No courseId provided for enrollment count");
+        return 0;
+      }
 
       console.log("Fetching enrollment count for course:", courseId);
 
@@ -86,6 +95,7 @@ export default function CourseDetail() {
       return count || 0;
     },
     enabled: !!courseId,
+    refetchOnWindowFocus: true,
   });
 
   // Check if user is authenticated
@@ -101,8 +111,17 @@ export default function CourseDetail() {
   // Set the page title
   usePageTitle(course ? `${course.title} | Limitless Lab` : "Course | Limitless Lab");
 
+  // Calculate totals from actual lesson data
   const totalDuration = lessons.reduce((acc, lesson) => acc + (lesson.duration || 0), 0);
   const totalHours = Math.ceil(totalDuration / 60);
+  const lessonCount = lessons.length;
+
+  console.log("Calculated stats:", {
+    lessonCount,
+    totalDuration,
+    totalHours,
+    enrollmentCount
+  });
 
   const handleEnrollClick = () => {
     if (!session) {
@@ -117,7 +136,7 @@ export default function CourseDetail() {
     });
   };
 
-  if (isLoading) {
+  if (isLoading || lessonsLoading || enrollmentLoading) {
     return (
       <div className="min-h-screen bg-white">
         <MainNav />
@@ -177,11 +196,11 @@ export default function CourseDetail() {
             </div>
           )}
 
-          {/* Course Stats */}
+          {/* Course Stats - Using real-time data */}
           <div className="flex flex-wrap justify-center gap-8 mb-12">
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-gray-600" />
-              <span className="text-gray-600">{lessons.length} lessons</span>
+              <span className="text-gray-600">{lessonCount} lessons</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-gray-600" />
@@ -221,10 +240,10 @@ export default function CourseDetail() {
             </div>
           </div>
 
-          {/* Course Curriculum */}
+          {/* Course Curriculum - Always show lessons with proper styling */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Course Curriculum</h2>
-            {lessons.length > 0 ? (
+            {lessonCount > 0 ? (
               <div className="space-y-4 max-w-3xl mx-auto">
                 {lessons.map((lesson, index) => (
                   <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6 opacity-75">

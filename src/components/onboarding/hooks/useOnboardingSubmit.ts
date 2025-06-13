@@ -2,11 +2,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingData } from "../types";
+import { useState } from "react";
 
 export const useOnboardingSubmit = () => {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
   const submitOnboarding = async (data: OnboardingData) => {
+    setLoading(true);
     try {
       console.log("Submitting onboarding data:", data);
 
@@ -124,8 +127,14 @@ export const useOnboardingSubmit = () => {
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  return { submitOnboarding };
+  const handleSubmit = (data: OnboardingData) => {
+    return submitOnboarding(data);
+  };
+
+  return { submitOnboarding, handleSubmit, loading };
 };

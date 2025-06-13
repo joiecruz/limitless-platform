@@ -1,8 +1,21 @@
+
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Building } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -11,126 +24,160 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useState } from "react";
-import { WorkspaceList } from "@/components/workspace/WorkspaceList";
-import { CreateWorkspaceDialog } from "@/components/admin/workspaces/CreateWorkspaceDialog";
-import { useWorkspaces } from "@/components/workspace/useWorkspaces";
-import { Workspace } from "@/components/workspace/types";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 
 interface CourseWorkspacesProps {
   courseId: string;
 }
 
+interface WorkspaceAccess {
+  id: string;
+  workspace_id: string;
+  course_id: string;
+  created_at: string;
+  workspaces: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+}
+
+interface Workspace {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
+  const [isGrantingAccess, setIsGrantingAccess] = useState(false);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState("");
+  const [isGrantDialogOpen, setIsGrantDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const { data: workspaces, isError: workspacesError } = useWorkspaces();
 
-  // Query to check if user is superadmin
-  const { data: currentUser } = useQuery({
-    queryKey: ["current-user"],
+  // Fetch workspaces with access to this course
+  const { data: workspacesWithAccess = [], isLoading: accessLoading } = useQuery({
+    queryKey: ["course-workspace-access", courseId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No authenticated user");
-
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (error) throw error;
-      return profile;
-    },
-  });
-
-  const { data: workspaceAccess, isLoading, refetch } = useQuery({
-    queryKey: ["course-workspaces", courseId],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("workspace_course_access")
-          .select(`
-            *,
-            workspaces:workspace_id (
-              id,
-              name,
-              slug,
-              workspace_members (
-                count
-              )
-            )
-          `)
-          .eq("course_id", courseId);
-
-        if (error) throw error;
-        return data;
-      } catch (error) {
-        console.error("Error fetching workspace access:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load workspace access data",
-          variant: "destructive",
-        });
-        return [];
-      }
-    },
-  });
-
-  const handleAddWorkspace = async (workspace: Workspace) => {
-    try {
-      // Check if access already exists
-      const { data: existingAccess } = await supabase
+      const { data, error } = await supabase
         .from("workspace_course_access")
-        .select("id")
-        .eq("workspace_id", workspace.id)
-        .eq("course_id", courseId)
-        .single();
+        .select(`
+          *,
+          workspaces!inner (
+            id,
+            name,
+            slug
+          )
+        `)
+        .eq("course_id", courseId);
 
-      if (existingAccess) {
-        toast({
-          title: "Error",
-          description: "This workspace already has access to the course",
-          variant: "destructive",
-        });
-        return;
+      if (error) {
+        console.error("Error fetching workspace access:", error);
+        throw error;
       }
 
+      return data as WorkspaceAccess[];
+    },
+  });
+
+  // Fetch all workspaces for granting access
+  const { data: allWorkspaces = [], isLoading: workspacesLoading } = useQuery({
+    queryKey: ["all-workspaces"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("workspaces")
+        .select("id, name, slug")
+        .order("name");
+
+      if (error) {
+        console.error("Error fetching workspaces:", error);
+        throw error;
+      }
+
+      return data as Workspace[];
+    },
+  });
+
+  // Get member count for each workspace
+  const { data: memberCounts = {} } = useQuery({
+    queryKey: ["workspace-member-counts", workspacesWithAccess.map(w => w.workspace_id)],
+    queryFn: async () => {
+      if (workspacesWithAccess.length === 0) return {};
+
+      const counts: Record<string, number> = {};
+      
+      for (const workspace of workspacesWithAccess) {
+        const { count, error } = await supabase
+          .from("workspace_members")
+          .select("*", { count: "exact", head: true })
+          .eq("workspace_id", workspace.workspace_id);
+
+        if (error) {
+          console.error(`Error fetching member count for workspace ${workspace.workspace_id}:`, error);
+          counts[workspace.workspace_id] = 0;
+        } else {
+          counts[workspace.workspace_id] = count || 0;
+        }
+      }
+
+      return counts;
+    },
+    enabled: workspacesWithAccess.length > 0,
+  });
+
+  const handleGrantAccess = async () => {
+    if (!selectedWorkspaceId) {
+      toast({
+        title: "Error",
+        description: "Please select a workspace",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGrantingAccess(true);
+    try {
       const { error } = await supabase
         .from("workspace_course_access")
         .insert({
-          workspace_id: workspace.id,
+          workspace_id: selectedWorkspaceId,
           course_id: courseId,
         });
 
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Workspace access granted successfully",
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["course-workspaces", courseId] });
-      setIsDialogOpen(false);
+      if (error) {
+        if (error.code === "23505") {
+          toast({
+            title: "Error",
+            description: "This workspace already has access to the course",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "Success",
+          description: "Access granted successfully",
+        });
+        
+        queryClient.invalidateQueries({ queryKey: ["course-workspace-access", courseId] });
+        setIsGrantDialogOpen(false);
+        setSelectedWorkspaceId("");
+      }
     } catch (error: any) {
-      console.error("Error granting workspace access:", error);
+      console.error("Error granting access:", error);
       toast({
         title: "Error",
-        description: "Failed to grant workspace access",
+        description: error.message || "Failed to grant access",
         variant: "destructive",
       });
+    } finally {
+      setIsGrantingAccess(false);
     }
   };
 
-  const handleRevokeAccess = async (accessId: string) => {
+  const handleRevokeAccess = async (accessId: string, workspaceName: string) => {
     try {
       const { error } = await supabase
         .from("workspace_course_access")
@@ -141,25 +188,26 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
 
       toast({
         title: "Success",
-        description: "Workspace access revoked successfully",
+        description: `Access revoked for ${workspaceName}`,
       });
-      refetch();
-    } catch (error) {
+      
+      queryClient.invalidateQueries({ queryKey: ["course-workspace-access", courseId] });
+    } catch (error: any) {
       console.error("Error revoking access:", error);
       toast({
         title: "Error",
-        description: "Failed to revoke workspace access",
+        description: error.message || "Failed to revoke access",
         variant: "destructive",
       });
     }
   };
 
-  const handleCreateNewWorkspace = () => {
-    setIsDialogOpen(false);
-    setShowCreateDialog(true);
-  };
+  // Filter workspaces that don't already have access
+  const availableWorkspaces = allWorkspaces.filter(
+    workspace => !workspacesWithAccess.some(access => access.workspace_id === workspace.id)
+  );
 
-  if (isLoading) {
+  if (accessLoading || workspacesLoading) {
     return (
       <div className="flex items-center justify-center h-48">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -167,90 +215,132 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
     );
   }
 
-  if (workspacesError) {
-    return (
-      <div className="p-4 text-center text-red-500">
-        Failed to load workspaces. Please try again later.
-      </div>
-    );
-  }
-
-  // Only show the interface if user is superadmin or admin
-  if (!currentUser?.is_superadmin && !currentUser?.is_admin) {
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        You don't have permission to manage workspace access.
-      </div>
-    );
-  }
-
-  // Extract workspace IDs that already have access
-  const existingWorkspaceIds = workspaceAccess?.map(access => access.workspaces?.id) || [];
-
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Workspace Access</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <Building className="h-4 w-4 mr-2" />
-            Add Workspace
-          </Button>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Workspace Access</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <WorkspaceList
-                workspaces={workspaces}
-                onSelect={handleAddWorkspace}
-                onCreateNew={handleCreateNewWorkspace}
-                existingWorkspaceIds={existingWorkspaceIds}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+    <div className="space-y-6">
+      {/* Summary Card */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-lg font-medium">Workspace Access</CardTitle>
+          <Dialog open={isGrantDialogOpen} onOpenChange={setIsGrantDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Grant Access
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Grant Workspace Access</DialogTitle>
+                <DialogDescription>
+                  Select a workspace to grant access to this course. All members of the workspace will be able to access the course.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="workspace-select">Select Workspace</Label>
+                  <select
+                    id="workspace-select"
+                    className="w-full mt-1 p-2 border rounded-md"
+                    value={selectedWorkspaceId}
+                    onChange={(e) => setSelectedWorkspaceId(e.target.value)}
+                  >
+                    <option value="">Select a workspace...</option>
+                    {availableWorkspaces.map((workspace) => (
+                      <option key={workspace.id} value={workspace.id}>
+                        {workspace.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Workspace</TableHead>
-            <TableHead>Slug</TableHead>
-            <TableHead>Members</TableHead>
-            <TableHead>Granted At</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {workspaceAccess?.map((access) => (
-            <TableRow key={access.id}>
-              <TableCell>{access.workspaces?.name}</TableCell>
-              <TableCell>{access.workspaces?.slug}</TableCell>
-              <TableCell>
-                {access.workspaces?.workspace_members?.[0]?.count || 0}
-              </TableCell>
-              <TableCell>
-                {new Date(access.created_at).toLocaleDateString()}
-              </TableCell>
-              <TableCell>
+              <DialogFooter>
                 <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleRevokeAccess(access.id)}
+                  variant="outline"
+                  onClick={() => setIsGrantDialogOpen(false)}
+                  disabled={isGrantingAccess}
                 >
-                  Revoke Access
+                  Cancel
                 </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                <Button
+                  onClick={handleGrantAccess}
+                  disabled={isGrantingAccess || !selectedWorkspaceId}
+                >
+                  {isGrantingAccess ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Granting...
+                    </>
+                  ) : (
+                    "Grant Access"
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{workspacesWithAccess.length}</div>
+          <p className="text-sm text-muted-foreground">
+            workspaces with access to this course
+          </p>
+        </CardContent>
+      </Card>
 
-      <CreateWorkspaceDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-      />
+      {/* Workspaces Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Workspaces with Access</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {workspacesWithAccess.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Workspace Name</TableHead>
+                  <TableHead>Members</TableHead>
+                  <TableHead>Access Granted</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {workspacesWithAccess.map((access) => (
+                  <TableRow key={access.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{access.workspaces.name}</p>
+                        <p className="text-sm text-muted-foreground">/{access.workspaces.slug}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {memberCounts[access.workspace_id] || 0} members
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(access.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRevokeAccess(access.id, access.workspaces.name)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">
+              No workspaces have access to this course yet.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
