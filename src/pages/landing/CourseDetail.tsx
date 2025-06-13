@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -143,6 +142,12 @@ export default function CourseDetail() {
       : course.learning_outcomes.split('\n').filter(outcome => outcome.trim())
     : [];
 
+  // Check if course is locked and online for CTA text
+  const isLockedOnlineCourse = course?.locked && course?.format?.toLowerCase() === 'online';
+  const ctaText = isLockedOnlineCourse 
+    ? (session ? "Inquire" : "Sign Up to Inquire")
+    : (session ? "Enroll Now" : "Sign Up to Enroll");
+
   if (isLoading || lessonsLoading || enrollmentLoading) {
     return (
       <div className="min-h-screen bg-white">
@@ -233,7 +238,7 @@ export default function CourseDetail() {
               onClick={handleEnrollClick}
               className="bg-[#393CA0] hover:bg-[#393CA0]/90 text-white px-8"
             >
-              {session ? "Enroll Now" : "Sign Up to Enroll"}
+              {ctaText}
             </Button>
           </div>
 
@@ -243,12 +248,19 @@ export default function CourseDetail() {
               <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What You'll Learn</h2>
               <div className="bg-gray-50 rounded-lg p-8">
                 <ul className="space-y-4 max-w-3xl mx-auto">
-                  {learningOutcomes.map((outcome, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <CheckCircle className="h-6 w-6 text-[#393CA0] mt-0.5 flex-shrink-0" />
-                      <span className="text-lg text-gray-700">{outcome}</span>
-                    </li>
-                  ))}
+                  {learningOutcomes.map((outcome, index) => {
+                    const shouldShowCheck = !outcome.toLowerCase().startsWith('by the end');
+                    return (
+                      <li key={index} className="flex items-start gap-3">
+                        {shouldShowCheck && (
+                          <CheckCircle className="h-6 w-6 text-[#393CA0] mt-0.5 flex-shrink-0" />
+                        )}
+                        <span className={`text-lg text-gray-700 ${!shouldShowCheck ? 'ml-9' : ''}`}>
+                          {outcome}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </div>
@@ -302,7 +314,7 @@ export default function CourseDetail() {
               onClick={handleEnrollClick}
               className="bg-white text-[#393CA0] hover:bg-gray-100 px-8"
             >
-              {session ? "Enroll Now" : "Sign Up to Enroll"}
+              {ctaText}
             </Button>
           </div>
         </div>
