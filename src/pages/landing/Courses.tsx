@@ -21,9 +21,11 @@ export default function Courses() {
   // Set the page title
   usePageTitle("Courses & Learning | Limitless Lab");
 
-  const { data: courses } = useQuery({
+  const { data: courses, isLoading } = useQuery({
     queryKey: ["featured-courses"],
     queryFn: async () => {
+      console.log("Fetching courses for landing page");
+      
       const { data: coursesData, error } = await supabase
         .from('courses')
         .select('*')
@@ -39,30 +41,66 @@ export default function Courses() {
         return [];
       }
 
-      // Get real-time enrollment counts for all courses
+      console.log("Raw courses data:", coursesData);
+
+      // Get real-time counts for each course
       const coursesWithCounts = await Promise.all(
         coursesData.map(async (course) => {
-          const { count } = await supabase
+          console.log(`Fetching counts for course ${course.id}: ${course.title}`);
+          
+          // Fetch enrollment count
+          const { count: enrollmentCount, error: enrollmentError } = await supabase
             .from("enrollments")
             .select("*", { count: "exact", head: true })
             .eq("course_id", course.id);
 
-          const { count: lessonCount } = await supabase
+          if (enrollmentError) {
+            console.error(`Error fetching enrollment count for course ${course.id}:`, enrollmentError);
+          }
+
+          // Fetch lesson count
+          const { count: lessonCount, error: lessonError } = await supabase
             .from("lessons")
             .select("*", { count: "exact", head: true })
             .eq("course_id", course.id);
 
-          return {
+          if (lessonError) {
+            console.error(`Error fetching lesson count for course ${course.id}:`, lessonError);
+          }
+
+          const courseWithCounts = {
             ...course,
-            enrollee_count: count || 0,
+            enrollee_count: enrollmentCount || 0,
             lesson_count: lessonCount || 0
           };
+
+          console.log(`Course ${course.title} counts:`, {
+            lessons: lessonCount,
+            enrollments: enrollmentCount
+          });
+
+          return courseWithCounts;
         })
       );
 
+      console.log("Final courses with counts:", coursesWithCounts);
       return coursesWithCounts;
     },
+    staleTime: 1000 * 60, // Cache for 1 minute
+    refetchOnWindowFocus: true,
   });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <MainNav />
+        <div className="flex items-center justify-center min-h-[60vh] pt-32">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#393CA0]"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
