@@ -4,7 +4,14 @@ import { useToast } from "@/hooks/use-toast";
 import { OnboardingData } from "../types";
 import { useState } from "react";
 
-export const useOnboardingSubmit = () => {
+interface UseOnboardingSubmitProps {
+  onOpenChange?: (open: boolean) => void;
+  workspaceId?: string;
+  onSuccess?: () => void;
+}
+
+export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
+  const { onOpenChange, workspaceId, onSuccess } = props;
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -117,6 +124,17 @@ export const useOnboardingSubmit = () => {
       }
 
       console.log("Onboarding completed successfully");
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+      // Close modal if onOpenChange is provided
+      if (onOpenChange) {
+        onOpenChange(false);
+      }
+      
       return { success: true };
 
     } catch (error: any) {
@@ -132,9 +150,5 @@ export const useOnboardingSubmit = () => {
     }
   };
 
-  const handleSubmit = (data: OnboardingData) => {
-    return submitOnboarding(data);
-  };
-
-  return { submitOnboarding: handleSubmit, loading };
+  return { handleSubmit: submitOnboarding, loading };
 };

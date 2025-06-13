@@ -48,7 +48,7 @@ interface UserWithAccess {
 
 const CourseUsers = ({ courseId }: CourseUsersProps) => {
   // Fetch enrolled users
-  const { data: enrolledUsers = [], isLoading: enrolledLoading } = useQuery({
+  const { data: enrolledUsers = [], isLoading: enrolledLoading, refetch: refetchEnrolled } = useQuery({
     queryKey: ["course-enrolled-users", courseId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -81,7 +81,7 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
   });
 
   // Fetch users with explicit access
-  const { data: usersWithAccess = [], isLoading: accessLoading } = useQuery({
+  const { data: usersWithAccess = [], isLoading: accessLoading, refetch: refetchAccess } = useQuery({
     queryKey: ["course-access-users", courseId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -177,7 +177,12 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
           <CardTitle>Enrolled Users</CardTitle>
         </CardHeader>
         <CardContent>
-          <EnrolledUsersTable users={enrolledUsers} />
+          <EnrolledUsersTable 
+            enrolledUsers={enrolledUsers} 
+            isSuperAdmin={true} 
+            courseId={courseId} 
+            onEnrollmentRevoked={refetchEnrolled}
+          />
         </CardContent>
       </Card>
 
@@ -187,7 +192,11 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
           <CardTitle>Users with Individual Access</CardTitle>
         </CardHeader>
         <CardContent>
-          <UsersWithAccessTable users={usersWithAccess} courseId={courseId} />
+          <UsersWithAccessTable 
+            usersWithAccess={usersWithAccess} 
+            courseId={courseId} 
+            onAccessRevoked={refetchAccess}
+          />
         </CardContent>
       </Card>
 
