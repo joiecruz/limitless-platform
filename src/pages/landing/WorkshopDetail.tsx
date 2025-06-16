@@ -107,6 +107,11 @@ export default function WorkshopDetail() {
       : course.learning_outcomes.split('\n').filter(outcome => outcome.trim())
     : [];
 
+  // Parse curriculum text into bullet points
+  const curriculumPoints = course?.course_curriculum_text 
+    ? course.course_curriculum_text.split('\n').filter(point => point.trim())
+    : [];
+
   if (isLoading || enrollmentLoading) {
     return (
       <div className="min-h-screen bg-white">
@@ -193,7 +198,7 @@ export default function WorkshopDetail() {
               onClick={handleBookingClick}
               className="bg-[#393CA0] hover:bg-[#393CA0]/90 text-white px-8"
             >
-              Book a Session
+              Book Exploratory Call
             </Button>
           </div>
 
@@ -233,32 +238,37 @@ export default function WorkshopDetail() {
             </div>
           )}
 
-          {/* Course Curriculum - Text-based for workshops */}
-          {course.course_curriculum_text && (
+          {/* Course Curriculum - Bulleted list */}
+          {curriculumPoints.length > 0 && (
             <div className="mb-16">
               <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Workshop Curriculum</h2>
               <div className="bg-white border border-gray-200 rounded-lg p-8">
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                    {course.course_curriculum_text}
-                  </p>
-                </div>
+                <ul className="space-y-3 max-w-3xl mx-auto">
+                  {curriculumPoints.map((point, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-[#393CA0] rounded-full mt-2 flex-shrink-0"></div>
+                      <span className="text-gray-700 leading-relaxed">
+                        {point}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           )}
 
           {/* Call to Action */}
           <div className="bg-[#393CA0] rounded-lg p-8 text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Bring This Learning Experience to Your Team</h2>
             <p className="text-gray-100 mb-6">
-              Join {enrollmentCount} other participants and book your session today.
+              Ready to empower your organization with cutting-edge innovation skills? Let's discuss how this workshop can transform your team's approach to problem-solving and innovation.
             </p>
             <Button 
               size="lg"
               onClick={handleBookingClick}
               className="bg-white text-[#393CA0] hover:bg-gray-100 px-8"
             >
-              Book a Session
+              Book Exploratory Call
             </Button>
           </div>
         </div>
