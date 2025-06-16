@@ -67,9 +67,17 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
       if (data.workspaceName) {
         console.log("Creating workspace:", data.workspaceName);
         
+        // Generate slug from name
+        const slug = data.workspaceName.toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_-]+/g, '-')
+          .replace(/^-+|-+$/g, '') + 
+          '-' + Date.now();
+
         const { data: workspace, error: workspaceError } = await supabase
           .from('workspaces')
-          .insert([{ name: data.workspaceName.trim() }])
+          .insert([{ name: data.workspaceName.trim(), slug }])
           .select()
           .single();
 

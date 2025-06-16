@@ -28,9 +28,17 @@ export function CreateWorkspaceDialog() {
 
       console.log('Creating workspace with name:', name);
 
+      // Generate slug from name
+      const slug = name.toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '') + 
+        '-' + Date.now();
+
       const { data, error } = await supabase
         .from("workspaces")
-        .insert([{ name: name.trim() }])
+        .insert([{ name: name.trim(), slug }])
         .select()
         .single();
 

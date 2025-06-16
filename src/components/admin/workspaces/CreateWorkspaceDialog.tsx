@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -32,9 +33,17 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
 
       console.log('Creating workspace with name:', name);
 
+      // Generate slug from name
+      const slug = name.toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '') + 
+        '-' + Date.now();
+
       const { data, error } = await supabase
         .from("workspaces")
-        .insert([{ name: name.trim() }])
+        .insert([{ name: name.trim(), slug }])
         .select()
         .single();
 
@@ -91,3 +100,4 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
     </Dialog>
   );
 }
+
