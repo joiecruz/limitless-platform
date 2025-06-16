@@ -21,23 +21,25 @@ export function CreateWorkspaceDialog() {
 
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error("You must be logged in to create a workspace");
+      }
 
-      const slug = name.toLowerCase()
-        .trim()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/[\s_-]+/g, '-')
-        .replace(/^-+|-+$/g, '') + 
-        '-' + Date.now();
+      console.log('Creating workspace with name:', name);
 
-      const { data, error } = await supabase.rpc('create_workspace_with_owner', {
-        workspace_name: name,
-        workspace_slug: slug,
-        owner_id: user.id
-      });
+      const { data, error } = await supabase
+        .from("workspaces")
+        .insert([{ name: name.trim() }])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating workspace:', error);
+        throw error;
+      }
+
+      console.log('Workspace created successfully:', data);
 
       toast({
         title: "Success",

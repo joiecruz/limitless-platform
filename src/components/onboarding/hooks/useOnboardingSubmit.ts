@@ -67,17 +67,9 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
       if (data.workspaceName) {
         console.log("Creating workspace:", data.workspaceName);
         
-        const workspaceSlug = data.workspaceName
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)+/g, '');
-
         const { data: workspace, error: workspaceError } = await supabase
           .from('workspaces')
-          .insert({
-            name: data.workspaceName,
-            slug: workspaceSlug,
-          })
+          .insert([{ name: data.workspaceName.trim() }])
           .select()
           .single();
 
