@@ -42,34 +42,6 @@ export default function WorkshopDetail() {
     enabled: !!courseId,
   });
 
-  // Fetch real-time enrollment count
-  const { data: enrollmentCount = 0, isLoading: enrollmentLoading } = useQuery({
-    queryKey: ["workshop-enrollment-count", courseId],
-    queryFn: async () => {
-      if (!courseId) {
-        console.log("No courseId provided for enrollment count");
-        return 0;
-      }
-
-      console.log("Fetching enrollment count for workshop:", courseId);
-
-      const { count, error } = await supabase
-        .from("enrollments")
-        .select("*", { count: "exact", head: true })
-        .eq("course_id", courseId);
-
-      if (error) {
-        console.error("Error fetching enrollment count:", error);
-        return 0;
-      }
-
-      console.log("Enrollment count:", count);
-      return count || 0;
-    },
-    enabled: !!courseId,
-    refetchOnWindowFocus: true,
-  });
-
   // Check if user is authenticated
   const { data: session } = useQuery({
     queryKey: ['session'],
@@ -112,7 +84,12 @@ export default function WorkshopDetail() {
     ? course.course_curriculum_text.split('\n').filter(point => point.trim())
     : [];
 
-  if (isLoading || enrollmentLoading) {
+  // Parse "who is this for" into bullet points
+  const whoIsThisForPoints = course?.who_is_this_for 
+    ? course.who_is_this_for.split('\n').filter(point => point.trim())
+    : [];
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
         <MainNav />
@@ -173,14 +150,10 @@ export default function WorkshopDetail() {
           )}
 
           {/* Workshop Stats */}
-          <div className="flex flex-wrap justify-center gap-8 mb-12">
+          <div className="flex justify-center mb-12">
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-gray-600" />
               <span className="text-gray-600">In-Person Workshop</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-gray-600" />
-              <span className="text-gray-600">{enrollmentCount} registered</span>
             </div>
           </div>
 
@@ -203,13 +176,23 @@ export default function WorkshopDetail() {
           </div>
 
           {/* Who is this for */}
-          {course.who_is_this_for && (
+          {whoIsThisForPoints.length > 0 && (
             <div className="mb-16">
               <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Who Is This For?</h2>
               <div className="bg-gray-50 rounded-lg p-8">
-                <p className="text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto text-center">
-                  {course.who_is_this_for}
-                </p>
+                <div className="max-w-3xl mx-auto">
+                  <p className="text-lg text-gray-700 mb-6 text-center">Ideal participants include:</p>
+                  <ul className="space-y-3">
+                    {whoIsThisForPoints.map((point, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-[#393CA0] rounded-full mt-2 flex-shrink-0"></div>
+                        <span className="text-lg text-gray-700">
+                          {point}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           )}
