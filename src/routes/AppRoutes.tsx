@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import RequireAuth from "@/components/auth/RequireAuth";
 import { AdminLayout } from "@/layouts/AdminLayout";
@@ -23,6 +22,7 @@ import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
 import NotFound from "@/pages/NotFound";
+import WorkshopDetail from "@/pages/landing/WorkshopDetail";
 
 // App pages
 import Dashboard from "@/pages/Dashboard";
@@ -97,6 +97,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/about" element={<About />} />
           <Route path="/privacy-policy" element={<Privacy />} />
           <Route path="/terms-of-service" element={<Terms />} />
+          <Route path="/workshops/:courseId" element={<WorkshopDetail />} />
         </>
       )}
 

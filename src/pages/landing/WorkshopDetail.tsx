@@ -1,84 +1,57 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, BookOpen, Lock, CheckCircle } from "lucide-react";
+import { Clock, Users, BookOpen, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
-export default function CourseDetail() {
+export default function WorkshopDetail() {
   const { courseId } = useParams<{ courseId: string }>();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  console.log("CourseDetail: courseId from params:", courseId);
+  console.log("WorkshopDetail: courseId from params:", courseId);
 
   const { data: course, isLoading } = useQuery({
-    queryKey: ["public-course", courseId],
+    queryKey: ["public-workshop", courseId],
     queryFn: async () => {
       if (!courseId) throw new Error("Course ID is required");
 
-      console.log("Fetching course with ID:", courseId);
+      console.log("Fetching workshop with ID:", courseId);
 
       const { data, error } = await supabase
         .from("courses")
         .select("*")
         .eq("id", courseId)
+        .eq("format", "In-Person")
         .single();
 
       if (error) {
-        console.error("Error fetching course:", error);
+        console.error("Error fetching workshop:", error);
         throw error;
       }
 
-      console.log("Course data:", data);
+      console.log("Workshop data:", data);
       return data;
-    },
-    enabled: !!courseId,
-  });
-
-  // Fetch lessons with better error handling
-  const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
-    queryKey: ["course-lessons", courseId],
-    queryFn: async () => {
-      if (!courseId) {
-        console.log("No courseId provided for lessons query");
-        return [];
-      }
-
-      console.log("Fetching lessons for course:", courseId);
-
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("id, title, description, duration, order")
-        .eq("course_id", courseId)
-        .order("order");
-
-      if (error) {
-        console.error("Error fetching lessons:", error);
-        // Don't throw, return empty array to show empty state
-        return [];
-      }
-
-      console.log("Lessons data:", data);
-      return data || [];
     },
     enabled: !!courseId,
   });
 
   // Fetch real-time enrollment count
   const { data: enrollmentCount = 0, isLoading: enrollmentLoading } = useQuery({
-    queryKey: ["course-enrollment-count", courseId],
+    queryKey: ["workshop-enrollment-count", courseId],
     queryFn: async () => {
       if (!courseId) {
         console.log("No courseId provided for enrollment count");
         return 0;
       }
 
-      console.log("Fetching enrollment count for course:", courseId);
+      console.log("Fetching enrollment count for workshop:", courseId);
 
       const { count, error } = await supabase
         .from("enrollments")
@@ -108,37 +81,23 @@ export default function CourseDetail() {
   });
 
   // Set the page title
-  usePageTitle(course ? `${course.title} | Limitless Lab` : "Course | Limitless Lab");
+  usePageTitle(course ? `${course.title} | Limitless Lab` : "Workshop | Limitless Lab");
 
-  // Calculate totals from actual lesson data
-  const totalDuration = lessons.reduce((acc, lesson) => acc + (lesson.duration || 0), 0);
-  const totalHours = Math.ceil(totalDuration / 60);
-  const lessonCount = lessons.length;
-
-  console.log("Calculated stats:", {
-    lessonCount,
-    totalDuration,
-    totalHours,
-    enrollmentCount
-  });
-
-  const handleEnrollClick = () => {
-    // For in-person courses with booking link, redirect to booking
-    if (course?.format?.toLowerCase() === 'in-person' && course?.booking_link) {
+  const handleBookingClick = () => {
+    if (course?.booking_link) {
       window.open(course.booking_link, '_blank');
-      return;
-    }
+    } else {
+      if (!session) {
+        // Redirect to signup if not authenticated
+        navigate('/signup');
+        return;
+      }
 
-    if (!session) {
-      // Redirect to signup if not authenticated
-      navigate('/signup');
-      return;
+      toast({
+        title: "Booking Coming Soon",
+        description: "Workshop booking will be available soon. Sign up for our newsletter to be notified!",
+      });
     }
-
-    toast({
-      title: "Enrollment Coming Soon",
-      description: "Course enrollment will be available soon. Sign up for our newsletter to be notified!",
-    });
   };
 
   // Parse learning outcomes - handle both array and string formats
@@ -148,17 +107,7 @@ export default function CourseDetail() {
       : course.learning_outcomes.split('\n').filter(outcome => outcome.trim())
     : [];
 
-  // Check if course is locked and online for CTA text
-  const isLockedOnlineCourse = course?.locked && course?.format?.toLowerCase() === 'online';
-  const isInPersonCourse = course?.format?.toLowerCase() === 'in-person';
-  
-  const ctaText = isInPersonCourse 
-    ? "Book a Session"
-    : isLockedOnlineCourse 
-      ? (session ? "Inquire" : "Sign Up to Inquire")
-      : (session ? "Enroll Now" : "Sign Up to Enroll");
-
-  if (isLoading || lessonsLoading || enrollmentLoading) {
+  if (isLoading || enrollmentLoading) {
     return (
       <div className="min-h-screen bg-white">
         <MainNav />
@@ -176,8 +125,8 @@ export default function CourseDetail() {
         <MainNav />
         <div className="flex items-center justify-center min-h-[60vh] pt-32">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h1>
-            <p className="text-gray-600">The course you're looking for doesn't exist or is no longer available.</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Workshop Not Found</h1>
+            <p className="text-gray-600">The workshop you're looking for doesn't exist or is no longer available.</p>
           </div>
         </div>
         <Footer />
@@ -191,23 +140,23 @@ export default function CourseDetail() {
         title={`${course.title} | Limitless Lab`}
         description={course.description}
         imageUrl={course.image_url || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"}
-        url={`${window.location.origin}/courses/${courseId}`}
+        url={`${window.location.origin}/workshops/${courseId}`}
         type="website"
       />
 
       <MainNav />
 
-      {/* Course Header with proper top padding */}
+      {/* Workshop Header with proper top padding */}
       <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          {/* Course Title */}
+          {/* Workshop Title */}
           <div className="text-center mb-12">
             <h1 className="text-4xl lg:text-5xl font-bold text-black leading-tight">
               {course.title}
             </h1>
           </div>
 
-          {/* Course Image */}
+          {/* Workshop Image */}
           {course.image_url && (
             <div className="mb-12 flex justify-center">
               <img
@@ -218,39 +167,47 @@ export default function CourseDetail() {
             </div>
           )}
 
-          {/* Course Stats - Using real-time data */}
+          {/* Workshop Stats */}
           <div className="flex flex-wrap justify-center gap-8 mb-12">
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-gray-600" />
-              <span className="text-gray-600">{lessonCount} lessons</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-gray-600" />
-              <span className="text-gray-600">{totalHours} hours</span>
+              <span className="text-gray-600">In-Person Workshop</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-gray-600" />
-              <span className="text-gray-600">{enrollmentCount} enrolled</span>
+              <span className="text-gray-600">{enrollmentCount} registered</span>
             </div>
           </div>
 
-          {/* Course Description */}
+          {/* Workshop Description */}
           <div className="text-center mb-12">
             <p className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
               {course.description}
             </p>
           </div>
 
-          {/* Enroll Button */}
+          {/* Booking Button */}
           <div className="text-center mb-16">
             <Button 
               size="lg"
-              onClick={handleEnrollClick}
+              onClick={handleBookingClick}
               className="bg-[#393CA0] hover:bg-[#393CA0]/90 text-white px-8"
             >
-              {ctaText}
+              Book a Session
             </Button>
           </div>
+
+          {/* Who is this for */}
+          {course.who_is_this_for && (
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Who Is This For?</h2>
+              <div className="bg-gray-50 rounded-lg p-8">
+                <p className="text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto text-center">
+                  {course.who_is_this_for}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* What You'll Learn - Using Learning Outcomes */}
           {learningOutcomes.length > 0 && (
@@ -276,55 +233,32 @@ export default function CourseDetail() {
             </div>
           )}
 
-          {/* Course Curriculum - Always show lessons with proper styling */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Course Curriculum</h2>
-            {lessonCount > 0 ? (
-              <div className="space-y-4 max-w-3xl mx-auto">
-                {lessons.map((lesson, index) => (
-                  <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6 opacity-75">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="bg-gray-400 text-white text-sm font-semibold px-2 py-1 rounded">
-                            {index + 1}
-                          </span>
-                          <h3 className="text-lg font-semibold text-gray-600">{lesson.title}</h3>
-                          <Lock className="h-4 w-4 text-gray-400" />
-                        </div>
-                        {lesson.description && (
-                          <p className="text-gray-500 mb-3">{lesson.description}</p>
-                        )}
-                      </div>
-                      {lesson.duration && (
-                        <div className="flex items-center gap-1 text-sm text-gray-400 ml-4">
-                          <Clock className="h-4 w-4" />
-                          <span>{lesson.duration} min</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+          {/* Course Curriculum - Text-based for workshops */}
+          {course.course_curriculum_text && (
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Workshop Curriculum</h2>
+              <div className="bg-white border border-gray-200 rounded-lg p-8">
+                <div className="prose prose-lg max-w-none">
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    {course.course_curriculum_text}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Course curriculum is being prepared. Check back soon!</p>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Call to Action */}
           <div className="bg-[#393CA0] rounded-lg p-8 text-center">
             <h2 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h2>
             <p className="text-gray-100 mb-6">
-              Join {enrollmentCount} other learners and start your journey today.
+              Join {enrollmentCount} other participants and book your session today.
             </p>
             <Button 
               size="lg"
-              onClick={handleEnrollClick}
+              onClick={handleBookingClick}
               className="bg-white text-[#393CA0] hover:bg-gray-100 px-8"
             >
-              {ctaText}
+              Book a Session
             </Button>
           </div>
         </div>

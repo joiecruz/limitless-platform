@@ -197,6 +197,8 @@ export type Database = {
       }
       courses: {
         Row: {
+          booking_link: string | null
+          course_curriculum_text: string | null
           created_at: string
           description: string | null
           enrollee_count: number | null
@@ -210,8 +212,11 @@ export type Database = {
           price: number | null
           title: string
           updated_at: string
+          who_is_this_for: string | null
         }
         Insert: {
+          booking_link?: string | null
+          course_curriculum_text?: string | null
           created_at?: string
           description?: string | null
           enrollee_count?: number | null
@@ -225,8 +230,11 @@ export type Database = {
           price?: number | null
           title: string
           updated_at?: string
+          who_is_this_for?: string | null
         }
         Update: {
+          booking_link?: string | null
+          course_curriculum_text?: string | null
           created_at?: string
           description?: string | null
           enrollee_count?: number | null
@@ -240,6 +248,7 @@ export type Database = {
           price?: number | null
           title?: string
           updated_at?: string
+          who_is_this_for?: string | null
         }
         Relationships: []
       }

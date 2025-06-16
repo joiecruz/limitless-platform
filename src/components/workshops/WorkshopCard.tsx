@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -31,7 +30,12 @@ const WorkshopCard = ({ workshop }: WorkshopCardProps) => {
   };
 
   const handleLearnMore = () => {
-    navigate(`/courses/${workshop.id}`);
+    // Route to appropriate detail page based on format
+    if (workshop.format.toLowerCase() === 'in-person') {
+      navigate(`/workshops/${workshop.id}`);
+    } else {
+      navigate(`/courses/${workshop.id}`);
+    }
   };
 
   return (
