@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -48,6 +47,22 @@ export function CreateWorkspaceDialog() {
       }
 
       console.log('Workspace created successfully:', data);
+
+      // Add the creator as owner of the workspace
+      const { error: memberError } = await supabase
+        .from('workspace_members')
+        .insert({
+          user_id: user.id,
+          workspace_id: data.id,
+          role: 'owner',
+        });
+
+      if (memberError) {
+        console.error('Error adding user as workspace owner:', memberError);
+        throw memberError;
+      }
+
+      console.log('Added user as workspace owner');
 
       toast({
         title: "Success",
