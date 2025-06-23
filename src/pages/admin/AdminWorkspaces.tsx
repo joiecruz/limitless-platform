@@ -26,6 +26,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useWorkspaceDelete } from "@/components/admin/workspaces/useWorkspaceDelete";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminWorkspaces() {
   const [search, setSearch] = useState("");
@@ -33,10 +34,34 @@ export default function AdminWorkspaces() {
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const { handleDeleteWorkspace } = useWorkspaceDelete();
+  const { toast } = useToast();
 
   const { data: workspaces, isLoading, refetch } = useQuery({
     queryKey: ['admin-workspaces', search],
     queryFn: async () => {
+      // Get current user profile to check admin status
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error("User not found");
+      }
+
+      // Get user profile to check admin status
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_admin, is_superadmin')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw new Error("Failed to get user profile");
+      }
+
+      if (!profile.is_admin && !profile.is_superadmin) {
+        throw new Error("Access denied: Admin privileges required");
+      }
+
+      // Direct database access - RLS policies now allow admins to view all workspaces
       const query = supabase
         .from('workspaces')
         .select(`
@@ -53,9 +78,30 @@ export default function AdminWorkspaces() {
 
       const { data, error } = await query;
 
-      if (error) throw error;
-      return data;
-    }
+      if (error) {
+        console.error('Database access error:', error);
+        throw error;
+      }
+
+      // Transform data to match expected format
+      return data.map((workspace: any) => ({
+        id: workspace.id,
+        name: workspace.name || 'Unnamed Workspace',
+        slug: workspace.slug || 'unnamed',
+        created_at: workspace.created_at,
+        updated_at: workspace.updated_at,
+        member_count: workspace.workspace_members[0]?.count || 0
+      }));
+    },
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: "Error loading workspaces",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
+    },
   });
 
   const onDeleteWorkspace = async (workspaceId: string) => {
@@ -107,10 +153,17 @@ export default function AdminWorkspaces() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {workspaces?.map((workspace) => (
+              {workspaces?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                    {search ? "No workspaces found matching your search" : "No workspaces found"}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                workspaces?.map((workspace: any) => (
                 <TableRow key={workspace.id}>
                   <TableCell className="font-medium">{workspace.name}</TableCell>
-                  <TableCell>{workspace.workspace_members[0]?.count || 0}</TableCell>
+                    <TableCell>{workspace.member_count || 0}</TableCell>
                   <TableCell>
                     {new Date(workspace.created_at).toLocaleDateString()}
                   </TableCell>
@@ -155,7 +208,8 @@ export default function AdminWorkspaces() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

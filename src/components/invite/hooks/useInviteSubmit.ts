@@ -98,7 +98,8 @@ export function useInviteSubmit(token?: string | null) {
         replace: true,
         state: {
           showOnboarding: false,
-          workspace: inviteData.workspace_id
+          workspace: inviteData.workspace_id,
+          isInvited: true
         }
       });
 

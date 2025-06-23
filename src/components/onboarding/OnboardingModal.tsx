@@ -23,6 +23,7 @@ interface OnboardingModalProps {
 
 export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfile = false }: OnboardingModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [hasExistingWorkspaces, setHasExistingWorkspaces] = useState(false);
   const location = useLocation();
   const { toast } = useToast();
 
@@ -34,20 +35,56 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   console.log('[OnboardingModal] location.state:', location.state);
   console.log('[OnboardingModal] open prop:', open);
 
-  // Only hide workspace creation step if user is invited (they'll be added to an existing workspace)
-  // Incomplete profile users should still see workspace step unless they're invited users
-  const shouldShowWorkspaceStep = !isInvitedUser;
+  // Check if user already has workspaces
+  useEffect(() => {
+    const checkExistingWorkspaces = async () => {
+      if (open) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const { data, error } = await supabase.functions.invoke('get-user-workspaces', {
+            body: { user_id: user.id }
+          });
+
+          if (!error && data?.workspaces && data.workspaces.length > 0) {
+            setHasExistingWorkspaces(true);
+            console.log('[OnboardingModal] User has existing workspaces:', data.workspaces.length);
+          } else {
+            setHasExistingWorkspaces(false);
+            console.log('[OnboardingModal] User has no existing workspaces');
+          }
+        } catch (error) {
+          console.error('[OnboardingModal] Error checking existing workspaces:', error);
+          setHasExistingWorkspaces(false);
+        }
+      }
+    };
+
+    checkExistingWorkspaces();
+  }, [open]);
+
+  // Hide workspace creation step if user is invited OR already has workspaces
+  const shouldShowWorkspaceStep = !isInvitedUser && !hasExistingWorkspaces;
   const TOTAL_STEPS = shouldShowWorkspaceStep ? 4 : 3;
 
+  console.log('[OnboardingModal] hasExistingWorkspaces:', hasExistingWorkspaces);
   console.log('[OnboardingModal] shouldShowWorkspaceStep:', shouldShowWorkspaceStep);
   console.log('[OnboardingModal] TOTAL_STEPS:', TOTAL_STEPS);
 
   useEffect(() => {
-    // Reset to step 1 when modal opens
+    // Reset to appropriate step when modal opens
     if (open) {
-      setCurrentStep(1);
+      // If user has incomplete profile (no name), start from step 1
+      // If user has name but needs workspace, start from step 4
+      if (isIncompleteProfile) {
+        setCurrentStep(1);
+      } else {
+        // User has name but no workspace, start at workspace creation step
+        setCurrentStep(4);
+      }
     }
-  }, [open]);
+  }, [open, isIncompleteProfile]);
 
   const [formData, setFormData] = useState<OnboardingData>({
     firstName: "",
@@ -57,8 +94,42 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
     goals: [],
     referralSource: "",
     workspaceName: shouldShowWorkspaceStep ? "" : undefined,
-    password: "",
   });
+
+  // Load existing profile data for users who already have names
+  useEffect(() => {
+    const loadExistingProfile = async () => {
+      if (open && !isIncompleteProfile) {
+        // User has name but no workspace, pre-populate form with existing data
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, role, company_size, goals, referral_source')
+            .eq('id', user.id)
+            .single();
+
+          if (profile) {
+            setFormData(prev => ({
+              ...prev,
+              firstName: profile.first_name || "",
+              lastName: profile.last_name || "",
+              role: profile.role || "",
+              companySize: profile.company_size || "",
+              goals: profile.goals ? profile.goals.split(', ') : [],
+              referralSource: profile.referral_source || "",
+            }));
+          }
+        } catch (error) {
+          console.error('Error loading existing profile:', error);
+        }
+      }
+    };
+
+    loadExistingProfile();
+  }, [open, isIncompleteProfile]);
 
   const { handleSubmit, loading } = useOnboardingSubmit({ onOpenChange });
 
@@ -120,6 +191,14 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
     setCurrentStep(prev => prev - 1);
   };
 
+  const handleSkipWorkspace = () => {
+    // Skip workspace creation and complete onboarding
+    console.log('[OnboardingModal] Skipping workspace creation');
+    if (onOpenChange) {
+      onOpenChange(false);
+    }
+  };
+
   const renderStep = () => {
     const commonProps = {
       onNext: handleNext,
@@ -138,7 +217,7 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
       case 3:
         return <Step3 {...commonProps} />;
       case 4:
-        return shouldShowWorkspaceStep ? <Step4 {...commonProps} /> : null;
+        return shouldShowWorkspaceStep ? <Step4 {...commonProps} onSkipWorkspace={handleSkipWorkspace} /> : null;
       default:
         return null;
     }

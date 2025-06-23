@@ -6,5 +6,4 @@ export interface OnboardingData {
   goals: string[];
   referralSource: string;
   workspaceName: string | undefined;
-  password?: string;
 }

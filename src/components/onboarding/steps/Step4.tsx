@@ -8,9 +8,10 @@ interface Step4Props {
   onBack: () => void;
   data: OnboardingData;
   loading?: boolean;
+  onSkipWorkspace?: () => void;
 }
 
-export function Step4({ onNext, onBack, data, loading }: Step4Props) {
+export function Step4({ onNext, onBack, data, loading, onSkipWorkspace }: Step4Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -37,13 +38,29 @@ export function Step4({ onNext, onBack, data, loading }: Step4Props) {
         />
       </div>
 
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" onClick={onBack}>
-          Back
-        </Button>
-        <Button type="submit" className="flex-1" disabled={loading}>
-          Complete Setup
-        </Button>
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" onClick={onBack}>
+            Back
+          </Button>
+          <Button type="submit" className="flex-1" disabled={loading}>
+            Complete Setup
+          </Button>
+        </div>
+
+        {onSkipWorkspace && (
+          <div className="text-center">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onSkipWorkspace}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Already have a workspace? Skip this step
+            </Button>
+          </div>
+        )}
       </div>
     </form>
   );

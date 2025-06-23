@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +5,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Menu, X } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSessionValidation } from "@/hooks/useSessionValidation";
 
 export function AdminLayout() {
+  // Add session validation
+  useSessionValidation();
+
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { LoadingPage } from "@/components/common/LoadingPage";
 import { useToast } from "@/hooks/use-toast";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function SignIn() {
   useAuthRedirect();
@@ -52,7 +53,7 @@ export default function SignIn() {
             }
 
             // If user has no workspace, show onboarding with workspace creation
-            if (!workspaces || workspaces.length === 0) {
+            if (!workspaces || !workspaces.workspaces || workspaces.workspaces.length === 0) {
               console.log("No workspace found, redirecting to onboarding...");
               navigate('/dashboard', {
                 replace: true
@@ -60,9 +61,13 @@ export default function SignIn() {
               return;
             }
 
-            // User has a workspace, set the first one as default and go to dashboard
-            console.log("Workspace found, redirecting to dashboard...", workspaces[0]);
-            localStorage.setItem('selectedWorkspace', workspaces[0].id);
+            // User has a workspace, mark as onboarded and go to dashboard
+            const firstWorkspace = workspaces.workspaces[0];
+            console.log("Workspace found, user is already onboarded...", firstWorkspace);
+            if (firstWorkspace && firstWorkspace.id) {
+              localStorage.setItem('selectedWorkspace', firstWorkspace.id);
+              localStorage.setItem('dashboard-visited', 'true');
+            }
             navigate('/dashboard', { replace: true });
           } catch (error) {
             console.error("Error fetching workspaces:", error);
@@ -99,15 +104,19 @@ export default function SignIn() {
           }
 
           // If user has no workspace, show onboarding with workspace creation
-          if (!workspaces || workspaces.length === 0) {
+          if (!workspaces || !workspaces.workspaces || workspaces.workspaces.length === 0) {
             navigate('/dashboard', {
               replace: true
             });
             return;
           }
 
-          // User has a workspace, set the first one as default and go to dashboard
-          localStorage.setItem('selectedWorkspace', workspaces[0].id);
+          // User has a workspace, mark as onboarded and go to dashboard
+          const firstWorkspace = workspaces.workspaces[0];
+          if (firstWorkspace && firstWorkspace.id) {
+            localStorage.setItem('selectedWorkspace', firstWorkspace.id);
+            localStorage.setItem('dashboard-visited', 'true');
+          }
           navigate('/dashboard', { replace: true });
         } catch (error) {
           console.error("Error handling sign in:", error);
@@ -126,6 +135,27 @@ export default function SignIn() {
       subscription.unsubscribe();
     };
   }, [navigate, toast]);
+
+  // Clear localStorage once when sign-in page loads (only if not authenticated)
+  useEffect(() => {
+    const clearStorageForUnauthenticated = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          localStorage.clear();
+          console.log('localStorage cleared on sign-in page for unauthenticated user');
+        } else {
+          console.log('User is authenticated, not clearing localStorage');
+        }
+      } catch (error) {
+        console.error('Error checking session for localStorage clearing:', error);
+        // If there's an error, clear localStorage as a safety measure
+        localStorage.clear();
+      }
+    };
+
+    clearStorageForUnauthenticated();
+  }, []);
 
   if (isLoading) {
     return <LoadingPage />;

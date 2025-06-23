@@ -5,6 +5,7 @@ import { Navigation } from "./Navigation";
 import { MobileHeader } from "./MobileHeader";
 import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import { LoadingPage } from "@/components/common/LoadingPage";
+import { useSessionValidation } from "@/hooks/useSessionValidation";
 
 interface Workspace {
   id: string;
@@ -23,6 +24,9 @@ export const WorkspaceContext = createContext<WorkspaceContextType>({
 });
 
 export default function DashboardLayout() {
+  // Add session validation
+  useSessionValidation();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(() => {
     // Initialize from localStorage if available

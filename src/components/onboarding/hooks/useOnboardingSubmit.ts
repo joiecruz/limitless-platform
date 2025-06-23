@@ -1,8 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingData } from "../types";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UseOnboardingSubmitProps {
   onOpenChange?: (open: boolean) => void;
@@ -14,6 +14,7 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
   const { onOpenChange, workspaceId, onSuccess } = props;
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const submitOnboarding = async (data: OnboardingData) => {
     setLoading(true);
@@ -22,7 +23,7 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
 
       // Get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
+
       if (userError || !user) {
         throw new Error("User not found");
       }
@@ -66,20 +67,22 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
       // Create workspace if provided
       if (data.workspaceName) {
         console.log("Creating workspace:", data.workspaceName);
-        
+
         // Generate slug from name
         const slug = data.workspaceName.toLowerCase()
           .trim()
           .replace(/[^\w\s-]/g, '')
           .replace(/[\s_-]+/g, '-')
-          .replace(/^-+|-+$/g, '') + 
+          .replace(/^-+|-+$/g, '') +
           '-' + Date.now();
 
+        // Use the RPC function to create workspace with owner
         const { data: workspace, error: workspaceError } = await supabase
-          .from('workspaces')
-          .insert([{ name: data.workspaceName.trim(), slug }])
-          .select()
-          .single();
+          .rpc('create_workspace_with_owner', {
+            workspace_name: data.workspaceName.trim(),
+            workspace_slug: slug,
+            owner_id: user.id
+          });
 
         if (workspaceError) {
           console.error("Workspace creation error:", workspaceError);
@@ -87,22 +90,71 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
         }
 
         console.log("Created workspace:", workspace);
+        console.log("User automatically added as workspace owner");
+      } else {
+        // For invited users (no workspace creation), ensure they're added to the workspace
+        // Check if user has any pending invitations
+        const { data: pendingInvitations, error: inviteError } = await supabase
+          .from('workspace_invitations')
+          .select('id, workspace_id, role, status')
+          .eq('email', user.email)
+          .eq('status', 'pending');
 
-        // Add user as owner of the workspace
-        const { error: memberError } = await supabase
-          .from('workspace_members')
-          .insert({
-            user_id: user.id,
-            workspace_id: workspace.id,
-            role: 'owner',
-          });
+        if (inviteError) {
+          console.error("Error checking pending invitations:", inviteError);
+          // Don't throw error, just log it
+        } else if (pendingInvitations && pendingInvitations.length > 0) {
+          console.log("Found pending invitations for invited user:", pendingInvitations);
 
-        if (memberError) {
-          console.error("Workspace member error:", memberError);
-          throw memberError;
+          // Process each pending invitation
+          for (const invitation of pendingInvitations) {
+            // Check if user is already a member of this workspace
+            const { data: existingMember, error: memberCheckError } = await supabase
+              .from('workspace_members')
+              .select('user_id')
+              .eq('workspace_id', invitation.workspace_id)
+              .eq('user_id', user.id)
+              .maybeSingle();
+
+            if (memberCheckError) {
+              console.error("Error checking existing membership:", memberCheckError);
+              continue;
+            }
+
+            if (!existingMember) {
+              // Add user to workspace
+              const { error: addMemberError } = await supabase
+                .from('workspace_members')
+                .insert({
+                  workspace_id: invitation.workspace_id,
+                  user_id: user.id,
+                  role: invitation.role
+                });
+
+              if (addMemberError) {
+                console.error("Error adding user to workspace:", addMemberError);
+                continue;
+              }
+
+              console.log("Added invited user to workspace:", invitation.workspace_id);
+            }
+
+            // Update invitation status to accepted
+            const { error: updateInviteError } = await supabase
+              .from('workspace_invitations')
+              .update({
+                status: 'accepted',
+                accepted_at: new Date().toISOString()
+              })
+              .eq('id', invitation.id);
+
+            if (updateInviteError) {
+              console.error("Error updating invitation status:", updateInviteError);
+            } else {
+              console.log("Updated invitation status to accepted:", invitation.id);
+            }
+          }
         }
-
-        console.log("Added user as workspace owner");
       }
 
       // Track onboarding completion event
@@ -124,17 +176,22 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
       }
 
       console.log("Onboarding completed successfully");
-      
+
+      // Invalidate workspaces queries to refresh the workspace list
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['user-workspaces'] });
+      console.log("Invalidated workspace queries to refresh data");
+
       // Call onSuccess callback if provided
       if (onSuccess) {
         onSuccess();
       }
-      
+
       // Close modal if onOpenChange is provided
       if (onOpenChange) {
         onOpenChange(false);
       }
-      
+
       return { success: true };
 
     } catch (error: any) {
