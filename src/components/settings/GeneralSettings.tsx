@@ -30,11 +30,11 @@ export function GeneralSettings() {
     }
   });
 
-  console.log('GeneralSettings - currentWorkspace:', currentWorkspace);
+  
 
   // Reset form when workspace changes
   useEffect(() => {
-    console.log('Workspace changed in settings:', currentWorkspace);
+    
   }, [currentWorkspace]);
 
   // DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
@@ -49,7 +49,7 @@ export function GeneralSettings() {
   //       navigate('/dashboard');
   //     }
   //   } catch (error) {
-  //     console.error('Error deleting workspace:', error);
+  //     
   //   } finally {
   //     setIsDeleting(false);
   //   }

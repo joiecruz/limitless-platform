@@ -26,7 +26,7 @@ export function useGlobalRole() {
           .single();
 
         if (error) {
-          console.error('Error fetching global role:', error);
+          
           setGlobalRole({ is_superadmin: false, is_admin: false });
           return;
         }
@@ -36,7 +36,7 @@ export function useGlobalRole() {
           is_admin: !!profile?.is_admin
         });
       } catch (error) {
-        console.error('Error in fetchGlobalRole:', error);
+        
         setGlobalRole({ is_superadmin: false, is_admin: false });
       } finally {
         setIsLoading(false);

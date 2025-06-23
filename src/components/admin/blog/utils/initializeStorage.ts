@@ -20,16 +20,16 @@ export async function initializeBlogStorage() {
         });
       
       if (error) {
-        console.error("Error creating blog-assets bucket:", error);
+        
         return false;
       }
       
-      console.log("Created blog-assets bucket");
+      
     }
     
     return true;
   } catch (error) {
-    console.error("Error initializing blog storage:", error);
+    
     return false;
   }
 }

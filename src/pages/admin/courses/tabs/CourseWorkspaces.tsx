@@ -73,7 +73,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
         .eq("course_id", courseId);
 
       if (error) {
-        console.error("Error fetching workspace access:", error);
+        
         throw error;
       }
 
@@ -91,7 +91,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
         .order("name");
 
       if (error) {
-        console.error("Error fetching workspaces:", error);
+        
         throw error;
       }
 
@@ -114,7 +114,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
           .eq("workspace_id", workspace.workspace_id);
 
         if (error) {
-          console.error(`Error fetching member count for workspace ${workspace.workspace_id}:`, error);
+          
           counts[workspace.workspace_id] = 0;
         } else {
           counts[workspace.workspace_id] = count || 0;
@@ -166,7 +166,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
         setSelectedWorkspaceId("");
       }
     } catch (error: any) {
-      console.error("Error granting access:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to grant access",
@@ -193,7 +193,7 @@ const CourseWorkspaces = ({ courseId }: CourseWorkspacesProps) => {
       
       queryClient.invalidateQueries({ queryKey: ["course-workspace-access", courseId] });
     } catch (error: any) {
-      console.error("Error revoking access:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to revoke access",

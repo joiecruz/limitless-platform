@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export async function verifyInvitation(token: string) {
-  console.log("🔍 Verifying invitation token:", token);
+  
 
   try {
     // Use an edge function to validate the token without RLS issues
@@ -11,29 +11,26 @@ export async function verifyInvitation(token: string) {
     });
 
     if (inviteError) {
-      console.error("❌ Error verifying invitation:", inviteError);
+      
       throw new Error("Failed to verify invitation. Please try again.");
     }
 
     if (!invitation) {
-      console.error("❌ No invitation found for token:", token);
+      
       throw new Error("Invalid or expired invitation token.");
     }
 
-    console.log("✅ Valid invitation found:", invitation);
+    
 
     return { invitation };
   } catch (error: any) {
-    console.error("❌ Error in verifyInvitation:", error);
+    
     throw error;
   }
 }
 
 export async function updateInvitationStatus(invitationId: string, status: 'accepted' | 'rejected') {
-  console.log("📝 Updating invitation status:", {
-    invitationId,
-    status,
-  });
+  
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -51,15 +48,15 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
     });
 
     if (error) {
-      console.error("❌ Error updating invitation status:", error);
+      
       throw error;
     }
 
-    console.log("✅ Invitation status updated successfully", data);
+    
     return data;
     
   } catch (error: any) {
-    console.error("❌ Error in updateInvitationStatus:", error);
+    
     throw error;
   }
 }

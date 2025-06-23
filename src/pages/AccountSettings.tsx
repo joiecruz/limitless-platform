@@ -30,7 +30,7 @@ export default function AccountSettings() {
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        
         throw error;
       }
 
@@ -67,7 +67,7 @@ export default function AccountSettings() {
         description: "Profile updated successfully",
       });
     } catch (error) {
-      console.error('Error updating profile:', error);
+      
       toast({
         title: "Error",
         description: "Failed to update profile",

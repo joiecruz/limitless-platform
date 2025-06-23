@@ -35,7 +35,7 @@ export function useWorkspaceUpdate(
 
   const updateWorkspace = async (data: WorkspaceUpdateData) => {
     if (!currentWorkspace?.id) {
-      console.error('No workspace selected');
+      
       toast({
         title: "Error",
         description: "No workspace selected",
@@ -47,8 +47,8 @@ export function useWorkspaceUpdate(
     setIsLoading(true);
     try {
       const newSlug = generateSlug(data.name);
-      console.log('Updating workspace with ID:', currentWorkspace.id);
-      console.log('Update data:', { name: data.name, slug: newSlug });
+      
+      
 
       const { data: updatedWorkspace, error: updateError } = await supabase
         .from('workspaces')
@@ -62,7 +62,7 @@ export function useWorkspaceUpdate(
         .maybeSingle();
 
       if (updateError) {
-        console.error('Error updating workspace:', updateError);
+        
         throw updateError;
       }
 
@@ -70,7 +70,7 @@ export function useWorkspaceUpdate(
         throw new Error('No data returned after update');
       }
 
-      console.log('Update successful:', updatedWorkspace);
+      
 
       // Update local state with the returned data
       setCurrentWorkspace(updatedWorkspace);
@@ -83,7 +83,7 @@ export function useWorkspaceUpdate(
         description: "Workspace settings updated successfully.",
       });
     } catch (error) {
-      console.error('Error in updateWorkspace:', error);
+      
       toast({
         title: "Error",
         description: "Failed to update workspace settings. Please try again.",

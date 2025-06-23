@@ -73,7 +73,7 @@ const CourseImage = ({ courseId, imageUrl, isAdmin }: CourseImageProps) => {
 
       window.location.reload();
     } catch (error) {
-      console.error('Error uploading image:', error);
+      
       toast({
         title: "Error",
         description: "Failed to upload image. Please try again.",

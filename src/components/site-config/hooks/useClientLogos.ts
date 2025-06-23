@@ -12,7 +12,7 @@ export function useClientLogos() {
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Error fetching logos:', error);
+        
         throw error;
       }
 

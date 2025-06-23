@@ -14,7 +14,7 @@ export function useWorkspaces() {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (userError) {
-          console.error('Error fetching user:', userError);
+          
           throw userError;
         }
 
@@ -29,13 +29,13 @@ export function useWorkspaces() {
           });
 
         if (error) {
-          console.error('Error fetching workspaces:', error);
+          
           throw error;
         }
           
         return data || [];
       } catch (error: any) {
-        console.error('Error in fetchWorkspaces:', error);
+        
         toast({
           title: "Error",
           description: "Failed to load workspaces. Please try again.",

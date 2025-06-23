@@ -126,7 +126,7 @@ export default function Community() {
       // Set the new channel as active
       setActiveChannel(data);
     } catch (error) {
-      console.error("Error creating private channel:", error);
+      
       toast({
         title: "Error",
         description: "Failed to create private channel",

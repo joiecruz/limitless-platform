@@ -44,7 +44,7 @@ export function useUserProfile(userId?: string) {
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        
         throw error;
       }
 

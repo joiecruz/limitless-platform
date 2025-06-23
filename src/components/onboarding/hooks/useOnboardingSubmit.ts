@@ -19,7 +19,7 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
   const submitOnboarding = async (data: OnboardingData) => {
     setLoading(true);
     try {
-      console.log("Submitting onboarding data:", data);
+      
 
       // Get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -28,7 +28,7 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
         throw new Error("User not found");
       }
 
-      console.log("Current user:", user);
+      
 
       // Check if profile already exists
       const { data: existingProfile } = await supabase
@@ -37,7 +37,7 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
         .eq('id', user.id)
         .single();
 
-      console.log("Existing profile:", existingProfile);
+      
 
       // Update profile with onboarding data
       const profileUpdate = {
@@ -49,7 +49,7 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
         referral_source: data.referralSource,
       };
 
-      console.log("Profile update data:", profileUpdate);
+      
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -60,13 +60,13 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
         });
 
       if (profileError) {
-        console.error("Profile update error:", profileError);
+        
         throw profileError;
       }
 
       // Create workspace if provided
       if (data.workspaceName) {
-        console.log("Creating workspace:", data.workspaceName);
+        
 
         // Generate slug from name
         const slug = data.workspaceName.toLowerCase()
@@ -85,12 +85,12 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
           });
 
         if (workspaceError) {
-          console.error("Workspace creation error:", workspaceError);
+          
           throw workspaceError;
         }
 
-        console.log("Created workspace:", workspace);
-        console.log("User automatically added as workspace owner");
+        
+        
       } else {
         // For invited users (no workspace creation), ensure they're added to the workspace
         // Check if user has any pending invitations
@@ -101,10 +101,10 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
           .eq('status', 'pending');
 
         if (inviteError) {
-          console.error("Error checking pending invitations:", inviteError);
+          
           // Don't throw error, just log it
         } else if (pendingInvitations && pendingInvitations.length > 0) {
-          console.log("Found pending invitations for invited user:", pendingInvitations);
+          
 
           // Process each pending invitation
           for (const invitation of pendingInvitations) {
@@ -117,7 +117,7 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
               .maybeSingle();
 
             if (memberCheckError) {
-              console.error("Error checking existing membership:", memberCheckError);
+              
               continue;
             }
 
@@ -132,11 +132,11 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
                 });
 
               if (addMemberError) {
-                console.error("Error adding user to workspace:", addMemberError);
+                
                 continue;
               }
 
-              console.log("Added invited user to workspace:", invitation.workspace_id);
+              
             }
 
             // Update invitation status to accepted
@@ -149,9 +149,9 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
               .eq('id', invitation.id);
 
             if (updateInviteError) {
-              console.error("Error updating invitation status:", updateInviteError);
+              
             } else {
-              console.log("Updated invitation status to accepted:", invitation.id);
+              
             }
           }
         }
@@ -171,16 +171,16 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
         });
 
       if (eventError) {
-        console.error("Event tracking error:", eventError);
+        
         // Don't throw here as it's not critical
       }
 
-      console.log("Onboarding completed successfully");
+      
 
       // Invalidate workspaces queries to refresh the workspace list
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
       queryClient.invalidateQueries({ queryKey: ['user-workspaces'] });
-      console.log("Invalidated workspace queries to refresh data");
+      
 
       // Call onSuccess callback if provided
       if (onSuccess) {
@@ -195,7 +195,7 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
       return { success: true };
 
     } catch (error: any) {
-      console.error("Onboarding submission error:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to complete onboarding. Please try again.",

@@ -12,7 +12,7 @@ export function WorkshopsSection() {
         .eq('format', 'In-Person');
       
       if (error) {
-        console.error('Error fetching courses:', error);
+        
         return [];
       }
       

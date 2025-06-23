@@ -33,7 +33,7 @@ const Lessons = () => {
         .single();
 
       if (error) {
-        console.error("Error fetching course:", error);
+        
         toast({
           title: "Error",
           description: "Failed to load course details. Please try again later.",
@@ -60,7 +60,7 @@ const Lessons = () => {
         .order("order");
 
       if (error) {
-        console.error("Error fetching lessons:", error);
+        
         toast({
           title: "Error",
           description: "Failed to load lessons. Please try again later.",
@@ -91,7 +91,7 @@ const Lessons = () => {
         .single();
 
       if (error && error.code !== "PGRST116") {
-        console.error("Error fetching enrollment:", error);
+        
         toast({
           title: "Error",
           description: "Failed to load enrollment details. Please try again later.",

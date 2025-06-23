@@ -181,7 +181,7 @@ export function MessageList({
   // STRICT CHANNEL FILTERING: Only show messages that belong to the active channel
   const filteredMessages = useMemo(() => {
     if (!activeChannelId) {
-      console.warn('MessageList: No active channel ID provided, showing empty list');
+      
       return [];
     }
 
@@ -189,13 +189,13 @@ export function MessageList({
       const belongsToChannel = message.channel_id === activeChannelId;
 
       if (!belongsToChannel) {
-        console.warn(`MessageList: Filtering out message ${message.id} from channel ${message.channel_id} (active: ${activeChannelId})`);
+        
       }
 
       return belongsToChannel;
     });
 
-    console.log(`MessageList: Displaying ${channelMessages.length} messages for channel ${activeChannelId}`);
+    
     return channelMessages;
   }, [messages, activeChannelId]);
 
