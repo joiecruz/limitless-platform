@@ -95,7 +95,8 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
           replace: true,
           state: {
             showOnboarding: false,
-            workspace: invitation.workspace_id
+            workspace: invitation.workspace_id,
+            isInvited: true
           }
         });
       }

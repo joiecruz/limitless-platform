@@ -32,14 +32,16 @@ export function CreateWorkspaceDialog() {
         .trim()
         .replace(/[^\w\s-]/g, '')
         .replace(/[\s_-]+/g, '-')
-        .replace(/^-+|-+$/g, '') + 
+        .replace(/^-+|-+$/g, '') +
         '-' + Date.now();
 
+      // Use the RPC function instead of direct insert
       const { data, error } = await supabase
-        .from("workspaces")
-        .insert([{ name: name.trim(), slug }])
-        .select()
-        .single();
+        .rpc('create_workspace_with_owner', {
+          workspace_name: name.trim(),
+          workspace_slug: slug,
+          owner_id: user.id
+        });
 
       if (error) {
         console.error('Error creating workspace:', error);
@@ -48,21 +50,8 @@ export function CreateWorkspaceDialog() {
 
       console.log('Workspace created successfully:', data);
 
-      // Add the creator as owner of the workspace
-      const { error: memberError } = await supabase
-        .from('workspace_members')
-        .insert({
-          user_id: user.id,
-          workspace_id: data.id,
-          role: 'owner',
-        });
-
-      if (memberError) {
-        console.error('Error adding user as workspace owner:', memberError);
-        throw memberError;
-      }
-
-      console.log('Added user as workspace owner');
+      // No need to manually add user as owner - the function does this
+      console.log('User automatically added as workspace owner');
 
       toast({
         title: "Success",

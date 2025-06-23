@@ -17,9 +17,8 @@ export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
     lastName: data.lastName,
     role: data.role,
     companySize: data.companySize,
-    password: data.password || "",
   });
-  
+
   const [isValid, setIsValid] = useState(false);
 
   useEffect(() => {
@@ -27,10 +26,9 @@ export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
       formData.firstName,
       formData.lastName,
       formData.role,
-      formData.companySize,
-      isInvitedUser ? formData.password : undefined
+      formData.companySize
     ));
-  }, [formData, isInvitedUser]);
+  }, [formData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -69,9 +67,9 @@ export function Step1({ onNext, data, loading, isInvitedUser }: Step1Props) {
         isInvitedUser={isInvitedUser}
       />
 
-      <Button 
-        type="submit" 
-        className="w-full rounded-[5px]" 
+      <Button
+        type="submit"
+        className="w-full rounded-[5px]"
         disabled={loading || !isValid}
         variant={isValid ? "default" : "secondary"}
       >

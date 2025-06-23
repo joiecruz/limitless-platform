@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
@@ -53,21 +52,27 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Unauthorized");
     }
 
-    // Check if user is superadmin
+    // Check if user is admin or superadmin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('is_superadmin')
+      .select('is_superadmin, is_admin')
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile || !profile.is_superadmin) {
-      throw new Error("Forbidden: Only superadmins can access all workspaces");
+    if (profileError || !profile || (!profile.is_superadmin && !profile.is_admin)) {
+      throw new Error("Forbidden: Only admins and superadmins can access all workspaces");
     }
 
-    // Get all workspaces
+    // Get all workspaces with member count
     const { data: workspaces, error: workspacesError } = await supabase
       .from('workspaces')
-      .select('id, name, slug');
+      .select(`
+        *,
+        workspace_members (
+          count
+        )
+      `)
+      .order('created_at', { ascending: false });
 
     if (workspacesError) {
       throw new Error(`Failed to fetch workspaces: ${workspacesError.message}`);
@@ -77,28 +82,31 @@ const handler = async (req: Request): Promise<Response> => {
     const formattedWorkspaces = workspaces.map(workspace => ({
       id: workspace.id,
       name: workspace.name || 'Unnamed Workspace',
-      slug: workspace.slug || 'unnamed'
+      slug: workspace.slug || 'unnamed',
+      created_at: workspace.created_at,
+      updated_at: workspace.updated_at,
+      member_count: workspace.workspace_members[0]?.count || 0
     }));
 
     return new Response(
       JSON.stringify(formattedWorkspaces),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json" 
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
         },
         status: 200
       }
     );
   } catch (error: any) {
     console.error("Error in get-admin-workspaces function:", error);
-    
+
     return new Response(
       JSON.stringify({ error: error.message || "An error occurred" }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json" 
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json"
         },
         status: 500
       }

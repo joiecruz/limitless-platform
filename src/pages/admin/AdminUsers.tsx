@@ -9,7 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Trash2, Search } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function AdminUsers() {
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [search, setSearch] = useState("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -49,6 +51,26 @@ export default function AdminUsers() {
         });
       },
     },
+  });
+
+  // Filter users based on search term
+  const filteredUsers = users?.filter(user => {
+    if (!search) return true;
+
+    const searchLower = search.toLowerCase();
+    const email = user.email?.toLowerCase() || '';
+    const firstName = user.first_name?.toLowerCase() || '';
+    const lastName = user.last_name?.toLowerCase() || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    const role = user.is_superadmin ? 'superadmin' : user.is_admin ? 'admin' : 'user';
+
+    return (
+      email.includes(searchLower) ||
+      firstName.includes(searchLower) ||
+      lastName.includes(searchLower) ||
+      fullName.includes(searchLower) ||
+      role.includes(searchLower)
+    );
   });
 
   const handleDeleteClick = (userId: string) => {
@@ -129,7 +151,19 @@ export default function AdminUsers() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Users</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Users</h1>
+        <div className="flex items-center space-x-2">
+          <Search className="w-5 h-5 text-gray-400" />
+          <Input
+            placeholder="Search users..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-64"
+          />
+        </div>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -141,30 +175,38 @@ export default function AdminUsers() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users?.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>
-                {user.first_name} {user.last_name}
-              </TableCell>
-              <TableCell>
-                {user.is_superadmin ? 'Superadmin' : user.is_admin ? 'Admin' : 'User'}
-              </TableCell>
-              <TableCell>
-                {new Date(user.created_at).toLocaleDateString()}
-              </TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteClick(user.id)}
-                  disabled={user.is_superadmin}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+          {filteredUsers?.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                {search ? "No users found matching your search" : "No users found"}
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            filteredUsers?.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  {user.first_name} {user.last_name}
+                </TableCell>
+                <TableCell>
+                  {user.is_superadmin ? 'Superadmin' : user.is_admin ? 'Admin' : 'User'}
+                </TableCell>
+                <TableCell>
+                  {new Date(user.created_at).toLocaleDateString()}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteClick(user.id)}
+                    disabled={user.is_superadmin}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
 

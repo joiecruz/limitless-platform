@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,14 +17,14 @@ export default function InvitePage() {
     const handleInvitation = async () => {
       try {
         const token = searchParams.get("token");
-        
+
         if (!token) {
           console.error("No token found in URL");
           throw new Error("Invalid invitation link");
         }
 
         console.log("Handling invitation with token:", token);
-        
+
         // Verify the invitation first using our service that bypasses RLS
         const { invitation } = await verifyInvitation(token);
 
@@ -36,10 +35,10 @@ export default function InvitePage() {
 
         // Check if user has a session
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session) {
           console.log("User has existing session:", session.user.email);
-          
+
           // If the signed-in user's email matches the invitation email
           if (session.user.email?.toLowerCase() === invitation.email.toLowerCase()) {
             try {
@@ -57,11 +56,12 @@ export default function InvitePage() {
                 if (error.message?.includes('already a member')) {
                   console.log("User is already a member of this workspace");
                   localStorage.setItem('selectedWorkspace', invitation.workspace_id);
-                  navigate("/dashboard", { 
+                  navigate("/dashboard", {
                     replace: true,
-                    state: { 
+                    state: {
                       showOnboarding: false,
-                      workspace: invitation.workspace_id
+                      workspace: invitation.workspace_id,
+                      isInvited: true
                     }
                   });
                   return;
@@ -74,11 +74,12 @@ export default function InvitePage() {
                 title: "Welcome!",
                 description: "You have successfully joined the workspace.",
               });
-              navigate("/dashboard", { 
+              navigate("/dashboard", {
                 replace: true,
-                state: { 
+                state: {
                   showOnboarding: false,
-                  workspace: invitation.workspace_id
+                  workspace: invitation.workspace_id,
+                  isInvited: true
                 }
               });
             } catch (error: any) {

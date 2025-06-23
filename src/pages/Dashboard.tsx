@@ -28,27 +28,28 @@ export default function Dashboard() {
 
       return data;
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Query to check if user has any workspace memberships
-  const { data: workspaceMemberships, isLoading: workspacesLoading } = useQuery({
-    queryKey: ["workspaceMemberships"],
+  // Query to get user workspaces using the proper function
+  const { data: userWorkspaces, isLoading: workspacesLoading } = useQuery({
+    queryKey: ["user-workspaces"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .eq("user_id", user.id);
+      const { data, error } = await supabase.functions.invoke('get-user-workspaces', {
+        body: { user_id: user.id }
+      });
 
       if (error) {
-        console.error("Error fetching workspace memberships:", error);
+        console.error("Error fetching user workspaces:", error);
         return [];
       }
 
-      return data || [];
-    }
+      return data?.workspaces || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   useEffect(() => {
@@ -109,31 +110,45 @@ export default function Dashboard() {
       return;
     }
 
-    console.log("Dashboard - Profile:", profile);
-    console.log("Dashboard - Workspace memberships:", workspaceMemberships);
+    // Check if user has already been marked as onboarded (navigated around dashboard)
+    const hasNavigatedDashboard = localStorage.getItem('dashboard-visited');
+    if (hasNavigatedDashboard) {
+      console.log("Dashboard - User has already navigated dashboard, skipping onboarding");
+      setShowOnboarding(false);
+      return;
+    }
 
-    // Check if profile is incomplete
-    const profileIncomplete = !profile?.first_name ||
-                          !profile?.last_name ||
-                          !profile?.role ||
-                          !profile?.company_size ||
-                          !profile?.goals ||
-                          !profile?.referral_source;
+        console.log("Dashboard - Profile:", profile);
+    console.log("Dashboard - User workspaces:", userWorkspaces);
 
-    // Check if user has no workspaces
-    const noWorkspaces = !workspaceMemberships || workspaceMemberships.length === 0;
+    // Check if user has never been onboarded (no name AND no workspaces)
+    const hasName = profile?.first_name && profile?.last_name;
+    const hasWorkspaces = userWorkspaces && userWorkspaces.length > 0;
 
-    // Determine if onboarding should be shown based on actual data only
-    const needsOnboarding = profileIncomplete || noWorkspaces;
+    // Show onboarding for:
+    // 1. Truly new users (no name AND no workspaces) - full onboarding
+    // 2. Users with names but no workspaces - workspace creation step only
+    const needsOnboarding = !hasName && !hasWorkspaces; // Full onboarding
+    const needsWorkspaceCreation = hasName && !hasWorkspaces; // Workspace creation only
 
-    console.log("Dashboard - Profile incomplete:", profileIncomplete);
-    console.log("Dashboard - No workspaces:", noWorkspaces);
-    console.log("Dashboard - Needs onboarding:", needsOnboarding);
+    const showOnboardingModal = needsOnboarding || needsWorkspaceCreation;
 
-    setShowOnboarding(needsOnboarding);
-    setIsIncompleteProfile(profileIncomplete);
+    console.log("Dashboard - Has name:", hasName);
+    console.log("Dashboard - Has workspaces:", hasWorkspaces);
+    console.log("Dashboard - Needs full onboarding:", needsOnboarding);
+    console.log("Dashboard - Needs workspace creation:", needsWorkspaceCreation);
+    console.log("Dashboard - Show onboarding modal:", showOnboardingModal);
 
-  }, [profile, profileLoading, workspaceMemberships, workspacesLoading, onboardingJustCompleted]);
+    // If user has both name and workspaces, mark them as having visited dashboard
+    if (hasName && hasWorkspaces) {
+      localStorage.setItem('dashboard-visited', 'true');
+      console.log("Dashboard - User is fully onboarded, marking dashboard as visited");
+    }
+
+    setShowOnboarding(showOnboardingModal);
+    setIsIncompleteProfile(!hasName);
+
+  }, [profile, profileLoading, userWorkspaces, workspacesLoading, onboardingJustCompleted]);
 
   const quickLinks = [
     {
@@ -178,6 +193,7 @@ export default function Dashboard() {
     if (!open) {
       // Mark onboarding as completed when user closes it
       localStorage.setItem('onboardingCompleted', Date.now().toString());
+      localStorage.setItem('dashboard-visited', 'true');
       setOnboardingJustCompleted(true);
     }
   };
