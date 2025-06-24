@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function ProjectBriefProgressBar() {
+export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentStep?: number }) {
   // Step data for easier mapping
   const steps = [
     { number: "01", label: "Overview" },
@@ -8,33 +8,9 @@ export default function ProjectBriefProgressBar() {
     { number: "03", label: "Timeline & Team" },
   ];
 
-  // Set current step index (0-based)
-  const currentStep = 0;
-
   // Circle rendering
   function renderCircle(idx: number) {
-    if (idx < currentStep) {
-      // Completed: gray circle with check
-      return (
-        <span style={{
-          width: 16,
-          height: 16,
-          background: '#E5E7EB',
-          borderRadius: 8,
-          borderWidth: 4,
-          borderColor: '#E5E7EB',
-          borderStyle: 'solid',
-          zIndex: 2,
-          display: 'inline-block',
-          position: 'relative',
-        }}>
-          <svg width="13" height="13" viewBox="0 0 10 10" style={{ position: 'absolute', top: -1.6, left: -3 }}>
-            <polyline points="2,5.5 4,7.5 8,3.5" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-      );
-    } else if (idx === currentStep) {
-      // Current: bold colored outline, white fill
+    if (idx === currentStep) {
       return (
         <span style={{
           width: 16,
@@ -47,6 +23,26 @@ export default function ProjectBriefProgressBar() {
           zIndex: 2,
           display: 'inline-block',
         }} />
+      );
+    } else if (idx <= currentStep) {
+      // Current: filled colored circle
+      return (
+        <span style={{
+          width: 16,
+          height: 16,
+          background: '#393CA0',
+          borderRadius: 8,
+          borderWidth: 5,
+          borderColor: '#393CA0',
+          borderStyle: 'solid',
+          zIndex: 2,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+          fontWeight: 700,
+          fontSize: 12,
+        }}></span>
       );
     } else {
       // Incomplete: gray circle
