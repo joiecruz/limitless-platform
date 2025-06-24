@@ -1,8 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Image } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useContext } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { useGlobalRole } from "@/hooks/useGlobalRole";
+import { useWorkspaceRole } from "@/hooks/useWorkspaceRole";
+import { WorkspaceContext } from "@/components/layout/DashboardLayout";
+import { Channel } from "@/types/community";
 import {
   Command,
   CommandEmpty,
@@ -12,10 +17,16 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { ImageIcon, SendHorizontal, Lock } from "lucide-react";
 
 interface MessageInputProps {
   channelName: string;
   onSendMessage: (content: string, imageUrl?: string) => void;
+  activeChannel: Channel;
+  editingMessage?: {id: string, content: string} | null;
+  onCancelEdit?: () => void;
+  onUpdateMessage?: (updatedMessage: any) => void;
 }
 
 interface User {
@@ -23,8 +34,15 @@ interface User {
   id: string;
 }
 
-export function MessageInput({ channelName, onSendMessage }: MessageInputProps) {
-  const [newMessage, setNewMessage] = useState("");
+export function MessageInput({
+  channelName,
+  onSendMessage,
+  activeChannel,
+  editingMessage,
+  onCancelEdit,
+  onUpdateMessage
+}: MessageInputProps) {
+  const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [mentionSearch, setMentionSearch] = useState("");
   const [showMentions, setShowMentions] = useState(false);
@@ -33,6 +51,35 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { setTyping } = useTypingIndicator(activeChannel);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const { is_superadmin, is_admin } = useGlobalRole();
+  const { currentWorkspace } = useContext(WorkspaceContext);
+  const { data: workspaceRole } = useWorkspaceRole(currentWorkspace?.id || "");
+
+  // Set message content when editing
+  useEffect(() => {
+    if (editingMessage) {
+      setMessage(editingMessage.content);
+
+      // Stop typing indicator when editing starts
+      setTyping(false);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Focus and position cursor
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          const length = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(length, length);
+        }
+      }, 100);
+    } else {
+      setMessage("");
+    }
+  }, [editingMessage]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -49,51 +96,138 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
     fetchUsers();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newMessage.trim()) {
-      onSendMessage(newMessage);
-      setNewMessage("");
+  const handleTyping = () => {
+    console.log("[MessageInput] User is typing");
+    setTyping(true);
+
+    // Clear any existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
+
+    // Set a new timeout to stop typing after 3 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      console.log("[MessageInput] User stopped typing");
+      setTyping(false);
+    }, 3000);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+
+    if (editingMessage) {
+      // Handle editing
+      try {
+        const { error } = await supabase
+          .from('messages')
+          .update({
+            content: message.trim(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingMessage.id);
+
+        if (error) throw error;
+
+        // Clear editing state (removed success toast)
+        if (onCancelEdit) {
+          onCancelEdit();
+        }
+        setMessage("");
+      } catch (error) {
+        console.error('Error editing message:', error);
+        toast({
+          title: "Error",
+          description: "Failed to edit message",
+          variant: "destructive",
+        });
+      }
+    } else {
+      // Handle new message
+      onSendMessage(message);
+      setMessage("");
+      setTyping(false);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    if (onCancelEdit) {
+      onCancelEdit();
+    }
+    setMessage("");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setNewMessage(value);
+    setMessage(value);
 
-    // Check for @ mentions
-    const lastAtSymbol = value.lastIndexOf("@");
-    if (lastAtSymbol !== -1 && lastAtSymbol === value.length - 1) {
-      const rect = e.target.getBoundingClientRect();
-      setMentionPosition({
-        top: rect.bottom,
-        left: rect.left,
-      });
-      setShowMentions(true);
-      setMentionSearch("");
-    } else if (lastAtSymbol !== -1) {
-      const searchText = value.slice(lastAtSymbol + 1);
-      setMentionSearch(searchText);
-      setShowMentions(true);
+    // Always maintain cursor at end when editing
+    if (editingMessage) {
+      setTimeout(() => {
+        if (inputRef.current) {
+          const length = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(length, length);
+        }
+      }, 0);
     } else {
-      setShowMentions(false);
+      // Only handle typing indicator when not editing
+      handleTyping();
+    }
+
+    // Check for @ mentions (only when not editing)
+    if (!editingMessage) {
+      const lastAtSymbol = value.lastIndexOf("@");
+      if (lastAtSymbol !== -1 && lastAtSymbol === value.length - 1) {
+        const rect = e.target.getBoundingClientRect();
+        setMentionPosition({
+          top: rect.bottom,
+          left: rect.left,
+        });
+        setShowMentions(true);
+        setMentionSearch("");
+      } else if (lastAtSymbol !== -1) {
+        const searchText = value.slice(lastAtSymbol + 1);
+        setMentionSearch(searchText);
+        setShowMentions(true);
+      } else {
+        setShowMentions(false);
+      }
     }
   };
 
   const handleMentionSelect = (username: string) => {
-    const lastAtSymbol = newMessage.lastIndexOf("@");
-    const newValue = newMessage.slice(0, lastAtSymbol) + `@${username} `;
-    setNewMessage(newValue);
+    const lastAtSymbol = message.lastIndexOf("@");
+    const newValue = message.slice(0, lastAtSymbol) + `@${username} `;
+    setMessage(newValue);
     setShowMentions(false);
     inputRef.current?.focus();
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "Image size should be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
       toast({
         title: "Error",
         description: "Please upload an image file",
@@ -102,39 +236,30 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
       return;
     }
 
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "Error",
-        description: "Image must be less than 5MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('message-attachments')
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const filePath = `message-images/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("message-images")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('message-attachments')
+        .from("message-images")
         .getPublicUrl(filePath);
 
-      onSendMessage("", publicUrl);
-      
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
+      onSendMessage(message, publicUrl);
+      setMessage("");
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error("Error uploading image:", error);
       toast({
         title: "Error",
         description: "Failed to upload image",
@@ -143,22 +268,73 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
 
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Check if user can post in this channel
+  const canPost = () => {
+    // If it's not a read-only channel, everyone can post
+    if (!activeChannel.read_only) {
+      return true;
+    }
+
+    // For read-only public channels, only superadmins and admins can post
+    if (activeChannel.is_public && activeChannel.read_only) {
+      return is_superadmin || is_admin;
+    }
+
+    // For read-only private channels, only workspace admins and owners can post
+    if (!activeChannel.is_public && activeChannel.read_only) {
+      return workspaceRole === 'admin' || workspaceRole === 'owner';
+    }
+
+    return true;
+  };
+
+  const isInputDisabled = !canPost() || isUploading;
+
+  const handleInputFocus = () => {
+    // Position cursor at end for editing
+    if (editingMessage && inputRef.current) {
+      setTimeout(() => {
+        if (inputRef.current) {
+          const length = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(length, length);
+        }
+      }, 200);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="flex items-center space-x-2 relative">
-      <input
+    <div className="flex items-center gap-2">
+      <Input
         ref={inputRef}
-        type="text"
-        value={newMessage}
+        value={message}
         onChange={handleInputChange}
-        placeholder={`Message ${channelName || ''}`}
-        className="flex-1 rounded-lg border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        onKeyDown={handleKeyDown}
+        placeholder={
+          editingMessage
+            ? "Edit your message..."
+            : isInputDisabled && activeChannel.read_only
+              ? "This channel is read-only"
+              : `Message #${channelName}`
+        }
+        className="flex-1"
+        disabled={isInputDisabled}
+        onFocus={handleInputFocus}
       />
-      {showMentions && (
+      {showMentions && !editingMessage && (
         <div className="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200">
           <Command>
             <CommandInput placeholder="Search users..." value={mentionSearch} onValueChange={setMentionSearch} />
@@ -166,7 +342,7 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
               <CommandEmpty>No users found</CommandEmpty>
               <CommandGroup>
                 {users
-                  .filter(user => 
+                  .filter(user =>
                     user.username?.toLowerCase().includes(mentionSearch.toLowerCase())
                   )
                   .map(user => (
@@ -183,25 +359,43 @@ export function MessageInput({ channelName, onSendMessage }: MessageInputProps) 
           </Command>
         </div>
       )}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileUpload}
-        accept="image/*"
-        className="hidden"
-      />
+      {!editingMessage && (
+        <>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+            disabled={isInputDisabled}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isInputDisabled}
+          >
+            <ImageIcon className="h-5 w-5" />
+          </Button>
+        </>
+      )}
       <Button
-        type="button"
-        variant="ghost"
+        onClick={handleSendMessage}
+        disabled={!message.trim() || isInputDisabled}
         size="icon"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isUploading}
+        className={editingMessage ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}
       >
-        <Image className="h-5 w-5" />
+        <SendHorizontal className="h-5 w-5" />
       </Button>
-      <Button type="submit" disabled={!newMessage.trim() || isUploading}>
-        Send
-      </Button>
-    </form>
+      {editingMessage && (
+        <Button
+          onClick={handleCancel}
+          variant="outline"
+          size="icon"
+        >
+          ✕
+        </Button>
+      )}
+    </div>
   );
 }

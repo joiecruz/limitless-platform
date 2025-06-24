@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +5,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Menu, X } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSessionValidation } from "@/hooks/useSessionValidation";
 
 export function AdminLayout() {
+  // Add session validation
+  useSessionValidation();
+
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -18,9 +21,9 @@ export function AdminLayout() {
     const checkSuperAdmin = async () => {
       try {
         console.log("Checking superadmin status...");
-        
+
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
+
         if (userError) {
           console.error('Error getting user:', userError);
           throw userError;
@@ -90,20 +93,20 @@ export function AdminLayout() {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
+
       {/* Mobile header */}
       <div className="sticky top-0 z-10 md:hidden bg-white border-b border-gray-200 px-4 py-2">
         <div className="flex items-center justify-between">
-          <button 
+          <button
             onClick={() => setSidebarOpen(true)}
             className="text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
           >
             <Menu className="h-6 w-6" />
           </button>
-          <img 
-            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+          <img
+            src="/limitless-logo.svg"
             alt="Limitless Lab"
-            className="h-8 w-auto" 
+            className="h-8 w-auto"
           />
         </div>
       </div>
@@ -116,8 +119,8 @@ export function AdminLayout() {
           }`}
         >
           <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
-            <img 
-              src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+            <img
+              src="/limitless-logo.svg"
               alt="Limitless Lab"
               className="h-10 w-auto"
             />

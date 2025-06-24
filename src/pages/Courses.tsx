@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -28,11 +27,11 @@ const Courses = () => {
   const { data: courses, isLoading: coursesLoading } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: coursesData, error } = await supabase
         .from('courses')
         .select('*')
         .in('format', ['Online', 'Hybrid']); // Filter for Online and Hybrid courses only
-      
+
       if (error) {
         console.error('Error fetching courses:', error);
         toast({
@@ -42,8 +41,23 @@ const Courses = () => {
         });
         return [];
       }
-      
-      return data as Course[];
+
+      // Get real-time enrollment counts for all courses
+      const coursesWithCounts = await Promise.all(
+        coursesData.map(async (course) => {
+          const { count } = await supabase
+            .from("enrollments")
+            .select("*", { count: "exact", head: true })
+            .eq("course_id", course.id);
+
+          return {
+            ...course,
+            enrollee_count: count || 0
+          };
+        })
+      );
+
+      return coursesWithCounts as Course[];
     },
   });
 
@@ -57,7 +71,7 @@ const Courses = () => {
         .from('enrollments')
         .select('course_id, progress')
         .eq('user_id', userSession.session.user.id);
-      
+
       if (error) {
         console.error('Error fetching enrollments:', error);
         toast({
@@ -67,7 +81,7 @@ const Courses = () => {
         });
         return [];
       }
-      
+
       return data as Enrollment[];
     },
   });
@@ -98,8 +112,12 @@ const Courses = () => {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["enrollments"] });
+      queryClient.invalidateQueries({ queryKey: ["course-counts", data.course_id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-courses"] });
     },
     onError: (error) => {
       console.error('Error enrolling in course:', error);
@@ -116,7 +134,7 @@ const Courses = () => {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in pt-20 pb-10 px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">
           Courses
@@ -125,11 +143,11 @@ const Courses = () => {
           Explore our available online and hybrid courses and track your progress
         </p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {courses?.map((course) => {
           const enrollment = enrollments?.find((e) => e.course_id === course.id);
-          
+
           return (
             <CourseCard
               key={course.id}

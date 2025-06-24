@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
@@ -21,7 +20,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="py-6">
+    <div className="pt-20 pb-10 px-4 sm:px-6 lg:px-8">
       <div className="mb-6 px-4 md:px-0">
         <h1 className="text-2xl font-bold tracking-tight">Workspace Settings</h1>
         <p className="text-muted-foreground">
@@ -35,19 +34,19 @@ export default function Settings() {
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="general">
           <Card className="p-4 md:p-6">
             <GeneralSettings />
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="members">
           <Card className="p-4 md:p-6">
             <MembersSettings />
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="billing">
           <Card className="p-4 md:p-6">
             <BillingSettings />

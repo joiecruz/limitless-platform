@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,8 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="space-y-6">
-            <img 
-              src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+            <img
+              src="/limitless-logo.svg"
               alt="Limitless Lab"
               className="h-8 w-auto"
             />
@@ -22,7 +23,7 @@ export function Footer() {
               </div>
             </div>
           </div>
-          
+
           <div>
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
@@ -31,7 +32,7 @@ export function Footer() {
               <li><Link to="/terms-of-service" className="text-gray-600 hover:text-primary-600">Terms of Service</Link></li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-semibold mb-4">Resources</h3>
             <ul className="space-y-3">
@@ -40,7 +41,7 @@ export function Footer() {
               <li><Link to="/tools" className="text-gray-600 hover:text-primary-600">Tools</Link></li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-semibold mb-4">Follow us</h3>
             <ul className="space-y-3">
@@ -71,9 +72,9 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        
+
         <div className="border-t border-gray-200 pt-8 text-center text-gray-500 text-sm">
-          <p>© 2024 Limitless Lab Innovations Pte. Ltd. All rights reserved.</p>
+          <p>© 2024 Limitless Lab Organization, Inc. All rights reserved.</p>
         </div>
       </div>
     </footer>

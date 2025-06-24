@@ -5,6 +5,7 @@ import { useState } from "react";
 import { InviteMemberDialog } from "@/components/settings/members/InviteMemberDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspaceRole } from "@/hooks/useWorkspaceRole";
 
 export default function AdminWorkspaceDetails() {
   const { id } = useParams<{ id: string }>();
@@ -20,30 +21,34 @@ export default function AdminWorkspaceDetails() {
         .select('*')
         .eq('id', id)
         .single();
-      
+
       if (error) throw error;
       return data;
     },
     enabled: !!id
   });
 
+  const { data: userRole } = useWorkspaceRole(id);
+  const canInviteMembers = userRole === 'admin' || userRole === 'owner';
+
   if (!id) {
     return <div>Workspace ID is required</div>;
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <WorkspaceHeader 
+    <div className="p-6 space-y-6">
+      <WorkspaceHeader
         workspaceName={workspace?.name || 'Loading...'}
         search={search}
         onSearchChange={setSearch}
         onInviteClick={() => setIsInviteDialogOpen(true)}
+        canInvite={canInviteMembers}
       />
-      
+
       <div className="bg-white rounded-lg shadow">
         <div className="p-6">
           <h2 className="text-xl font-semibold mb-4">Members</h2>
-          <WorkspaceMembersTable 
+          <WorkspaceMembersTable
             workspaceId={id}
             onDeleteMember={async (userId: string) => {
               const { error } = await supabase

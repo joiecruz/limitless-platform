@@ -10,7 +10,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const isIncompleteProfile = location.state?.isIncompleteProfile;
+  const [isIncompleteProfile, setIsIncompleteProfile] = useState(location.state?.isIncompleteProfile || false);
+  const [onboardingJustCompleted, setOnboardingJustCompleted] = useState(false);
 
   // Query to get user profile data
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -27,13 +28,35 @@ export default function Dashboard() {
 
       return data;
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Query to get user workspaces using the proper function
+  const { data: userWorkspaces, isLoading: workspacesLoading } = useQuery({
+    queryKey: ["user-workspaces"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase.functions.invoke('get-user-workspaces', {
+        body: { user_id: user.id }
+      });
+
+      if (error) {
+        console.error("Error fetching user workspaces:", error);
+        return [];
+      }
+
+      return data?.workspaces || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
       console.log("Dashboard - Current session:", session);
-      
+
       if (error || !session) {
         console.log("Dashboard - No session found, redirecting to signin");
         navigate("/signin", { replace: true });
@@ -44,29 +67,88 @@ export default function Dashboard() {
     checkAuth();
   }, [navigate]);
 
+  // Check for recent onboarding completion
+  useEffect(() => {
+    const checkOnboardingCompletion = () => {
+      const completionFlag = localStorage.getItem('onboardingCompleted');
+      if (completionFlag) {
+        const completionTime = parseInt(completionFlag);
+        const now = Date.now();
+
+        // If onboarding was completed within the last 10 seconds, set flag
+        if (now - completionTime < 10000) {
+          console.log("Dashboard - Onboarding was recently completed, preventing retrigger");
+          setOnboardingJustCompleted(true);
+
+          // Clear the flag after 10 seconds
+          setTimeout(() => {
+            setOnboardingJustCompleted(false);
+            localStorage.removeItem('onboardingCompleted');
+          }, 10000);
+        } else {
+          // Clear old completion flag
+          localStorage.removeItem('onboardingCompleted');
+        }
+      }
+    };
+
+    checkOnboardingCompletion();
+  }, []);
+
   // Check if onboarding is needed
   useEffect(() => {
-    if (!profileLoading && profile) {
-      const needsOnboarding = !profile.first_name || 
-                            !profile.last_name || 
-                            !profile.role || 
-                            !profile.company_size || 
-                            !profile.goals || 
-                            !profile.referral_source;
-      
-      // Show onboarding if needed or if coming from email confirmation
-      const shouldShowOnboarding = needsOnboarding || location.state?.showOnboarding;
-      setShowOnboarding(shouldShowOnboarding);
-      
-      // If profile is incomplete and needs onboarding, set isIncompleteProfile in state
-      if (needsOnboarding && !isIncompleteProfile) {
-        navigate(location.pathname, { 
-          state: { ...location.state, isIncompleteProfile: true },
-          replace: true 
-        });
-      }
+    // Don't proceed if queries are still loading
+    if (profileLoading || workspacesLoading) {
+      console.log("Dashboard - Queries still loading, waiting...");
+      return;
     }
-  }, [profile, profileLoading, location.state, navigate, location.pathname, isIncompleteProfile]);
+
+    // Don't show onboarding if it was just completed
+    if (onboardingJustCompleted) {
+      console.log("Dashboard - Onboarding just completed, skipping");
+      setShowOnboarding(false);
+      return;
+    }
+
+    // Check if user has already been marked as onboarded (navigated around dashboard)
+    const hasNavigatedDashboard = localStorage.getItem('dashboard-visited');
+    if (hasNavigatedDashboard) {
+      console.log("Dashboard - User has already navigated dashboard, skipping onboarding");
+      setShowOnboarding(false);
+      return;
+    }
+
+        console.log("Dashboard - Profile:", profile);
+    console.log("Dashboard - User workspaces:", userWorkspaces);
+
+    // Check if user has never been onboarded (no name AND no workspaces)
+    const hasName = profile?.first_name && profile?.last_name;
+    const hasWorkspaces = userWorkspaces && userWorkspaces.length > 0;
+
+    // Show onboarding for:
+    // 1. Truly new users (no name AND no workspaces) - full onboarding
+    // 2. Users with names but no workspaces - workspace creation step only
+    const needsOnboarding = !hasName && !hasWorkspaces; // Full onboarding
+    const needsWorkspaceCreation = hasName && !hasWorkspaces; // Workspace creation only
+
+    const showOnboardingModal = needsOnboarding || needsWorkspaceCreation;
+
+    console.log("Dashboard - Has name:", hasName);
+    console.log("Dashboard - Has workspaces:", hasWorkspaces);
+    console.log("Dashboard - Needs full onboarding:", needsOnboarding);
+    console.log("Dashboard - Needs workspace creation:", needsWorkspaceCreation);
+    console.log("Dashboard - Show onboarding modal:", showOnboardingModal);
+
+    // If user has both name and workspaces, mark them as having visited dashboard
+    if (hasName && hasWorkspaces) {
+      localStorage.setItem('dashboard-visited', 'true');
+      console.log("Dashboard - User is fully onboarded, marking dashboard as visited");
+    }
+
+    setShowOnboarding(showOnboardingModal);
+    setIsIncompleteProfile(!hasName);
+
+  }, [profile, profileLoading, userWorkspaces, workspacesLoading, onboardingJustCompleted]);
 
   const quickLinks = [
     {
@@ -106,8 +188,18 @@ export default function Dashboard() {
     return '';
   };
 
+  const handleOnboardingClose = (open: boolean) => {
+    setShowOnboarding(open);
+    if (!open) {
+      // Mark onboarding as completed when user closes it
+      localStorage.setItem('onboardingCompleted', Date.now().toString());
+      localStorage.setItem('dashboard-visited', 'true');
+      setOnboardingJustCompleted(true);
+    }
+  };
+
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in pt-20 pb-10 px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
@@ -123,8 +215,8 @@ export default function Dashboard() {
       {/* Quick Links Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {quickLinks.map((link, index) => (
-          <Card 
-            key={index} 
+          <Card
+            key={index}
             className="overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
             onClick={() => navigate(link.link)}
           >
@@ -154,9 +246,9 @@ export default function Dashboard() {
       </div>
 
       {/* Onboarding Modal */}
-      <OnboardingModal 
-        open={showOnboarding} 
-        onOpenChange={setShowOnboarding}
+      <OnboardingModal
+        open={showOnboarding}
+        onOpenChange={handleOnboardingClose}
         isIncompleteProfile={isIncompleteProfile}
       />
     </div>

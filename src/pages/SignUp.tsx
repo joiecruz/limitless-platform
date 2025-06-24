@@ -39,7 +39,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -51,8 +51,10 @@ export default function Register() {
         description: "Please check your email to verify your account.",
       });
 
-      // Redirect to sign in page after successful registration
-      navigate("/signin");
+      // After signing up, redirect to dashboard
+      navigate("/dashboard", {
+        replace: true
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -66,8 +68,8 @@ export default function Register() {
 
   // Check if form is valid
   const isFormValid = () => {
-    return email.trim() !== "" && 
-           /\S+@\S+\.\S+/.test(email) && 
+    return email.trim() !== "" &&
+           /\S+@\S+\.\S+/.test(email) &&
            password.length >= 8 &&
            /[a-z]/.test(password) &&
            /[A-Z]/.test(password) &&
@@ -120,9 +122,9 @@ export default function Register() {
               />
               <PasswordRequirements password={password} />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full"
               disabled={loading || !isFormValid()}
               variant={isFormValid() ? "default" : "secondary"}
             >

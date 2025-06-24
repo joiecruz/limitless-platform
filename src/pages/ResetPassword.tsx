@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLogo } from "@/components/auth/AuthLogo";
+import { LoadingPage } from "@/components/common/LoadingPage";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -13,27 +13,54 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [validToken, setValidToken] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we have a hash token when the component mounts
+    // Check for token in both hash and query parameters
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const queryParams = new URLSearchParams(window.location.search);
+
     const type = hashParams.get('type');
-    const accessToken = hashParams.get('access_token');
-    
-    console.log('Reset password page loaded with hash params', { type, accessToken: !!accessToken });
-    
-    if (!accessToken || type !== 'recovery') {
+    const accessToken = hashParams.get('access_token') || queryParams.get('token');
+
+    console.log('Reset password page loaded', {
+      hashType: type,
+      hasHashToken: !!hashParams.get('access_token'),
+      hasQueryToken: !!queryParams.get('token')
+    });
+
+    if (!accessToken) {
       toast({
         title: "Invalid Reset Link",
         description: "This password reset link is invalid or has expired.",
         variant: "destructive",
       });
-      navigate('/signin');
+      setIsNavigating(true);
+      setTimeout(() => navigate('/signin'), 2000);
       return;
     }
-    
+
+    // If we have a token in query params, we need to exchange it
+    if (queryParams.get('token')) {
+      // The App.tsx already handles setting the session from the token
+      setValidToken(true);
+      return;
+    }
+
+    // For hash-based tokens, verify it's a recovery type
+    if (type !== 'recovery') {
+      toast({
+        title: "Invalid Reset Link",
+        description: "This password reset link is invalid or has expired.",
+        variant: "destructive",
+      });
+      setIsNavigating(true);
+      setTimeout(() => navigate('/signin'), 2000);
+      return;
+    }
+
     setValidToken(true);
   }, [navigate, toast]);
 
@@ -52,11 +79,11 @@ export default function ResetPassword() {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validatePassword() || !validToken) {
       return;
     }
-    
+
     setLoading(true);
 
     try {
@@ -66,13 +93,12 @@ export default function ResetPassword() {
 
       if (error) throw error;
 
-      toast({
-        title: "Password updated",
-        description: "Your password has been updated successfully. Please sign in with your new password.",
-      });
+      // Sign out the user to clear the session before navigating
+      await supabase.auth.signOut();
 
-      // Redirect to sign in page
-      navigate('/signin');
+      // Show loading and navigate after 2 seconds
+      setIsNavigating(true);
+      setTimeout(() => navigate('/signin'), 2000);
     } catch (error: any) {
       console.error("Password reset error:", error);
       toast({
@@ -84,6 +110,10 @@ export default function ResetPassword() {
       setLoading(false);
     }
   };
+
+  if (isNavigating) {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -105,9 +135,12 @@ export default function ResetPassword() {
           {!validToken ? (
             <div className="text-center text-red-500">
               <p>Invalid or expired reset link. Please request a new password reset.</p>
-              <Button 
+              <Button
                 className="mt-4 w-full"
-                onClick={() => navigate('/signin')}
+                onClick={() => {
+                  setIsNavigating(true);
+                  setTimeout(() => navigate('/signin'), 2000);
+                }}
                 style={{ backgroundColor: "rgb(69, 66, 158)" }}
               >
                 Back to sign in
@@ -126,7 +159,7 @@ export default function ResetPassword() {
                   minLength={6}
                 />
               </div>
-              
+
               <div>
                 <Input
                   type="password"

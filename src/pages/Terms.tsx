@@ -1,69 +1,78 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { LoadingPage } from "@/components/common/LoadingPage";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function Terms() {
-  const { data: page, isLoading, error } = useQuery({
-    queryKey: ['terms-page'],
+  usePageTitle("Terms of Service | Limitless Lab");
+
+  const { data: page, isLoading } = useQuery({
+    queryKey: ["terms-of-service"],
     queryFn: async () => {
-      console.log('Fetching terms of service page...');
       const { data, error } = await supabase
-        .from('pages')
-        .select('*')
-        .eq('slug', 'terms-of-service')
-        .eq('published', true)
-        .maybeSingle();
+        .from("pages")
+        .select("*")
+        .eq("slug", "terms-of-service")
+        .eq("published", true)
+        .single();
 
       if (error) {
-        console.error('Error fetching terms of service:', error);
-        throw error;
+        console.error("Error fetching terms of service:", error);
+        return null;
       }
-      
-      console.log('Terms of service data:', data);
+
       return data;
     },
   });
 
-  if (isLoading) return <LoadingPage />;
-
-  if (!page) {
+  if (isLoading) {
     return (
-      <>
+      <div className="min-h-screen bg-white">
         <MainNav />
-        <div className="container mx-auto px-4 py-16">
-          <h1 className="text-4xl font-bold text-center mb-4">Terms of Service</h1>
-          <div className="max-w-4xl mx-auto">
-            <p className="text-center text-muted-foreground">
-              This page is not available at the moment. Please check back later.
-            </p>
-          </div>
+        <div className="flex items-center justify-center min-h-[60vh] pt-32">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#393CA0]"></div>
         </div>
         <Footer />
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-white">
+      <OpenGraphTags
+        title="Terms of Service | Limitless Lab"
+        description="Terms and conditions for using Limitless Lab services."
+        imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+        url={`${window.location.origin}/terms-of-service`}
+        type="website"
+      />
+
       <MainNav />
-      <div className="flex-grow">
-        <div className="container mx-auto px-4 pt-32 pb-16">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold mb-12">{page.title}</h1>
+
+      <div className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">Terms of Service</h1>
+          
+          {page && page.content && typeof page.content === 'object' && 'html' in page.content ? (
             <div 
-              className="prose prose-lg max-w-none dark:prose-invert [&>p]:mb-6 [&>h2]:mt-12 [&>h2]:mb-6"
+              className="prose prose-lg max-w-none"
               dangerouslySetInnerHTML={{ 
-                __html: typeof page.content === 'object' && page.content.html 
-                  ? page.content.html 
-                  : page.content.replace(/\n/g, '<br />') 
+                __html: typeof page.content.html === 'string' ? 
+                  page.content.html.replace(/\n/g, '<br>') : 
+                  'Content not available' 
               }}
             />
-          </div>
+          ) : (
+            <div className="prose prose-lg max-w-none">
+              <p>Terms of service content is being updated. Please check back soon.</p>
+            </div>
+          )}
         </div>
       </div>
+
       <Footer />
     </div>
   );

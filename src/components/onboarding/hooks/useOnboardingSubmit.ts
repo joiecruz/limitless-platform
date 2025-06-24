@@ -1,151 +1,211 @@
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
 import { OnboardingData } from "../types";
-import { useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
-interface OnboardingSubmitProps {
+interface UseOnboardingSubmitProps {
   onOpenChange?: (open: boolean) => void;
   workspaceId?: string;
   onSuccess?: () => void;
 }
 
-export function useOnboardingSubmit({ onOpenChange, workspaceId, onSuccess }: OnboardingSubmitProps) {
-  const [loading, setLoading] = useState(false);
+export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
+  const { onOpenChange, workspaceId, onSuccess } = props;
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
-  const location = useLocation();
-  const isInvitedUser = location.state?.isInvited;
 
-  const handleSubmit = async (formData: OnboardingData) => {
-    console.log('Starting onboarding submission with data:', formData);
+  const submitOnboarding = async (data: OnboardingData) => {
     setLoading(true);
     try {
+      console.log("Submitting onboarding data:", data);
+
+      // Get the current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (!user || userError) {
-        console.error('Error getting user:', userError);
-        throw new Error("No user found");
+
+      if (userError || !user) {
+        throw new Error("User not found");
       }
 
-      console.log('Got user:', user.id);
+      console.log("Current user:", user);
 
-      // First, check if profile exists
-      const { data: existingProfile, error: profileCheckError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
         .single();
 
-      if (profileCheckError) {
-        console.error('Error checking profile:', profileCheckError);
-        // If profile doesn't exist, create it
-        if (profileCheckError.code === 'PGRST116') {
-          console.log('Profile does not exist, creating new profile');
-          const { error: insertError } = await supabase
-            .from("profiles")
-            .insert({
-              id: user.id,
-              email: user.email,
-              first_name: formData.firstName,
-              last_name: formData.lastName,
-              role: formData.role,
-              company_size: formData.companySize,
-              goals: formData.goals,
-              referral_source: formData.referralSource
-            });
+      console.log("Existing profile:", existingProfile);
 
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
-            throw insertError;
-          }
-        } else {
-          throw profileCheckError;
-        }
-      } else {
-        console.log('Profile exists, updating');
-        // Update existing profile
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            role: formData.role,
-            company_size: formData.companySize,
-            goals: formData.goals,
-            referral_source: formData.referralSource
-          })
-          .eq("id", user.id);
+      // Update profile with onboarding data
+      const profileUpdate = {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        role: data.role,
+        company_size: data.companySize,
+        goals: Array.isArray(data.goals) ? data.goals.join(', ') : data.goals,
+        referral_source: data.referralSource,
+      };
 
-        if (updateError) {
-          console.error('Error updating profile:', updateError);
-          throw updateError;
-        }
-      }
+      console.log("Profile update data:", profileUpdate);
 
-      // If invited user, update password
-      if (isInvitedUser && formData.password) {
-        console.log('Updating password for invited user');
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: formData.password
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          email: user.email || '',
+          ...profileUpdate
         });
 
-        if (passwordError) {
-          console.error('Error updating password:', passwordError);
-          throw passwordError;
-        }
+      if (profileError) {
+        console.error("Profile update error:", profileError);
+        throw profileError;
       }
 
-      // Create workspace only if not an invited user
-      if (!isInvitedUser && formData.workspaceName) {
-        console.log('Creating workspace:', formData.workspaceName);
-        const slug = `${generateSlug(formData.workspaceName)}-${Date.now()}`;
-        
+      // Create workspace if provided
+      if (data.workspaceName) {
+        console.log("Creating workspace:", data.workspaceName);
+
+        // Generate slug from name
+        const slug = data.workspaceName.toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_-]+/g, '-')
+          .replace(/^-+|-+$/g, '') +
+          '-' + Date.now();
+
+        // Use the RPC function to create workspace with owner
         const { data: workspace, error: workspaceError } = await supabase
           .rpc('create_workspace_with_owner', {
-            workspace_name: formData.workspaceName,
+            workspace_name: data.workspaceName.trim(),
             workspace_slug: slug,
             owner_id: user.id
           });
 
         if (workspaceError) {
-          console.error('Error creating workspace:', workspaceError);
+          console.error("Workspace creation error:", workspaceError);
           throw workspaceError;
         }
 
-        console.log('Workspace created successfully:', workspace);
+        console.log("Created workspace:", workspace);
+        console.log("User automatically added as workspace owner");
+      } else {
+        // For invited users (no workspace creation), ensure they're added to the workspace
+        // Check if user has any pending invitations
+        const { data: pendingInvitations, error: inviteError } = await supabase
+          .from('workspace_invitations')
+          .select('id, workspace_id, role, status')
+          .eq('email', user.email)
+          .eq('status', 'pending');
 
-        // Invalidate queries to refresh workspace data
-        await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+        if (inviteError) {
+          console.error("Error checking pending invitations:", inviteError);
+          // Don't throw error, just log it
+        } else if (pendingInvitations && pendingInvitations.length > 0) {
+          console.log("Found pending invitations for invited user:", pendingInvitations);
+
+          // Process each pending invitation
+          for (const invitation of pendingInvitations) {
+            // Check if user is already a member of this workspace
+            const { data: existingMember, error: memberCheckError } = await supabase
+              .from('workspace_members')
+              .select('user_id')
+              .eq('workspace_id', invitation.workspace_id)
+              .eq('user_id', user.id)
+              .maybeSingle();
+
+            if (memberCheckError) {
+              console.error("Error checking existing membership:", memberCheckError);
+              continue;
+            }
+
+            if (!existingMember) {
+              // Add user to workspace
+              const { error: addMemberError } = await supabase
+                .from('workspace_members')
+                .insert({
+                  workspace_id: invitation.workspace_id,
+                  user_id: user.id,
+                  role: invitation.role
+                });
+
+              if (addMemberError) {
+                console.error("Error adding user to workspace:", addMemberError);
+                continue;
+              }
+
+              console.log("Added invited user to workspace:", invitation.workspace_id);
+            }
+
+            // Update invitation status to accepted
+            const { error: updateInviteError } = await supabase
+              .from('workspace_invitations')
+              .update({
+                status: 'accepted',
+                accepted_at: new Date().toISOString()
+              })
+              .eq('id', invitation.id);
+
+            if (updateInviteError) {
+              console.error("Error updating invitation status:", updateInviteError);
+            } else {
+              console.log("Updated invitation status to accepted:", invitation.id);
+            }
+          }
+        }
       }
 
-      toast({
-        title: "Setup complete",
-        description: "Your profile has been created successfully.",
-      });
+      // Track onboarding completion event
+      const { error: eventError } = await supabase
+        .from('events')
+        .insert({
+          user_id: user.id,
+          event_type: 'onboarding_completed',
+          event_data: {
+            goals: Array.isArray(data.goals) ? data.goals : [data.goals],
+            referral_source: data.referralSource,
+            has_workspace: !!data.workspaceName
+          }
+        });
 
-      if (onOpenChange) onOpenChange(false);
-      if (onSuccess) onSuccess();
+      if (eventError) {
+        console.error("Event tracking error:", eventError);
+        // Don't throw here as it's not critical
+      }
+
+      console.log("Onboarding completed successfully");
+
+      // Invalidate workspaces queries to refresh the workspace list
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['user-workspaces'] });
+      console.log("Invalidated workspace queries to refresh data");
+
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      // Close modal if onOpenChange is provided
+      if (onOpenChange) {
+        onOpenChange(false);
+      }
+
+      return { success: true };
+
     } catch (error: any) {
-      console.error("Error in onboarding:", error);
+      console.error("Onboarding submission error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to complete setup",
+        description: error.message || "Failed to complete onboarding. Please try again.",
         variant: "destructive",
       });
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const generateSlug = (name: string): string => {
-    return name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  };
-
-  return { handleSubmit, loading };
-}
+  return { handleSubmit: submitOnboarding, loading };
+};

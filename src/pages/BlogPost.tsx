@@ -14,6 +14,7 @@ import { BlogLoading } from "@/components/blog/BlogLoading";
 import { RelatedBlogs } from "@/components/blog/RelatedBlogs";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -50,6 +51,9 @@ export default function BlogPost() {
     retry: 1,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Set page title based on post data
+  usePageTitle(post ? `${post.title} | Limitless Lab Blog` : 'Loading Blog Post | Limitless Lab');
 
   // Log any errors
   useEffect(() => {

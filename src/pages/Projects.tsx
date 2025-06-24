@@ -1,67 +1,72 @@
-import { Button } from "@/components/ui/button";
-import { Construction, Sparkles, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { CreateProjectButton } from "@/components/projects/CreateProjectButton";
+import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
+import { ProjectCard, ProjectCardProps } from "@/components/projects/ProjectCard";
+import { ProjectBanner } from "@/components/projects/ProjectBanner";
+import { Card } from "@/components/ui/card";
+import { Briefcase } from "lucide-react";
 
 export default function Projects() {
-  const navigate = useNavigate();
+  // const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  // const [projects, setProjects] = useState<ProjectCardProps[]>([]);
+
+  // const handleCreateProject = (projectData: Partial<ProjectCardProps>) => {
+  //   const newProject: ProjectCardProps = {
+  //     id: (projects.length + 1).toString(),
+  //     title: projectData.title || "",
+  //     description: projectData.description || "",
+  //     status: projectData.status || "in_progress",
+  //     image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+  //     projectPhases: ["DT"]
+  //   };
+  //
+  //   setProjects([newProject, ...projects]);
+  // };
+
+  // const handleOpenCreateDialog = () => {
+  //   setIsCreateDialogOpen(true);
+  // };
 
   return (
-    <div className="container max-w-4xl py-8 space-y-8 animate-fade-in">
-      <div className="text-center space-y-6">
-        <div className="flex justify-center">
-          <Construction className="h-16 w-16 text-primary" />
-        </div>
-        
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">
-            🚧 Oops – You Caught Us Early!
-          </h1>
-          
-          <p className="text-xl text-muted-foreground">
-            You're ahead of the curve! Our Project Dashboard Module is currently under construction, 
-            but as a valued Limitless Lab member, you'll be the first to experience it when it launches.
+    // <div className="container max-w-7xl px-4 py-8 animate-fade-in">
+    //   <div className="flex justify-between items-center mb-8">
+    //     <h1 className="text-3xl font-bold">Projects</h1>
+    //     <CreateProjectButton onClick={handleOpenCreateDialog} />
+    //   </div>
+
+    //   <ProjectBanner onCreateProject={handleOpenCreateDialog} />
+
+    //   {projects.length === 0 ? (
+    //     <div className="text-center py-12 text-muted-foreground">
+    //       <p className="mb-4">No projects created yet</p>
+    //       <CreateProjectButton onClick={handleOpenCreateDialog} />
+    //     </div>
+    //   ) : (
+    //     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    //       {projects.map((project) => (
+    //         <div key={project.id}>
+    //           <ProjectCard {...project} />
+    //         </div>
+    //       ))}
+    //     </div>
+    //   )}
+
+    //   <CreateProjectDialog
+    //     open={isCreateDialogOpen}
+    //     onOpenChange={setIsCreateDialogOpen}
+    //     onCreateProject={handleCreateProject}
+    //   />
+    // </div>
+    <div className="container mx-auto py-8">
+      <Card className="p-8 text-center">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <Briefcase className="h-16 w-16 text-gray-400" />
+          <h1 className="text-2xl font-bold text-gray-900">Projects In Development</h1>
+          <p className="text-gray-500 max-w-md">
+            We're working on building an amazing project management experience. Stay tuned for updates!
           </p>
         </div>
-
-        <div className="bg-muted/50 rounded-lg p-8 space-y-4">
-          <div className="flex items-center gap-2 text-lg font-semibold text-primary">
-            <Sparkles className="h-5 w-5" />
-            <h2>What to Expect:</h2>
-          </div>
-          
-          <ul className="space-y-2 text-left list-disc list-inside text-muted-foreground">
-            <li>A streamlined, intuitive, and AI-powered way to manage your innovation projects</li>
-            <li>Tried and tested innovation workflows to increase your chances of success</li>
-            <li>Collaborative tools designed to bring ideas to life faster</li>
-            <li>Insights and analytics to help you measure the impact for your projects</li>
-          </ul>
-          
-          <p className="text-sm italic">
-            We're building something exciting – and you'll get exclusive early access once it's ready!
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            👉 In the meantime, why not dive into our existing modules and keep your innovation journey going strong?
-          </p>
-
-          <div className="flex justify-center gap-4">
-            <Button onClick={() => navigate("/dashboard/courses")}>
-              Explore Courses
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/dashboard/tools")}>
-              Browse Tools
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <p className="text-sm text-muted-foreground pt-4">
-          Thanks for being part of our Limitless community – we can't wait to show you what's next!
-        </p>
-      </div>
+      </Card>
     </div>
   );
 }

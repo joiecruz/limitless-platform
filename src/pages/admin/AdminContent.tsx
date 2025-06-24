@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import BlogsTable from "@/components/admin/blog/BlogsTable";
@@ -14,7 +13,7 @@ export default function AdminContent() {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-bold">Content Management</h1>
         <p className="text-muted-foreground">
@@ -29,7 +28,7 @@ export default function AdminContent() {
           <TabsTrigger value="tools">Tools</TabsTrigger>
           <TabsTrigger value="logos">Client Logos</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="blog" className="space-y-4">
           <div className="flex justify-end mb-4">
             <Button onClick={() => navigate("/admin/blog/create")}>
@@ -39,18 +38,18 @@ export default function AdminContent() {
           </div>
           <BlogsTable />
         </TabsContent>
-        
+
         <TabsContent value="case-studies" className="space-y-4">
           <div className="flex justify-end mb-4">
             <CreateCaseStudyDialog />
           </div>
           <CaseStudiesTable />
         </TabsContent>
-        
+
         <TabsContent value="tools" className="space-y-4">
           <ToolsTable />
         </TabsContent>
-        
+
         <TabsContent value="logos" className="space-y-4">
           <div className="flex justify-end mb-4">
             <AddLogoDialog />

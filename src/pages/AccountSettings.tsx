@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileForm } from "@/components/profile/ProfileForm";
@@ -29,12 +28,12 @@ export default function AccountSettings() {
         .select('*')
         .eq('id', session.id)
         .single();
-    
+
       if (error) {
         console.error('Error fetching profile:', error);
         throw error;
       }
-    
+
       return data;
     },
     enabled: !!session?.id
@@ -62,7 +61,7 @@ export default function AccountSettings() {
       if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      
+
       toast({
         title: "Success",
         description: "Profile updated successfully",
@@ -81,7 +80,7 @@ export default function AccountSettings() {
 
   if (profileLoading) {
     return (
-      <div className="py-8 px-4">
+      <div className="pt-20 pb-10 px-4 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold mb-8">Account Settings</h1>
         <div className="bg-white p-6 rounded-lg border">
           <div className="animate-pulse space-y-4">
@@ -95,7 +94,7 @@ export default function AccountSettings() {
   }
 
   return (
-    <div className="py-8 px-4">
+    <div className="p-6">
       <h1 className="text-2xl font-bold mb-8">Account Settings</h1>
       <div className="bg-white p-6 rounded-lg border">
         <ProfileForm

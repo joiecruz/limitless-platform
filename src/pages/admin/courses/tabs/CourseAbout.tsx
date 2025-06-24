@@ -25,8 +25,11 @@ interface CourseAboutProps {
     created_at: string;
     locked: boolean;
     format: string;
-    learning_outcomes: string[] | null;
+    learning_outcomes: string | null;
     price: number | null;
+    who_is_this_for: string | null;
+    course_curriculum_text: string | null;
+    booking_link: string | null;
   };
 }
 
@@ -36,8 +39,18 @@ const CourseAbout = ({ course }: CourseAboutProps) => {
   const [longDescription, setLongDescription] = useState(course.long_description || "");
   const [imageUrl, setImageUrl] = useState(course.image_url || "");
   const [format, setFormat] = useState(course.format || "Online");
+  const [whoIsThisFor, setWhoIsThisFor] = useState(course.who_is_this_for || "");
+  const [courseCurriculumText, setCourseCurriculumText] = useState(course.course_curriculum_text || "");
+  const [bookingLink, setBookingLink] = useState(course.booking_link || "");
+
+  // Parse learning outcomes from string to array for UI
+  const parseLearningOutcomes = (outcomes: string | null): string[] => {
+    if (!outcomes) return [];
+    return outcomes.split('\n').filter(outcome => outcome.trim());
+  };
+  
   const [learningOutcomes, setLearningOutcomes] = useState<string[]>(
-    course.learning_outcomes || []
+    parseLearningOutcomes(course.learning_outcomes)
   );
   const [price, setPrice] = useState(course.price?.toString() || "0");
   const [isSaving, setIsSaving] = useState(false);
@@ -46,6 +59,11 @@ const CourseAbout = ({ course }: CourseAboutProps) => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Convert learning outcomes array back to string
+      const learningOutcomesString = learningOutcomes
+        .filter(outcome => outcome.trim())
+        .join('\n');
+
       const { error } = await supabase
         .from("courses")
         .update({
@@ -54,8 +72,11 @@ const CourseAbout = ({ course }: CourseAboutProps) => {
           long_description: longDescription,
           image_url: imageUrl,
           format,
-          learning_outcomes: learningOutcomes,
+          learning_outcomes: learningOutcomesString,
           price: parseFloat(price),
+          who_is_this_for: whoIsThisFor,
+          course_curriculum_text: courseCurriculumText,
+          booking_link: bookingLink,
         })
         .eq("id", course.id);
 
@@ -180,6 +201,36 @@ const CourseAbout = ({ course }: CourseAboutProps) => {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Who Is This For</label>
+        <Textarea
+          value={whoIsThisFor}
+          onChange={(e) => setWhoIsThisFor(e.target.value)}
+          placeholder="Target audience description"
+          rows={3}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Course Curriculum (Text)</label>
+        <Textarea
+          value={courseCurriculumText}
+          onChange={(e) => setCourseCurriculumText(e.target.value)}
+          placeholder="Workshop curriculum description"
+          rows={6}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Booking Link</label>
+        <Input
+          value={bookingLink}
+          onChange={(e) => setBookingLink(e.target.value)}
+          placeholder="https://calendly.com/your-booking-link"
+          type="url"
+        />
       </div>
 
       <div className="space-y-2">

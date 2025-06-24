@@ -24,23 +24,38 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
 
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error("You must be logged in to create a workspace");
+      }
 
+      console.log('Creating workspace with name:', name);
+
+      // Generate slug from name
       const slug = name.toLowerCase()
         .trim()
         .replace(/[^\w\s-]/g, '')
         .replace(/[\s_-]+/g, '-')
-        .replace(/^-+|-+$/g, '') + 
+        .replace(/^-+|-+$/g, '') +
         '-' + Date.now();
 
-      const { data, error } = await supabase.rpc('create_workspace_with_owner', {
-        workspace_name: name,
-        workspace_slug: slug,
-        owner_id: user.id
-      });
+      // Use the RPC function instead of direct insert
+      const { data, error } = await supabase
+        .rpc('create_workspace_with_owner', {
+          workspace_name: name.trim(),
+          workspace_slug: slug,
+          owner_id: user.id
+        });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating workspace:', error);
+        throw error;
+      }
+
+      console.log('Workspace created successfully:', data);
+
+      // No need to manually add user as owner - the function does this
+      console.log('User automatically added as workspace owner');
 
       toast({
         title: "Success",

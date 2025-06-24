@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React, { useState } from "react";
 
 interface ProfileDisplayProps {
   avatarUrl: string;
@@ -7,21 +7,32 @@ interface ProfileDisplayProps {
   email: string;
 }
 
-export function ProfileDisplay({ avatarUrl, initials, displayName, email }: ProfileDisplayProps) {
+export const ProfileDisplay = function ProfileDisplay({
+  avatarUrl,
+  initials,
+  displayName,
+  email
+}: ProfileDisplayProps) {
+  const [imageError, setImageError] = useState(false);
+
   return (
-    <div className="flex items-center gap-3 px-2 w-full hover:bg-gray-100 rounded-lg transition-colors">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={avatarUrl} />
-        <AvatarFallback>{initials}</AvatarFallback>
-      </Avatar>
-      <div className="flex flex-col min-w-0 text-left">
-        <span className="text-sm font-medium text-gray-700 truncate">
-          {displayName}
-        </span>
-        <span className="text-xs text-gray-500 truncate">
-          {email || 'No email provided'}
-        </span>
+    <div className="flex items-center gap-3 px-2 py-1 rounded-lg w-full hover:bg-gray-100 transition-colors">
+      <div className="relative h-10 w-10 rounded-full overflow-hidden flex items-center justify-center bg-primary/10 text-primary font-medium">
+        {avatarUrl && !imageError ? (
+          <img
+            src={avatarUrl}
+            alt={displayName || email}
+            className="h-full w-full object-cover"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          initials
+        )}
+      </div>
+      <div className="flex flex-col flex-1 min-w-0">
+        <p className="font-medium text-sm truncate">{displayName || 'User'}</p>
+        <p className="text-xs text-muted-foreground truncate">{email}</p>
       </div>
     </div>
   );
-}
+};

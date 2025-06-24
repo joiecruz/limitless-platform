@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +10,6 @@ export function useWorkspaces() {
   return useQuery({
     queryKey: ['workspaces'],
     queryFn: async () => {
-      console.log('Fetching workspaces...');
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
@@ -19,65 +19,22 @@ export function useWorkspaces() {
         }
 
         if (!user) {
-          console.log("No user found");
           return [];
         }
 
-        console.log("User found:", user.id);
+        // Use a single edge function call to determine if user is superadmin and get workspaces
+        const { data, error } = await supabase
+          .functions.invoke('get-user-workspaces', {
+            body: { user_id: user.id }
+          });
 
-        // First check if user is superadmin
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('is_superadmin')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-          throw profileError;
+        if (error) {
+          console.error('Error fetching workspaces:', error);
+          throw error;
         }
-
-        let workspacesData;
-
-        if (profile?.is_superadmin) {
-          // If superadmin, fetch all workspaces
-          const { data, error } = await supabase
-            .from('workspaces')
-            .select('id, name, slug');
           
-          if (error) throw error;
-          workspacesData = data.map(workspace => ({
-            workspace: workspace
-          }));
-        } else {
-          // Otherwise fetch only member workspaces
-          const { data, error } = await supabase
-            .from('workspace_members')
-            .select(`
-              workspace:workspaces (
-                id,
-                name,
-                slug
-              )
-            `)
-            .eq('user_id', user.id);
-
-          if (error) throw error;
-          workspacesData = data;
-        }
-
-        console.log('Raw workspace data:', workspacesData);
-        
-        // Safely type and transform the response
-        const formattedWorkspaces = (workspacesData as unknown as WorkspaceMemberWithWorkspace[]).map(item => ({
-          id: item.workspace.id,
-          name: item.workspace.name || 'Unnamed Workspace',
-          slug: item.workspace.slug || 'unnamed'
-        }));
-
-        console.log('Formatted workspaces:', formattedWorkspaces);
-        return formattedWorkspaces;
-      } catch (error) {
+        return data || [];
+      } catch (error: any) {
         console.error('Error in fetchWorkspaces:', error);
         toast({
           title: "Error",
@@ -87,7 +44,7 @@ export function useWorkspaces() {
         return [];
       }
     },
-    refetchOnWindowFocus: true,
-    staleTime: 1000,
+    refetchOnWindowFocus: false, // Only fetch when component mounts
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }

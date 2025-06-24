@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import CourseProgress from "./CourseProgress";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRight } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CourseEnrollmentProps {
   courseId: string;
@@ -13,22 +14,29 @@ interface CourseEnrollmentProps {
   isEnrolling: boolean;
 }
 
-const CourseEnrollment = ({ 
-  courseId, 
+const CourseEnrollment = ({
+  courseId,
   courseTitle,
-  isEnrolled, 
-  progress = 0, 
-  onEnroll, 
-  isEnrolling 
+  isEnrolled,
+  progress = 0,
+  onEnroll,
+  isEnrolling
 }: CourseEnrollmentProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleEnroll = async () => {
     console.log('Starting enrollment process');
     try {
       await onEnroll();
       console.log('Enrollment successful');
-      
+
+      // Invalidate course counts to update enrollment numbers immediately
+      queryClient.invalidateQueries({ queryKey: ["course-counts", courseId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-courses"] });
+
       toast({
         title: "Successfully enrolled!",
         description: `You are now enrolled in ${courseTitle || "this course"}`,
@@ -58,7 +66,7 @@ const CourseEnrollment = ({
   }
 
   return (
-    <Button 
+    <Button
       className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90"
       onClick={handleEnroll}
       disabled={isEnrolling}

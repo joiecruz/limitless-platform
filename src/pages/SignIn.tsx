@@ -1,4 +1,3 @@
-
 import { useAuthRedirect } from "@/components/auth/useAuthRedirect";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { AuthLogo } from "@/components/auth/AuthLogo";
@@ -10,6 +9,7 @@ import { useEffect, useState } from "react";
 import { LoadingPage } from "@/components/common/LoadingPage";
 import { useToast } from "@/hooks/use-toast";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function SignIn() {
   useAuthRedirect();
@@ -17,7 +17,7 @@ export default function SignIn() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  
+
   // Query to check if user is authenticated
   const { data: session } = useQuery({
     queryKey: ['session'],
@@ -31,43 +31,47 @@ export default function SignIn() {
     const handleAuthChange = async () => {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
-        
+
         if (currentSession?.user) {
           setIsLoading(true);
           console.log("User authenticated, checking workspace membership...");
-          
-          const { data: memberData, error: memberError } = await supabase
-            .from('workspace_members')
-            .select(`
-              workspace_id,
-              workspaces:workspace_id (
-                id,
-                name
-              )
-            `)
-            .eq('user_id', currentSession.user.id);
 
-          if (memberError) {
-            console.error("Error checking workspace membership:", memberError);
-            toast({
-              title: "Error",
-              description: "There was a problem signing you in. Please try again.",
-              variant: "destructive",
+          try {
+            // Check for workspace membership using edge function to bypass RLS
+            const { data: workspaces, error } = await supabase.functions.invoke('get-user-workspaces', {
+              body: { user_id: currentSession.user.id }
             });
-            return;
-          }
 
-          if (!memberData || memberData.length === 0) {
-            console.log("No workspace found, redirecting to onboarding...");
-            navigate('/onboarding', { replace: true });
-            return;
-          }
+            if (error) {
+              console.error("Error checking workspace membership:", error);
+              toast({
+                title: "Error",
+                description: "There was a problem signing you in. Please try again.",
+                variant: "destructive",
+              });
+              return;
+            }
 
-          // Use the first workspace as default
-          const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
-          console.log("Workspace found, redirecting to dashboard...", workspace);
-          localStorage.setItem('selectedWorkspace', workspace.id);
-          navigate('/dashboard', { replace: true });
+            // If user has no workspace, show onboarding with workspace creation
+            if (!workspaces || !workspaces.workspaces || workspaces.workspaces.length === 0) {
+              console.log("No workspace found, redirecting to onboarding...");
+              navigate('/dashboard', {
+                replace: true
+              });
+              return;
+            }
+
+            // User has a workspace, mark as onboarded and go to dashboard
+            const firstWorkspace = workspaces.workspaces[0];
+            console.log("Workspace found, user is already onboarded...", firstWorkspace);
+            if (firstWorkspace && firstWorkspace.id) {
+              localStorage.setItem('selectedWorkspace', firstWorkspace.id);
+              localStorage.setItem('dashboard-visited', 'true');
+            }
+            navigate('/dashboard', { replace: true });
+          } catch (error) {
+            console.error("Error fetching workspaces:", error);
+          }
         }
       } catch (error) {
         console.error("Error in auth change handler:", error);
@@ -85,33 +89,34 @@ export default function SignIn() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
-      
+
       if (event === 'SIGNED_IN' && session) {
         setIsLoading(true);
         try {
-          const { data: memberData, error: memberError } = await supabase
-            .from('workspace_members')
-            .select(`
-              workspace_id,
-              workspaces:workspace_id (
-                id,
-                name
-              )
-            `)
-            .eq('user_id', session.user.id);
+          // Check for workspace membership using edge function to bypass RLS
+          const { data: workspaces, error } = await supabase.functions.invoke('get-user-workspaces', {
+            body: { user_id: session.user.id }
+          });
 
-          if (memberError) {
-            console.error("Error handling sign in:", memberError);
-            throw memberError;
+          if (error) {
+            console.error("Error handling sign in:", error);
+            throw error;
           }
 
-          if (!memberData || memberData.length === 0) {
-            navigate('/onboarding', { replace: true });
+          // If user has no workspace, show onboarding with workspace creation
+          if (!workspaces || !workspaces.workspaces || workspaces.workspaces.length === 0) {
+            navigate('/dashboard', {
+              replace: true
+            });
             return;
           }
 
-          const workspace = memberData[0].workspaces as unknown as { id: string; name: string };
-          localStorage.setItem('selectedWorkspace', workspace.id);
+          // User has a workspace, mark as onboarded and go to dashboard
+          const firstWorkspace = workspaces.workspaces[0];
+          if (firstWorkspace && firstWorkspace.id) {
+            localStorage.setItem('selectedWorkspace', firstWorkspace.id);
+            localStorage.setItem('dashboard-visited', 'true');
+          }
           navigate('/dashboard', { replace: true });
         } catch (error) {
           console.error("Error handling sign in:", error);
@@ -130,6 +135,27 @@ export default function SignIn() {
       subscription.unsubscribe();
     };
   }, [navigate, toast]);
+
+  // Clear localStorage once when sign-in page loads (only if not authenticated)
+  useEffect(() => {
+    const clearStorageForUnauthenticated = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          localStorage.clear();
+          console.log('localStorage cleared on sign-in page for unauthenticated user');
+        } else {
+          console.log('User is authenticated, not clearing localStorage');
+        }
+      } catch (error) {
+        console.error('Error checking session for localStorage clearing:', error);
+        // If there's an error, clear localStorage as a safety measure
+        localStorage.clear();
+      }
+    };
+
+    clearStorageForUnauthenticated();
+  }, []);
 
   if (isLoading) {
     return <LoadingPage />;
@@ -159,7 +185,7 @@ export default function SignIn() {
         {/* Sign In Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 animate-fade-in">
           {showPasswordReset ? (
-            <ForgotPasswordForm 
+            <ForgotPasswordForm
               onCancel={() => setShowPasswordReset(false)}
               initialEmail={getEmailFromForm()}
             />

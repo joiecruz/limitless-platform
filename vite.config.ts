@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "localhost",
+    host: "::",
     port: 8080,
     strictPort: true,
   },
@@ -20,7 +20,9 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    outDir: 'dist',
+    outDir: process.env.VITE_APP_DOMAIN === 'app' ? 'dist-app' : 'dist',
     copyPublicDir: true,
   },
+  // Ensure SPA routing works properly with any domain or subdomain
+  base: '/',
 }))

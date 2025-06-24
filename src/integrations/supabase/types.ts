@@ -126,6 +126,7 @@ export type Database = {
           id: string
           is_public: boolean
           name: string
+          read_only: boolean | null
           updated_at: string
           workspace_id: string | null
         }
@@ -135,6 +136,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           name: string
+          read_only?: boolean | null
           updated_at?: string
           workspace_id?: string | null
         }
@@ -144,6 +146,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           name?: string
+          read_only?: boolean | null
           updated_at?: string
           workspace_id?: string | null
         }
@@ -194,49 +197,58 @@ export type Database = {
       }
       courses: {
         Row: {
+          booking_link: string | null
+          course_curriculum_text: string | null
           created_at: string
           description: string | null
           enrollee_count: number | null
           format: string
           id: string
           image_url: string | null
-          learning_outcomes: string[] | null
+          learning_outcomes: string | null
           lesson_count: number | null
           locked: boolean | null
           long_description: string | null
           price: number | null
           title: string
           updated_at: string
+          who_is_this_for: string | null
         }
         Insert: {
+          booking_link?: string | null
+          course_curriculum_text?: string | null
           created_at?: string
           description?: string | null
           enrollee_count?: number | null
           format?: string
           id?: string
           image_url?: string | null
-          learning_outcomes?: string[] | null
+          learning_outcomes?: string | null
           lesson_count?: number | null
           locked?: boolean | null
           long_description?: string | null
           price?: number | null
           title: string
           updated_at?: string
+          who_is_this_for?: string | null
         }
         Update: {
+          booking_link?: string | null
+          course_curriculum_text?: string | null
           created_at?: string
           description?: string | null
           enrollee_count?: number | null
           format?: string
           id?: string
           image_url?: string | null
-          learning_outcomes?: string[] | null
+          learning_outcomes?: string | null
           lesson_count?: number | null
           locked?: boolean | null
           long_description?: string | null
           price?: number | null
           title?: string
           updated_at?: string
+          who_is_this_for?: string | null
         }
         Relationships: []
       }
@@ -281,6 +293,135 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      idea_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          idea_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          idea_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          idea_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idea_comments_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      idea_likes: {
+        Row: {
+          created_at: string
+          id: string
+          idea_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idea_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idea_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idea_likes_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ideas: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          project_id: string
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          project_id: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ideas_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -819,6 +960,7 @@ export type Database = {
           name: string
           owner_id: string | null
           status: string | null
+          title: string | null
           updated_at: string
           workflow_template_id: string | null
           workspace_id: string | null
@@ -839,6 +981,7 @@ export type Database = {
           name: string
           owner_id?: string | null
           status?: string | null
+          title?: string | null
           updated_at?: string
           workflow_template_id?: string | null
           workspace_id?: string | null
@@ -859,6 +1002,7 @@ export type Database = {
           name?: string
           owner_id?: string | null
           status?: string | null
+          title?: string | null
           updated_at?: string
           workflow_template_id?: string | null
           workspace_id?: string | null
@@ -908,6 +1052,33 @@ export type Database = {
           name?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -971,6 +1142,86 @@ export type Database = {
           role?: string
           type?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      toolkit_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_url: string
+          id: string
+          order_index: number | null
+          title: string
+          toolkit_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_url: string
+          id?: string
+          order_index?: number | null
+          title: string
+          toolkit_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_url?: string
+          id?: string
+          order_index?: number | null
+          title?: string
+          toolkit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "toolkit_items_toolkit_id_fkey"
+            columns: ["toolkit_id"]
+            isOneToOne: false
+            referencedRelation: "toolkits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      toolkits: {
+        Row: {
+          about_this_tool: string | null
+          category: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          how_to_use: string | null
+          id: string
+          name: string
+          updated_at: string
+          use_cases: string | null
+          when_to_use: string | null
+        }
+        Insert: {
+          about_this_tool?: string | null
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          how_to_use?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          use_cases?: string | null
+          when_to_use?: string | null
+        }
+        Update: {
+          about_this_tool?: string | null
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          how_to_use?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          use_cases?: string | null
+          when_to_use?: string | null
         }
         Relationships: []
       }
@@ -1351,7 +1602,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      workspace_members_info: {
+        Row: {
+          email: string | null
+          user_id: string | null
+          workspace_id: string | null
+          workspace_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       cleanup_expired_invitations: {
@@ -1372,6 +1646,18 @@ export type Database = {
       }
       is_workspace_admin: {
         Args: { workspace_id: string }
+        Returns: boolean
+      }
+      is_workspace_admin_or_owner: {
+        Args: { workspace_id: string; user_id: string }
+        Returns: boolean
+      }
+      is_workspace_member: {
+        Args: { workspace_id: string; user_id: string }
+        Returns: boolean
+      }
+      is_workspace_member_secure: {
+        Args: { workspace_id: string; user_id: string }
         Returns: boolean
       }
     }

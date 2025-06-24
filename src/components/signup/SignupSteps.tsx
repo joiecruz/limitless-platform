@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,15 +77,7 @@ const SignupSteps = () => {
         }
       });
 
-      if (error) {
-        console.error("Signup error:", error);
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
+      if (error) throw error;
 
       if (data?.user) {
         localStorage.setItem("verificationEmail", email);

@@ -1,2 +1,6 @@
 
+# Redirect apex domain to www for consistency
+https://limitlesslab.org/* https://www.limitlesslab.org/:splat 301!
+
+# Handle SPA routing for all domains
 /* /index.html 200

@@ -50,7 +50,7 @@ export default function VerifyEmail() {
 
   const handleResendEmail = async () => {
     if (!email) return;
-    
+
     setIsResending(true);
     try {
       const { error } = await supabase.auth.resend({
@@ -83,8 +83,8 @@ export default function VerifyEmail() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <img 
-            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/sign/web-assets/Limitless%20Lab%20Logo%20SVG.svg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ3ZWItYXNzZXRzL0xpbWl0bGVzcyBMYWIgTG9nbyBTVkcuc3ZnIiwiaWF0IjoxNzMzNTkxMTc5LCJleHAiOjIwNDg5NTExNzl9.CBJpt7X0mbXpXxv8uMqmA7nBeoJpslY38xQKmPr7XQw"
+          <img
+            src="/limitless-logo.svg"
             alt="Logo"
             className="h-12 mx-auto mb-6"
           />
@@ -122,8 +122,8 @@ export default function VerifyEmail() {
               <p className="text-sm text-gray-500">
                 If you don't receive the email within 5 minutes, please check your spam folder or click below to resend.
               </p>
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 onClick={handleResendEmail}
                 disabled={isResending || !email}
               >

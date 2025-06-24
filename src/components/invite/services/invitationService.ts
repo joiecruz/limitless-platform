@@ -1,37 +1,32 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export async function verifyInvitation(token: string) {
   console.log("🔍 Verifying invitation token:", token);
 
-  const { data: invitation, error: inviteError } = await supabase
-    .from("workspace_invitations")
-    .select("*")
-    .eq('magic_link_token', token)
-    .maybeSingle();
-
-  if (inviteError) {
-    console.error("❌ Error verifying invitation:", {
-      error: inviteError,
-      errorCode: inviteError.code,
-      errorMessage: inviteError.message,
-      token,
+  try {
+    // Use an edge function to validate the token without RLS issues
+    const { data: invitation, error: inviteError } = await supabase.functions.invoke('verify-invitation', {
+      body: { token }
     });
-    throw new Error("Failed to verify invitation. Please try again.");
+
+    if (inviteError) {
+      console.error("❌ Error verifying invitation:", inviteError);
+      throw new Error("Failed to verify invitation. Please try again.");
+    }
+
+    if (!invitation) {
+      console.error("❌ No invitation found for token:", token);
+      throw new Error("Invalid or expired invitation token.");
+    }
+
+    console.log("✅ Valid invitation found:", invitation);
+
+    return { invitation };
+  } catch (error: any) {
+    console.error("❌ Error in verifyInvitation:", error);
+    throw error;
   }
-
-  if (!invitation) {
-    console.error("❌ No invitation found for token:", token);
-    throw new Error("Invalid or expired invitation token.");
-  }
-
-  if (invitation.status !== 'pending') {
-    console.error("❌ Invitation is not pending:", invitation.status);
-    throw new Error("This invitation has already been used or has expired.");
-  }
-
-  console.log("✅ Valid invitation found:", invitation);
-
-  return { invitation };
 }
 
 export async function updateInvitationStatus(invitationId: string, status: 'accepted' | 'rejected') {
@@ -40,24 +35,31 @@ export async function updateInvitationStatus(invitationId: string, status: 'acce
     status,
   });
 
-  const { error: updateError } = await supabase
-    .from("workspace_invitations")
-    .update({ 
-      status,
-      accepted_at: status === 'accepted' ? new Date().toISOString() : null
-    })
-    .eq("id", invitationId);
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error("You must be logged in to update an invitation.");
+    }
 
-  if (updateError) {
-    console.error("❌ Error updating invitation status:", {
-      error: updateError,
-      errorCode: updateError.code,
-      errorMessage: updateError.message,
-      invitationId,
-      status,
+    // Use a function to update invitation status
+    const { data, error } = await supabase.functions.invoke('update-invitation-status', {
+      body: {
+        invitation_id: invitationId,
+        status,
+        user_id: user.id
+      }
     });
-    throw updateError;
-  }
 
-  console.log("✅ Invitation status updated successfully");
+    if (error) {
+      console.error("❌ Error updating invitation status:", error);
+      throw error;
+    }
+
+    console.log("✅ Invitation status updated successfully", data);
+    return data;
+    
+  } catch (error: any) {
+    console.error("❌ Error in updateInvitationStatus:", error);
+    throw error;
+  }
 }

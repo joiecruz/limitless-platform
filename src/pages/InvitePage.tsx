@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { InviteModal } from "@/components/invite/InviteModal";
 import { verifyInvitation } from "@/components/invite/services/invitationService";
+import { LoadingPage } from "@/components/common/LoadingPage";
 
 export default function InvitePage() {
   const [searchParams] = useSearchParams();
@@ -16,15 +17,15 @@ export default function InvitePage() {
     const handleInvitation = async () => {
       try {
         const token = searchParams.get("token");
-        
+
         if (!token) {
           console.error("No token found in URL");
           throw new Error("Invalid invitation link");
         }
 
         console.log("Handling invitation with token:", token);
-        
-        // Verify the invitation first
+
+        // Verify the invitation first using our service that bypasses RLS
         const { invitation } = await verifyInvitation(token);
 
         if (!invitation) {
@@ -34,52 +35,38 @@ export default function InvitePage() {
 
         // Check if user has a session
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session) {
           console.log("User has existing session:", session.user.email);
-          
+
           // If the signed-in user's email matches the invitation email
           if (session.user.email?.toLowerCase() === invitation.email.toLowerCase()) {
             try {
-              // Add user to workspace
-              const { error: memberError } = await supabase
-                .from("workspace_members")
-                .insert({
-                  workspace_id: invitation.workspace_id,
+              // Use the edge function to accept the invitation and add user to workspace
+              const { data, error } = await supabase.functions.invoke('process-invitation-acceptance', {
+                body: {
+                  invitation_id: invitation.id,
                   user_id: session.user.id,
+                  workspace_id: invitation.workspace_id,
                   role: invitation.role
-                })
-                .select()
-                .single();
+                }
+              });
 
-              if (memberError) {
-                if (memberError.code === '23505') { // Unique violation
+              if (error) {
+                if (error.message?.includes('already a member')) {
                   console.log("User is already a member of this workspace");
                   localStorage.setItem('selectedWorkspace', invitation.workspace_id);
-                  navigate("/dashboard", { 
+                  navigate("/dashboard", {
                     replace: true,
-                    state: { 
+                    state: {
                       showOnboarding: false,
-                      workspace: invitation.workspace_id
+                      workspace: invitation.workspace_id,
+                      isInvited: true
                     }
                   });
                   return;
                 }
-                throw memberError;
-              }
-
-              // Update invitation status
-              const { error: updateError } = await supabase
-                .from("workspace_invitations")
-                .update({ 
-                  status: "accepted",
-                  accepted_at: new Date().toISOString()
-                })
-                .eq("id", invitation.id);
-
-              if (updateError) {
-                console.error("Error updating invitation status:", updateError);
-                throw updateError;
+                throw new Error(error.message || "Failed to process invitation");
               }
 
               localStorage.setItem('selectedWorkspace', invitation.workspace_id);
@@ -87,11 +74,12 @@ export default function InvitePage() {
                 title: "Welcome!",
                 description: "You have successfully joined the workspace.",
               });
-              navigate("/dashboard", { 
+              navigate("/dashboard", {
                 replace: true,
-                state: { 
+                state: {
                   showOnboarding: false,
-                  workspace: invitation.workspace_id
+                  workspace: invitation.workspace_id,
+                  isInvited: true
                 }
               });
             } catch (error: any) {
@@ -123,7 +111,7 @@ export default function InvitePage() {
   }, [searchParams, navigate, toast]);
 
   if (loading) {
-    return null; // Or a loading spinner
+    return <LoadingPage />;
   }
 
   return (
@@ -131,7 +119,7 @@ export default function InvitePage() {
       {showInviteModal && (
         <InviteModal
           open={true}
-          onOpenChange={() => {}}
+          onOpenChange={setShowInviteModal}
         />
       )}
     </div>

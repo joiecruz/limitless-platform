@@ -1,0 +1,39 @@
+
+# Netlify configuration file
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Ensure SPA routing works for all paths
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  
+# Enable different configurations for main domain and app subdomain
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+[context.production.environment]
+  VITE_APP_URL = "https://limitlesslab.org"
+
+# Specific configuration for www subdomain
+[[headers]]
+  for = "/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Force redirect from apex to www to ensure consistent behavior
+[[redirects]]
+  from = "https://limitlesslab.org/*"
+  to = "https://www.limitlesslab.org/:splat"
+  status = 301
+  force = true
+
+# Extra security headers
+[[headers]]
+  for = "/*"
+    [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
