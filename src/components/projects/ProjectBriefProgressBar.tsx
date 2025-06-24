@@ -66,11 +66,11 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
   const lineStyle = (active: boolean) => ({
     display: 'inline-block',
     height: 4,
-    width: 180,
+    width: 184,
     background: active ? '#393CA0' : '#E5E7EB',
     verticalAlign: 'middle',
     borderRadius: 2,
-    marginLeft: 0,
+    marginLeft: -1,
     marginRight: 0,
   });
 
@@ -108,7 +108,53 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
           {/* Last gray line and extra completed circle at the same height */}
           <div className="flex flex-row items-center relative" style={{ position: 'absolute', left: '68%', top: -4 }}>
             <span style={lineStyle(false)} />
-            <span style={{ marginLeft: 0 }}>{renderCircle(steps.length)}</span>
+            <span style={{ marginLeft: 0 }}>
+              {currentStep < steps.length ? (
+                <span style={{
+                  width: 16,
+                  height: 16,
+                  background: '#E5E7EB',
+                  borderRadius: 8,
+                  borderWidth: 5,
+                  borderColor: '#E5E7EB',
+                  borderStyle: 'solid',
+                  zIndex: 2,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#9CA3AF',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  position: 'relative',
+                }}>
+                  <svg width="10" height="10" viewBox="0 0 10 10" style={{ display: 'block' }}>
+                    <polyline points="2,5.5 4,7.5 8,3.5" fill="none" stroke="#FFFFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              ) : (
+                <span style={{
+                  width: 16,
+                  height: 16,
+                  background: '#393CA0',
+                  borderRadius: 8,
+                  borderWidth: 5,
+                  borderColor: '#393CA0',
+                  borderStyle: 'solid',
+                  zIndex: 2,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  position: 'relative',
+                }}>
+                  <svg width="10" height="10" viewBox="0 0 10 10" style={{ display: 'block' }}>
+                    <polyline points="2,5.5 4,7.5 8,3.5" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              )}
+            </span>
           </div>
         </div>
       </div>
