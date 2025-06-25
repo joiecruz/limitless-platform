@@ -124,7 +124,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onSta
               onStartDesignThinking();
             }
           }}
-          className="bg-muted/20 hover:bg-muted/30 rounded-lg p-6 cursor-pointer flex flex-col items-center text-center transition-colors"
+          className="bg-muted/20 hover:bg-muted/30 rounded-lg p-6 cursor-pointer flex flex-col items-center text-center hover:shadow-lg transition-shadow"
         >
           <div className="bg-[#FFEFE5] p-4 rounded-lg mb-3">
             <Rocket className="h-8 w-8 text-[#FF5722]" />
@@ -135,7 +135,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onSta
 
         <div 
           onClick={handleSelectCollectIdeas}
-          className="bg-muted/20 hover:bg-muted/30 rounded-lg p-6 cursor-pointer flex flex-col items-center text-center transition-colors"
+          className="bg-muted/20 hover:bg-muted/30 rounded-lg p-6 cursor-pointer flex flex-col items-center text-center hover:shadow-lg transition-shadow"
         >
           <div className="bg-[#FFF8E1] p-4 rounded-lg mb-3">
             <Lightbulb className="h-8 w-8 text-[#FFC107]" />

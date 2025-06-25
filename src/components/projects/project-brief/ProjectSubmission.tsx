@@ -13,7 +13,7 @@ export default function ProjectSubmission() {
         </div>
       </div>
       {/* Heading */}
-      <h2 className="text-[22px] font-bold text-center text-gray-800 mb-2">Great job, you've submitted<br />your project brief!</h2>
+      <h2 className="text-[22px] font-bold text-center text-gray-800 mb-6">Great job, you've submitted<br />your project brief!</h2>
       {/* Subheading */}
       <p className="text-center text-[15px] text-gray-500 mb-6 max-w-xl">
         Our AI is now working on generating design challenges tailored to your needs based on the information you provided.
