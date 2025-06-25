@@ -39,7 +39,7 @@ export default function ProjectDesignChallenges() {
         ))}
       </div>
       <button
-        className="relative btn-shine mt-[8px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1"
+        className="mt-[8px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1"
         onClick={() => setLoading(true)}
       >
         Submit

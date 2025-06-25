@@ -20,10 +20,13 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
   useImperativeHandle(ref, () => ({
     validate: () => {
       setTouched(true);
-      if (name.trim() !== "" && description.trim() !== "" && problem.trim() !== "" && customers.trim() !== "") {
-        return true;
-      }
-      return "Please fill out all required fields.";
+      if (
+        name.trim() === "" ||
+        description.trim() === "" ||
+        problem.trim() === "" ||
+        customers.trim() === ""
+      ) return "All fields must be filled out.";
+      return true;
     },
     getValues: () => ({ name, description, problem, customers })
   }));

@@ -49,14 +49,10 @@ const ProjectSuccessCriteria = forwardRef<ProjectSuccessCriteriaRef>((props, ref
   useImperativeHandle(ref, () => ({
     validate: () => {
       setTouched(true);
-      if (
-        targetOutcomes.trim() !== "" &&
-        selectedSDGs.length > 0 &&
-        selectedTypes.length > 0
-      ) {
-        return true;
-      }
-      return "Please fill out all required fields.";
+      if (targetOutcomes.trim() === "") return "Target outcome is required.";
+      if (selectedSDGs.length === 0) return "At least one SDG is required.";
+      if (selectedTypes.length === 0) return "At least one innovation type is required.";
+      return true;
     }
   }));
 
@@ -147,7 +143,7 @@ const ProjectSuccessCriteria = forwardRef<ProjectSuccessCriteriaRef>((props, ref
               }}
               className={`rounded-[10px] border font-medium h-[50px] px-4 py-3 text-[13px] font-sans transition-colors focus:outline-none flex items-center bg-white text-gray-700
                 ${selectedTypes.length >= 3 && !selected ? 'opacity-50 cursor-not-allowed' : ''}
-                ${selected ? 'bg-[#DADBF2]/40 border-[#393CA0FF]' : 'border-gray-200'}
+                ${selected ? 'bg-[#DADBF2]/40 border-[#393CA0FF]' : showTypeError ? 'border-red-400' : 'border-gray-200'}
               `}
               style={{ minWidth: 120, marginBottom: 8 }}
               disabled={selectedTypes.length >= 3 && !selected}

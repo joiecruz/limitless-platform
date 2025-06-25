@@ -31,6 +31,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         const result = overviewRef.current.validate();
         if (result !== true) {
           toast({
+            title: "Form Error",
             description: result,
             variant: "destructive"
           });
@@ -43,6 +44,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         const result = successCriteriaRef.current.validate();
         if (result !== true) {
           toast({
+            title: "Form Error",
             description: result,
             variant: "destructive"
           });
@@ -55,6 +57,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         const result = timelineRef.current.validate();
         if (result !== true) {
           toast({
+            title: "Form Error",
             description: result,
             variant: "destructive"
           });
