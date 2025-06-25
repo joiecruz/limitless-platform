@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Briefcase } from "lucide-react";
 import { ProjectNavBar } from "@/components/projects/ProjectNavBar";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import SearchHeader from "@/components/tools/SearchHeader";
 
 export default function Projects() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -50,7 +51,9 @@ export default function Projects() {
       <Route
         path="/"
         element={
-          <div className="container max-w-7xl px-4 py-8 animate-fade-in">
+            <>
+            <SearchHeader />
+            <div className="container max-w-7xl px-8 py-8 animate-fade-in">
             <div className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold">Projects</h1>
               <CreateProjectButton onClick={handleOpenCreateDialog} />
@@ -80,9 +83,8 @@ export default function Projects() {
               onStartDesignThinking={() => {
                 setIsCreateDialogOpen(false);
                 setShowDesignThinkingPage(true);
-              }}
-            />
-          </div>
+              } } />
+          </div></>
         }
       />
     </Routes>

@@ -1,11 +1,12 @@
 import React from "react";
 
 export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentStep?: number }) {
-  // Step data for easier mapping
+  // Step data for easier mapping, add a final step for the checkmark
   const steps = [
     { number: "01", label: "Overview" },
     { number: "02", label: "Success Criteria" },
     { number: "03", label: "Timeline & Team" },
+    { number: "", label: "" }, // Checkmark step
   ];
 
   // Circle rendering
@@ -13,6 +14,34 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
     const baseTransition = {
       transition: 'background 0.3s, border-color 0.3s, color 0.3s, opacity 0.3s',
     };
+    if (idx === steps.length - 1) {
+      // Checkmark step
+      const isComplete = currentStep >= steps.length - 1;
+      return (
+        <span style={{
+          width: 14,
+          height: 14,
+          background: isComplete ? '#393CA0' : '#E5E7EB',
+          borderRadius: 8,
+          borderWidth: 5,
+          borderColor: isComplete ? '#393CA0' : '#E5E7EB',
+          borderStyle: 'solid',
+          zIndex: 2,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: isComplete ? '#fff' : '#9CA3AF',
+          fontWeight: 700,
+          fontSize: 12,
+          position: 'relative',
+          ...baseTransition,
+        }}>
+          <svg width="10" height="10" viewBox="0 0 10 10" style={{ display: 'block' }}>
+            <polyline points="2,5.5 4,7.5 8,3.5" fill="none" stroke={isComplete ? '#fff' : '#FFFFFFFF'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      );
+    }
     if (idx === currentStep) {
       return (
         <span style={{
@@ -29,8 +58,8 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
           ...baseTransition,
         }} />
       );
-    } else if (idx <= currentStep) {
-      // Current: filled colored circle
+    } else if (idx < currentStep) {
+      // Completed: filled colored circle
       return (
         <span style={{
           width: 14,
@@ -75,7 +104,7 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
   const lineStyle = (active: boolean) => ({
     display: 'inline-block',
     height: 4,
-    width: 188,
+    width: 148,
     background: active ? '#393CA0' : '#E5E7EB',
     verticalAlign: 'middle',
     borderRadius: 2,
@@ -88,23 +117,24 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
   return (
     <div className="w-full" style={{ maxWidth: 600, marginLeft: 10 }}>
       {/* Step Labels */}
-      <div className="grid grid-cols-3 gap-0 w-full pl-4 font-sans text-[16px]">
-        {steps.map((step) => (
+      <div className="grid grid-cols-4 gap-0 w-full pl-4 font-sans text-[16px]">
+        {steps.slice(0, -1).map((step) => (
           <div key={step.number} className="flex flex-col items-start">
             <span className="text-[15px]" style={{ color: '#323743FF' }}>
               <span className="font-extrabold">{step.number}</span> <span className="font-normal">{step.label}</span>
             </span>
           </div>
         ))}
+        <div /> {/* Empty for checkmark */}
       </div>
       {/* Circles and Lines */}
       <div className="relative w-full mt-2 pl-4" style={{ height: 24 }}>
-        <div className="grid grid-cols-3 gap-0 w-full" style={{ position: 'relative' }}>
+        <div className="grid grid-cols-4 gap-0 w-full" style={{ position: 'relative' }}>
           {steps.map((step, idx) => (
-            <div key={step.number} className="flex flex-col items-start relative">
+            <div key={idx} className="flex flex-col items-start relative">
               {renderCircle(idx)}
               {/* Line to next circle (except last) */}
-              {idx < steps.length  && (
+              {idx < steps.length - 1 && (
                 <span
                   style={{
                     ...lineStyle(idx < currentStep || idx === currentStep),
@@ -116,56 +146,6 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
               )}
             </div>
           ))}
-          {/* Last gray line and extra completed circle at the same height */}
-          <div className="w-full mt-2 pl-4" style={{ height: 24, position: 'absolute', left: '97%', top:-13 }}>
-            <span style={{ marginLeft: 0 }}>
-              {currentStep < steps.length ? (
-                <span style={{
-                  width: 14,
-                  height: 14,
-                  background: '#E5E7EB',
-                  borderRadius: 8,
-                  borderWidth: 5,
-                  borderColor: '#E5E7EB',
-                  borderStyle: 'solid',
-                  zIndex: 2,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#9CA3AF',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  position: 'relative',
-                }}>
-                  <svg width="10" height="10" viewBox="0 0 10 10" style={{ display: 'block' }}>
-                    <polyline points="2,5.5 4,7.5 8,3.5" fill="none" stroke="#FFFFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-              ) : (
-                <span style={{
-                  width: 14,
-                  height: 14,
-                  background: '#393CA0',
-                  borderRadius: 8,
-                  borderWidth: 5,
-                  borderColor: '#393CA0',
-                  borderStyle: 'solid',
-                  zIndex: 2,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  position: 'relative',
-                }}>
-                  <svg width="10" height="10" viewBox="0 0 10 10" style={{ display: 'block' }}>
-                    <polyline points="2,5.5 4,7.5 8,3.5" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-              )}
-            </span>
-          </div>
         </div>
       </div>
     </div>

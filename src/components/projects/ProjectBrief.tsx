@@ -1,16 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import ProjectBriefProgressBar from "./ProjectBriefProgressBar";
-import ProjectOverview from "./project-brief/ProjectOverview";
+import ProjectOverview, { ProjectOverviewRef } from "./project-brief/ProjectOverview";
 import ProjectSuccessCriteria from "./project-brief/ProjectSuccessCriteria";
-import ProjectTimeline from "./project-brief/ProjectTimeline";
+import ProjectTimeline, { ProjectTimelineRef } from "./project-brief/ProjectTimeline";
 import ProjectSubmission from "./project-brief/ProjectSubmission";
 import ProjectDesignChallenge from "./project-brief/ProjectDesignChallenges";
+import { useToast } from "../../hooks/use-toast";
 
 export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
+  const overviewRef = useRef<ProjectOverviewRef>(null);
+  const successCriteriaRef = useRef<any>(null);
+  const timelineRef = useRef<ProjectTimelineRef>(null);
+  const { toast } = useToast();
 
   const handleStepChange = (newStep: number) => {
     setIsTransitioning(true);
@@ -18,6 +23,46 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
       setCurrentStep(newStep);
       setIsTransitioning(false);
     }, 300); // 300ms fade out duration
+  };
+
+  const handleNext = () => {
+    if (currentStep === 0) {
+      if (overviewRef.current) {
+        const result = overviewRef.current.validate();
+        if (result !== true) {
+          toast({
+            description: result,
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+    }
+    if (currentStep === 1) {
+      if (successCriteriaRef.current) {
+        const result = successCriteriaRef.current.validate();
+        if (result !== true) {
+          toast({
+            description: result,
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+    }
+    if (currentStep === 2) {
+      if (timelineRef.current) {
+        const result = timelineRef.current.validate();
+        if (result !== true) {
+          toast({
+            description: result,
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+    }
+    handleStepChange(Math.min(currentStep + 1, 5));
   };
 
   const handleBack = () => {
@@ -65,9 +110,9 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                 <h2 className="font-bold text-center font-sans text-[24px] mb-2 mt-5">Create an Innovation Project</h2>
             )}
           <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-            {currentStep === 0 && <ProjectOverview />}
-            {currentStep === 1 && <ProjectSuccessCriteria />}
-            {currentStep === 2 && <ProjectTimeline />}
+            {currentStep === 0 && <ProjectOverview ref={overviewRef} />}
+            {currentStep === 1 && <ProjectSuccessCriteria ref={successCriteriaRef} />}
+            {currentStep === 2 && <ProjectTimeline ref={timelineRef} />}
             {currentStep === 3 && <ProjectSubmission />}
             {currentStep === 4 && <ProjectDesignChallenge />}
           </div>
@@ -85,7 +130,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                 <button
               type="button"
               className="mt-5 bg-[#393CA0FF] text-white font-semibold py-2 rounded-[3px] hover:bg-[#2C2E7AFF] text-[13px] transition-colors px-8 w-[115px] font-sans"
-              onClick={() => handleStepChange(Math.min(currentStep + 1, 5))}
+              onClick={handleNext}
             >
               Next
             </button>

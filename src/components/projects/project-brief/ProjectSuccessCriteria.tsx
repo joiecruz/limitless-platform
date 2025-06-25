@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 
 const SDG_LIST = [
   "No Poverty",
@@ -36,9 +36,33 @@ const TYPE_ICONS: Record<string, JSX.Element> = {
   "Program": <img src="/projects-navbar-icons/list.svg" alt="Brand" width={18} height={18} style={{ marginRight: 8 }} />,
 };
 
-export default function ProjectSuccessCriteria() {
+export interface ProjectSuccessCriteriaRef {
+  validate: () => boolean | string;
+}
+
+const ProjectSuccessCriteria = forwardRef<ProjectSuccessCriteriaRef>((props, ref) => {
   const [selectedSDGs, setSelectedSDGs] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [targetOutcomes, setTargetOutcomes] = useState("");
+  const [touched, setTouched] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    validate: () => {
+      setTouched(true);
+      if (
+        targetOutcomes.trim() !== "" &&
+        selectedSDGs.length > 0 &&
+        selectedTypes.length > 0
+      ) {
+        return true;
+      }
+      return "Please fill out all required fields.";
+    }
+  }));
+
+  const showSDGError = touched && selectedSDGs.length === 0;
+  const showTypeError = touched && selectedTypes.length === 0;
+  const showOutcomeError = touched && targetOutcomes.trim() === "";
 
   function handleSDGChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const value = e.target.value;
@@ -62,8 +86,10 @@ export default function ProjectSuccessCriteria() {
       <textarea
         id="project-target-outcomes"
         placeholder="Describe the impact and outcomes that you hope to achieve through this innovation project."
-        className="w-full rounded-[10px] border border-gray-200 font-medium px-4 py-3 text-[13px] h-[80px] font-sans placeholder-gray-400 resize-none focus:outline-none focus:ring-1 focus:ring-[#9095A1FF]"
+        className={`w-full rounded-[10px] border font-medium px-4 py-3 text-[13px] h-[80px] font-sans placeholder-gray-400 resize-none focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] ${showOutcomeError ? 'border-red-400' : 'border-gray-200'}`}
         style={{  marginBottom: 10}}
+        value={targetOutcomes}
+        onChange={e => setTargetOutcomes(e.target.value)}
       />
 
       <label className="block text-[13px] text-gray-600 font-bold font-sans mb-0" htmlFor="project-sdgs">SDGs (Sustainable Development Goals) Targeted</label>
@@ -78,7 +104,7 @@ export default function ProjectSuccessCriteria() {
         </div>
         <select
           id="project-sdgs"
-          className="mb-2 w-full rounded-[10px] border border-gray-200 font-medium px-4 py-3 text-[13px] font-sans text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white"
+          className={`mb-[-5px] w-full rounded-[10px] border font-medium px-4 py-3 text-[13px] font-sans text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white ${showSDGError ? 'border-red-400' : 'border-gray-200'}`}
           onChange={handleSDGChange}
           disabled={selectedSDGs.length >= 3}
           value=""
@@ -138,4 +164,6 @@ export default function ProjectSuccessCriteria() {
       </div>
     </div>
   );
-} 
+});
+
+export default ProjectSuccessCriteria; 

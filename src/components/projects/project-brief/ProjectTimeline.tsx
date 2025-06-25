@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 
-export default function ProjectTimeline() {
+export interface ProjectTimelineRef {
+  validate: () => boolean | string;
+}
+
+export default forwardRef<ProjectTimelineRef>((props, ref) => {
   // Initial team members data
   const initialTeamMembers = [
     { 
@@ -27,6 +31,9 @@ export default function ProjectTimeline() {
   ];
 
   const [teamMembers, setTeamMembers] = useState(initialTeamMembers);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [touched, setTouched] = useState(false);
 
   // Function to get permission based on role
   const getPermissionForRole = (role) => {
@@ -62,6 +69,17 @@ export default function ProjectTimeline() {
     );
   };
 
+  useImperativeHandle(ref, () => ({
+    validate: () => {
+      if (!startDate) return "Start date is required.";
+      if (endDate && startDate && endDate < startDate) return "End date cannot be before start date.";
+      return true;
+    }
+  }));
+
+  const showStartError = touched && !startDate;
+  const showEndError = touched && endDate && startDate && endDate < startDate;
+
   return (
     <div className="mt-1.5 bg-white rounded-xl border border-gray-100 px-6 pt-6 pb-10 flex flex-col items-start" style={{ width: '55vw', minHeight: '46vh' }}>
       <div className="flex items-center mb-6">
@@ -76,7 +94,9 @@ export default function ProjectTimeline() {
             id="start-date"
             type="date"
             className="w-full text-gray-400 rounded-[8px] border border-gray-200 font-medium px-4 py-3 text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF]"
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: 4 }}
+            value={startDate}
+            onChange={e => setStartDate(e.target.value)}
           />
         </div>
         
@@ -86,12 +106,14 @@ export default function ProjectTimeline() {
             id="end-date"
             type="date"
             className="w-full text-gray-400 rounded-[8px] border border-gray-200 font-medium px-4 py-3 text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF]"
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: 4 }}
+            value={endDate}
+            onChange={e => setEndDate(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="flex w-full gap-3">
+      <div className="flex w-full gap-3 mt-3">
         <div className="flex flex-col justify-between" style={{ width: '55%' }}>
           <label className="block text-[13px] text-gray-600 font-bold font-sans mb-1" htmlFor="collaborators">Invite Collaborators</label>
           <input
@@ -187,4 +209,4 @@ export default function ProjectTimeline() {
       </div>
     </div>
   );
-} 
+}); 
