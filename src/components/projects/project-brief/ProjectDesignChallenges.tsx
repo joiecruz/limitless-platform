@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ProjectLoading from "./ProjectLoading";
 
 const challenges = [
   "How might we improve our customer onboarding process to ensure new users feel confident and supported from day one?",
@@ -8,6 +9,11 @@ const challenges = [
 
 export default function ProjectDesignChallenges() {
   const [selected, setSelected] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  if (loading) {
+    return <ProjectLoading />;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -32,7 +38,12 @@ export default function ProjectDesignChallenges() {
           </button>
         ))}
       </div>
-      <button className="bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-medium py-3 px-10 rounded-[6px] text-[17px] w-[180px] h-[48px] font-sans transition-colors">Submit</button>
+      <button
+        className="bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-medium py-3 px-10 rounded-[6px] text-[17px] w-[180px] h-[48px] font-sans transition-colors"
+        onClick={() => setLoading(true)}
+      >
+        Submit
+      </button>
     </div>
   );
 }
