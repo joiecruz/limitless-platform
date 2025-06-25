@@ -31,7 +31,7 @@ export const useNavigationHandlers = (courseId: string, onComplete: () => void) 
         .single();
 
       if (fetchError) {
-        console.error('Error fetching enrollment:', fetchError);
+        
         return;
       }
 
@@ -56,7 +56,7 @@ export const useNavigationHandlers = (courseId: string, onComplete: () => void) 
         .single();
 
       if (updateError) {
-        console.error('Error updating enrollment:', updateError);
+        
         throw updateError;
       }
 
@@ -68,7 +68,7 @@ export const useNavigationHandlers = (courseId: string, onComplete: () => void) 
       });
 
     } catch (error) {
-      console.error("Error updating progress:", error);
+      
       toast({
         title: "Error",
         description: "Failed to update progress. Please try again later.",

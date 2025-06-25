@@ -42,7 +42,7 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
 
   const handleWorkspaceChange = (workspace: Workspace) => {
-    console.log('Changing workspace to:', workspace);
+    
     setIsLoading(true);
     setCurrentWorkspace(workspace);
 
@@ -60,10 +60,10 @@ export default function DashboardLayout() {
   useEffect(() => {
     if (currentWorkspace) {
       localStorage.setItem('limitless-current-workspace', JSON.stringify(currentWorkspace));
-      console.log('Saved workspace to localStorage:', currentWorkspace);
+      
     } else {
       localStorage.removeItem('limitless-current-workspace');
-      console.log('Removed workspace from localStorage');
+      
     }
   }, [currentWorkspace]);
 
@@ -71,11 +71,11 @@ export default function DashboardLayout() {
   useEffect(() => {
     if (location.pathname === '/dashboard/community') {
       localStorage.setItem('limitless-last-community-visit', 'true');
-      console.log('Marked community as last visited page');
+      
     } else if (location.pathname.startsWith('/dashboard/') && location.pathname !== '/dashboard/community') {
       // Clear community flag when navigating to other dashboard pages
       localStorage.removeItem('limitless-last-community-visit');
-      console.log('Cleared community visit flag - navigated to other page');
+      
     }
   }, [location.pathname]);
 
@@ -90,14 +90,14 @@ export default function DashboardLayout() {
     // 2. We're currently on the root dashboard
     // 3. We have workspace and channel state to restore
     if (wasInCommunity && hasWorkspace && hasChannel && location.pathname === '/dashboard') {
-      console.log('Restoring community page from previous session');
+      
       navigate('/dashboard/community', { replace: true });
     }
   }, []); // Empty dependency array - only run on initial mount
 
   // Log workspace changes
   useEffect(() => {
-    console.log('Current workspace in DashboardLayout:', currentWorkspace);
+    
   }, [currentWorkspace]);
 
   // Prevent page scrolling globally

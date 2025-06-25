@@ -47,7 +47,7 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
         // Use the userExists property from the invitation response
         setUserExists(inviteData.userExists || false);
       } catch (error) {
-        console.error("Error checking user existence:", error);
+        
         setUserExists(false);
       } finally {
         setLoading(false);
@@ -101,7 +101,7 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
         });
       }
     } catch (error: any) {
-      console.error("Error signing in:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to sign in",
@@ -133,7 +133,7 @@ export function InviteModal({ open = false, onOpenChange }: InviteModalProps) {
       navigate("/signin");
 
     } catch (error: any) {
-      console.error("Error during invite process:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to process invitation",

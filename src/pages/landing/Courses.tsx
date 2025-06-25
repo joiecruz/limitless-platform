@@ -24,7 +24,7 @@ export default function Courses() {
   const { data: courses, isLoading } = useQuery({
     queryKey: ["featured-courses"],
     queryFn: async () => {
-      console.log("Fetching courses for landing page");
+      
       
       const { data: coursesData, error } = await supabase
         .from('courses')
@@ -32,7 +32,7 @@ export default function Courses() {
         .in('format', ['Online', 'Hybrid']);
 
       if (error) {
-        console.error('Error fetching courses:', error);
+        
         toast({
           title: "Error",
           description: "Failed to load courses. Please try again later.",
@@ -41,12 +41,12 @@ export default function Courses() {
         return [];
       }
 
-      console.log("Raw courses data:", coursesData);
+      
 
       // Get real-time counts for each course
       const coursesWithCounts = await Promise.all(
         coursesData.map(async (course) => {
-          console.log(`Fetching counts for course ${course.id}: ${course.title}`);
+          
           
           // Fetch enrollment count
           const { count: enrollmentCount, error: enrollmentError } = await supabase
@@ -55,7 +55,7 @@ export default function Courses() {
             .eq("course_id", course.id);
 
           if (enrollmentError) {
-            console.error(`Error fetching enrollment count for course ${course.id}:`, enrollmentError);
+            
           }
 
           // Fetch lesson count
@@ -65,7 +65,7 @@ export default function Courses() {
             .eq("course_id", course.id);
 
           if (lessonError) {
-            console.error(`Error fetching lesson count for course ${course.id}:`, lessonError);
+            
           }
 
           const courseWithCounts = {
@@ -74,16 +74,13 @@ export default function Courses() {
             lesson_count: lessonCount || 0
           };
 
-          console.log(`Course ${course.title} counts:`, {
-            lessons: lessonCount,
-            enrollments: enrollmentCount
-          });
+          
 
           return courseWithCounts;
         })
       );
 
-      console.log("Final courses with counts:", coursesWithCounts);
+      
       return coursesWithCounts;
     },
     staleTime: 1000 * 60, // Cache for 1 minute

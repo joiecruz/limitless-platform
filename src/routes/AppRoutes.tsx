@@ -61,12 +61,7 @@ interface AppRoutesProps {
 const AppRoutes = ({ session }: AppRoutesProps) => {
   // Log routing information for debugging
   useEffect(() => {
-    console.log("AppRoutes: Initializing with", {
-      session: !!session,
-      isAppSubdomain: isAppSubdomain(),
-      hostname: window.location.hostname,
-      pathname: window.location.pathname
-    });
+    
   }, [session]);
 
   return (

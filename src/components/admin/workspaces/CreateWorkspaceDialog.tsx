@@ -29,7 +29,7 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
         throw new Error("You must be logged in to create a workspace");
       }
 
-      console.log('Creating workspace with name:', name);
+      
 
       // Generate slug from name
       const slug = name.toLowerCase()
@@ -48,14 +48,14 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
         });
 
       if (error) {
-        console.error('Error creating workspace:', error);
+        
         throw error;
       }
 
-      console.log('Workspace created successfully:', data);
+      
 
       // No need to manually add user as owner - the function does this
-      console.log('User automatically added as workspace owner');
+      
 
       toast({
         title: "Success",
@@ -66,7 +66,7 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
       onOpenChange(false);
       setName("");
     } catch (error: any) {
-      console.error('Error creating workspace:', error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to create workspace",

@@ -34,7 +34,7 @@ export default function SignIn() {
 
         if (currentSession?.user) {
           setIsLoading(true);
-          console.log("User authenticated, checking workspace membership...");
+          
 
           try {
             // Check for workspace membership using edge function to bypass RLS
@@ -43,7 +43,7 @@ export default function SignIn() {
             });
 
             if (error) {
-              console.error("Error checking workspace membership:", error);
+              
               toast({
                 title: "Error",
                 description: "There was a problem signing you in. Please try again.",
@@ -54,7 +54,7 @@ export default function SignIn() {
 
             // If user has no workspace, show onboarding with workspace creation
             if (!workspaces || !workspaces.workspaces || workspaces.workspaces.length === 0) {
-              console.log("No workspace found, redirecting to onboarding...");
+              
               navigate('/dashboard', {
                 replace: true
               });
@@ -63,18 +63,18 @@ export default function SignIn() {
 
             // User has a workspace, mark as onboarded and go to dashboard
             const firstWorkspace = workspaces.workspaces[0];
-            console.log("Workspace found, user is already onboarded...", firstWorkspace);
+            
             if (firstWorkspace && firstWorkspace.id) {
               localStorage.setItem('selectedWorkspace', firstWorkspace.id);
               localStorage.setItem('dashboard-visited', 'true');
             }
             navigate('/dashboard', { replace: true });
           } catch (error) {
-            console.error("Error fetching workspaces:", error);
+            
           }
         }
       } catch (error) {
-        console.error("Error in auth change handler:", error);
+        
         toast({
           title: "Error",
           description: "There was a problem signing you in. Please try again.",
@@ -88,7 +88,7 @@ export default function SignIn() {
     handleAuthChange();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
+      
 
       if (event === 'SIGNED_IN' && session) {
         setIsLoading(true);
@@ -99,7 +99,7 @@ export default function SignIn() {
           });
 
           if (error) {
-            console.error("Error handling sign in:", error);
+            
             throw error;
           }
 
@@ -119,7 +119,7 @@ export default function SignIn() {
           }
           navigate('/dashboard', { replace: true });
         } catch (error) {
-          console.error("Error handling sign in:", error);
+          
           toast({
             title: "Error",
             description: "There was a problem signing you in. Please try again.",
@@ -143,12 +143,12 @@ export default function SignIn() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           localStorage.clear();
-          console.log('localStorage cleared on sign-in page for unauthenticated user');
+          
         } else {
-          console.log('User is authenticated, not clearing localStorage');
+          
         }
       } catch (error) {
-        console.error('Error checking session for localStorage clearing:', error);
+        
         // If there's an error, clear localStorage as a safety measure
         localStorage.clear();
       }

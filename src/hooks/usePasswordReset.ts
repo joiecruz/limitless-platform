@@ -43,7 +43,7 @@ export function usePasswordReset() {
 
       success = true;
     } catch (error: any) {
-      console.error("Password reset error:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to send reset password email",
@@ -70,7 +70,7 @@ export function usePasswordReset() {
 
       if (error) throw error;
 
-      console.log("Password updated successfully");
+      
       success = true;
 
       // Success case
@@ -85,7 +85,7 @@ export function usePasswordReset() {
       }, 1500);
 
     } catch (error: any) {
-      console.error("Password update error:", error);
+      
 
       toast({
         title: "Error",

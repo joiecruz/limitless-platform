@@ -20,21 +20,21 @@ export function AdminLayout() {
   useEffect(() => {
     const checkSuperAdmin = async () => {
       try {
-        console.log("Checking superadmin status...");
+        
 
         const { data: { user }, error: userError } = await supabase.auth.getUser();
 
         if (userError) {
-          console.error('Error getting user:', userError);
+          
           throw userError;
         }
 
         if (!user) {
-          console.log("No user found");
+          
           throw new Error("No user found");
         }
 
-        console.log("Current user:", user.email);
+        
 
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -43,14 +43,14 @@ export function AdminLayout() {
           .single();
 
         if (profileError) {
-          console.error('Error checking admin status:', profileError);
+          
           throw profileError;
         }
 
-        console.log("Profile data:", profile);
+        
 
         if (!profile?.is_superadmin) {
-          console.log("User is not a superadmin");
+          
           toast({
             title: "Access Denied",
             description: "You don't have permission to access this area.",
@@ -60,10 +60,10 @@ export function AdminLayout() {
           return;
         }
 
-        console.log("Superadmin access granted");
+        
         setIsLoading(false);
       } catch (error) {
-        console.error('Error in checkSuperAdmin:', error);
+        
         toast({
           title: "Access Error",
           description: "There was an error checking your permissions.",

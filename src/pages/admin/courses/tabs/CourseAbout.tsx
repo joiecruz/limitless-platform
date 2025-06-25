@@ -87,7 +87,7 @@ const CourseAbout = ({ course }: CourseAboutProps) => {
         description: "Course details updated successfully",
       });
     } catch (error) {
-      console.error("Error updating course:", error);
+      
       toast({
         title: "Error",
         description: "Failed to update course details",

@@ -30,10 +30,10 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   // Get state from location or set defaults
   const isInvitedUser = location.state?.isInvited === true;
 
-  console.log('[OnboardingModal] isIncompleteProfile:', isIncompleteProfile);
-  console.log('[OnboardingModal] isInvitedUser:', isInvitedUser);
-  console.log('[OnboardingModal] location.state:', location.state);
-  console.log('[OnboardingModal] open prop:', open);
+  
+  
+  
+  
 
   // Check if user already has workspaces
   useEffect(() => {
@@ -49,13 +49,13 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
 
           if (!error && data?.workspaces && data.workspaces.length > 0) {
             setHasExistingWorkspaces(true);
-            console.log('[OnboardingModal] User has existing workspaces:', data.workspaces.length);
+            
           } else {
             setHasExistingWorkspaces(false);
-            console.log('[OnboardingModal] User has no existing workspaces');
+            
           }
         } catch (error) {
-          console.error('[OnboardingModal] Error checking existing workspaces:', error);
+          
           setHasExistingWorkspaces(false);
         }
       }
@@ -68,9 +68,9 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
   const shouldShowWorkspaceStep = !isInvitedUser && !hasExistingWorkspaces;
   const TOTAL_STEPS = shouldShowWorkspaceStep ? 4 : 3;
 
-  console.log('[OnboardingModal] hasExistingWorkspaces:', hasExistingWorkspaces);
-  console.log('[OnboardingModal] shouldShowWorkspaceStep:', shouldShowWorkspaceStep);
-  console.log('[OnboardingModal] TOTAL_STEPS:', TOTAL_STEPS);
+  
+  
+  
 
   useEffect(() => {
     // Reset to appropriate step when modal opens
@@ -123,7 +123,7 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
             }));
           }
         } catch (error) {
-          console.error('Error loading existing profile:', error);
+          
         }
       }
     };
@@ -135,26 +135,26 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
 
   const addUserToSysteme = async (userId: string) => {
     try {
-      console.log("[Onboarding] Adding user to Systeme.io:", userId);
+      
       const { data, error } = await supabase.functions.invoke('handle-systeme-signup', {
         body: { user_id: userId }
       });
 
       if (error) {
-        console.error('[Onboarding] Error adding user to Systeme.io:', error);
+        
         // Don't show an error toast as this is non-critical
         return;
       }
 
       if (!data.success) {
-        console.warn('[Onboarding] Systeme.io integration responded with non-success:', data);
+        
         // Don't show an error toast as this is non-critical
         return;
       }
 
-      console.log('[Onboarding] Successfully added user to Systeme.io:', data);
+      
     } catch (e) {
-      console.error('[Onboarding] Exception adding user to Systeme.io:', e);
+      
       // Don't show an error toast as this is non-critical
     }
   };
@@ -163,8 +163,8 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
     const updatedData = { ...formData, ...stepData };
     setFormData(updatedData);
 
-    console.log('[OnboardingModal] Current step:', currentStep, 'Total steps:', TOTAL_STEPS);
-    console.log('[OnboardingModal] Form data:', updatedData);
+    
+    
 
     if (currentStep === TOTAL_STEPS) {
       // Call systeme.io integration right before submitting the form
@@ -173,12 +173,12 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
         if (data?.user) {
           // Call Systeme.io integration but don't await it to not block the user flow
           addUserToSysteme(data.user.id).catch(err => {
-            console.error("Background Systeme.io error:", err);
+            
             // Don't show toast to user as this is non-critical
           });
         }
       } catch (error) {
-        console.error("Error getting current user:", error);
+        
       }
 
       await handleSubmit(updatedData);
@@ -193,7 +193,7 @@ export function OnboardingModal({ open = false, onOpenChange, isIncompleteProfil
 
   const handleSkipWorkspace = () => {
     // Skip workspace creation and complete onboarding
-    console.log('[OnboardingModal] Skipping workspace creation');
+    
     if (onOpenChange) {
       onOpenChange(false);
     }

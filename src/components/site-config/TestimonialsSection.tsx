@@ -30,7 +30,7 @@ export function TestimonialsSection() {
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error fetching testimonials:', error);
+        
         return [];
       }
       

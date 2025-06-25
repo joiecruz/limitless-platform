@@ -57,7 +57,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
         description: "Image uploaded successfully",
       });
     } catch (error) {
-      console.error('Error uploading image:', error);
+      
       toast({
         title: "Error",
         description: "Failed to upload image",

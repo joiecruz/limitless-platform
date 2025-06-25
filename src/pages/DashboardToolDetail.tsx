@@ -49,7 +49,7 @@ export default function DashboardToolDetail() {
         .eq("id", tool.id);
 
       if (error) {
-        console.error("Error updating download count:", error);
+        
       } else {
         // Invalidate relevant queries to refresh the data
         queryClient.invalidateQueries({ queryKey: ['tools'] });
@@ -80,7 +80,7 @@ export default function DashboardToolDetail() {
         description: "Your download should begin shortly.",
       });
     } catch (error) {
-      console.error("Error during download:", error);
+      
       toast({
         title: "Download failed",
         description: "There was an error downloading the file. Please try again.",

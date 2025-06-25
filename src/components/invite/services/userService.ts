@@ -19,10 +19,10 @@ export async function addUserToWorkspace(userId: string, workspaceId: string, ro
 
   if (memberError) {
     if (memberError.code === '23505') { // Unique violation
-      console.log("User is already a member of this workspace");
+      
       throw new Error("You are already a member of this workspace.");
     }
-    console.error("Error adding member:", memberError);
+    
     throw memberError;
   }
 }
@@ -49,12 +49,12 @@ export async function createNewUser(email: string, password: string, userData: U
   const { data: authData, error: signUpError } = await supabase.auth.signUp(signUpOptions);
 
   if (signUpError) {
-    console.error("Error creating auth account:", signUpError);
+    
     throw signUpError;
   }
 
   if (!authData.user) {
-    console.error("No user data returned from signup");
+    
     throw new Error("Failed to create user account");
   }
 
@@ -65,7 +65,7 @@ export async function createNewUser(email: string, password: string, userData: U
     });
 
     if (confirmError) {
-      console.error("Error confirming email:", confirmError);
+      
       throw confirmError;
     }
   }

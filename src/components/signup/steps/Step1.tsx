@@ -35,7 +35,7 @@ export const Step1 = ({ formData, handleInputChange, nextStep, loading }: Step1P
         nextStep();
       }
     } catch (error) {
-      console.error("Validation error:", error);
+      
       toast({
         title: "Error",
         description: "An error occurred while validating your information",

@@ -57,7 +57,7 @@ export function LogosTable() {
       
       refetch();
     } catch (error: any) {
-      console.error("Error deleting logo:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to delete logo",

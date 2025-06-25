@@ -67,7 +67,7 @@ export default function ToolDetail() {
         .eq("id", tool.id);
 
       if (error) {
-        console.error("Error updating download count:", error);
+        
       } else {
         // Invalidate and refetch the current tool query to update count in real-time
         queryClient.invalidateQueries({ queryKey: ['tool', tool.id] });

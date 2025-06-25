@@ -70,7 +70,7 @@ export function useReactionOperations({ onMessageUpdate }: UseReactionOperations
         if (insertError) throw insertError;
       }
     } catch (error) {
-      console.error('Error in handleReaction:', error);
+      
       toast({
         title: "Error",
         description: "Failed to handle reaction",
