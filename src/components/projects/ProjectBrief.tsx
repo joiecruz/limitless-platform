@@ -4,6 +4,7 @@ import ProjectOverview from "./project-brief/ProjectOverview";
 import ProjectSuccessCriteria from "./project-brief/ProjectSuccessCriteria";
 import ProjectTimeline from "./project-brief/ProjectTimeline";
 import ProjectSubmission from "./project-brief/ProjectSubmission";
+import ProjectDesignChallenge from "./project-brief/ProjectDesignChallenges";
 
 export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -31,7 +32,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
             Back
           </button>
         )}
-        { currentStep != 0 && (
+        { currentStep != 0 && currentStep < 4 && (
             <button
             onClick={() => handleStepChange(Math.max(currentStep - 1, 0))}
             className="flex items-center bg-[#F4F4FB] rounded-[10px] px-2 pr-4 py-2 text-[#393CA0FF] font-sans hover:bg-[#C1C2E9FF] transition-colors ml-9 absolute left-0"
@@ -42,10 +43,12 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
           </button>
         )}
         {/* Progress Bar */}
-        <div className="flex-1 flex justify-center">
+        {currentStep < 4 && (
+            <div className="flex-1 flex justify-center">
           <ProjectBriefProgressBar currentStep={currentStep} />
         </div>
-      </div>
+        )}
+        </div>
       <div className="w-full flex justify-center">
         <div className="w-full flex flex-col items-center">
             {currentStep < 3 && (
@@ -56,6 +59,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
             {currentStep === 1 && <ProjectSuccessCriteria />}
             {currentStep === 2 && <ProjectTimeline />}
             {currentStep === 3 && <ProjectSubmission />}
+            {currentStep === 4 && <ProjectDesignChallenge />}
           </div>
           <div className="flex justify-end gap-4" style={{ width: '60vw' }}>
             {currentStep > 0 && currentStep < 3 && (
@@ -71,14 +75,30 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                 <button
               type="button"
               className="mt-6 bg-[#393CA0FF] hover:bg-[#2C2E7AFF] text-white font-bold py-3 rounded-[3px] text-[18px] transition-colors px-8 w-[145px] font-sans"
-              onClick={() => handleStepChange(Math.min(currentStep + 1, 3))}
+              onClick={() => handleStepChange(Math.min(currentStep + 1, 5))}
             >
               Next
             </button>
             )}
+            
           </div>
+          {/* Next Button */}
+          {currentStep === 3 && (
+            <button className="mt-[-70px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-3 px-10 rounded-[6px] text-[17px] w-[190px] h-[50px] font-sans transition-colors flex items-center justify-center gap-2" 
+            onClick={() => handleStepChange(Math.min(currentStep + 1, 5))} >
+            <img
+                src="/projects-navbar-icons/sparkle.svg"
+                alt=""
+                width={20}
+                height={20}
+                style={{ marginRight: 4, color: 'white' }}
+                />
+                Next
+            </button>
+          )}
         </div>
       </div>
+      
       <div className="h-[5vh]"></div>
     </div>
   );
