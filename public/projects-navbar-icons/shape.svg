@@ -1,1 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><rect x="3" y="14" width="6" height="6" rx="1" fill="#393CA0" fill-opacity="0.15" stroke="#393CA0" stroke-width="2.5"/><circle cx="17" cy="17" r="3" fill="#393CA0" fill-opacity="0.15" stroke="#393CA0" stroke-width="2.5"/><polygon points="12,4 16,12 8,12" fill="#393CA0" fill-opacity="0.15" stroke="#393CA0" stroke-width="2.5"/></svg>
+<svg class="w-6 h-6" fill="#686583" id="Flat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <path d="M71.59,61.47a8,8,0,0,0-15.18,0l-40,120A8,8,0,0,0,24,192h80a8,8,0,0,0,7.59-10.53ZM35.1,176,64,89.3,92.9,176ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm-88,0a36,36,0,1,1,36,36A36,36,0,0,1,120,76Zm104,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Zm-8,56H144V160h72Z"/>
+</svg>

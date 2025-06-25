@@ -10,6 +10,9 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
 
   // Circle rendering
   function renderCircle(idx: number) {
+    const baseTransition = {
+      transition: 'background 0.3s, border-color 0.3s, color 0.3s, opacity 0.3s',
+    };
     if (idx === currentStep) {
       return (
         <span style={{
@@ -22,6 +25,8 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
           borderStyle: 'solid',
           zIndex: 2,
           display: 'inline-block',
+          opacity: 1,
+          ...baseTransition,
         }} />
       );
     } else if (idx <= currentStep) {
@@ -42,6 +47,8 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
           color: '#fff',
           fontWeight: 700,
           fontSize: 12,
+          opacity: 1,
+          ...baseTransition,
         }}></span>
       );
     } else {
@@ -57,6 +64,8 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
           borderStyle: 'solid',
           zIndex: 2,
           display: 'inline-block',
+          opacity: 1,
+          ...baseTransition,
         }} />
       );
     }
@@ -65,13 +74,15 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
   // Line style
   const lineStyle = (active: boolean) => ({
     display: 'inline-block',
-    height: 4,
-    width: 184,
+    height: 5,
+    width: 188,
     background: active ? '#393CA0' : '#E5E7EB',
     verticalAlign: 'middle',
     borderRadius: 2,
-    marginLeft: -1,
-    marginRight: 0,
+    marginLeft: -6,
+    marginRight: -3,
+    opacity: 1,
+    transition: 'background 0.3s, opacity 0.3s',
   });
 
   return (
@@ -93,7 +104,7 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
             <div key={step.number} className="flex flex-col items-start relative">
               {renderCircle(idx)}
               {/* Line to next circle (except last) */}
-              {idx < steps.length - 1 && (
+              {idx < steps.length  && (
                 <span
                   style={{
                     ...lineStyle(idx < currentStep || idx === currentStep),
@@ -106,8 +117,7 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
             </div>
           ))}
           {/* Last gray line and extra completed circle at the same height */}
-          <div className="flex flex-row items-center relative" style={{ position: 'absolute', left: '68%', top: -4 }}>
-            <span style={lineStyle(false)} />
+          <div className="w-full mt-2 pl-4" style={{ height: 24, position: 'absolute', left: '97%', top:-13 }}>
             <span style={{ marginLeft: 0 }}>
               {currentStep < steps.length ? (
                 <span style={{
