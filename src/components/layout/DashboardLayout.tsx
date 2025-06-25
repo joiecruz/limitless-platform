@@ -188,7 +188,7 @@ export default function DashboardLayout() {
               <MobileHeader onOpenSidebar={() => setSidebarOpen(true)} />
             </div>
           )}
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden"> {/* overflow-y-auto causing issues with width overflow*/}
             <div className="h-full">
               <Outlet />
             </div>

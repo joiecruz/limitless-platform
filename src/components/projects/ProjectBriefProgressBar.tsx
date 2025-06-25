@@ -16,8 +16,8 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
     if (idx === currentStep) {
       return (
         <span style={{
-          width: 16,
-          height: 16,
+          width: 14,
+          height: 14,
           background: '#FFF',
           borderRadius: 8,
           borderWidth: 5,
@@ -33,8 +33,8 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
       // Current: filled colored circle
       return (
         <span style={{
-          width: 16,
-          height: 16,
+          width: 14,
+          height: 14,
           background: '#393CA0',
           borderRadius: 8,
           borderWidth: 5,
@@ -55,8 +55,8 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
       // Incomplete: gray circle
       return (
         <span style={{
-          width: 16,
-          height: 16,
+          width: 14,
+          height: 14,
           background: '#FFF',
           borderRadius: 8,
           borderWidth: 4,
@@ -74,7 +74,7 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
   // Line style
   const lineStyle = (active: boolean) => ({
     display: 'inline-block',
-    height: 5,
+    height: 4,
     width: 188,
     background: active ? '#393CA0' : '#E5E7EB',
     verticalAlign: 'middle',
@@ -86,12 +86,12 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
   });
 
   return (
-    <div className="w-full" style={{ maxWidth: 600 }}>
+    <div className="w-full" style={{ maxWidth: 600, marginLeft: 10 }}>
       {/* Step Labels */}
       <div className="grid grid-cols-3 gap-0 w-full pl-4 font-sans text-[16px]">
         {steps.map((step) => (
           <div key={step.number} className="flex flex-col items-start">
-            <span className="text-[16px]" style={{ color: '#323743FF' }}>
+            <span className="text-[15px]" style={{ color: '#323743FF' }}>
               <span className="font-extrabold">{step.number}</span> <span className="font-normal">{step.label}</span>
             </span>
           </div>
@@ -121,8 +121,8 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
             <span style={{ marginLeft: 0 }}>
               {currentStep < steps.length ? (
                 <span style={{
-                  width: 16,
-                  height: 16,
+                  width: 14,
+                  height: 14,
                   background: '#E5E7EB',
                   borderRadius: 8,
                   borderWidth: 5,
@@ -143,8 +143,8 @@ export default function ProjectBriefProgressBar({ currentStep = 0 }: { currentSt
                 </span>
               ) : (
                 <span style={{
-                  width: 16,
-                  height: 16,
+                  width: 14,
+                  height: 14,
                   background: '#393CA0',
                   borderRadius: 8,
                   borderWidth: 5,

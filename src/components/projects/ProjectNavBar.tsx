@@ -28,8 +28,8 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
   return (
     <>
       <nav
-        className="w-full flex items-center justify-between bg-white font-sans text-[16px] pr-2"
-        style={{ lineHeight: '22px', height: 74 }}
+        className="flex items-center justify-between bg-white font-sans text-[14px] pr-2"
+        style={{ lineHeight: '22px', height: 60 }}
       >
         {designThinkingSteps.map((step) => {
           const isSelected = selectedStep === step.label;
@@ -37,7 +37,7 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
             <button
               key={step.label}
               onClick={() => setSelectedStep(step.label)}
-              className={`flex-1 bg-white py-0 px-0 h-full font-medium focus:outline-none transition-colors flex items-center justify-center ${isSelected ? 'text-[#393CA0FF]' : 'text-[#565D6D]'}`}
+              className={`flex-1 bg-white py-0 px-0 h-full font-medium focus:outline-none hover:bg-[#F4F4FB] transition-colors flex items-center justify-center ${isSelected ? 'text-[#393CA0FF]' : 'text-[#565D6D]'}`}
               style={{
                 height: '100%',
                 padding: '26px 0',

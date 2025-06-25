@@ -27,6 +27,7 @@ import WorkshopDetail from "@/pages/landing/WorkshopDetail";
 // App pages
 import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
+import CreateProject from "@/pages/CreateProject";
 import Courses from "@/pages/Courses";
 import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
@@ -112,6 +113,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/projects" element={<Projects />} />
+        <Route path="/dashboard/projects/create-project" element={<CreateProject />} />
         <Route path="/dashboard/courses" element={<Courses />} />
         <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />
         <Route path="/dashboard/tools" element={<Tools />} />

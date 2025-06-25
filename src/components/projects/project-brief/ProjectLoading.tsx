@@ -1,6 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProjectLoading() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate("/dashboard/projects");
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] w-full">
       {/* Loading Spinner */}

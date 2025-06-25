@@ -53,25 +53,24 @@ export default function ProjectSuccessCriteria() {
   }
 
   return (
-    <div className="mt-1.5 bg-white rounded-xl border border-gray-100 p-8 flex flex-col items-start" style={{ width: '60vw', minHeight: '52vh' }}>
-      <div className="flex items-center mb-6">
-        <img src="/projects-navbar-icons/check-circle.svg" alt="Info" width={30} height={23} style={{ marginRight: 13, color: '#2FD5C8', filter: 'invert(62%) sepia(99%) saturate(377%) hue-rotate(127deg) brightness(97%) contrast(92%)' }} />
-        <span className="text-[22px] font-bold font-sans" style={{ color: '#1E2128FF' }}>Success Criteria</span>
+    <div className="mt-1.5 bg-white rounded-xl border border-gray-100 p-6 flex flex-col items-start" style={{ width: '55vw', minHeight: '52vh' }}>
+      <div className="flex items-center mb-3">
+        <img src="/projects-navbar-icons/check-circle.svg" alt="Info" width={22} height={14} style={{ marginRight: 13, color: '#2FD5C8', filter: 'invert(62%) sepia(99%) saturate(377%) hue-rotate(127deg) brightness(97%) contrast(92%)' }} />
+        <span className="text-[17px] font-bold font-sans" style={{ color: '#1E2128FF' }}>Success Criteria</span>
       </div>
-      <label className="block text-[16px] text-gray-600 font-bold font-sans mb-1" htmlFor="project-target-outcomes">Target Outcomes</label>
-      <input
+      <label className="block text-[13px] text-gray-600 font-bold font-sans mb-1" htmlFor="project-target-outcomes">Target Outcomes</label>
+      <textarea
         id="project-target-outcomes"
-        type="text"
         placeholder="Describe the impact and outcomes that you hope to achieve through this innovation project."
-        className="w-full rounded-[10px] border border-gray-200 font-medium px-4 py-3 text-[16px] h-[130px] font-sans placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#9095A1FF]"
-        style={{ marginBottom: 16 }}
+        className="w-full rounded-[10px] border border-gray-200 font-medium px-4 py-3 text-[13px] h-[80px] font-sans placeholder-gray-400 resize-none focus:outline-none focus:ring-1 focus:ring-[#9095A1FF]"
+        style={{  marginBottom: 10}}
       />
 
-      <label className="block text-[16px] text-gray-600 font-bold font-sans mb-1" htmlFor="project-sdgs">SDGs (Sustainable Development Goals) Targeted</label>
+      <label className="block text-[13px] text-gray-600 font-bold font-sans mb-0" htmlFor="project-sdgs">SDGs (Sustainable Development Goals) Targeted</label>
       <div className="w-full mb-2">
         <div className="flex flex-wrap gap-2 mb-2">
           {selectedSDGs.map((sdg) => (
-            <span key={sdg} className="bg-[#2FD5C8] text-white px-3 py-1 rounded-full text-sm font-medium flex items-center">
+            <span key={sdg} className="bg-[#2FD5C8] text-white px-2 py-1 rounded-full text-[11px] font-medium flex items-center mt-1">
               {sdg}
               <button type="button" className="ml-2 text-white hover:text-gray-200" onClick={() => removeSDG(sdg)}>&times;</button>
             </span>
@@ -79,7 +78,7 @@ export default function ProjectSuccessCriteria() {
         </div>
         <select
           id="project-sdgs"
-          className="mb-2 w-full rounded-[10px] border border-gray-200 font-medium px-4 py-3 text-[16px] font-sans text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white"
+          className="mb-2 w-full rounded-[10px] border border-gray-200 font-medium px-4 py-3 text-[13px] font-sans text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white"
           onChange={handleSDGChange}
           disabled={selectedSDGs.length >= 3}
           value=""
@@ -91,8 +90,8 @@ export default function ProjectSuccessCriteria() {
         </select>
       </div>
 
-      <label className="block text-[16px] text-gray-600 font-bold font-sans mb-3" htmlFor="project-type-inno">Do you already have a type of innovation in mind? (Select up to 3)</label>
-      <div className="flex flex-wrap gap-2 mb-2 w-full">
+      <label className="block text-[13px] text-gray-600 font-bold font-sans mb-1" htmlFor="project-type-inno">Do you already have a type of innovation in mind? (Select up to 3)</label>
+      <div className="flex flex-wrap gap-x-3 gap-y-0 mb-0 w-full">
         {[
           "None",
           "Business model",
@@ -120,16 +119,16 @@ export default function ProjectSuccessCriteria() {
                   setSelectedTypes([...selectedTypes, type]);
                 }
               }}
-              className={`rounded-[10px] border font-medium h-[70px] px-4 py-3 text-[16px] font-sans transition-colors focus:outline-none flex items-center bg-white text-gray-700
+              className={`rounded-[10px] border font-medium h-[50px] px-4 py-3 text-[13px] font-sans transition-colors focus:outline-none flex items-center bg-white text-gray-700
                 ${selectedTypes.length >= 3 && !selected ? 'opacity-50 cursor-not-allowed' : ''}
-                ${selected ? 'bg-[#DADBF2FF] border-[#393CA0FF]' : 'border-gray-200'}
+                ${selected ? 'bg-[#DADBF2]/40 border-[#393CA0FF]' : 'border-gray-200'}
               `}
               style={{ minWidth: 120, marginBottom: 8 }}
               disabled={selectedTypes.length >= 3 && !selected}
             >
               {React.cloneElement(TYPE_ICONS[type], {
-                width: 24,
-                height: 24,
+                width: 20,
+                height: 20,
                 style: { marginRight: 8, filter: selected ? 'invert(22%) sepia(13%) saturate(3552%) hue-rotate(210deg) brightness(92%) contrast(101%)' : undefined }
               })}
               {type}
