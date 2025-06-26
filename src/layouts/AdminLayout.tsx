@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,21 +21,15 @@ export function AdminLayout() {
   useEffect(() => {
     const checkSuperAdmin = async () => {
       try {
-        
-
         const { data: { user }, error: userError } = await supabase.auth.getUser();
 
         if (userError) {
-          
           throw userError;
         }
 
         if (!user) {
-          
           throw new Error("No user found");
         }
-
-        
 
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -43,14 +38,10 @@ export function AdminLayout() {
           .single();
 
         if (profileError) {
-          
           throw profileError;
         }
 
-        
-
         if (!profile?.is_superadmin) {
-          
           toast({
             title: "Access Denied",
             description: "You don't have permission to access this area.",
@@ -60,10 +51,8 @@ export function AdminLayout() {
           return;
         }
 
-        
         setIsLoading(false);
       } catch (error) {
-        
         toast({
           title: "Access Error",
           description: "There was an error checking your permissions.",
@@ -85,62 +74,71 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
+      {sidebarOpen && isMobile && (
         <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 md:hidden"
+          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Mobile header */}
-      <div className="sticky top-0 z-10 md:hidden bg-white border-b border-gray-200 px-4 py-2">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          <img
-            src="/limitless-logo.svg"
-            alt="Limitless Lab"
-            className="h-8 w-auto"
-          />
-        </div>
-      </div>
-
-      <div className="flex">
-        {/* Mobile sidebar */}
+      {/* Mobile sidebar */}
+      {isMobile && (
         <div
-          className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white transition-transform duration-300 ease-in-out md:hidden ${
+          className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-gray-900 transition-transform duration-300 ease-in-out ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
-            <img
-              src="/limitless-logo.svg"
-              alt="Limitless Lab"
-              className="h-10 w-auto"
-            />
-            <button onClick={() => setSidebarOpen(false)}>
+          <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700">
+            <div className="flex items-center">
+              <img
+                src="/limitless-logo.svg"
+                alt="Limitless Lab"
+                className="h-8 w-auto"
+              />
+              <span className="ml-2 text-white font-semibold">Admin</span>
+            </div>
+            <button 
+              onClick={() => setSidebarOpen(false)}
+              className="text-gray-400 hover:text-white"
+            >
               <X className="h-6 w-6" />
             </button>
           </div>
           <AdminSidebar />
         </div>
+      )}
 
-        {/* Desktop sidebar */}
-        <div className="hidden md:block md:w-64 md:flex-shrink-0">
-          <div className="h-full">
-            <AdminSidebar />
-          </div>
+      {/* Desktop sidebar */}
+      {!isMobile && (
+        <div className="w-64 flex-shrink-0">
+          <AdminSidebar />
         </div>
+      )}
 
-        {/* Main content */}
-        <main className="flex-1 overflow-auto w-full">
-          <div className="p-4 md:p-8 pt-4 md:pt-8">
+      {/* Main content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile header */}
+        {isMobile && (
+          <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <img
+              src="/limitless-logo.svg"
+              alt="Limitless Lab"
+              className="h-8 w-auto"
+            />
+          </div>
+        )}
+
+        {/* Main content area */}
+        <main className="flex-1 overflow-auto bg-gray-50">
+          <div className="p-4 md:p-8">
             <Outlet />
           </div>
         </main>

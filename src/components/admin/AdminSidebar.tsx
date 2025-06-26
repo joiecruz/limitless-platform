@@ -1,5 +1,5 @@
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { 
   BarChart3, 
   Users, 
@@ -8,14 +8,15 @@ import {
   Briefcase, 
   BookOpen, 
   Settings,
-  GraduationCap
+  GraduationCap,
+  ArrowLeft
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: BarChart3 },
   { name: "Users", href: "/admin/users", icon: Users },
   { name: "Content", href: "/admin/content", icon: FileText },
-  { name: "Tools", href: "/admin/tools", icon: Wrench },
   { name: "Workspaces", href: "/admin/workspaces", icon: Briefcase },
   { name: "Courses", href: "/admin/courses", icon: BookOpen },
   { name: "Master Trainers", href: "/admin/master-trainers", icon: GraduationCap },
@@ -23,9 +24,15 @@ const navigation = [
 ];
 
 export function AdminSidebar() {
+  const navigate = useNavigate();
+
+  const handleBackToDashboard = () => {
+    navigate('/dashboard');
+  };
+
   return (
-    <div className="flex flex-col w-64 bg-gray-900">
-      <div className="flex items-center h-16 px-4">
+    <div className="flex flex-col w-64 bg-gray-900 min-h-screen">
+      <div className="flex items-center h-16 px-4 border-b border-gray-700">
         <img
           className="h-8 w-auto"
           src="/limitless-logo.svg"
@@ -33,6 +40,19 @@ export function AdminSidebar() {
         />
         <span className="ml-2 text-white font-semibold">Admin</span>
       </div>
+      
+      {/* Back to User Dashboard Button */}
+      <div className="px-4 py-3 border-b border-gray-700">
+        <Button
+          onClick={handleBackToDashboard}
+          variant="ghost"
+          className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700"
+        >
+          <ArrowLeft className="mr-3 h-4 w-4" />
+          Back to User Dashboard
+        </Button>
+      </div>
+
       <nav className="mt-5 flex-1 px-2 space-y-1">
         {navigation.map((item) => (
           <NavLink
@@ -43,7 +63,7 @@ export function AdminSidebar() {
                 isActive
                   ? "bg-gray-800 text-white"
                   : "text-gray-300 hover:bg-gray-700 hover:text-white"
-              } group flex items-center px-2 py-2 text-sm font-medium rounded-md`
+              } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`
             }
           >
             <item.icon
