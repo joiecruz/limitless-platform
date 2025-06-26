@@ -1,6 +1,6 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
-import { RequireAuth } from "@/components/auth/RequireAuth";
+import RequireAuth from "@/components/auth/RequireAuth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import AdminLayout from "@/layouts/AdminLayout";
 
@@ -120,7 +120,7 @@ export default function AppRoutes() {
         <Route path="workspaces" element={<AdminWorkspaces />} />
         <Route path="workspaces/:id" element={<AdminWorkspaceDetails />} />
         <Route path="courses" element={<AdminCourses />} />
-        <Route path="courses/:id" element={<CourseDetails />} />
+        <Route path="courses/:courseId" element={<CourseDetails />} />
         <Route path="content/blog/create" element={<CreateBlog />} />
         <Route path="content/blog/:id/edit" element={<EditBlog />} />
         <Route path="content/case-studies/:id/edit" element={<EditCaseStudy />} />
