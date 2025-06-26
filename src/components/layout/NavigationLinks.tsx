@@ -15,7 +15,7 @@ export const navigation = [
 export function NavigationLinks() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { hasMasterTrainerAccess } = useMasterTrainerAccess();
+  const { hasMasterTrainerAccess, isLoading } = useMasterTrainerAccess();
 
   return (
     <nav className="space-y-1 px-3 mb-6">
@@ -34,8 +34,8 @@ export function NavigationLinks() {
         </a>
       ))}
       
-      {/* AI Ready Master Trainers - Only show if user has access */}
-      {hasMasterTrainerAccess && (
+      {/* AI Ready Master Trainers - Only show if user has access and not loading */}
+      {!isLoading && hasMasterTrainerAccess && (
         <a
           href="/dashboard/master-trainers"
           className={`nav-item ${location.pathname === "/dashboard/master-trainers" ? "active" : ""}`}

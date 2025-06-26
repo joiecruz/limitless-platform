@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { Button } from "@/components/ui/button";
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,6 +63,7 @@ export default function Dashboard() {
     },
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
+
   useEffect(() => {
     const checkAuth = async () => {
       const {
@@ -130,21 +132,23 @@ export default function Dashboard() {
     const hasName = profile?.first_name && profile?.last_name;
     const hasWorkspaces = userWorkspaces && userWorkspaces.length > 0;
 
-    // Show onboarding for:
-    // 1. Truly new users (no name AND no workspaces) - full onboarding
-    // 2. Users with names but no workspaces - workspace creation step only
-    const needsOnboarding = !hasName && !hasWorkspaces; // Full onboarding
-    const needsWorkspaceCreation = hasName && !hasWorkspaces; // Workspace creation only
+    // Only show onboarding if user truly needs it:
+    // 1. No name AND no workspaces - full onboarding
+    // 2. Has name but no workspaces AND not marked as having visited dashboard - workspace creation only
+    const needsFullOnboarding = !hasName && !hasWorkspaces;
+    const needsWorkspaceCreation = hasName && !hasWorkspaces && !hasNavigatedDashboard;
 
-    const showOnboardingModal = needsOnboarding || needsWorkspaceCreation;
+    const shouldShowOnboarding = needsFullOnboarding || needsWorkspaceCreation;
 
     // If user has both name and workspaces, mark them as having visited dashboard
     if (hasName && hasWorkspaces) {
       localStorage.setItem('dashboard-visited', 'true');
     }
-    setShowOnboarding(showOnboardingModal);
+
+    setShowOnboarding(shouldShowOnboarding);
     setIsIncompleteProfile(!hasName);
   }, [profile, profileLoading, userWorkspaces, workspacesLoading, onboardingJustCompleted]);
+
   const quickLinks = [{
     title: "Explore online courses",
     description: "Upgrade your knowledge and skills on innovation with our transformative online programs",
@@ -195,12 +199,6 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-1">
             Here's an overview of your innovation journey
           </p>
-        </div>
-        
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          {/* AI Ready Master Trainer Button */}
-          
         </div>
       </div>
 
