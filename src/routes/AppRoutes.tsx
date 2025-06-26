@@ -1,15 +1,13 @@
-
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import RequireAuth from "@/components/auth/RequireAuth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import AdminLayout from "@/layouts/AdminLayout";
+import { AdminLayout } from "@/layouts/AdminLayout";
 
 // Public pages
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
-import NotFound from "@/pages/NotFound";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import ResetPassword from "@/pages/ResetPassword";
@@ -120,7 +118,7 @@ export default function AppRoutes() {
         <Route path="workspaces" element={<AdminWorkspaces />} />
         <Route path="workspaces/:id" element={<AdminWorkspaceDetails />} />
         <Route path="courses" element={<AdminCourses />} />
-        <Route path="courses/:courseId" element={<CourseDetails />} />
+        <Route path="courses/:courseId" element={<CourseDetailsWrapper />} />
         <Route path="content/blog/create" element={<CreateBlog />} />
         <Route path="content/blog/:id/edit" element={<EditBlog />} />
         <Route path="content/case-studies/:id/edit" element={<EditCaseStudy />} />
@@ -133,4 +131,15 @@ export default function AppRoutes() {
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
   );
+}
+
+// Wrapper component to extract courseId from URL params and pass it to CourseDetails
+function CourseDetailsWrapper() {
+  const { courseId } = useParams<{ courseId: string }>();
+  
+  if (!courseId) {
+    return <Navigate to="/admin/courses" replace />;
+  }
+  
+  return <CourseDetails courseId={courseId} />;
 }
