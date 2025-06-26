@@ -1,4 +1,5 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -6,63 +7,56 @@ export const useCourseOperations = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: courses, isLoading: isLoadingCourses } = useQuery({
+  const { data: courses, isLoading: isLoadingCourses, refetch } = useQuery({
     queryKey: ["admin-courses"],
     queryFn: async () => {
-      const { data: coursesData, error: coursesError } = await supabase
+      const { data, error } = await supabase
         .from("courses")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (coursesError) throw coursesError;
+      if (error) {
+        console.error("Error fetching courses:", error);
+        throw error;
+      }
 
-      // Get real-time enrollment counts for all courses
-      const coursesWithCounts = await Promise.all(
-        coursesData.map(async (course) => {
-          const { count } = await supabase
-            .from("enrollments")
-            .select("*", { count: "exact", head: true })
-            .eq("course_id", course.id);
-
-          return {
-            ...course,
-            enrollee_count: count || 0
-          };
-        })
-      );
-
-      return coursesWithCounts;
+      return data;
     },
   });
 
-  const handleToggleLock = async (courseId: string, currentLockState: boolean) => {
-    try {
+  const toggleLockMutation = useMutation({
+    mutationFn: async ({ courseId, locked }: { courseId: string; locked: boolean }) => {
       const { error } = await supabase
         .from("courses")
-        .update({ locked: !currentLockState })
+        .update({ locked })
         .eq("id", courseId);
 
       if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
-
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
       toast({
-        title: "Success",
-        description: `Course ${currentLockState ? "unlocked" : "locked"} successfully`,
+        title: "Course updated",
+        description: "Course lock status has been updated successfully.",
       });
-    } catch (error: any) {
-      
+    },
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update course status",
+        title: "Error updating course",
+        description: error.message,
         variant: "destructive",
       });
-    }
+    },
+  });
+
+  const handleToggleLock = (courseId: string, currentLocked: boolean) => {
+    toggleLockMutation.mutate({ courseId, locked: !currentLocked });
   };
 
   return {
     courses,
     isLoadingCourses,
     handleToggleLock,
+    refetch,
   };
 };
