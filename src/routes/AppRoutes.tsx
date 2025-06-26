@@ -8,6 +8,7 @@ import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
+import NotFound from "@/pages/NotFound";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import ResetPassword from "@/pages/ResetPassword";
