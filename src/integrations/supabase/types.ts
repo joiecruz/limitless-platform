@@ -539,6 +539,201 @@ export type Database = {
           },
         ]
       }
+      master_trainer_access: {
+        Row: {
+          created_at: string
+          granted_by: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      master_trainer_faqs: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean | null
+          order_index: number | null
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean | null
+          order_index?: number | null
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      master_trainer_materials: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          download_count: number | null
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          is_active: boolean | null
+          title: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          download_count?: number | null
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          download_count?: number | null
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
+      master_trainer_profiles: {
+        Row: {
+          bio: string | null
+          contact_info: Json | null
+          created_at: string
+          email: string
+          expertise_areas: string[] | null
+          first_name: string
+          id: string
+          is_active: boolean | null
+          last_name: string
+          profile_image_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          email: string
+          expertise_areas?: string[] | null
+          first_name: string
+          id?: string
+          is_active?: boolean | null
+          last_name: string
+          profile_image_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          email?: string
+          expertise_areas?: string[] | null
+          first_name?: string
+          id?: string
+          is_active?: boolean | null
+          last_name?: string
+          profile_image_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      master_trainer_recordings: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          duration: number | null
+          id: string
+          is_active: boolean | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          uploaded_by: string
+          video_url: string
+          view_count: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_active?: boolean | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          uploaded_by: string
+          video_url: string
+          view_count?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_active?: boolean | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+          video_url?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string
@@ -1643,6 +1838,10 @@ export type Database = {
       delete_user_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      is_current_user_superadmin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       is_workspace_admin: {
         Args: { workspace_id: string }
