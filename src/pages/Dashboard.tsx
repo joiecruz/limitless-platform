@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Bot, GraduationCap } from "lucide-react";
+import { ArrowRight, Bot } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { Button } from "@/components/ui/button";
-import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -14,7 +13,6 @@ export default function Dashboard() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isIncompleteProfile, setIsIncompleteProfile] = useState(location.state?.isIncompleteProfile || false);
   const [onboardingJustCompleted, setOnboardingJustCompleted] = useState(false);
-  const { hasMasterTrainerAccess } = useMasterTrainerAccess();
 
   // Query to get user profile data
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -216,17 +214,6 @@ export default function Dashboard() {
         
         {/* Action Buttons */}
         <div className="flex gap-3">
-          {/* AI Ready Master Trainer Button - Only show if user has access */}
-          {hasMasterTrainerAccess && (
-            <Button
-              onClick={() => navigate('/dashboard/master-trainers')}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
-            >
-              <GraduationCap className="w-5 h-5 mr-2" />
-              AI Ready Master Trainers
-            </Button>
-          )}
-          
           {/* AI Ready Master Trainer Button */}
           <Button
             onClick={() => navigate('/dashboard/ai-trainer')}
