@@ -66,9 +66,16 @@ export function useOnboardingLogic({
       return;
     }
 
-    // Check if user has never been onboarded (no name AND no workspaces)
+    // Check user profile completeness and workspace existence
     const hasName = profile?.first_name && profile?.last_name;
     const hasWorkspaces = userWorkspaces && userWorkspaces.length > 0;
+
+    // If user has workspaces, they don't need onboarding
+    if (hasWorkspaces) {
+      localStorage.setItem('dashboard-visited', 'true');
+      setShowOnboarding(false);
+      return;
+    }
 
     // Only show onboarding if user truly needs it:
     // 1. No name AND no workspaces - full onboarding
@@ -77,12 +84,6 @@ export function useOnboardingLogic({
     const needsWorkspaceCreation = hasName && !hasWorkspaces && !hasNavigatedDashboard;
 
     const shouldShowOnboarding = needsFullOnboarding || needsWorkspaceCreation;
-
-    // If user has both name and workspaces, mark them as having visited dashboard
-    if (hasName && hasWorkspaces) {
-      localStorage.setItem('dashboard-visited', 'true');
-    }
-
     setShowOnboarding(shouldShowOnboarding);
     setIsIncompleteProfile(!hasName);
   }, [profile, profileLoading, userWorkspaces, workspacesLoading, onboardingJustCompleted]);
