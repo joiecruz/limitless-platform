@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { Button } from "@/components/ui/button";
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,56 +14,69 @@ export default function Dashboard() {
   const [onboardingJustCompleted, setOnboardingJustCompleted] = useState(false);
 
   // Query to get user profile data
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const {
+    data: profile,
+    isLoading: profileLoading
+  } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return null;
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("first_name, last_name, role, company_size, goals, referral_source")
-        .eq("id", user.id)
-        .single();
-
+      const {
+        data
+      } = await supabase.from("profiles").select("first_name, last_name, role, company_size, goals, referral_source").eq("id", user.id).single();
       return data;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
   // Query to get user workspaces using the proper function
-  const { data: userWorkspaces, isLoading: workspacesLoading } = useQuery({
+  const {
+    data: userWorkspaces,
+    isLoading: workspacesLoading
+  } = useQuery({
     queryKey: ["user-workspaces"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return [];
-
-      const { data, error } = await supabase.functions.invoke('get-user-workspaces', {
-        body: { user_id: user.id }
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('get-user-workspaces', {
+        body: {
+          user_id: user.id
+        }
       });
-
       if (error) {
-        
         return [];
       }
-
       return data?.workspaces || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
-
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-
+      const {
+        data: {
+          session
+        },
+        error
+      } = await supabase.auth.getSession();
       if (error || !session) {
-        
-        navigate("/signin", { replace: true });
+        navigate("/signin", {
+          replace: true
+        });
         return;
       }
     };
-
     checkAuth();
   }, [navigate]);
 
@@ -78,7 +90,6 @@ export default function Dashboard() {
 
         // If onboarding was completed within the last 10 seconds, set flag
         if (now - completionTime < 10000) {
-          
           setOnboardingJustCompleted(true);
 
           // Clear the flag after 10 seconds
@@ -92,7 +103,6 @@ export default function Dashboard() {
         }
       }
     };
-
     checkOnboardingCompletion();
   }, []);
 
@@ -100,13 +110,11 @@ export default function Dashboard() {
   useEffect(() => {
     // Don't proceed if queries are still loading
     if (profileLoading || workspacesLoading) {
-      
       return;
     }
 
     // Don't show onboarding if it was just completed
     if (onboardingJustCompleted) {
-      
       setShowOnboarding(false);
       return;
     }
@@ -114,13 +122,9 @@ export default function Dashboard() {
     // Check if user has already been marked as onboarded (navigated around dashboard)
     const hasNavigatedDashboard = localStorage.getItem('dashboard-visited');
     if (hasNavigatedDashboard) {
-      
       setShowOnboarding(false);
       return;
     }
-
-        
-    
 
     // Check if user has never been onboarded (no name AND no workspaces)
     const hasName = profile?.first_name && profile?.last_name;
@@ -134,61 +138,44 @@ export default function Dashboard() {
 
     const showOnboardingModal = needsOnboarding || needsWorkspaceCreation;
 
-    
-    
-    
-    
-    
-
     // If user has both name and workspaces, mark them as having visited dashboard
     if (hasName && hasWorkspaces) {
       localStorage.setItem('dashboard-visited', 'true');
-      
     }
-
     setShowOnboarding(showOnboardingModal);
     setIsIncompleteProfile(!hasName);
-
   }, [profile, profileLoading, userWorkspaces, workspacesLoading, onboardingJustCompleted]);
-
-  const quickLinks = [
-    {
-      title: "Explore online courses",
-      description: "Upgrade your knowledge and skills on innovation with our transformative online programs",
-      image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Website_Assets__1_.png",
-      action: "Start learning",
-      link: "/dashboard/courses"
-    },
-    {
-      title: "Access innovation templates",
-      description: "Download free resources and tools to help jumpstart your innovation projects",
-      image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Tools_QuickLinks.png",
-      action: "Browse tools",
-      link: "/dashboard/tools"
-    },
-    {
-      title: "Engage with fellow innovators",
-      description: "Join the Limitless Lab community and find potential collaborators",
-      image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Community_QuickLinks.png",
-      action: "Join community",
-      link: "/dashboard/community"
-    },
-    {
-      title: "Create your innovation project",
-      description: "Be guided step-by-step on creating and implementing your idea",
-      image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Projects_QuickLinks.png",
-      action: "Create project",
-      link: "/dashboard/projects"
-    }
-  ];
-
+  const quickLinks = [{
+    title: "Explore online courses",
+    description: "Upgrade your knowledge and skills on innovation with our transformative online programs",
+    image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Website_Assets__1_.png",
+    action: "Start learning",
+    link: "/dashboard/courses"
+  }, {
+    title: "Access innovation templates",
+    description: "Download free resources and tools to help jumpstart your innovation projects",
+    image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Tools_QuickLinks.png",
+    action: "Browse tools",
+    link: "/dashboard/tools"
+  }, {
+    title: "Engage with fellow innovators",
+    description: "Join the Limitless Lab community and find potential collaborators",
+    image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Community_QuickLinks.png",
+    action: "Join community",
+    link: "/dashboard/community"
+  }, {
+    title: "Create your innovation project",
+    description: "Be guided step-by-step on creating and implementing your idea",
+    image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Projects_QuickLinks.png",
+    action: "Create project",
+    link: "/dashboard/projects"
+  }];
   const getDisplayName = () => {
     if (profile?.first_name || profile?.last_name) {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     }
     return '';
   };
-
   const handleOnboardingClose = (open: boolean) => {
     setShowOnboarding(open);
     if (!open) {
@@ -198,9 +185,7 @@ export default function Dashboard() {
       setOnboardingJustCompleted(true);
     }
   };
-
-  return (
-    <div className="space-y-8 animate-fade-in pt-20 pb-10 px-4 sm:px-6 lg:px-8">
+  return <div className="space-y-8 animate-fade-in pt-20 pb-10 px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
@@ -215,30 +200,15 @@ export default function Dashboard() {
         {/* Action Buttons */}
         <div className="flex gap-3">
           {/* AI Ready Master Trainer Button */}
-          <Button
-            onClick={() => navigate('/dashboard/ai-trainer')}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
-          >
-            <Bot className="w-5 h-5 mr-2" />
-            AI Ready Master Trainer
-          </Button>
+          
         </div>
       </div>
 
       {/* Quick Links Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {quickLinks.map((link, index) => (
-          <Card
-            key={index}
-            className="overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
-            onClick={() => navigate(link.link)}
-          >
+        {quickLinks.map((link, index) => <Card key={index} className="overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer" onClick={() => navigate(link.link)}>
             <div className="aspect-[4/3] relative overflow-hidden">
-              <img
-                src={link.image}
-                alt={link.title}
-                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
-              />
+              <img src={link.image} alt={link.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200" />
             </div>
             <div className="p-6 space-y-4">
               <div className="space-y-2">
@@ -247,23 +217,15 @@ export default function Dashboard() {
                   {link.description}
                 </p>
               </div>
-              <div
-                className="inline-flex items-center text-primary hover:gap-2 transition-all group/link"
-              >
+              <div className="inline-flex items-center text-primary hover:gap-2 transition-all group/link">
                 {link.action}
                 <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 transition-all group-hover/link:opacity-100 group-hover/link:translate-x-0" />
               </div>
             </div>
-          </Card>
-        ))}
+          </Card>)}
       </div>
 
       {/* Onboarding Modal */}
-      <OnboardingModal
-        open={showOnboarding}
-        onOpenChange={handleOnboardingClose}
-        isIncompleteProfile={isIncompleteProfile}
-      />
-    </div>
-  );
+      <OnboardingModal open={showOnboarding} onOpenChange={handleOnboardingClose} isIncompleteProfile={isIncompleteProfile} />
+    </div>;
 }
