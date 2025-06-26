@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import RequireAuth from "@/components/auth/RequireAuth";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -39,6 +40,7 @@ import DashboardToolDetail from "@/pages/DashboardToolDetail";
 import Community from "@/pages/Community";
 import Settings from "@/pages/Settings";
 import AccountSettings from "@/pages/AccountSettings";
+import AITrainer from "@/pages/AITrainer";
 
 // Admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -101,6 +103,7 @@ export default function AppRoutes() {
         <Route path="community" element={<Community />} />
         <Route path="settings" element={<Settings />} />
         <Route path="account" element={<AccountSettings />} />
+        <Route path="ai-trainer" element={<AITrainer />} />
       </Route>
 
       {/* Protected admin routes */}

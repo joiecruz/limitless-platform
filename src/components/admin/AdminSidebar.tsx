@@ -31,22 +31,22 @@ export function AdminSidebar() {
   };
 
   return (
-    <div className="flex flex-col w-64 bg-gray-900 min-h-screen">
-      <div className="flex items-center h-16 px-4 border-b border-gray-700">
+    <div className="flex flex-col w-64 bg-white min-h-screen border-r border-gray-200">
+      <div className="flex items-center h-16 px-4 border-b border-gray-200">
         <img
           className="h-8 w-auto"
           src="/limitless-logo.svg"
           alt="Limitless Lab"
         />
-        <span className="ml-2 text-white font-semibold">Admin</span>
+        <span className="ml-2 text-gray-900 font-semibold">Admin</span>
       </div>
       
       {/* Back to User Dashboard Button */}
-      <div className="px-4 py-3 border-b border-gray-700">
+      <div className="px-4 py-3 border-b border-gray-200">
         <Button
           onClick={handleBackToDashboard}
           variant="ghost"
-          className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-700"
+          className="w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-100"
         >
           <ArrowLeft className="mr-3 h-4 w-4" />
           Back to User Dashboard
@@ -61,8 +61,8 @@ export function AdminSidebar() {
             className={({ isActive }) =>
               `${
                 isActive
-                  ? "bg-gray-800 text-white"
-                  : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  ? "bg-gray-100 text-gray-900"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`
             }
           >

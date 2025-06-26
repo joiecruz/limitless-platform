@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Bot } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -210,6 +211,15 @@ export default function Dashboard() {
             Here's an overview of your innovation journey
           </p>
         </div>
+        
+        {/* AI Ready Master Trainer Button */}
+        <Button
+          onClick={() => navigate('/dashboard/ai-trainer')}
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl"
+        >
+          <Bot className="w-5 h-5 mr-2" />
+          AI Ready Master Trainer
+        </Button>
       </div>
 
       {/* Quick Links Grid */}
