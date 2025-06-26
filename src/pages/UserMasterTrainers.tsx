@@ -1,12 +1,12 @@
-
 import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Home, Wrench, Users, FileText, HelpCircle, Lock } from "lucide-react";
+import { Home, Wrench, Users, FileText, HelpCircle, Lock, BookOpen } from "lucide-react";
 import { UserTrainersDirectory } from "@/components/user/master-trainers/UserTrainersDirectory";
 import { UserMaterialsViewer } from "@/components/user/master-trainers/UserMaterialsViewer";
 import { UserRecordingsViewer } from "@/components/user/master-trainers/UserRecordingsViewer";
 import { UserFAQViewer } from "@/components/user/master-trainers/UserFAQViewer";
+import { MasterTrainerLMS } from "@/components/user/master-trainers/MasterTrainerLMS";
 
 export default function UserMasterTrainers() {
   const { hasMasterTrainerAccess, isLoading } = useMasterTrainerAccess();
@@ -60,10 +60,14 @@ export default function UserMasterTrainers() {
         </div>
 
         <Tabs defaultValue="home" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 max-w-3xl bg-gray-100">
+          <TabsList className="grid w-full grid-cols-6 max-w-4xl bg-gray-100">
             <TabsTrigger value="home" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Home</span>
+            </TabsTrigger>
+            <TabsTrigger value="lms" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              <span className="hidden sm:inline">Learning</span>
             </TabsTrigger>
             <TabsTrigger value="toolkit" className="flex items-center gap-2">
               <Wrench className="h-4 w-4" />
@@ -141,6 +145,10 @@ export default function UserMasterTrainers() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="lms">
+            <MasterTrainerLMS />
           </TabsContent>
 
           <TabsContent value="toolkit">
