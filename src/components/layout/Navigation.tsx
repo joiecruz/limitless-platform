@@ -5,7 +5,7 @@ export function Navigation() {
   return (
     <div className="flex flex-col">
       <NavigationLinks />
-      <UserProfile />
+      {/* <UserProfile /> */}
     </div>
   );
 }
