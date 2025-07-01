@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ProjectBrief from "./ProjectBrief";
+import ProjectBrief from "../../pages/projects/project-brief/ProjectBrief";
 
 const designThinkingSteps = [
   { label: "Project Brief", icon: "/projects-navbar-icons/paper.svg" },

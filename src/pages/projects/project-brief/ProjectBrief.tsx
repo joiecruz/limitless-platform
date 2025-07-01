@@ -1,12 +1,12 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import ProjectBriefProgressBar from "./ProjectBriefProgressBar";
-import ProjectOverview, { ProjectOverviewRef } from "./project-brief/ProjectOverview";
-import ProjectSuccessCriteria from "./project-brief/ProjectSuccessCriteria";
-import ProjectTimeline, { ProjectTimelineRef } from "./project-brief/ProjectTimeline";
-import ProjectSubmission from "./project-brief/ProjectSubmission";
-import ProjectDesignChallenge from "./project-brief/ProjectDesignChallenges";
-import { useToast } from "../../hooks/use-toast";
+import ProjectBriefProgressBar from "../../../components/projects/ProjectBriefProgressBar";
+import ProjectOverview, { ProjectOverviewRef } from "./ProjectOverview";
+import ProjectSuccessCriteria from "./ProjectSuccessCriteria";
+import ProjectTimeline, { ProjectTimelineRef } from "./ProjectTimeline";
+import ProjectSubmission from "./ProjectSubmission";
+import ProjectDesignChallenge from "./ProjectDesignChallenges";
+import { useToast } from "../../../hooks/use-toast";
 
 export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   const [currentStep, setCurrentStep] = useState(0);

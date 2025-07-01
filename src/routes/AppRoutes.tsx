@@ -26,7 +26,7 @@ import WorkshopDetail from "@/pages/landing/WorkshopDetail";
 
 // App pages
 import Dashboard from "@/pages/Dashboard";
-import Projects from "@/pages/Projects";
+import Projects from "@/pages/projects/Projects";
 import CreateProject from "@/pages/CreateProject";
 import Courses from "@/pages/Courses";
 import Tools from "@/pages/Tools";
