@@ -65,6 +65,32 @@ export default function AdminReports() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    // First, fetch initial data to ensure we have everything
+    const fetchInitialData = async () => {
+      const { data, error } = await supabase
+        .from('issue_reports')
+        .select(
+          `
+          *,
+          profiles:user_id (
+            email,
+            first_name,
+            last_name,
+            avatar_url
+          )
+        `,
+        )
+        .order('created_at', { ascending: false });
+
+      if (data && !error) {
+        queryClient.setQueryData(['admin-reports'], data);
+      }
+    };
+
+    // Call the initial fetch
+    fetchInitialData();
+
+    // Then set up the real-time subscription
     const subscription = supabase
       .channel('admin-reports-changes')
       .on(
@@ -75,43 +101,15 @@ export default function AdminReports() {
           table: 'issue_reports',
         },
         payload => {
-          // Handle different types of events
+          // For INSERT events, refetch the entire list instead of trying to append
           if (payload.eventType === 'INSERT') {
-            // For new reports, fetch just that report with profile details
-            const fetchNewReport = async () => {
-              const { data } = await supabase
-                .from('issue_reports')
-                .select(
-                  `
-                  *,
-                  profiles:user_id (
-                    email,
-                    first_name,
-                    last_name,
-                    avatar_url
-                  )
-                `,
-                )
-                .eq('id', payload.new.id)
-                .single();
+            queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
 
-              if (data) {
-                // Add to the current data without refetching everything
-                queryClient.setQueryData(
-                  ['admin-reports'],
-                  (oldData: IssueReport[] = []) => {
-                    return [data, ...oldData];
-                  },
-                );
-
-                toast({
-                  title: 'New report received',
-                  description: `${data.title}`,
-                });
-              }
-            };
-
-            fetchNewReport();
+            // Show notification
+            toast({
+              title: 'New report received',
+              description: 'A new issue report has been submitted',
+            });
           } else if (payload.eventType === 'UPDATE') {
             // Update existing report in the list
             queryClient.setQueryData(
