@@ -13,6 +13,24 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+const REPORT_CATEGORIES = [
+  'Dashboard',
+  'Courses',
+  'Projects',
+  'Community',
+  'Tools',
+  'Workspaces',
+  'Account',
+  'Other',
+];
 
 interface ReportIssueProps {
   buttonClassName?: string;
@@ -26,6 +44,7 @@ export function ReportIssue({
   const [issueData, setIssueData] = useState({
     title: '',
     description: '',
+    category: 'Other', 
   });
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -44,7 +63,7 @@ export function ReportIssue({
       if (!user) {
         toast({
           title: 'Authentication required',
-          description: 'You must be logged in to report an issue.',
+          description: 'Please sign in to report an issue.',
           variant: 'destructive',
         });
         return;
@@ -75,24 +94,25 @@ export function ReportIssue({
         description: issueData.description,
         attachment_url: fileUrl,
         status: 'pending',
+        category: issueData.category, 
       });
 
       if (error) throw error;
 
-      // Success message
       toast({
         title: 'Issue reported',
-        description: "Thank you for your feedback. We'll look into it.",
+        description:
+          'Thank you for your feedback. We will look into this issue.',
       });
 
       // Reset form and close modal
-      setIssueData({ title: '', description: '' });
+      setIssueData({ title: '', description: '', category: 'Other' });
       setFile(null);
       setIssueModalOpen(false);
     } catch (error: any) {
       toast({
-        title: 'Error submitting issue',
-        description: error.message || 'An unexpected error occurred.',
+        title: 'Error reporting issue',
+        description: error.message || 'An error occurred',
         variant: 'destructive',
       });
     } finally {
@@ -218,6 +238,29 @@ export function ReportIssue({
                 required
               />
             </div>
+
+            {/* Add category selection dropdown */}
+            <div className="space-y-2">
+              <Label htmlFor="issue-category">Category</Label>
+              <Select
+                value={issueData.category}
+                onValueChange={value =>
+                  setIssueData({ ...issueData, category: value })
+                }
+              >
+                <SelectTrigger id="issue-category">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_CATEGORIES.map(category => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="issue-description">Description</Label>
               <Textarea

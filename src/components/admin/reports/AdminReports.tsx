@@ -21,6 +21,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -28,10 +32,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+const REPORT_CATEGORIES = [
+  'Dashboard',
+  'Courses',
+  'Projects',
+  'Community',
+  'Tools',
+  'Workspaces',
+  'Account',
+  'Other',
+];
 
 interface IssueReport {
   id: string;
@@ -63,6 +74,8 @@ export default function AdminReports() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Other');
 
   useEffect(() => {
     // First, fetch initial data to ensure we have everything
@@ -165,8 +178,14 @@ export default function AdminReports() {
 
   // Apply filters and search
   const filteredReports = reports.filter(report => {
-    const matchesFilter =
+    const matchesStatus =
       activeFilter === 'all' || report.status === activeFilter;
+    const matchesCategory =
+      categoryFilter === 'all' ||
+      report.category === categoryFilter ||
+      // Handle null categories when filter is applied
+      (categoryFilter === 'Other' &&
+        (!report.category || report.category === 'Other'));
     const matchesSearch =
       searchTerm === '' ||
       report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -176,7 +195,7 @@ export default function AdminReports() {
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
 
-    return matchesFilter && matchesSearch;
+    return matchesStatus && matchesCategory && matchesSearch;
   });
 
   // Calculate counts for dashboard
@@ -196,6 +215,7 @@ export default function AdminReports() {
     setSelectedReport(report);
     setAdminNotes(report.admin_notes || '');
     setStatus(report.status);
+    setSelectedCategory(report.category || 'Other');
     setDetailsOpen(true);
   };
 
@@ -208,6 +228,7 @@ export default function AdminReports() {
         .from('issue_reports')
         .update({
           status,
+          category: selectedCategory,
           admin_notes: adminNotes,
           updated_at: new Date().toISOString(),
         })
@@ -364,7 +385,8 @@ export default function AdminReports() {
 
       {/* Filters and search */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {/* Status filter buttons */}
           <Button
             variant={activeFilter === 'all' ? 'default' : 'outline'}
             size="sm"
@@ -419,13 +441,31 @@ export default function AdminReports() {
             Closed
           </Button>
         </div>
-        <div className="relative">
-          <Input
-            placeholder="Search reports..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full sm:w-[250px]"
-          />
+
+        {/* Category filter dropdown */}
+        <div className="flex items-center gap-2">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[180px] h-9">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {REPORT_CATEGORIES.map(category => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="relative">
+            <Input
+              placeholder="Search reports..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full sm:w-[250px]"
+            />
+          </div>
         </div>
       </div>
 
@@ -434,6 +474,7 @@ export default function AdminReports() {
           <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Reported By</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
@@ -446,6 +487,7 @@ export default function AdminReports() {
               filteredReports.map(report => (
                 <TableRow key={report.id}>
                   <TableCell className="font-medium">{report.title}</TableCell>
+                  <TableCell>{report.category || 'Other'}</TableCell>{' '}
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {report.profiles.avatar_url && (
@@ -500,7 +542,7 @@ export default function AdminReports() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7} // Update colspan to match column count
                   className="text-center py-8 text-gray-500"
                 >
                   No issue reports found
@@ -591,7 +633,24 @@ export default function AdminReports() {
                       </SelectContent>
                     </Select>
                   </div>
-
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={setSelectedCategory}
+                    >
+                      <SelectTrigger id="category">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REPORT_CATEGORIES.map(category => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="admin-notes">Admin Notes</Label>
                     <Textarea
