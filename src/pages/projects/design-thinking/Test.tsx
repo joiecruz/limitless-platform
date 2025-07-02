@@ -1,46 +1,48 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StepCard from "../../../components/projects/StepCard";
-import DocumentEditor from "../../../components/projects/DocumentEditor";
-import UploadPrototype from '../../../components/projects/UploadPrototype';
+import DocumentEditor from "../../../components/projects/DocumentEditor"; 
 import Define from "./Define";
-import Test from "./Test";
 
 const steps = [
   {
-    title: "Choose your prototype type",
-    description: "Transform your ideas into something tangible using these prototyping techniques. Select up to 3 below.",
+    title: "Select your user testing method",
+    description: "Choose the best method to test your prototype and idea and gather feedback from people",
     options: null,
-    duration: "30 mins",
+    duration: null,
     action: { label: "Recommend", active: true },
   },
   {
-    title: "Work on your prototype",
-    description: "Collaborate with your team to select the most impactful 'How Might We' questions to carry forward into ideation",
+    title: "Create a user test plan",
+    description: "Develop a comprehensive plan to guide your research efforts effectively",
     options: null,
-    duration: "4 hours to 3 days",
-    action: { label: "Upload photos", active: true },
-  }
+    duration: "4 hours",
+    action: { label: "Generate", active: true },
+  },
+  {
+    title: "Conduct actual user testing",
+    description: "Execute your research plan to collect valuable data from your users",
+    options: null,
+    duration: "1 - 2 weeks",
+    action: { label: "Upload notes", active: false },
+  },
+  {
+    title: "Generate insights from your user test",
+    description: "Analyze the test results to uncover actionable insights",
+    options: null,
+    duration: "2 hours",
+    action: { label: "Analyze", active: false },
+  },
 ];
 
-const actionButtons = [
-    { label: 'Sketches', icon: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2" stroke="#393CA0" strokeWidth="1.5"/></svg> },
-    { label: 'Paper Prototypes', icon: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M4 4h8v8H4z" stroke="#393CA0" strokeWidth="1.5"/></svg> },
-    { label: 'Role Playing', icon: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="#393CA0" strokeWidth="1.5"/></svg> },
-    { label: 'Physical Prototype', icon: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" stroke="#393CA0" strokeWidth="1.5"/></svg> },
-    { label: 'High-Fidelity Mockups', icon: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="8" rx="2" stroke="#393CA0" strokeWidth="1.5"/></svg> },
-    { label: 'Journey Map', icon: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M2 8c2-4 10 4 12-4" stroke="#393CA0" strokeWidth="1.5"/></svg> },
-    { label: 'Wireframes', icon: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" stroke="#393CA0" strokeWidth="1.5"/></svg> },
-    { label: 'Others', icon: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="#393CA0" strokeWidth="1.5"/><text x="5" y="12" fontSize="7" fill="#393CA0">...</text></svg> },
-];
+const dropdownOptions = ['Interview', 'Survey', 'Usability Test', 'A/B Test', 'Focus Group'];
 
-export default function Prototype() {
+export default function Test() {
   const [activeStep, setActiveStep] = useState(0);
   const [checkedSteps, setCheckedSteps] = useState(Array(steps.length).fill(false));
   const [showDefine, setShowDefine] = useState(false);
   const [checkedOptions, setCheckedOptions] = useState([false, false, false]);
-  const [selectedActions, setSelectedActions] = useState(Array(actionButtons.length).fill(false));
-  const [showTest, setShowTest] = useState(false);
+  const [dropdownSelected, setDropdownSelected] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const handleOptionCheck = (optionIdx: number) => {
@@ -52,9 +54,6 @@ export default function Prototype() {
   };
 
   const handleCheck = (idx: number) => {
-    if (idx === 0 && !checkedOptions.some(Boolean)) {
-      return;
-    }
     if (idx === activeStep) {
       const newChecked = [...checkedSteps];
       newChecked[idx] = !newChecked[idx]; // toggle
@@ -66,45 +65,13 @@ export default function Prototype() {
     }
   };
 
-  const handleActionSelect = (idx: number) => {
-    setSelectedActions(prev => {
-      const count = prev.filter(Boolean).length;
-      const updated = [...prev];
-      if (updated[idx]) {
-        updated[idx] = false;
-      } else if (count < 3) {
-        updated[idx] = true;
-      }
-      // After updating, check if at least one is selected
-      const anySelected = updated.some(Boolean);
-      setCheckedSteps(cs => {
-        const csUpdated = [...cs];
-        const wasChecked = cs[0];
-        csUpdated[0] = anySelected;
-        // Move to next step if just checked and on the active step
-        if (anySelected && !wasChecked && activeStep === 0 && steps.length > 1) {
-          setActiveStep(1);
-        }
-        return csUpdated;
-      });
-      return updated;
-    });
-  };
-
   const allChecked = checkedSteps.every(Boolean);
   const isLastStep = activeStep === steps.length - 1;
   const canGoNext = isLastStep ? allChecked : checkedSteps[activeStep];
 
-  const canCheckStep = (idx: number) => {
-    if (idx === 0) {
-      return selectedActions.some(Boolean);
-    }
-    return activeStep === idx;
-  };
-
   const handleNext = () => {
     if (isLastStep && allChecked) {
-      setShowTest(true);
+      // TODO: Add logic to navigate to the next step
     } else if (checkedSteps[activeStep] && activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
     }
@@ -116,19 +83,23 @@ export default function Prototype() {
     }
   };
 
+  const canCheckStep = (idx: number) => {
+    if (idx === 0) {
+      return dropdownSelected.length > 0 && activeStep === 0;
+    }
+    return activeStep === idx;
+  };
+
   if (showDefine) {
     return <Define />;
-  }
-  if (showTest) {
-    return <Test />;
   }
 
   return (
     <div className="flex flex-col md:flex-row w-full h-full gap-6 pl-6 pb-11">
       {/* Left: Stepper + Cards */}
       <div className="w-full md:w-3/5 flex flex-col mt-8">
-        <h1 className="text-3xl font-bold text-[#23262F] mb-1">Prototype</h1>
-        <p className="text-[#565D6D] mb-8 text-[15px]">Bring your chosen ideas to life</p>
+        <h1 className="text-3xl font-bold text-[#23262F] mb-1">Test</h1>
+        <p className="text-[#565D6D] mb-8 text-[15px]">Validate your ideas and prototype by talking to real people</p>
         <div className="flex flex-col gap-4">
           {steps.map((step, idx) => (
             <div key={step.title} className="flex flex-row items-stretch">
@@ -147,7 +118,7 @@ export default function Prototype() {
                       top: '50%',
                       transform: 'translateX(-50%)',
                       width: '2px',
-                      height: 'calc(70% + 1rem)',
+                      height: 'calc(100% + 1rem)',
                       background: '#E5E7EB',
                       zIndex: 0,
                     }}
@@ -164,9 +135,9 @@ export default function Prototype() {
                   canCheck={canCheckStep(idx)}
                   optionChecked={idx === 0 ? checkedOptions : undefined}
                   onOptionCheck={idx === 0 ? handleOptionCheck : undefined}
-                  actions={idx === 0 ? actionButtons : undefined}
-                  actionSelected={idx === 0 ? selectedActions : undefined}
-                  onActionSelect={idx === 0 ? handleActionSelect : undefined}
+                  dropdownOptions={idx === 0 ? dropdownOptions : undefined}
+                  dropdownSelected={idx === 0 ? dropdownSelected : undefined}
+                  onDropdownSelect={idx === 0 ? setDropdownSelected : undefined}
                 />
               </div>
             </div>
@@ -191,9 +162,9 @@ export default function Prototype() {
           </button>
         </div>
       </div>
-      {/* Right: Document editor or UploadPrototype */}
-      <div className="w-full md:w-1/2 bg-white shadow h-[90vh] overflow-auto">
-        {activeStep === 1 ? <UploadPrototype /> : <DocumentEditor className="p-8" />}
+      {/* Right: Document editor */}
+      <div className="w-full md:w-1/2 bg-white shadow p-8 h-[90vh] overflow-auto">
+        <DocumentEditor />
       </div>
     </div>
   );

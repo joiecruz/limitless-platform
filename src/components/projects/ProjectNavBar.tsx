@@ -3,6 +3,7 @@ import ProjectBrief from "../../pages/projects/project-brief/ProjectBrief";
 import Empathize from "../../pages/projects/design-thinking/Empathize";
 import Define from "../../pages/projects/design-thinking/Define";
 import Prototype from "../../pages/projects/design-thinking/Prototype";
+import Test from "../../pages/projects/design-thinking/Test";
 
 const designThinkingSteps = [
   { label: "Project Brief", icon: "/projects-navbar-icons/paper.svg" },
@@ -73,6 +74,9 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
         )}
         {selectedStep === "Prototype" && (
           <Prototype />
+        )}
+        {selectedStep === "Test" && (
+          <Test />
         )}
       </div>
     </>

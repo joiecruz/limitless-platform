@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 
 interface StepCardProps {
   title: string;
@@ -16,6 +16,9 @@ interface StepCardProps {
   actions?: { label: string; icon: React.ReactNode }[];
   actionSelected?: boolean[];
   onActionSelect?: (idx: number) => void;
+  dropdownOptions?: string[];
+  dropdownSelected?: string[];
+  onDropdownSelect?: (selected: string[]) => void;
 }
 
 const StepCard: React.FC<StepCardProps> = ({
@@ -34,6 +37,9 @@ const StepCard: React.FC<StepCardProps> = ({
   actions,
   actionSelected,
   onActionSelect,
+  dropdownOptions,
+  dropdownSelected,
+  onDropdownSelect,
 }) => {
   // Use colored right side and button for active or checked cards
   const isActiveOrChecked = active || checked;
@@ -42,6 +48,26 @@ const StepCard: React.FC<StepCardProps> = ({
   const rightBg = isActiveOrChecked ? 'bg-[#E6E8FA]' : 'bg-[#E5E7EB]';
   const buttonBg = isActiveOrChecked ? 'bg-[#393CA0] text-white hover:bg-[#232262]' : 'bg-[#C7C9D9] text-[#fff]';
   const titleColor = 'text-[#23262F]';
+
+  // Dropdown state for open/close
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownOpen]);
+
   return (
     <div
       className={`flex rounded ${cardBorder} ${cardBg} shadow-sm px-0 py-0 ${disabled ? 'opacity-60' : ''}`}
@@ -63,6 +89,50 @@ const StepCard: React.FC<StepCardProps> = ({
         <div className="flex flex-col">
           <span className={`font-bold text-[15px] ${titleColor}`}>{title}</span>
           <div className="text-[#565D6D] text-[11px] mb-2 mt-1 leading-snug">{description}</div>
+          {/* Dropdown multi-select */}
+          {dropdownOptions && dropdownOptions.length > 0 && (
+            <div className="relative w-full max-w-xs" ref={dropdownRef}>
+              <button
+                type="button"
+                className={`w-full border border-[#393CA0] rounded px-2 py-1 text-[13px] font-normal flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-[#393CA0] ${dropdownOpen ? 'ring-2 ring-[#393CA0]' : ''}`}
+                onClick={() => setDropdownOpen((open) => !open)}
+              >
+                <span className={`truncate ${!dropdownSelected || dropdownSelected.length === 0 ? 'text-[#9095A1]' : 'text-[#23262F]'}`}>
+                  {dropdownSelected && dropdownSelected.length > 0
+                    ? dropdownSelected.slice(0, 3).join(', ') + (dropdownSelected.length > 3 ? ` +${dropdownSelected.length - 3}` : '')
+                    : 'Choose testing methods (up to 3)'}
+                </span>
+                <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="ml-2"><path d="M6 8l4 4 4-4" stroke="#393CA0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+              {dropdownOpen && (
+                <div className="absolute z-20 mt-1 w-full bg-white border border-[#393CA0] rounded shadow-lg max-h-48 overflow-auto">
+                  {dropdownOptions.map(opt => (
+                    <label key={opt} className="flex items-center px-3 py-2 cursor-pointer hover:bg-[#F4F4F4] text-[13px]">
+                      <input
+                        type="checkbox"
+                        className="accent-[#393CA0] mr-2"
+                        checked={dropdownSelected?.includes(opt) || false}
+                        disabled={dropdownSelected && !dropdownSelected.includes(opt) && dropdownSelected.length >= 3}
+                        onChange={() => {
+                          if (!dropdownSelected) return;
+                          let next;
+                          if (dropdownSelected.includes(opt)) {
+                            next = dropdownSelected.filter(o => o !== opt);
+                          } else if (dropdownSelected.length < 3) {
+                            next = [...dropdownSelected, opt];
+                          } else {
+                            next = dropdownSelected;
+                          }
+                          if (onDropdownSelect) onDropdownSelect(next);
+                        }}
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {/* Render actions if provided */}
           {actions && actions.length > 0 && (
             <div className="flex flex-row flex-wrap gap-2 mb-2 mt-1 max-w-full w-full">
