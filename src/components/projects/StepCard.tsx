@@ -13,6 +13,9 @@ interface StepCardProps {
   canCheck?: boolean;
   optionChecked?: boolean[];
   onOptionCheck?: (idx: number) => void;
+  actions?: { label: string; icon: React.ReactNode }[];
+  actionSelected?: boolean[];
+  onActionSelect?: (idx: number) => void;
 }
 
 const StepCard: React.FC<StepCardProps> = ({
@@ -28,6 +31,9 @@ const StepCard: React.FC<StepCardProps> = ({
   canCheck,
   optionChecked,
   onOptionCheck,
+  actions,
+  actionSelected,
+  onActionSelect,
 }) => {
   // Use colored right side and button for active or checked cards
   const isActiveOrChecked = active || checked;
@@ -56,7 +62,28 @@ const StepCard: React.FC<StepCardProps> = ({
         {/* Text content */}
         <div className="flex flex-col">
           <span className={`font-bold text-[15px] ${titleColor}`}>{title}</span>
-          <div className="text-[#565D6D] text-[11px] mb-1 leading-snug">{description}</div>
+          <div className="text-[#565D6D] text-[11px] mb-2 mt-1 leading-snug">{description}</div>
+          {/* Render actions if provided */}
+          {actions && actions.length > 0 && (
+            <div className="flex flex-row flex-wrap gap-2 mb-2 mt-1 max-w-full w-full">
+              {actions.map((a, i) => {
+                const selected = actionSelected ? actionSelected[i] : false;
+                return (
+                  <button
+                    key={a.label}
+                    className={`flex items-center gap-1 border border-[#393CA0] rounded px-2 py-1 text-[12px] font-medium transition whitespace-nowrap ${selected ? 'bg-[#E6E8FA] text-[#393CA0]' : 'bg-white text-[#393CA0] hover:bg-[#F4F4F4]'}`}
+                    type="button"
+                    style={{ maxWidth: '100%' }}
+                    onClick={onActionSelect ? () => onActionSelect(i) : undefined}
+                    disabled={onActionSelect && !selected && actionSelected && actionSelected.filter(Boolean).length >= 3}
+                  >
+                    <span className="w-4 h-4 flex items-center justify-center">{a.icon}</span>
+                    {a.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {duration && (
             <div className="flex items-center gap-2 bg-[#EFFCFB] text-[#27AE60] text-[11px] px-2 py-[2px] mt-1 rounded-[5px] w-fit mb-1">
               <svg width="11" height="11" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="#27AE60" strokeWidth="1.5"/><path stroke="#27AE60" strokeWidth="1.5" strokeLinecap="round" d="M8 4v4l2 2"/></svg>

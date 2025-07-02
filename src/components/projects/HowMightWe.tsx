@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import HMWCard from './HMWCard';
 
 const questions = [
@@ -41,13 +41,24 @@ const questions = [
 ];
 
 export default function HowMightWe() {
-  return (
-    <div className="bg-[#F4F4FB] h-full w-full p-8">
+  const [expanded, setExpanded] = useState(false);
+
+  const content = (
+    <div className="bg-[#F4F4FB] h-full w-full p-8 relative">
+      {/* Expand button */}
+      <button
+        className="absolute top-4 right-4 bg-white rounded-[10px] border border-[#E5E7EB] w-9 h-9 flex items-center justify-center hover:bg-[#F4F4F4] transition"
+        title="Expand"
+        onClick={() => setExpanded(true)}
+        style={{ display: expanded ? 'none' : undefined }}
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 3H3v4M3 3l5 5M13 17h4v-4M17 17l-5-5" stroke="#393CA0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </button>
       <h1 className="text-[2rem] font-bold leading-tight text-[#23262F] mb-0">How Might We Questions</h1>
       <div className="border-b-2 border-[#E5E7EB] mt-5 mb-2"></div>
       <div className="flex flex-row items-end justify-between px-0 pt-2 pb-3">
         <div className="flex-1 basis-[70%] max-w-[70%]">
-          <p className="text-[#565D6D] text-[12px] mt-1 mb-0 max-w-xl font-normal">
+          <p className="text-[#565D6D] text-[14px] mt-1 mb-0 max-w-4xl font-normal">
             A "How Might We" question is a simple way to turn a problem into an opportunity for creative solutions. Create new HMW questions based on your insights gathered.
           </p>
         </div>
@@ -63,5 +74,29 @@ export default function HowMightWe() {
         ))}
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {content}
+      {expanded && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30" onClick={() => setExpanded(false)}>
+          <div
+            className="bg-[#F4F4FB] rounded-xl shadow-lg relative overflow-y-auto overflow-x-hidden"
+            style={{ width: '80vw', maxWidth: '1200px', minHeight: '80vh', maxHeight: '85vh' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-4 bg-white rounded-[10px] border border-[#E5E7EB] w-9 h-9 flex items-center justify-center hover:bg-[#F4F4F4] transition z-10"
+              title="Close"
+              onClick={() => setExpanded(false)}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 6l8 8M14 6l-8 8" stroke="#393CA0" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            </button>
+            <div className="p-8 w-full">{content}</div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
