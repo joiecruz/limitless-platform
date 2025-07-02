@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ProjectBrief from "../../pages/projects/project-brief/ProjectBrief";
+import Empathize from "../../pages/projects/design-thinking/Empathize";
+import Define from "../../pages/projects/design-thinking/Define";
 
 const designThinkingSteps = [
   { label: "Project Brief", icon: "/projects-navbar-icons/paper.svg" },
@@ -52,7 +54,7 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
           );
         })}
       </nav>
-      <div className="mt-8">
+      <div>
         {selectedStep === "Project Brief" && (
           <ProjectBrief onBack={() => {
             if (onBackToProjects) {
@@ -61,6 +63,12 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
               setSelectedStep(null);
             }
           }} />
+        )}
+        {selectedStep === "Empathize" && (
+          <Empathize />
+        )}
+        {selectedStep === "Define" && (
+          <Define />
         )}
       </div>
     </>
