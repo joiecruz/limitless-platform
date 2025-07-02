@@ -171,10 +171,10 @@ export default function DashboardLayout() {
               <Navigation />
             </div>
             <div className="mt-auto">
-              <UserProfile />
               <nav className="space-y-1 px-3 mb-3">
                 <ReportIssue buttonClassName="nav-item" />
               </nav>
+              <UserProfile />
             </div>
           </div>
         </div>
@@ -199,10 +199,10 @@ export default function DashboardLayout() {
               <Navigation />
             </div>
             <div className="mt-auto">
-              <UserProfile />
               <nav className="space-y-1 px-3 mb-3">
                 <ReportIssue buttonClassName="nav-item" />
               </nav>
+              <UserProfile />
             </div>
           </div>
         </div>
