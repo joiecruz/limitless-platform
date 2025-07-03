@@ -56,9 +56,9 @@ export default function Projects() {
         
         // Save role to localStorage for other components to use
         if (role) {
-          localStorage.setItem(`workspace_role_${workspaceId}`, role);
+          localStorage.setItem('workspace_role', role);
         } else {
-          localStorage.removeItem(`workspace_role_${workspaceId}`);
+          localStorage.removeItem('workspace_role');
         }
       } catch (error) {
         console.error('Error fetching user info:', error);

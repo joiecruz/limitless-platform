@@ -28,7 +28,7 @@ const ChallengeCollaboration = () => {
   
   // Use existing hooks for authentication and get role from localStorage
   const { data: currentUser } = useUserSession();
-  const userRole = workspaceId ? localStorage.getItem(`workspace_role_${workspaceId}`) : null;
+  const userRole = localStorage.getItem('workspace_role');
   
   const canDeleteAny = userRole === 'admin' || userRole === 'owner';
 
