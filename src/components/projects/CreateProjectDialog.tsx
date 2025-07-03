@@ -13,12 +13,13 @@ interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreateProject?: (projectData: Partial<ProjectCardProps>) => void;
+  onCreateChallenge?: (title: string, description: string) => Promise<void>;
   onStartDesignThinking?: () => void;
 }
 
 type ProjectCreationStep = "initial" | "collectIdeas";
 
-export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onStartDesignThinking }: CreateProjectDialogProps) {
+export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onCreateChallenge, onStartDesignThinking }: CreateProjectDialogProps) {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<ProjectCreationStep>("initial");
   const [projectData, setProjectData] = useState<Partial<ProjectCardProps>>({
@@ -28,7 +29,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onSta
   });
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation
@@ -41,8 +42,11 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onSta
       return;
     }
     
-    // Call the onCreateProject callback with the project data
-    if (onCreateProject) {
+    // Check if this is a collect ideas submission
+    if (currentStep === "collectIdeas" && onCreateChallenge) {
+      await onCreateChallenge(projectData.title, projectData.description || "");
+    } else if (onCreateProject) {
+      // Regular project creation
       onCreateProject(projectData);
     }
     
@@ -57,8 +61,8 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onSta
     onOpenChange(false);
     
     toast({
-      title: "Project Created",
-      description: "Your new project has been created successfully!",
+      title: currentStep === "collectIdeas" ? "Challenge Created" : "Project Created",
+      description: currentStep === "collectIdeas" ? "Your design challenge has been created successfully!" : "Your new project has been created successfully!",
     });
   };
 
@@ -198,7 +202,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onSta
           <Button type="button" variant="outline" onClick={handleBack}>
             Back
           </Button>
-          <Button type="submit" className="bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white">Create Project</Button>
+          <Button type="submit" className="bg-[#3a3ca1] hover:bg-[#3a3ca1]/90 text-white">Create Challenge</Button>
         </DialogFooter>
       </form>
     </>

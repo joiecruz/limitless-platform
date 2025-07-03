@@ -7,9 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CreateChallengeDialog } from "@/components/challenges/CreateChallengeDialog";
 import { useDesignChallenges } from "@/hooks/useDesignChallenges";
 import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
@@ -22,7 +20,6 @@ import { format } from 'date-fns';
 
 export default function Projects() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [showCreateChallengeDialog, setShowCreateChallengeDialog] = useState(false);
   const [projects, setProjects] = useState<ProjectCardProps[]>([]);
   const [showDesignThinkingPage, setShowDesignThinkingPage] = useState(false);
   const navigate = useNavigate();
@@ -62,7 +59,7 @@ export default function Projects() {
   const handleCreateChallenge = async (title: string, description: string) => {
     const challenge = await createChallenge(title, description);
     if (challenge) {
-      setShowCreateChallengeDialog(false);
+      setIsCreateDialogOpen(false);
     }
   };
 
@@ -114,68 +111,33 @@ export default function Projects() {
                 <CreateProjectButton onClick={handleOpenCreateDialog} />
               </div>
 
-              <Tabs defaultValue="projects" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="projects">My Projects</TabsTrigger>
-                  <TabsTrigger value="ideas">Collect Ideas</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="projects" className="space-y-6 mt-6">
-                  <ProjectBanner onCreateProject={handleOpenCreateDialog} />
+              <ProjectBanner onCreateProject={handleOpenCreateDialog} />
 
-                  {projects.length === 0 ? (
+              {challengesLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <LoadingSpinner />
+                </div>
+              ) : (
+                <>
+                  {/* Combined Projects and Challenges */}
+                  {projects.length === 0 && challenges.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
-                      <p className="mb-4">No projects created yet</p>
+                      <p className="mb-4">No projects or challenges created yet</p>
                       <CreateProjectButton onClick={handleOpenCreateDialog} />
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                      {/* Regular Projects */}
                       {projects.map((project) => (
-                        <div key={project.id}>
+                        <div key={`project-${project.id}`}>
                           <ProjectCard {...project} />
                         </div>
                       ))}
-                    </div>
-                  )}
-                </TabsContent>
 
-                <TabsContent value="ideas" className="space-y-6 mt-6">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h2 className="text-2xl font-bold text-foreground">Design Thinking Challenges</h2>
-                      <p className="text-muted-foreground mt-2">
-                        Collect and collaborate on design thinking challenges with your team
-                      </p>
-                    </div>
-                    <Button onClick={() => setShowCreateChallengeDialog(true)} className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      Create Challenge
-                    </Button>
-                  </div>
-
-                  {challengesLoading ? (
-                    <div className="flex items-center justify-center h-32">
-                      <LoadingSpinner />
-                    </div>
-                  ) : challenges.length === 0 ? (
-                    <Card className="text-center py-12">
-                      <CardContent>
-                        <Lightbulb className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-medium text-foreground mb-2">No challenges yet</h3>
-                        <p className="text-muted-foreground mb-4">
-                          Create your first design thinking challenge to start collecting ideas from your team
-                        </p>
-                        <Button onClick={() => setShowCreateChallengeDialog(true)} className="gap-2">
-                          <Plus className="h-4 w-4" />
-                          Create Your First Challenge
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Design Challenges */}
                       {challenges.map((challenge) => (
                         <Card 
-                          key={challenge.id} 
+                          key={`challenge-${challenge.id}`}
                           className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
                           onClick={() => navigate(`/dashboard/projects/ideas/${challenge.id}`)}
                         >
@@ -259,23 +221,18 @@ export default function Projects() {
                       ))}
                     </div>
                   )}
-                </TabsContent>
-              </Tabs>
+                </>
+              )}
 
               <CreateProjectDialog
                 open={isCreateDialogOpen}
                 onOpenChange={setIsCreateDialogOpen}
                 onCreateProject={handleCreateProject}
+                onCreateChallenge={handleCreateChallenge}
                 onStartDesignThinking={() => {
                   setIsCreateDialogOpen(false);
                   setShowDesignThinkingPage(true);
                 }} 
-              />
-
-              <CreateChallengeDialog
-                open={showCreateChallengeDialog}
-                onOpenChange={setShowCreateChallengeDialog}
-                onSubmit={handleCreateChallenge}
               />
             </div>
           </>
