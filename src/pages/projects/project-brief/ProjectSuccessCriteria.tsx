@@ -57,6 +57,8 @@ export interface ProjectSuccessCriteriaRef {
 interface ProjectSuccessCriteriaProps {
   projectName?: string;
   projectDescription?: string;
+  projectProblem?: string;
+  projectCustomers?: string;
 }
 
 const ProjectSuccessCriteria = forwardRef<ProjectSuccessCriteriaRef, ProjectSuccessCriteriaProps>((props, ref) => {
@@ -100,7 +102,14 @@ const ProjectSuccessCriteria = forwardRef<ProjectSuccessCriteriaRef, ProjectSucc
     setIsGenerating(true);
     
     try {
-      const prompt = `Generate specific, measurable target outcomes for the project "${props.projectName}"${props.projectDescription ? ` with description: "${props.projectDescription}"` : ''}. Focus on concrete impacts, success metrics, and expected results. Keep it concise (2-3 sentences).`;
+      const contextInfo = [
+        props.projectName ? `Project: "${props.projectName}"` : '',
+        props.projectDescription ? `Description: "${props.projectDescription}"` : '',
+        props.projectProblem ? `Problem: "${props.projectProblem}"` : '',
+        props.projectCustomers ? `Target audience: "${props.projectCustomers}"` : ''
+      ].filter(Boolean).join('. ');
+
+      const prompt = `Generate specific, measurable target outcomes based on: ${contextInfo}. Focus on concrete impacts, success metrics, and expected results. Keep it concise (2-3 sentences).`;
 
       const { data, error } = await supabase.functions.invoke('generate-description', {
         body: { prompt }

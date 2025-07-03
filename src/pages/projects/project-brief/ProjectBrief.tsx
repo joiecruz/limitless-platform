@@ -29,7 +29,10 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
     }, 300); // 300ms fade out duration
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    let currentStepData;
+    
+    // Validate and get data from current step
     if (currentStep === 0) {
       if (overviewRef.current) {
         const result = overviewRef.current.validate();
@@ -41,8 +44,11 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
           });
           return;
         }
+        currentStepData = overviewRef.current.getValues();
+        updateData(currentStepData);
       }
     }
+    
     if (currentStep === 1) {
       if (successCriteriaRef.current) {
         const result = successCriteriaRef.current.validate();
@@ -54,8 +60,11 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
           });
           return;
         }
+        currentStepData = successCriteriaRef.current.getValues();
+        updateData(currentStepData);
       }
     }
+    
     if (currentStep === 2) {
       if (timelineRef.current) {
         const result = timelineRef.current.validate();
@@ -67,8 +76,25 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
           });
           return;
         }
+        currentStepData = timelineRef.current.getValues();
+        updateData(currentStepData);
       }
     }
+
+    // Save to database before moving to next step
+    if (currentStep < 3) {
+      try {
+        await saveProjectBrief();
+      } catch (error) {
+        // Don't block progression if save fails, just warn
+        toast({
+          title: "Warning",
+          description: "Form data saved locally. Will sync when possible.",
+          variant: "default"
+        });
+      }
+    }
+
     handleStepChange(Math.min(currentStep + 1, 5));
   };
 
@@ -79,6 +105,32 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
       onBack();
     }
   };
+
+  // Load saved data into forms when step changes
+  useEffect(() => {
+    if (overviewRef.current && data.name) {
+      overviewRef.current.setValues({
+        name: data.name,
+        description: data.description,
+        problem: data.problem,
+        customers: data.customers
+      });
+    }
+    if (successCriteriaRef.current && data.targetOutcomes) {
+      successCriteriaRef.current.setValues({
+        targetOutcomes: data.targetOutcomes,
+        sdgs: data.sdgs,
+        innovationTypes: data.innovationTypes
+      });
+    }
+    if (timelineRef.current && (data.startDate || data.teamMembers.length > 0)) {
+      timelineRef.current.setValues({
+        startDate: data.startDate,
+        endDate: data.endDate,
+        teamMembers: data.teamMembers
+      });
+    }
+  }, [currentStep, data]);
 
   return (
     <div className="w-full flex flex-col items-center justify-center mt-7 ml-5">
@@ -118,7 +170,15 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
             )}
           <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
             {currentStep === 0 && <ProjectOverview ref={overviewRef} />}
-            {currentStep === 1 && <ProjectSuccessCriteria ref={successCriteriaRef} />}
+            {currentStep === 1 && (
+              <ProjectSuccessCriteria 
+                ref={successCriteriaRef} 
+                projectName={data.name}
+                projectDescription={data.description}
+                projectProblem={data.problem}
+                projectCustomers={data.customers}
+              />
+            )}
             {currentStep === 2 && <ProjectTimeline ref={timelineRef} />}
             {currentStep === 3 && <ProjectSubmission />}
             {currentStep === 4 && <ProjectDesignChallenge />}
