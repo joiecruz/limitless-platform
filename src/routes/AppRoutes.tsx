@@ -41,6 +41,8 @@ import VerifyEmail from "@/pages/VerifyEmail";
 import InvitePage from "@/pages/InvitePage";
 import Lessons from "@/pages/Lessons";
 import Lesson from "@/pages/Lesson";
+import DesignChallenges from "@/pages/DesignChallenges";
+import ChallengeCollaboration from "@/pages/ChallengeCollaboration";
 
 // Admin pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -122,6 +124,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/dashboard/tools" element={<Tools />} />
         <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
         <Route path="/dashboard/community" element={<Community />} />
+        <Route path="/dashboard/challenges" element={<DesignChallenges />} />
         <Route path="/dashboard/settings" element={<Settings />} />
         <Route
           path="/dashboard/account-settings"
@@ -134,6 +137,10 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route
           path="/dashboard/courses/:courseId/lessons/:lessonId"
           element={<Lesson />}
+        />
+        <Route
+          path="/dashboard/challenges/:challengeId"
+          element={<ChallengeCollaboration />}
         />
       </Route>
 
