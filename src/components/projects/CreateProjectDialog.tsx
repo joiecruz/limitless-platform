@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,11 +13,12 @@ interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreateProject?: (projectData: Partial<ProjectCardProps>) => void;
+  onStartDesignThinking?: () => void;
 }
 
 type ProjectCreationStep = "initial" | "collectIdeas";
 
-export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: CreateProjectDialogProps) {
+export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onStartDesignThinking }: CreateProjectDialogProps) {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<ProjectCreationStep>("initial");
   const [projectData, setProjectData] = useState<Partial<ProjectCardProps>>({
@@ -119,8 +119,12 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
       
       <div className="grid grid-cols-2 gap-4 py-4">
         <div 
-          onClick={() => toast({ title: "Coming Soon", description: "This feature will be available soon!" })}
-          className="bg-muted/20 hover:bg-muted/30 rounded-lg p-6 cursor-pointer flex flex-col items-center text-center transition-colors"
+          onClick={() => {
+            if (typeof onStartDesignThinking === 'function') {
+              onStartDesignThinking();
+            }
+          }}
+          className="bg-muted/20 hover:bg-muted/30 rounded-lg p-6 cursor-pointer flex flex-col items-center text-center hover:shadow-lg transition-shadow"
         >
           <div className="bg-[#FFEFE5] p-4 rounded-lg mb-3">
             <Rocket className="h-8 w-8 text-[#FF5722]" />
@@ -131,7 +135,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject }: Cre
 
         <div 
           onClick={handleSelectCollectIdeas}
-          className="bg-muted/20 hover:bg-muted/30 rounded-lg p-6 cursor-pointer flex flex-col items-center text-center transition-colors"
+          className="bg-muted/20 hover:bg-muted/30 rounded-lg p-6 cursor-pointer flex flex-col items-center text-center hover:shadow-lg transition-shadow"
         >
           <div className="bg-[#FFF8E1] p-4 rounded-lg mb-3">
             <Lightbulb className="h-8 w-8 text-[#FFC107]" />

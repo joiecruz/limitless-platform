@@ -25,21 +25,22 @@ import NotFound from '@/pages/NotFound';
 import WorkshopDetail from '@/pages/landing/WorkshopDetail';
 
 // App pages
-import Dashboard from '@/pages/Dashboard';
-import Projects from '@/pages/Projects';
-import Courses from '@/pages/Courses';
-import Tools from '@/pages/Tools';
-import ToolDetails from '@/pages/ToolDetails';
-import Community from '@/pages/Community';
-import Settings from '@/pages/Settings';
-import AccountSettings from '@/pages/AccountSettings';
-import SignIn from '@/pages/SignIn';
-import SignUp from '@/pages/SignUp';
-import ResetPassword from '@/pages/ResetPassword';
-import VerifyEmail from '@/pages/VerifyEmail';
-import InvitePage from '@/pages/InvitePage';
-import Lessons from '@/pages/Lessons';
-import Lesson from '@/pages/Lesson';
+import Dashboard from "@/pages/Dashboard";
+import Projects from "@/pages/projects/Projects";
+import CreateProject from "@/pages/CreateProject";
+import Courses from "@/pages/Courses";
+import Tools from "@/pages/Tools";
+import ToolDetails from "@/pages/ToolDetails";
+import Community from "@/pages/Community";
+import Settings from "@/pages/Settings";
+import AccountSettings from "@/pages/AccountSettings";
+import SignIn from "@/pages/SignIn";
+import SignUp from "@/pages/SignUp";
+import ResetPassword from "@/pages/ResetPassword";
+import VerifyEmail from "@/pages/VerifyEmail";
+import InvitePage from "@/pages/InvitePage";
+import Lessons from "@/pages/Lessons";
+import Lesson from "@/pages/Lesson";
 
 // Admin pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -112,6 +113,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/projects" element={<Projects />} />
+        <Route path="/dashboard/projects/create-project" element={<CreateProject />} />
         <Route path="/dashboard/courses" element={<Courses />} />
         <Route
           path="/dashboard/courses/:courseId/lessons"
