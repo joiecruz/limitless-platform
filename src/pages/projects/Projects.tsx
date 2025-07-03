@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDesignChallenges } from "@/hooks/useDesignChallenges";
-import { useProjects } from "@/hooks/useProjects";
+import { useProjects, Project } from "@/hooks/useProjects";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { Briefcase, Plus, Trash2, Lightbulb } from "lucide-react";
@@ -31,7 +31,7 @@ export default function Projects() {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const workspaceId = currentWorkspace?.id || null;
   const { challenges, loading: challengesLoading, createChallenge, updateChallengeStatus, deleteChallenge } = useDesignChallenges(workspaceId);
-  const { projects, loading: projectsLoading, createProject } = useProjects(workspaceId);
+  const { projects, loading: projectsLoading, createProject, deleteProject } = useProjects(workspaceId);
 
   // Fetch user role and ID when workspace changes
   useEffect(() => {
@@ -72,6 +72,30 @@ export default function Projects() {
   
   const canDelete = (challenge: DesignChallenge) => {
     return canManageStatus || challenge.created_by === currentUserId;
+  };
+
+  const canDeleteProject = (project: { owner_id: string | null }) => {
+    return canManageStatus || project.owner_id === currentUserId;
+  };
+
+  const handleProjectClick = (project: Project) => {
+    // Check if project brief is completed based on metadata
+    const metadata = project.metadata as any;
+    const isBriefCompleted = metadata?.stage === 'brief_completed';
+    
+    if (isBriefCompleted) {
+      // Navigate to empathize stage (next after project brief)
+      navigate(`/dashboard/projects/empathize/${project.id}`);
+    } else {
+      // Resume project brief
+      navigate(`/dashboard/projects/create-project?projectId=${project.id}`);
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (window.confirm('Are you sure you want to delete this project?')) {
+      await deleteProject(projectId);
+    }
   };
 
   useEffect(() => {
@@ -174,8 +198,13 @@ export default function Projects() {
                             title={project.title || project.name}
                             description={project.description || ""}
                             status={project.status as any || "in_progress"}
-                            image={project.cover_image || "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"}
+                            creator={project.creator}
+                            createdAt={project.created_at}
+                            currentStage={project.current_stage_id ? "empathize" : "project_brief"}
                             projectPhases={["DT"]}
+                            canDelete={canDeleteProject(project)}
+                            onClick={() => handleProjectClick(project)}
+                            onDelete={() => handleDeleteProject(project.id)}
                           />
                         </div>
                       ))}

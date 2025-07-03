@@ -11,6 +11,8 @@ export interface Project {
   cover_image: string | null;
   workspace_id: string | null;
   owner_id: string | null;
+  current_stage_id: string | null;
+  metadata: any;
   created_at: string;
   updated_at: string;
   creator?: {
