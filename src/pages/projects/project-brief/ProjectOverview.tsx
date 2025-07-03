@@ -28,7 +28,8 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
   const [touched, setTouched] = useState(false);
   const [isGenerating, setIsGenerating] = useState({
     description: false,
-    problem: false
+    problem: false,
+    customers: false
   });
   const { toast } = useToast();
 
@@ -52,7 +53,7 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
     }
   }));
 
-  const generateContent = async (field: 'description' | 'problem') => {
+  const generateContent = async (field: 'description' | 'problem' | 'customers') => {
     if (!name.trim()) {
       toast({
         title: "Project name required",
@@ -67,7 +68,9 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
     try {
       const prompt = field === 'description' 
         ? `Generate a clear, professional project description for: "${name}". Focus on goals, objectives, and expected value. Keep it concise (2-3 sentences).`
-        : `Based on the project "${name}"${description ? ` with description: "${description}"` : ''}, identify and describe the main problem or opportunity this project addresses. Be specific and actionable.`;
+        : field === 'problem'
+        ? `Based on the project "${name}"${description ? ` with description: "${description}"` : ''}, identify and describe the main problem or opportunity this project addresses. Be specific and actionable.`
+        : `Based on the project "${name}"${description ? ` with description: "${description}"` : ''}${problem ? ` addressing: "${problem}"` : ''}, identify the target customers or audience who would benefit from this project. Be specific about demographics, needs, and characteristics.`;
 
       const { data, error } = await supabase.functions.invoke('generate-description', {
         body: { prompt }
@@ -77,8 +80,10 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
       
       if (field === 'description') {
         setDescription(data.generatedText);
-      } else {
+      } else if (field === 'problem') {
         setProblem(data.generatedText);
+      } else {
+        setCustomers(data.generatedText);
       }
       
       toast({
@@ -159,7 +164,20 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
         onChange={e => setProblem(e.target.value)}
       />
 
-      <label className="block text-[13px] text-gray-600 font-bold font-sans mb-0" htmlFor="project-customers">Target customers or audience</label>
+      <div className="flex items-center gap-2 mb-1">
+        <label className="block text-[13px] text-gray-600 font-bold font-sans" htmlFor="project-customers">Target customers or audience</label>
+        <Button 
+          type="button" 
+          size="sm" 
+          variant="outline" 
+          className="flex items-center gap-1 h-6 px-2 text-[11px]"
+          onClick={() => generateContent('customers')}
+          disabled={isGenerating.customers}
+        >
+          <Sparkles className="h-3 w-3" />
+          {isGenerating.customers ? "Generating..." : "Generate with AI"}
+        </Button>
+      </div>
       <input
         id="project-customers"
         type="text"
