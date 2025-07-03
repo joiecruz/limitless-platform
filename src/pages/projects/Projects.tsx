@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useDesignChallenges } from "@/hooks/useDesignChallenges";
 import { useProjects, Project } from "@/hooks/useProjects";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
@@ -26,6 +27,8 @@ export default function Projects() {
   const [showDesignThinkingPage, setShowDesignThinkingPage] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{type: 'project' | 'challenge', id: string, title: string} | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { currentWorkspace } = useContext(WorkspaceContext);
@@ -92,10 +95,26 @@ export default function Projects() {
     }
   };
 
-  const handleDeleteProject = async (projectId: string) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
-      await deleteProject(projectId);
+  const handleDeleteProject = async (projectId: string, projectTitle: string) => {
+    setDeleteTarget({ type: 'project', id: projectId, title: projectTitle });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteChallenge = (challengeId: string, challengeTitle: string) => {
+    setDeleteTarget({ type: 'challenge', id: challengeId, title: challengeTitle });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    
+    if (deleteTarget.type === 'project') {
+      await deleteProject(deleteTarget.id);
+    } else {
+      deleteChallenge(deleteTarget.id);
     }
+    
+    setDeleteTarget(null);
   };
 
   useEffect(() => {
@@ -130,11 +149,6 @@ export default function Projects() {
     updateChallengeStatus(challengeId, newStatus as ChallengeStatus);
   };
 
-  const handleDelete = (challengeId: string) => {
-    if (window.confirm('Are you sure you want to delete this challenge?')) {
-      deleteChallenge(challengeId);
-    }
-  };
 
   const getStatusColor = (status: ChallengeStatus) => {
     switch (status) {
@@ -205,7 +219,7 @@ export default function Projects() {
                             designChallenge={project.metadata?.designChallenge}
                             canDelete={canDeleteProject(project)}
                             onClick={() => handleProjectClick(project)}
-                            onDelete={() => handleDeleteProject(project.id)}
+                            onDelete={() => handleDeleteProject(project.id, project.title || project.name)}
                           />
                         </div>
                       ))}
@@ -230,7 +244,7 @@ export default function Projects() {
                                     size="sm"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDelete(challenge.id);
+                                      handleDeleteChallenge(challenge.id, challenge.title);
                                     }}
                                     className="text-destructive hover:text-destructive p-1 h-auto"
                                   >
@@ -309,6 +323,16 @@ export default function Projects() {
                   setIsCreateDialogOpen(false);
                   setShowDesignThinkingPage(true);
                 }} 
+              />
+
+              <ConfirmationDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                title={`Delete ${deleteTarget?.type === 'project' ? 'Project' : 'Challenge'}`}
+                description={`Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.`}
+                confirmText="Delete"
+                onConfirm={confirmDelete}
+                variant="destructive"
               />
             </div>
           </>
