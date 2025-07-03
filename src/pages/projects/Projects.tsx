@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDesignChallenges } from "@/hooks/useDesignChallenges";
+import { useProjects } from "@/hooks/useProjects";
 import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { Briefcase, Plus, Trash2, Lightbulb } from "lucide-react";
@@ -20,12 +21,12 @@ import { format } from 'date-fns';
 
 export default function Projects() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [projects, setProjects] = useState<ProjectCardProps[]>([]);
   const [showDesignThinkingPage, setShowDesignThinkingPage] = useState(false);
   const navigate = useNavigate();
   const { data: workspace } = useCurrentWorkspace();
   const { workspaceId, userRole, currentUserId } = workspace || {};
   const { challenges, loading: challengesLoading, createChallenge, updateChallengeStatus, deleteChallenge } = useDesignChallenges(workspaceId);
+  const { projects, loading: projectsLoading, createProject } = useProjects(workspaceId);
 
   const canManageStatus = userRole === 'admin' || userRole === 'owner';
   
@@ -39,17 +40,15 @@ export default function Projects() {
     }
   }, [showDesignThinkingPage, navigate]);
 
-  const handleCreateProject = (projectData: Partial<ProjectCardProps>) => {
-    const newProject: ProjectCardProps = {
-      id: (projects.length + 1).toString(),
-      title: projectData.title || "",
-      description: projectData.description || "",
-      status: projectData.status || "in_progress",
-      image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      projectPhases: ["DT"]
-    };
-  
-    setProjects([newProject, ...projects]);
+  const handleCreateProject = async (projectData: Partial<ProjectCardProps>) => {
+    if (projectData.title) {
+      await createProject({
+        name: projectData.title,
+        title: projectData.title,
+        description: projectData.description || "",
+        cover_image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+      });
+    }
   };
 
   const handleOpenCreateDialog = () => {
@@ -113,7 +112,7 @@ export default function Projects() {
 
               <ProjectBanner onCreateProject={handleOpenCreateDialog} />
 
-              {challengesLoading ? (
+              {challengesLoading || projectsLoading ? (
                 <div className="flex items-center justify-center h-32">
                   <LoadingSpinner />
                 </div>
@@ -130,7 +129,14 @@ export default function Projects() {
                       {/* Regular Projects */}
                       {projects.map((project) => (
                         <div key={`project-${project.id}`}>
-                          <ProjectCard {...project} />
+                          <ProjectCard 
+                            id={project.id}
+                            title={project.title || project.name}
+                            description={project.description || ""}
+                            status={project.status as any || "in_progress"}
+                            image={project.cover_image || "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"}
+                            projectPhases={["DT"]}
+                          />
                         </div>
                       ))}
 
