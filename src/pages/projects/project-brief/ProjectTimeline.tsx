@@ -1,7 +1,31 @@
-import React, { useState, forwardRef, useImperativeHandle } from "react";
+import React, { useState, forwardRef, useImperativeHandle, useContext } from "react";
+import { useWorkspaceMembers } from "@/hooks/useWorkspaceMembers";
+import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 
 export interface ProjectTimelineRef {
   validate: () => boolean | string;
+  getValues: () => {
+    startDate: string;
+    endDate: string;
+    teamMembers: Array<{
+      user_id: string;
+      name: string;
+      email: string;
+      role: string;
+      permission: string;
+    }>;
+  };
+  setValues: (values: {
+    startDate: string;
+    endDate: string;
+    teamMembers: Array<{
+      user_id: string;
+      name: string;
+      email: string;
+      role: string;
+      permission: string;
+    }>;
+  }) => void;
 }
 
 export default forwardRef<ProjectTimelineRef>((props, ref) => {
@@ -74,6 +98,25 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
       if (!startDate) return "Start date is required.";
       if (endDate && startDate && endDate < startDate) return "End date cannot be before start date.";
       return true;
+    },
+    getValues: () => ({
+      startDate,
+      endDate,
+      teamMembers: teamMembers.map(member => ({
+        user_id: (member as any).user_id || member.email,
+        name: member.name,
+        email: member.email,
+        role: member.role,
+        permission: member.permission
+      }))
+    }),
+    setValues: (values) => {
+      setStartDate(values.startDate);
+      setEndDate(values.endDate);
+      setTeamMembers(values.teamMembers.map(member => ({
+        ...member,
+        image: "/sample-avatars/john.jpg"
+      })));
     }
   }));
 

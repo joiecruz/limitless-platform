@@ -1,21 +1,25 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProjectBriefProgressBar from "../../../components/projects/ProjectBriefProgressBar";
 import ProjectOverview, { ProjectOverviewRef } from "./ProjectOverview";
-import ProjectSuccessCriteria from "./ProjectSuccessCriteria";
+import ProjectSuccessCriteria, { ProjectSuccessCriteriaRef } from "./ProjectSuccessCriteria";
 import ProjectTimeline, { ProjectTimelineRef } from "./ProjectTimeline";
 import ProjectSubmission from "./ProjectSubmission";
 import ProjectDesignChallenge from "./ProjectDesignChallenges";
 import { useToast } from "../../../hooks/use-toast";
+import { useProjectBrief } from "@/hooks/useProjectBrief";
+import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 
 export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
   const overviewRef = useRef<ProjectOverviewRef>(null);
-  const successCriteriaRef = useRef<any>(null);
+  const successCriteriaRef = useRef<ProjectSuccessCriteriaRef>(null);
   const timelineRef = useRef<ProjectTimelineRef>(null);
   const { toast } = useToast();
+  const { currentWorkspace } = useContext(WorkspaceContext);
+  const { data, isLoading, saveProjectBrief, updateData } = useProjectBrief(currentWorkspace?.id || null);
 
   const handleStepChange = (newStep: number) => {
     setIsTransitioning(true);

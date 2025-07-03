@@ -1,4 +1,8 @@
-import React, { useImperativeHandle, useRef, useState, forwardRef } from "react";
+import React, { useImperativeHandle, useState, forwardRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export interface ProjectOverviewRef {
   validate: () => boolean | string;
@@ -8,6 +12,12 @@ export interface ProjectOverviewRef {
     problem: string;
     customers: string;
   };
+  setValues: (values: {
+    name: string;
+    description: string;
+    problem: string;
+    customers: string;
+  }) => void;
 }
 
 const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
@@ -16,6 +26,11 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
   const [problem, setProblem] = useState("");
   const [customers, setCustomers] = useState("");
   const [touched, setTouched] = useState(false);
+  const [isGenerating, setIsGenerating] = useState({
+    description: false,
+    problem: false
+  });
+  const { toast } = useToast();
 
   useImperativeHandle(ref, () => ({
     validate: () => {
@@ -28,8 +43,58 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
       ) return "All fields must be filled out.";
       return true;
     },
-    getValues: () => ({ name, description, problem, customers })
+    getValues: () => ({ name, description, problem, customers }),
+    setValues: (values) => {
+      setName(values.name);
+      setDescription(values.description);
+      setProblem(values.problem);
+      setCustomers(values.customers);
+    }
   }));
+
+  const generateContent = async (field: 'description' | 'problem') => {
+    if (!name.trim()) {
+      toast({
+        title: "Project name required",
+        description: "Please enter a project name first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(prev => ({ ...prev, [field]: true }));
+    
+    try {
+      const prompt = field === 'description' 
+        ? `Generate a clear, professional project description for: "${name}". Focus on goals, objectives, and expected value. Keep it concise (2-3 sentences).`
+        : `Based on the project "${name}"${description ? ` with description: "${description}"` : ''}, identify and describe the main problem or opportunity this project addresses. Be specific and actionable.`;
+
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { prompt }
+      });
+      
+      if (error) throw error;
+      
+      if (field === 'description') {
+        setDescription(data.generatedText);
+      } else {
+        setProblem(data.generatedText);
+      }
+      
+      toast({
+        title: "Content Generated",
+        description: `AI has generated content for ${field}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: `Failed to generate ${field}. Please try again or enter manually.`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(prev => ({ ...prev, [field]: false }));
+    }
+  };
 
   return (
     <div className="mt-1.5 bg-white rounded-xl border border-gray-100 p-6 flex flex-col items-start" style={{ width: '55vw', minHeight: '52vh' }}>
@@ -48,7 +113,20 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
         onChange={e => setName(e.target.value)}
       />
 
-      <label className="block text-[13px] text-gray-600 font-bold font-sans mb-0" htmlFor="project-description">Project Description</label>
+      <div className="flex items-center gap-2 mb-1">
+        <label className="block text-[13px] text-gray-600 font-bold font-sans" htmlFor="project-description">Project Description</label>
+        <Button 
+          type="button" 
+          size="sm" 
+          variant="outline" 
+          className="flex items-center gap-1 h-6 px-2 text-[11px]"
+          onClick={() => generateContent('description')}
+          disabled={isGenerating.description}
+        >
+          <Sparkles className="h-3 w-3" />
+          {isGenerating.description ? "Generating..." : "Generate with AI"}
+        </Button>
+      </div>
       <textarea
         id="project-description"
         placeholder="Provide a summary of your project goals and objectives."
@@ -58,7 +136,20 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
         onChange={e => setDescription(e.target.value)}
       />
 
-      <label className="block text-[13px] text-gray-600 font-bold font-sans mb-0" htmlFor="project-problem">Problem or Opportunity</label>
+      <div className="flex items-center gap-2 mb-1">
+        <label className="block text-[13px] text-gray-600 font-bold font-sans" htmlFor="project-problem">Problem or Opportunity</label>
+        <Button 
+          type="button" 
+          size="sm" 
+          variant="outline" 
+          className="flex items-center gap-1 h-6 px-2 text-[11px]"
+          onClick={() => generateContent('problem')}
+          disabled={isGenerating.problem}
+        >
+          <Sparkles className="h-3 w-3" />
+          {isGenerating.problem ? "Generating..." : "Generate with AI"}
+        </Button>
+      </div>
       <textarea
         id="project-problem"
         placeholder="Describe the problem the project aims to solve or the opportunity it seeks to leverage."
