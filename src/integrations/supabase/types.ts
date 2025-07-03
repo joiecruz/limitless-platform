@@ -195,106 +195,6 @@ export type Database = {
           },
         ]
       }
-      content_dependencies: {
-        Row: {
-          content_id: string
-          created_at: string
-          dependency_type: string | null
-          depends_on_content_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          content_id: string
-          created_at?: string
-          dependency_type?: string | null
-          depends_on_content_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          content_id?: string
-          created_at?: string
-          dependency_type?: string | null
-          depends_on_content_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "content_dependencies_content_id_fkey"
-            columns: ["content_id"]
-            isOneToOne: true
-            referencedRelation: "stage_contents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "content_dependencies_depends_on_content_id_fkey"
-            columns: ["depends_on_content_id"]
-            isOneToOne: false
-            referencedRelation: "stage_contents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      content_templates: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          methodology_id: string | null
-          stage_id: string | null
-          step_id: string | null
-          template_structure: Json | null
-          template_type: string
-          title: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          methodology_id?: string | null
-          stage_id?: string | null
-          step_id?: string | null
-          template_structure?: Json | null
-          template_type: string
-          title?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          methodology_id?: string | null
-          stage_id?: string | null
-          step_id?: string | null
-          template_structure?: Json | null
-          template_type?: string
-          title?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "content_templates_methodology_id_fkey"
-            columns: ["methodology_id"]
-            isOneToOne: false
-            referencedRelation: "methodologies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "content_templates_stage_id_fkey"
-            columns: ["stage_id"]
-            isOneToOne: false
-            referencedRelation: "workflow_stages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "content_templates_step_id_fkey"
-            columns: ["step_id"]
-            isOneToOne: false
-            referencedRelation: "stage_steps"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       courses: {
         Row: {
           booking_link: string | null
@@ -351,57 +251,6 @@ export type Database = {
           who_is_this_for?: string | null
         }
         Relationships: []
-      }
-      design_challenges: {
-        Row: {
-          category: string
-          created_at: string
-          created_by: string | null
-          description: string | null
-          id: string
-          status: string
-          title: string
-          updated_at: string
-          workspace_id: string | null
-        }
-        Insert: {
-          category?: string
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          status?: string
-          title: string
-          updated_at?: string
-          workspace_id?: string | null
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          status?: string
-          title?: string
-          updated_at?: string
-          workspace_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "design_challenges_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "design_challenges_workspace_id_fkey"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       enrollments: {
         Row: {
@@ -640,53 +489,6 @@ export type Database = {
         }
         Relationships: []
       }
-      issue_reports: {
-        Row: {
-          admin_notes: string | null
-          attachment_url: string | null
-          category: string | null
-          created_at: string
-          description: string
-          id: string
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          admin_notes?: string | null
-          attachment_url?: string | null
-          category?: string | null
-          created_at?: string
-          description: string
-          id?: string
-          status?: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          admin_notes?: string | null
-          attachment_url?: string | null
-          category?: string | null
-          created_at?: string
-          description?: string
-          id?: string
-          status?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "issue_reports_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lessons: {
         Row: {
           body_content: string | null
@@ -736,201 +538,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      master_trainer_access: {
-        Row: {
-          created_at: string
-          granted_by: string
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          granted_by: string
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          granted_by?: string
-          id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      master_trainer_faqs: {
-        Row: {
-          answer: string
-          category: string
-          created_at: string
-          created_by: string
-          id: string
-          is_active: boolean | null
-          order_index: number | null
-          question: string
-          updated_at: string
-        }
-        Insert: {
-          answer: string
-          category?: string
-          created_at?: string
-          created_by: string
-          id?: string
-          is_active?: boolean | null
-          order_index?: number | null
-          question: string
-          updated_at?: string
-        }
-        Update: {
-          answer?: string
-          category?: string
-          created_at?: string
-          created_by?: string
-          id?: string
-          is_active?: boolean | null
-          order_index?: number | null
-          question?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      master_trainer_materials: {
-        Row: {
-          category: string
-          created_at: string
-          description: string | null
-          download_count: number | null
-          file_size: number | null
-          file_type: string
-          file_url: string
-          id: string
-          is_active: boolean | null
-          title: string
-          updated_at: string
-          uploaded_by: string
-        }
-        Insert: {
-          category?: string
-          created_at?: string
-          description?: string | null
-          download_count?: number | null
-          file_size?: number | null
-          file_type: string
-          file_url: string
-          id?: string
-          is_active?: boolean | null
-          title: string
-          updated_at?: string
-          uploaded_by: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          description?: string | null
-          download_count?: number | null
-          file_size?: number | null
-          file_type?: string
-          file_url?: string
-          id?: string
-          is_active?: boolean | null
-          title?: string
-          updated_at?: string
-          uploaded_by?: string
-        }
-        Relationships: []
-      }
-      master_trainer_profiles: {
-        Row: {
-          bio: string | null
-          contact_info: Json | null
-          created_at: string
-          email: string
-          expertise_areas: string[] | null
-          first_name: string
-          id: string
-          is_active: boolean | null
-          last_name: string
-          profile_image_url: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          bio?: string | null
-          contact_info?: Json | null
-          created_at?: string
-          email: string
-          expertise_areas?: string[] | null
-          first_name: string
-          id?: string
-          is_active?: boolean | null
-          last_name: string
-          profile_image_url?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          bio?: string | null
-          contact_info?: Json | null
-          created_at?: string
-          email?: string
-          expertise_areas?: string[] | null
-          first_name?: string
-          id?: string
-          is_active?: boolean | null
-          last_name?: string
-          profile_image_url?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      master_trainer_recordings: {
-        Row: {
-          category: string
-          created_at: string
-          description: string | null
-          duration: number | null
-          id: string
-          is_active: boolean | null
-          thumbnail_url: string | null
-          title: string
-          updated_at: string
-          uploaded_by: string
-          video_url: string
-          view_count: number | null
-        }
-        Insert: {
-          category?: string
-          created_at?: string
-          description?: string | null
-          duration?: number | null
-          id?: string
-          is_active?: boolean | null
-          thumbnail_url?: string | null
-          title: string
-          updated_at?: string
-          uploaded_by: string
-          video_url: string
-          view_count?: number | null
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          description?: string | null
-          duration?: number | null
-          id?: string
-          is_active?: boolean | null
-          thumbnail_url?: string | null
-          title?: string
-          updated_at?: string
-          uploaded_by?: string
-          video_url?: string
-          view_count?: number | null
-        }
-        Relationships: []
       }
       message_reactions: {
         Row: {
@@ -1022,72 +629,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      methodologies: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      methodology_stages: {
-        Row: {
-          created_at: string | null
-          id: string
-          methodology_id: string
-          order_index: number | null
-          stage_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          methodology_id?: string
-          order_index?: number | null
-          stage_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          methodology_id?: string
-          order_index?: number | null
-          stage_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "methodology_stages_methodology_id_fkey"
-            columns: ["methodology_id"]
-            isOneToOne: false
-            referencedRelation: "methodologies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "methodology_stages_stage_id_fkey"
-            columns: ["stage_id"]
-            isOneToOne: false
-            referencedRelation: "workflow_stages"
             referencedColumns: ["id"]
           },
         ]
@@ -1190,33 +731,24 @@ export type Database = {
       project_members: {
         Row: {
           created_at: string
-          id: string
-          project_id: string | null
-          responsibilities: string | null
-          role: string | null
-          updated_at: string | null
-          user_id: string | null
-          workspace_id: string | null
+          project_id: string
+          role: string
+          updated_at: string
+          user_id: string
         }
         Insert: {
           created_at?: string
-          id?: string
-          project_id?: string | null
-          responsibilities?: string | null
-          role?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-          workspace_id?: string | null
+          project_id: string
+          role: string
+          updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
-          id?: string
-          project_id?: string | null
-          responsibilities?: string | null
-          role?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-          workspace_id?: string | null
+          project_id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -1231,13 +763,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_members_workspace_id_fkey"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -1286,57 +811,6 @@ export type Database = {
             columns: ["workflow_phase_id"]
             isOneToOne: false
             referencedRelation: "workflow_phases"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      project_stages: {
-        Row: {
-          completed_at: string | null
-          content_status: string | null
-          created_at: string
-          id: string
-          project_id: string | null
-          stage_id: string | null
-          started_at: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          completed_at?: string | null
-          content_status?: string | null
-          created_at?: string
-          id?: string
-          project_id?: string | null
-          stage_id?: string | null
-          started_at?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          completed_at?: string | null
-          content_status?: string | null
-          created_at?: string
-          id?: string
-          project_id?: string | null
-          stage_id?: string | null
-          started_at?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_stages_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_stages_stage_id_fkey"
-            columns: ["stage_id"]
-            isOneToOne: false
-            referencedRelation: "workflow_stages"
             referencedColumns: ["id"]
           },
         ]
@@ -1469,148 +943,83 @@ export type Database = {
           },
         ]
       }
-      project_steps: {
-        Row: {
-          assigned_to: string | null
-          completed_at: string | null
-          content_status: string | null
-          created_at: string
-          id: string
-          project_id: string | null
-          started_at: string | null
-          status: string | null
-          step_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          assigned_to?: string | null
-          completed_at?: string | null
-          content_status?: string | null
-          created_at?: string
-          id?: string
-          project_id?: string | null
-          started_at?: string | null
-          status?: string | null
-          step_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          assigned_to?: string | null
-          completed_at?: string | null
-          content_status?: string | null
-          created_at?: string
-          id?: string
-          project_id?: string | null
-          started_at?: string | null
-          status?: string | null
-          step_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_steps_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_steps_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_steps_step_id_fkey"
-            columns: ["step_id"]
-            isOneToOne: false
-            referencedRelation: "stage_steps"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       projects: {
         Row: {
           archived: boolean | null
           background_color: string | null
+          challenge_description: string | null
+          challenge_statement: string | null
           cover_image: string | null
           created_at: string
-          current_stage_id: string | null
+          current_phase: string | null
           description: string | null
-          end_date: string | null
+          due_date: string | null
           icon_name: string | null
           id: string
           metadata: Json | null
-          methodology_id: string | null
           name: string
           owner_id: string | null
-          start_date: string | null
           status: string | null
           title: string | null
           updated_at: string
+          workflow_template_id: string | null
           workspace_id: string | null
         }
         Insert: {
           archived?: boolean | null
           background_color?: string | null
+          challenge_description?: string | null
+          challenge_statement?: string | null
           cover_image?: string | null
           created_at?: string
-          current_stage_id?: string | null
+          current_phase?: string | null
           description?: string | null
-          end_date?: string | null
+          due_date?: string | null
           icon_name?: string | null
           id?: string
           metadata?: Json | null
-          methodology_id?: string | null
           name: string
           owner_id?: string | null
-          start_date?: string | null
           status?: string | null
           title?: string | null
           updated_at?: string
+          workflow_template_id?: string | null
           workspace_id?: string | null
         }
         Update: {
           archived?: boolean | null
           background_color?: string | null
+          challenge_description?: string | null
+          challenge_statement?: string | null
           cover_image?: string | null
           created_at?: string
-          current_stage_id?: string | null
+          current_phase?: string | null
           description?: string | null
-          end_date?: string | null
+          due_date?: string | null
           icon_name?: string | null
           id?: string
           metadata?: Json | null
-          methodology_id?: string | null
           name?: string
           owner_id?: string | null
-          start_date?: string | null
           status?: string | null
           title?: string | null
           updated_at?: string
+          workflow_template_id?: string | null
           workspace_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "projects_current_stage_id_fkey"
-            columns: ["current_stage_id"]
-            isOneToOne: false
-            referencedRelation: "workflow_stages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projects_methodology_id_fkey"
-            columns: ["methodology_id"]
-            isOneToOne: false
-            referencedRelation: "methodologies"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "projects_owner_id_fkey"
             columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_workflow_template_id_fkey"
+            columns: ["workflow_template_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_templates"
             referencedColumns: ["id"]
           },
           {
@@ -1673,194 +1082,6 @@ export type Database = {
         }
         Relationships: []
       }
-      stage_contents: {
-        Row: {
-          content_data: Json | null
-          created_at: string
-          created_by: string | null
-          id: string
-          project_id: string | null
-          stage_id: string | null
-          template_id: string | null
-          updated_at: string | null
-          updated_by: string | null
-          version: number | null
-        }
-        Insert: {
-          content_data?: Json | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          project_id?: string | null
-          stage_id?: string | null
-          template_id?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-          version?: number | null
-        }
-        Update: {
-          content_data?: Json | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          project_id?: string | null
-          stage_id?: string | null
-          template_id?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-          version?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "stage_contents_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stage_contents_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stage_contents_stage_id_fkey"
-            columns: ["stage_id"]
-            isOneToOne: false
-            referencedRelation: "workflow_stages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stage_contents_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "content_templates"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stage_contents_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      stage_steps: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          name: string | null
-          order_index: number | null
-          stage_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string | null
-          order_index?: number | null
-          stage_id?: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string | null
-          order_index?: number | null
-          stage_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "stage_steps_stage_id_fkey"
-            columns: ["stage_id"]
-            isOneToOne: false
-            referencedRelation: "workflow_stages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      step_contents: {
-        Row: {
-          content_data: Json | null
-          created_at: string
-          created_by: string | null
-          id: string
-          project_id: string | null
-          step_id: string | null
-          template_id: string | null
-          updated_at: string | null
-          updated_by: string | null
-          version: number | null
-        }
-        Insert: {
-          content_data?: Json | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          project_id?: string | null
-          step_id?: string | null
-          template_id?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-          version?: number | null
-        }
-        Update: {
-          content_data?: Json | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          project_id?: string | null
-          step_id?: string | null
-          template_id?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-          version?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "step_contents_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "step_contents_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "step_contents_step_id_fkey"
-            columns: ["step_id"]
-            isOneToOne: false
-            referencedRelation: "stage_steps"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "step_contents_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "content_templates"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "step_contents_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       step_templates: {
         Row: {
           config: Json | null
@@ -1890,57 +1111,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      sticky_notes: {
-        Row: {
-          challenge_id: string | null
-          color: string
-          content: string
-          created_at: string
-          created_by: string | null
-          id: string
-          position_x: number
-          position_y: number
-          updated_at: string
-        }
-        Insert: {
-          challenge_id?: string | null
-          color?: string
-          content: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          position_x?: number
-          position_y?: number
-          updated_at?: string
-        }
-        Update: {
-          challenge_id?: string | null
-          color?: string
-          content?: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          position_x?: number
-          position_y?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sticky_notes_challenge_id_fkey"
-            columns: ["challenge_id"]
-            isOneToOne: false
-            referencedRelation: "design_challenges"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sticky_notes_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       testimonials: {
         Row: {
@@ -2185,33 +1355,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      workflow_stages: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string | null
-          order_index: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string | null
-          order_index?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string | null
-          order_index?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       workflow_templates: {
         Row: {
@@ -2500,10 +1643,6 @@ export type Database = {
       delete_user_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      is_current_user_superadmin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
       }
       is_workspace_admin: {
         Args: { workspace_id: string }
