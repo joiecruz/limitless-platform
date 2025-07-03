@@ -1,11 +1,14 @@
-import { useState, createContext, useEffect } from "react";
-import { X } from "lucide-react";
-import { WorkspaceSelector } from "./WorkspaceSelector";
-import { Navigation } from "./Navigation";
-import { MobileHeader } from "./MobileHeader";
-import { useLocation, useNavigate, Outlet } from "react-router-dom";
-import { LoadingPage } from "@/components/common/LoadingPage";
-import { useSessionValidation } from "@/hooks/useSessionValidation";
+import { useState, createContext, useEffect } from 'react';
+import { X, AlertCircle } from 'lucide-react';
+import { WorkspaceSelector } from './WorkspaceSelector';
+import { Navigation } from './Navigation';
+import { MobileHeader } from './MobileHeader';
+import { useLocation, useNavigate, Outlet } from 'react-router-dom';
+import { LoadingPage } from '@/components/common/LoadingPage';
+import { useSessionValidation } from '@/hooks/useSessionValidation';
+import { UserProfile } from './UserProfile';
+import { ReportIssue } from '@/components/common/ReportIssue';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Workspace {
   id: string;
@@ -26,23 +29,27 @@ export const WorkspaceContext = createContext<WorkspaceContextType>({
 export default function DashboardLayout() {
   // Add session validation
   useSessionValidation();
+  const isMobile = useIsMobile();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(() => {
-    // Initialize from localStorage if available
-    try {
-      const savedWorkspace = localStorage.getItem('limitless-current-workspace');
-      return savedWorkspace ? JSON.parse(savedWorkspace) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
+    () => {
+      // Initialize from localStorage if available
+      try {
+        const savedWorkspace = localStorage.getItem(
+          'limitless-current-workspace',
+        );
+        return savedWorkspace ? JSON.parse(savedWorkspace) : null;
+      } catch {
+        return null;
+      }
+    },
+  );
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   const handleWorkspaceChange = (workspace: Workspace) => {
-    console.log('Changing workspace to:', workspace);
     setIsLoading(true);
     setCurrentWorkspace(workspace);
 
@@ -59,11 +66,12 @@ export default function DashboardLayout() {
   // Persist workspace to localStorage when it changes
   useEffect(() => {
     if (currentWorkspace) {
-      localStorage.setItem('limitless-current-workspace', JSON.stringify(currentWorkspace));
-      console.log('Saved workspace to localStorage:', currentWorkspace);
+      localStorage.setItem(
+        'limitless-current-workspace',
+        JSON.stringify(currentWorkspace),
+      );
     } else {
       localStorage.removeItem('limitless-current-workspace');
-      console.log('Removed workspace from localStorage');
     }
   }, [currentWorkspace]);
 
@@ -71,17 +79,20 @@ export default function DashboardLayout() {
   useEffect(() => {
     if (location.pathname === '/dashboard/community') {
       localStorage.setItem('limitless-last-community-visit', 'true');
-      console.log('Marked community as last visited page');
-    } else if (location.pathname.startsWith('/dashboard/') && location.pathname !== '/dashboard/community') {
+    } else if (
+      location.pathname.startsWith('/dashboard/') &&
+      location.pathname !== '/dashboard/community'
+    ) {
       // Clear community flag when navigating to other dashboard pages
       localStorage.removeItem('limitless-last-community-visit');
-      console.log('Cleared community visit flag - navigated to other page');
     }
   }, [location.pathname]);
 
   // Restore community route on initial load if user was there before
   useEffect(() => {
-    const wasInCommunity = localStorage.getItem('limitless-last-community-visit');
+    const wasInCommunity = localStorage.getItem(
+      'limitless-last-community-visit',
+    );
     const hasWorkspace = localStorage.getItem('limitless-current-workspace');
     const hasChannel = localStorage.getItem('limitless-active-channel');
 
@@ -89,16 +100,15 @@ export default function DashboardLayout() {
     // 1. User was previously in community
     // 2. We're currently on the root dashboard
     // 3. We have workspace and channel state to restore
-    if (wasInCommunity && hasWorkspace && hasChannel && location.pathname === '/dashboard') {
-      console.log('Restoring community page from previous session');
+    if (
+      wasInCommunity &&
+      hasWorkspace &&
+      hasChannel &&
+      location.pathname === '/dashboard'
+    ) {
       navigate('/dashboard/community', { replace: true });
     }
   }, []); // Empty dependency array - only run on initial mount
-
-  // Log workspace changes
-  useEffect(() => {
-    console.log('Current workspace in DashboardLayout:', currentWorkspace);
-  }, [currentWorkspace]);
 
   // Prevent page scrolling globally
   useEffect(() => {
@@ -112,7 +122,9 @@ export default function DashboardLayout() {
   }, []);
 
   return (
-    <WorkspaceContext.Provider value={{ currentWorkspace, setCurrentWorkspace: handleWorkspaceChange }}>
+    <WorkspaceContext.Provider
+      value={{ currentWorkspace, setCurrentWorkspace: handleWorkspaceChange }}
+    >
       <div className="fixed inset-0 bg-gray-50 overflow-hidden">
         {isLoading && (
           <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50">
@@ -131,28 +143,38 @@ export default function DashboardLayout() {
         {/* Mobile sidebar */}
         <div
           className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between px-4 py-4">
+            <div className="flex items-center justify-between px-4 py-3">
               <img
                 src="/limitless-logo.svg"
                 alt="Limitless Lab"
-                className="h-12 w-auto"
+                className="h-9 w-auto"
               />
-              <button onClick={() => setSidebarOpen(false)} className="lg:hidden">
-                <X className="h-6 w-6" />
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+                aria-label="Close sidebar"
+              >
+                <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="px-4 flex-1 overflow-y-auto">
-              <div className="mb-6">
-                <WorkspaceSelector
-                  currentWorkspace={currentWorkspace}
-                  setCurrentWorkspace={handleWorkspaceChange}
-                />
-              </div>
+            <div className="px-4 pt-3 pb-2">
+              <WorkspaceSelector
+                currentWorkspace={currentWorkspace}
+                setCurrentWorkspace={handleWorkspaceChange}
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto">
               <Navigation />
+            </div>
+            <div className="mt-auto">
+              <nav className="space-y-1 px-3 mb-3">
+                <ReportIssue buttonClassName="nav-item" />
+              </nav>
+              <UserProfile />
             </div>
           </div>
         </div>
@@ -160,23 +182,27 @@ export default function DashboardLayout() {
         {/* Desktop sidebar */}
         <div className="hidden lg:flex lg:fixed lg:inset-y-0 lg:w-64 lg:flex-col">
           <div className="flex flex-col border-r border-gray-200 bg-white h-full">
-            <div className="flex items-center px-6 py-4 flex-shrink-0">
+            <div className="flex items-center px-6 py-3 flex-shrink-0">
               <img
                 src="/limitless-logo.svg"
                 alt="Limitless Lab"
-                className="h-12 w-auto"
+                className="h-9 w-auto"
               />
             </div>
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-4 flex-1 overflow-y-auto">
-                <div className="mb-6">
-                  <WorkspaceSelector
-                    currentWorkspace={currentWorkspace}
-                    setCurrentWorkspace={handleWorkspaceChange}
-                  />
-                </div>
-                <Navigation />
-              </div>
+            <div className="px-4 pt-3 pb-2">
+              <WorkspaceSelector
+                currentWorkspace={currentWorkspace}
+                setCurrentWorkspace={handleWorkspaceChange}
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <Navigation />
+            </div>
+            <div className="mt-auto">
+              <nav className="space-y-1 px-3 mb-3">
+                <ReportIssue buttonClassName="nav-item" />
+              </nav>
+              <UserProfile />
             </div>
           </div>
         </div>
@@ -184,7 +210,7 @@ export default function DashboardLayout() {
         {/* Main content */}
         <div className="lg:pl-64 flex flex-col h-full">
           {location.pathname !== '/community' && (
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 lg:hidden">
               <MobileHeader onOpenSidebar={() => setSidebarOpen(true)} />
             </div>
           )}

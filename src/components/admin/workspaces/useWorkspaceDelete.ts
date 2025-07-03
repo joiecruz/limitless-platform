@@ -53,7 +53,7 @@ export function useWorkspaceDelete() {
 
       return true;
     } catch (error: any) {
-      console.error('Error deleting workspace:', error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to delete workspace",

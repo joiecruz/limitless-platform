@@ -100,7 +100,7 @@ export function useTypingIndicator(activeChannel: Channel | null) {
         }, 3000);
       }
     } catch (error) {
-      console.error('Error updating typing status:', error);
+      
     }
   };
 

@@ -97,7 +97,7 @@ export function ChannelSettings({ channel, onChannelUpdate, onChannelDelete }: C
         onChannelUpdate(data);
       }
     } catch (error) {
-      console.error('Error updating channel:', error);
+      
       toast({
         title: "Error",
         description: "Failed to update channel",
@@ -137,7 +137,7 @@ export function ChannelSettings({ channel, onChannelUpdate, onChannelDelete }: C
         onChannelDelete();
       }
     } catch (error) {
-      console.error('Error deleting channel:', error);
+      
       toast({
         title: "Error",
         description: "Failed to delete channel",

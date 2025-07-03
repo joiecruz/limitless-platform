@@ -46,7 +46,7 @@ export function InvitedUserOnboardingModal({
     workspaceId,
     onSuccess: () => {
       if (workspaceId) {
-        console.log("Onboarding completed, navigating to workspace:", workspaceId);
+        
         // Add workspace to localStorage to ensure it's selected on dashboard
         localStorage.setItem('selectedWorkspace', workspaceId);
         
@@ -60,14 +60,14 @@ export function InvitedUserOnboardingModal({
               supabase.functions.invoke('handle-systeme-signup', {
                 body: { user_id: user.id }
               }).catch(error => {
-                console.error('Mailing list error:', error);
+                
               });
             }
           }).catch(error => {
-            console.error("Error getting user for Systeme.io:", error);
+            
           });
         } catch (error) {
-          console.error("Error processing Systeme.io integration:", error);
+          
         }
         
         navigate(`/dashboard?workspace=${workspaceId}`);
@@ -76,7 +76,7 @@ export function InvitedUserOnboardingModal({
           description: "Your profile has been set up successfully.",
         });
       } else {
-        console.log("No workspace ID found, navigating to default dashboard");
+        
         navigate('/dashboard');
       }
     }
@@ -87,7 +87,7 @@ export function InvitedUserOnboardingModal({
     setFormData(updatedData);
 
     if (currentStep === TOTAL_STEPS) {
-      console.log("Final step completed, submitting data");
+      
       await handleSubmit(updatedData);
     } else {
       setCurrentStep(prev => prev + 1);

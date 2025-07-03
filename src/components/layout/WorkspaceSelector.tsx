@@ -23,16 +23,16 @@ export function WorkspaceSelector({ currentWorkspace, setCurrentWorkspace }: Wor
 
   // Set initial workspace
   useEffect(() => {
-    console.log('WorkspaceSelector useEffect - currentWorkspace:', currentWorkspace);
-    console.log('WorkspaceSelector useEffect - workspaces:', workspaces);
+    
+    
     if (!currentWorkspace && workspaces && workspaces.length > 0) {
-      console.log('Setting initial workspace:', workspaces[0]);
+      
       setCurrentWorkspace(workspaces[0]);
     }
   }, [currentWorkspace, workspaces, setCurrentWorkspace]);
 
   const handleWorkspaceSelect = (workspace: Workspace) => {
-    console.log('Selecting workspace:', workspace);
+    
     setCurrentWorkspace(workspace);
     // Invalidate relevant queries when workspace changes
     queryClient.invalidateQueries({ queryKey: ['channels'] });

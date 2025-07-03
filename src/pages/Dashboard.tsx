@@ -43,7 +43,7 @@ export default function Dashboard() {
       });
 
       if (error) {
-        console.error("Error fetching user workspaces:", error);
+        
         return [];
       }
 
@@ -55,10 +55,10 @@ export default function Dashboard() {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      console.log("Dashboard - Current session:", session);
+      
 
       if (error || !session) {
-        console.log("Dashboard - No session found, redirecting to signin");
+        
         navigate("/signin", { replace: true });
         return;
       }
@@ -77,7 +77,7 @@ export default function Dashboard() {
 
         // If onboarding was completed within the last 10 seconds, set flag
         if (now - completionTime < 10000) {
-          console.log("Dashboard - Onboarding was recently completed, preventing retrigger");
+          
           setOnboardingJustCompleted(true);
 
           // Clear the flag after 10 seconds
@@ -99,13 +99,13 @@ export default function Dashboard() {
   useEffect(() => {
     // Don't proceed if queries are still loading
     if (profileLoading || workspacesLoading) {
-      console.log("Dashboard - Queries still loading, waiting...");
+      
       return;
     }
 
     // Don't show onboarding if it was just completed
     if (onboardingJustCompleted) {
-      console.log("Dashboard - Onboarding just completed, skipping");
+      
       setShowOnboarding(false);
       return;
     }
@@ -113,13 +113,13 @@ export default function Dashboard() {
     // Check if user has already been marked as onboarded (navigated around dashboard)
     const hasNavigatedDashboard = localStorage.getItem('dashboard-visited');
     if (hasNavigatedDashboard) {
-      console.log("Dashboard - User has already navigated dashboard, skipping onboarding");
+      
       setShowOnboarding(false);
       return;
     }
 
-        console.log("Dashboard - Profile:", profile);
-    console.log("Dashboard - User workspaces:", userWorkspaces);
+        
+    
 
     // Check if user has never been onboarded (no name AND no workspaces)
     const hasName = profile?.first_name && profile?.last_name;
@@ -133,16 +133,16 @@ export default function Dashboard() {
 
     const showOnboardingModal = needsOnboarding || needsWorkspaceCreation;
 
-    console.log("Dashboard - Has name:", hasName);
-    console.log("Dashboard - Has workspaces:", hasWorkspaces);
-    console.log("Dashboard - Needs full onboarding:", needsOnboarding);
-    console.log("Dashboard - Needs workspace creation:", needsWorkspaceCreation);
-    console.log("Dashboard - Show onboarding modal:", showOnboardingModal);
+    
+    
+    
+    
+    
 
     // If user has both name and workspaces, mark them as having visited dashboard
     if (hasName && hasWorkspaces) {
       localStorage.setItem('dashboard-visited', 'true');
-      console.log("Dashboard - User is fully onboarded, marking dashboard as visited");
+      
     }
 
     setShowOnboarding(showOnboardingModal);

@@ -81,7 +81,7 @@ export function AddLogoDialog() {
       queryClient.invalidateQueries({ queryKey: ['admin-logos'] });
       form.reset();
     } catch (error) {
-      console.error('Error uploading logo:', error);
+      
       toast({
         title: "Error",
         description: "Failed to upload logo",

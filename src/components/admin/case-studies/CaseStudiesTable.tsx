@@ -18,18 +18,18 @@ export function CaseStudiesTable() {
   const { data: caseStudies, isLoading, error } = useQuery({
     queryKey: ['case-studies'],
     queryFn: async () => {
-      console.log("Fetching case studies...");
+      
       const { data, error } = await supabase
         .from('case_studies')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching case studies:', error);
+        
         throw error;
       }
       
-      console.log("Fetched case studies:", data);
+      
       return data;
     },
     meta: {

@@ -132,7 +132,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
       setIsDialogOpen(false);
       refetch();
     } catch (error) {
-      console.error("Error saving lesson:", error);
+      
       toast({
         title: "Error",
         description: "Failed to save lesson",

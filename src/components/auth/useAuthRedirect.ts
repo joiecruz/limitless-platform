@@ -22,18 +22,18 @@ export function useAuthRedirect() {
   useEffect(() => {
     // Skip redirect processing on apex domain - let main.tsx handle it
     if (isApexDomain()) {
-      console.log("useAuthRedirect - Detected apex domain, skipping auth redirects");
+      
       return;
     }
 
     const handleAuthChange = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        console.log("useAuthRedirect - Current session:", session);
+        
 
         // Skip auth redirects for specific auth-related pages
         if (location.pathname.includes('/reset-password')) {
-          console.log("useAuthRedirect - On reset password page, skipping redirect");
+          
           return;
         }
 
@@ -50,7 +50,7 @@ export function useAuthRedirect() {
 
         // Check if user needs to complete onboarding
         const needsOnboarding = await checkUserProfile(session);
-        console.log("useAuthRedirect - Needs onboarding:", needsOnboarding);
+        
 
         if (needsOnboarding &&
             !location.pathname.includes('/dashboard') &&
@@ -70,7 +70,7 @@ export function useAuthRedirect() {
             });
 
             if (memberError) {
-              console.error('Error checking workspace membership:', memberError);
+              
               toast({
                 title: "Error",
                 description: "Failed to check membership. Please try again.",
@@ -80,7 +80,7 @@ export function useAuthRedirect() {
             }
 
             if (!memberData || memberData.length === 0) {
-              console.log("useAuthRedirect - No workspace found, redirecting to onboarding");
+              
               toast({
                 title: "Welcome!",
                 description: "Let's create your first workspace",
@@ -92,7 +92,7 @@ export function useAuthRedirect() {
             // Use the first workspace as default
             const workspace = memberData[0];
             localStorage.setItem('selectedWorkspace', workspace.id);
-            console.log("useAuthRedirect - Setting workspace and redirecting to dashboard:", workspace);
+            
             toast({
               title: "Welcome back!",
               description: `You've been redirected to ${workspace.name || 'your workspace'}`,
@@ -100,7 +100,7 @@ export function useAuthRedirect() {
             navigate('/dashboard', { replace: true });
             return;
           } catch (error) {
-            console.error("Error fetching workspaces:", error);
+            
             // Fall back to onboarding if there's an error
             navigate('/dashboard', { replace: true });
             return;
@@ -122,7 +122,7 @@ export function useAuthRedirect() {
               navigate('/dashboard', { replace: true });
             }
           } catch (error) {
-            console.error("Error in redirect:", error);
+            
           }
           return;
         }
@@ -145,12 +145,12 @@ export function useAuthRedirect() {
               navigate('/dashboard', { replace: true });
             }
           } catch (error) {
-            console.error("Error handling email verification:", error);
+            
           }
         }
 
       } catch (error) {
-        console.error('Auth redirect error:', error);
+        
         toast({
           title: "Error",
           description: "An unexpected error occurred. Please try again.",

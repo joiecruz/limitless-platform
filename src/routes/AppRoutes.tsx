@@ -1,28 +1,28 @@
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import RequireAuth from "@/components/auth/RequireAuth";
-import { AdminLayout } from "@/layouts/AdminLayout";
-import { Session } from "@supabase/supabase-js";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { useEffect } from "react";
-import { isAppSubdomain } from "@/utils/domainHelpers";
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import RequireAuth from '@/components/auth/RequireAuth';
+import { AdminLayout } from '@/layouts/AdminLayout';
+import { Session } from '@supabase/supabase-js';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { useEffect } from 'react';
+import { isAppSubdomain } from '@/utils/domainHelpers';
 
 // Public/Marketing pages
-import Index from "@/pages/Index";
-import Product from "@/pages/landing/Product";
-import Services from "@/pages/landing/Services";
-import CoursesLanding from "@/pages/landing/Courses";
-import CourseDetail from "@/pages/landing/CourseDetail";
-import ToolsLanding from "@/pages/landing/Tools";
-import ToolDetail from "@/pages/landing/ToolDetail";
-import Blog from "@/pages/landing/Blog";
-import BlogPost from "@/pages/BlogPost";
-import CaseStudies from "@/pages/landing/CaseStudies";
-import CaseStudy from "@/pages/CaseStudy";
-import About from "@/pages/About";
-import Privacy from "@/pages/Privacy";
-import Terms from "@/pages/Terms";
-import NotFound from "@/pages/NotFound";
-import WorkshopDetail from "@/pages/landing/WorkshopDetail";
+import Index from '@/pages/Index';
+import Product from '@/pages/landing/Product';
+import Services from '@/pages/landing/Services';
+import CoursesLanding from '@/pages/landing/Courses';
+import CourseDetail from '@/pages/landing/CourseDetail';
+import ToolsLanding from '@/pages/landing/Tools';
+import ToolDetail from '@/pages/landing/ToolDetail';
+import Blog from '@/pages/landing/Blog';
+import BlogPost from '@/pages/BlogPost';
+import CaseStudies from '@/pages/landing/CaseStudies';
+import CaseStudy from '@/pages/CaseStudy';
+import About from '@/pages/About';
+import Privacy from '@/pages/Privacy';
+import Terms from '@/pages/Terms';
+import NotFound from '@/pages/NotFound';
+import WorkshopDetail from '@/pages/landing/WorkshopDetail';
 
 // App pages
 import Dashboard from "@/pages/Dashboard";
@@ -43,17 +43,18 @@ import Lessons from "@/pages/Lessons";
 import Lesson from "@/pages/Lesson";
 
 // Admin pages
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminUsers from "@/pages/admin/AdminUsers";
-import AdminWorkspaces from "@/pages/admin/AdminWorkspaces";
-import AdminWorkspaceDetails from "@/pages/admin/AdminWorkspaceDetails";
-import AdminCourses from "@/pages/admin/AdminCourses";
-import AdminPages from "@/pages/admin/AdminPages";
-import AdminContent from "@/pages/admin/AdminContent";
-import CreateBlog from "@/pages/admin/blog/CreateBlog";
-import EditBlog from "@/pages/admin/blog/EditBlog";
-import AdminSettings from "@/pages/admin/AdminSettings";
-import EditCaseStudy from "@/pages/admin/case-studies/EditCaseStudy";
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import AdminUsers from '@/pages/admin/AdminUsers';
+import AdminWorkspaces from '@/pages/admin/AdminWorkspaces';
+import AdminWorkspaceDetails from '@/pages/admin/AdminWorkspaceDetails';
+import AdminCourses from '@/pages/admin/AdminCourses';
+import AdminPages from '@/pages/admin/AdminPages';
+import AdminContent from '@/pages/admin/AdminContent';
+import CreateBlog from '@/pages/admin/blog/CreateBlog';
+import EditBlog from '@/pages/admin/blog/EditBlog';
+import AdminSettings from '@/pages/admin/AdminSettings';
+import EditCaseStudy from '@/pages/admin/case-studies/EditCaseStudy';
+import AdminReports from '@/components/admin/reports/AdminReports';
 
 interface AppRoutesProps {
   session: Session | null;
@@ -61,14 +62,7 @@ interface AppRoutesProps {
 
 const AppRoutes = ({ session }: AppRoutesProps) => {
   // Log routing information for debugging
-  useEffect(() => {
-    console.log("AppRoutes: Initializing with", {
-      session: !!session,
-      isAppSubdomain: isAppSubdomain(),
-      hostname: window.location.hostname,
-      pathname: window.location.pathname
-    });
-  }, [session]);
+  useEffect(() => {}, [session]);
 
   return (
     <Routes>
@@ -76,9 +70,13 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route
         path="/"
         element={
-          session ?
-            <Navigate to="/dashboard" replace /> :
-            (isAppSubdomain() ? <Navigate to="/dashboard" replace /> : <Index />)
+          session ? (
+            <Navigate to="/dashboard" replace />
+          ) : isAppSubdomain() ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Index />
+          )
         }
       />
 
@@ -110,22 +108,33 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/invite" element={<InvitePage />} />
 
       {/* Protected app routes */}
-      <Route element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}>
+      <Route
+        element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}
+      >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/projects" element={<Projects />} />
         <Route path="/dashboard/projects/create-project" element={<CreateProject />} />
         <Route path="/dashboard/courses" element={<Courses />} />
-        <Route path="/dashboard/courses/:courseId/lessons" element={<Lessons />} />
+        <Route
+          path="/dashboard/courses/:courseId/lessons"
+          element={<Lessons />}
+        />
         <Route path="/dashboard/tools" element={<Tools />} />
         <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
         <Route path="/dashboard/community" element={<Community />} />
         <Route path="/dashboard/settings" element={<Settings />} />
-        <Route path="/dashboard/account-settings" element={<AccountSettings />} />
+        <Route
+          path="/dashboard/account-settings"
+          element={<AccountSettings />}
+        />
       </Route>
 
       {/* Lesson routes - separate from dashboard layout */}
       <Route element={<RequireAuth>{session && <Outlet />}</RequireAuth>}>
-        <Route path="/dashboard/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
+        <Route
+          path="/dashboard/courses/:courseId/lessons/:lessonId"
+          element={<Lesson />}
+        />
       </Route>
 
       {/* Protected admin routes */}
@@ -133,15 +142,22 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
-        <Route path="/admin/workspaces/:workspaceId" element={<AdminWorkspaceDetails />} />
+        <Route
+          path="/admin/workspaces/:workspaceId"
+          element={<AdminWorkspaceDetails />}
+        />
         <Route path="/admin/courses" element={<AdminCourses />} />
         <Route path="/admin/pages" element={<AdminPages />} />
         <Route path="/admin/content" element={<AdminContent />} />
         <Route path="/admin/blog/create" element={<CreateBlog />} />
         <Route path="/admin/content/blog/create" element={<CreateBlog />} />
         <Route path="/admin/content/blog/:id" element={<EditBlog />} />
-        <Route path="/admin/content/case-studies/:id" element={<EditCaseStudy />} />
+        <Route
+          path="/admin/content/case-studies/:id"
+          element={<EditCaseStudy />}
+        />
         <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/reports" element={<AdminReports />} />
       </Route>
 
       {/* 404 catch-all route */}

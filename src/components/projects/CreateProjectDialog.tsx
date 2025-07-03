@@ -97,7 +97,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onSta
         description: "AI has created a description for your challenge",
       });
     } catch (error) {
-      console.error("Error generating description:", error);
+      
       toast({
         title: "Generation Failed",
         description: "Failed to generate description. Please try again or enter manually.",

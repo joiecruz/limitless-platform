@@ -62,13 +62,13 @@ export function MessageActions({
     : (userRole === 'admin' || userRole === 'owner'); // Workspace admins/owners for private channels
 
   const handleDelete = async () => {
-    console.log("Delete button clicked");
-    console.log("canDelete:", canDelete);
-    console.log("isPublicChannel:", isPublicChannel);
-    console.log("canDeletePublicMessages:", canDeletePublicMessages);
-    console.log("currentUserId:", currentUserId);
-    console.log("message.user_id:", message.user_id);
-    console.log("userRole:", userRole);
+    
+    
+    
+    
+    
+    
+    
 
     if (!canDelete) {
       const errorMessage = isPublicChannel
@@ -85,11 +85,7 @@ export function MessageActions({
 
     try {
       setIsDeleting(true);
-      console.log("Calling handleMessageDelete with:", {
-        messageId: message.id,
-        userRole: isPublicChannel ? (is_superadmin ? 'superadmin' : 'admin') : userRole,
-        messageUserId: message.user_id
-      });
+      
 
       const result = await handleMessageDelete(
         message.id,
@@ -99,7 +95,7 @@ export function MessageActions({
         onMessageRestore
       );
 
-      console.log("Delete operation result:", result);
+      
 
       if (result && typeof result === 'object' && result.success && result.undoFunction) {
         // Show toast with undo button
@@ -117,10 +113,10 @@ export function MessageActions({
           ),
         });
       } else if (result && typeof result === 'object' && !result.success) {
-        console.log("Message deletion failed");
+        
       }
     } catch (error) {
-      console.error("Error in delete handler:", error);
+      
       toast({
         title: "Error",
         description: "Failed to delete message",

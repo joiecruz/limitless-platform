@@ -15,14 +15,14 @@ export default function WorkshopDetail() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  console.log("WorkshopDetail: courseId from params:", courseId);
+  
 
   const { data: course, isLoading } = useQuery({
     queryKey: ["public-workshop", courseId],
     queryFn: async () => {
       if (!courseId) throw new Error("Course ID is required");
 
-      console.log("Fetching workshop with ID:", courseId);
+      
 
       const { data, error } = await supabase
         .from("courses")
@@ -32,11 +32,11 @@ export default function WorkshopDetail() {
         .single();
 
       if (error) {
-        console.error("Error fetching workshop:", error);
+        
         throw error;
       }
 
-      console.log("Workshop data:", data);
+      
       return data;
     },
     enabled: !!courseId,

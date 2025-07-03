@@ -23,7 +23,7 @@ export default function Blog() {
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error("Error fetching blog posts:", error);
+        
         toast({
           title: "Error loading blog posts",
           description: "Unable to load blog posts. Please try again later.",
@@ -39,7 +39,7 @@ export default function Blog() {
   // Log any errors for debugging
   useEffect(() => {
     if (error) {
-      console.error("Error in blog listing query:", error);
+      
     }
   }, [error]);
 

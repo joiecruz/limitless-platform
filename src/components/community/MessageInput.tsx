@@ -97,7 +97,7 @@ export function MessageInput({
   }, []);
 
   const handleTyping = () => {
-    console.log("[MessageInput] User is typing");
+    
     setTyping(true);
 
     // Clear any existing timeout
@@ -107,7 +107,7 @@ export function MessageInput({
 
     // Set a new timeout to stop typing after 3 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
-      console.log("[MessageInput] User stopped typing");
+      
       setTyping(false);
     }, 3000);
   };
@@ -141,7 +141,7 @@ export function MessageInput({
         }
         setMessage("");
       } catch (error) {
-        console.error('Error editing message:', error);
+        
         toast({
           title: "Error",
           description: "Failed to edit message",
@@ -259,7 +259,7 @@ export function MessageInput({
       onSendMessage(message, publicUrl);
       setMessage("");
     } catch (error) {
-      console.error("Error uploading image:", error);
+      
       toast({
         title: "Error",
         description: "Failed to upload image",

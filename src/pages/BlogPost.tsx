@@ -37,7 +37,7 @@ export default function BlogPost() {
         .single();
 
       if (error) {
-        console.error("Error loading blog post:", error);
+        
         toast({
           title: "Error loading blog post",
           description: "Unable to load the blog post. Please try again later.",
@@ -58,7 +58,7 @@ export default function BlogPost() {
   // Log any errors
   useEffect(() => {
     if (error) {
-      console.error("Error loading blog post:", error);
+      
     }
   }, [error]);
   
@@ -75,11 +75,11 @@ export default function BlogPost() {
   
   // Log debugging info
   useEffect(() => {
-    console.log("Blog Post Debug Info:");
-    console.log("- URL:", canonicalUrl);
-    console.log("- Slug:", slug);
-    console.log("- Post loaded:", !!post);
-    console.log("- Image:", post?.cover_image || defaultImage);
+    
+    
+    
+    
+    
   }, [canonicalUrl, slug, post]);
 
   if (isLoading) {

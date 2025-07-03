@@ -30,16 +30,16 @@ export function useCommunityChannels(workspaceId: string | null) {
     if (channel && workspaceId) {
       localStorage.setItem('limitless-active-channel', JSON.stringify(channel));
       localStorage.setItem('limitless-active-channel-workspace', workspaceId);
-      console.log('Saved active channel to localStorage:', channel.name);
+      
     } else {
       localStorage.removeItem('limitless-active-channel');
       localStorage.removeItem('limitless-active-channel-workspace');
-      console.log('Removed active channel from localStorage');
+      
     }
   }, [workspaceId]);
 
   const fetchPublicChannels = useCallback(async () => {
-    console.log("Fetching public channels...");
+    
     const { data, error } = await supabase
       .from("channels")
       .select("*")
@@ -47,7 +47,7 @@ export function useCommunityChannels(workspaceId: string | null) {
       .order("name");
 
     if (error) {
-      console.error("Error fetching public channels:", error);
+      
       toast({
         title: "Error",
         description: "Failed to load public channels",
@@ -56,18 +56,18 @@ export function useCommunityChannels(workspaceId: string | null) {
       return null;
     }
 
-    console.log("Fetched public channels:", data);
+    
     return data;
   }, [toast]);
 
   const fetchPrivateChannels = useCallback(async () => {
     if (!workspaceId) {
-      console.log("No workspace ID provided, skipping private channels fetch");
+      
       setPrivateChannels([]); // Clear private channels when no workspace is selected
       return [];
     }
 
-    console.log("Fetching private channels for workspace:", workspaceId);
+    
     const { data, error } = await supabase
       .from("channels")
       .select("*")
@@ -76,7 +76,7 @@ export function useCommunityChannels(workspaceId: string | null) {
       .order("name");
 
     if (error) {
-      console.error("Error fetching private channels:", error);
+      
       toast({
         title: "Error",
         description: "Failed to load private channels",
@@ -85,7 +85,7 @@ export function useCommunityChannels(workspaceId: string | null) {
       return [];
     }
 
-    console.log("Fetched private channels:", data);
+    
     return data;
   }, [workspaceId, toast]);
 
@@ -113,7 +113,7 @@ export function useCommunityChannels(workspaceId: string | null) {
 
       if (persistedChannel && allChannels.some(ch => ch.id === persistedChannel.id)) {
         // Persisted channel still exists, keep it
-        console.log('Keeping persisted active channel:', persistedChannel.name);
+        
         return;
       }
 
@@ -122,22 +122,22 @@ export function useCommunityChannels(workspaceId: string | null) {
         // Set active channel to first available channel in the workspace
         // Prioritize public channels, then private channels
         if (publicData && publicData.length > 0) {
-          console.log("Setting active channel to first public channel");
+          
           setActiveChannelWithPersistence(publicData[0]);
         } else if (privateData && privateData.length > 0) {
-          console.log("Setting active channel to first private channel");
+          
           setActiveChannelWithPersistence(privateData[0]);
         } else {
-          console.log("No channels available");
+          
           setActiveChannelWithPersistence(null);
         }
       } else {
         // If no workspace, clear private channels and set to first public channel
         if (publicData && publicData.length > 0) {
-          console.log("Setting active channel to first public channel (no workspace)");
+          
           setActiveChannelWithPersistence(publicData[0]);
         } else {
-          console.log("No public channels available");
+          
           setActiveChannelWithPersistence(null);
         }
       }
@@ -149,11 +149,11 @@ export function useCommunityChannels(workspaceId: string | null) {
   // Subscribe to channel changes
   useEffect(() => {
     if (!workspaceId) {
-      console.log("No workspace ID, skipping channel subscription");
+      
       return;
     }
 
-    console.log("Setting up channel subscription for workspace:", workspaceId);
+    
 
     // Set up the channel subscription with workspace filter
     const channelSubscription = supabase
@@ -167,7 +167,7 @@ export function useCommunityChannels(workspaceId: string | null) {
           filter: `workspace_id=eq.${workspaceId}`
         },
         async (payload) => {
-          console.log('Channel change received:', payload);
+          
 
           // Handle different types of changes
           if (payload.eventType === 'DELETE') {
@@ -188,13 +188,13 @@ export function useCommunityChannels(workspaceId: string | null) {
             } else {
               // For private channels, add to the list if it belongs to current workspace
               if (newChannel.workspace_id === workspaceId) {
-                console.log("Adding new private channel to workspace:", workspaceId);
+                
                 setPrivateChannels(prev => [...prev, newChannel].sort((a, b) => a.name.localeCompare(b.name)));
               }
             }
           } else if (payload.eventType === 'UPDATE' && payload.new) {
             const updatedChannel = payload.new as Channel;
-            console.log("Channel update received:", updatedChannel);
+            
 
             // Update the specific channel in the appropriate list
             if (updatedChannel.is_public) {
@@ -221,7 +221,7 @@ export function useCommunityChannels(workspaceId: string | null) {
         }
       )
       .subscribe((status) => {
-        console.log('Channel subscription status:', status);
+        
       });
 
     // Set up a separate subscription for unread counts
@@ -236,7 +236,7 @@ export function useCommunityChannels(workspaceId: string | null) {
           filter: `workspace_id=eq.${workspaceId}`
         },
         async (payload) => {
-          console.log('Unread count update received:', payload);
+          
 
           if (payload.eventType === 'UPDATE' && payload.new) {
             const { channel_id, unread_count } = payload.new;
@@ -261,17 +261,17 @@ export function useCommunityChannels(workspaceId: string | null) {
             // Update active channel if it was modified
             if (activeChannel?.id === channel_id) {
               // Note: unread_count is not part of Channel type, handled separately
-              console.log('Unread count updated for active channel:', channel_id);
+              
             }
           }
         }
       )
       .subscribe((status) => {
-        console.log('Unread count subscription status:', status);
+        
       });
 
     return () => {
-      console.log("Cleaning up channel subscriptions");
+      
       channelSubscription.unsubscribe();
       unreadSubscription.unsubscribe();
     };

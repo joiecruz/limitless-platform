@@ -74,13 +74,13 @@ export function RelatedBlogs({
         }
         
         if (error) {
-          console.error("Error fetching related posts:", error);
+          
           return;
         }
         
         setRelatedPosts(data || []);
       } catch (error) {
-        console.error("Failed to fetch related posts:", error);
+        
       } finally {
         setIsLoading(false);
       }

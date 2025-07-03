@@ -129,7 +129,7 @@ export default function AdminUsers() {
         description: data.message || "User deleted successfully",
       });
     } catch (error: any) {
-      console.error('Error deleting user:', error);
+      
       toast({
         title: "Error deleting user",
         description: error.message,

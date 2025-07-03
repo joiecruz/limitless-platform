@@ -40,7 +40,7 @@ const App = () => {
   // Memoize the getInitialSession function to avoid recreation on each render
   const getInitialSession = useCallback(async () => {
     try {
-      console.log("Getting initial session...");
+      
 
       // Check if we're in a password recovery context
       const urlParams = new URLSearchParams(window.location.search);
@@ -48,7 +48,7 @@ const App = () => {
       const isPasswordRecovery = urlParams.get('type') === 'recovery' || hashParams.get('type') === 'recovery';
 
       if (isPasswordRecovery) {
-        console.log("Password recovery context detected, skipping session initialization");
+        
         setSession(null);
         setLoading(false);
         return;
@@ -66,22 +66,22 @@ const App = () => {
       ]) as Awaited<typeof sessionPromise>;
 
       if (error) {
-        console.error("Error getting session:", error);
+        
         setSession(null);
         localStorage.removeItem('selectedWorkspace');
         return;
       }
 
       if (!initialSession) {
-        console.log("No initial session found");
+        
         setSession(null);
         return;
       }
 
-      console.log("Initial session found and valid");
+      
       setSession(initialSession);
     } catch (error) {
-      console.error("Error in getInitialSession:", error);
+      
       setSession(null);
     } finally {
       setLoading(false);
@@ -91,7 +91,7 @@ const App = () => {
   useEffect(() => {
     // If we're on apex domain, don't try loading the app yet
     if (isApexDomain() && !sessionStorage.getItem('apex_redirect_attempted')) {
-      console.log("App - On apex domain, waiting for redirect to complete");
+      
       return;
     }
 
@@ -105,7 +105,7 @@ const App = () => {
 
     // Set a timeout to force-complete loading regardless of session status
     sessionTimeoutId = window.setTimeout(() => {
-      console.log("Session check timed out, continuing with app initialization");
+      
       if (mounted) {
         setLoading(false);
       }
@@ -115,19 +115,19 @@ const App = () => {
 
     // Listen for auth changes (including password recovery events)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log("Auth state changed:", event, currentSession);
+      
 
       if (!mounted) return;
 
       if (event === 'PASSWORD_RECOVERY') {
-        console.log("Password recovery event detected");
+        
         // Don't set session or sign in the user during password recovery
         // Let them proceed to the reset password page without authentication
         return;
       }
 
       if (event === 'TOKEN_REFRESHED' && !currentSession) {
-        console.log("User signed out or token refresh failed - Clearing session and cache");
+        
         setSession(null);
         queryClient.clear();
         localStorage.removeItem('selectedWorkspace');
@@ -139,7 +139,7 @@ const App = () => {
       }
 
       if (event === 'SIGNED_OUT') {
-        console.log("User signed out or token refresh failed - Clearing session and cache");
+        
         setSession(null);
         queryClient.clear();
         localStorage.removeItem('selectedWorkspace');
@@ -147,19 +147,19 @@ const App = () => {
       }
 
       if (event === 'SIGNED_IN' && currentSession) {
-        console.log("User signed in:", currentSession);
+        
         setSession(currentSession);
         return;
       }
 
       if (event === 'TOKEN_REFRESHED' && currentSession) {
-        console.log("Token refreshed:", currentSession);
+        
         setSession(currentSession);
         return;
       }
 
       if (event === 'USER_UPDATED' && currentSession) {
-        console.log("User updated:", currentSession);
+        
         // Don't set session, show success toast
         setSession(null);
         queryClient.clear();

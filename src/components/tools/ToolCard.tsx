@@ -76,7 +76,7 @@ export function ToolCard({ tool }: ToolCardProps) {
         description: "Your download should begin shortly.",
       });
     } catch (error: any) {
-      console.error('Download error:', error);
+      
       toast({
         title: "Download failed",
         description: "There was an error downloading the file. Please try again.",
