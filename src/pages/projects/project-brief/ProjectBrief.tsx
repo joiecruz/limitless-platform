@@ -21,15 +21,11 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const { data, isLoading, saveProjectBrief, updateData } = useProjectBrief(currentWorkspace?.id || null);
 
-  console.log('ProjectBrief rendered with currentStep:', currentStep);
-
   const handleStepChange = (newStep: number) => {
-    console.log('Changing step from', currentStep, 'to', newStep);
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentStep(newStep);
       setIsTransitioning(false);
-      console.log('Step changed to:', newStep);
     }, 300); // 300ms fade out duration
   };
 
@@ -185,9 +181,17 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
             )}
             {currentStep === 2 && <ProjectTimeline ref={timelineRef} />}
             {currentStep === 3 && <ProjectSubmission onNext={() => handleStepChange(4)} />}
-            {currentStep === 4 && (
+            {currentStep === 4 && data.name && (
               <ProjectDesignChallenge 
-                projectData={data}
+                projectData={{
+                  name: data.name,
+                  description: data.description,
+                  problem: data.problem,
+                  customers: data.customers,
+                  targetOutcomes: data.targetOutcomes,
+                  sdgs: data.sdgs,
+                  innovationTypes: data.innovationTypes
+                }}
                 onSubmit={async (selectedChallenge) => {
                   try {
                     // Update project with selected design challenge
