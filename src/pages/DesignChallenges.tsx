@@ -34,8 +34,7 @@ const DesignChallenges = () => {
   };
 
   const handleStatusChange = (challengeId: string, newStatus: string) => {
-    updateChallengeStatus(challengeId, newStatus as any);
-    updateChallengeStatus(challengeId, newStatus as any);
+    updateChallengeStatus(challengeId, newStatus as ChallengeStatus);
   };
 
   const handleDelete = (challengeId: string) => {
@@ -109,8 +108,8 @@ const DesignChallenges = () => {
                 <div className="flex justify-between items-start gap-2">
                   <CardTitle className="text-lg line-clamp-2">{challenge.title}</CardTitle>
                   <div className="flex gap-1">
-                    <Badge className={getStatusColor(challenge.status)}>
-                      {challenge.status.replace('_', ' ')}
+                     <Badge className={getStatusColor(challenge.status as ChallengeStatus)}>
+                       {challenge.status.replace('_', ' ')}
                     </Badge>
                     {canDelete(challenge) && (
                       <Button

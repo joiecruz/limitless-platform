@@ -50,6 +50,7 @@ interface IssueReport {
   title: string;
   description: string;
   attachment_url: string | null;
+  category: string | null;
   status: 'pending' | 'in_progress' | 'resolved' | 'closed';
   admin_notes: string | null;
   created_at: string;
