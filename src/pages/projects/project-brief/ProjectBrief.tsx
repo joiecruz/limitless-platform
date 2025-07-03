@@ -21,11 +21,15 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const { data, isLoading, saveProjectBrief, updateData } = useProjectBrief(currentWorkspace?.id || null);
 
+  console.log('ProjectBrief rendered with currentStep:', currentStep);
+
   const handleStepChange = (newStep: number) => {
+    console.log('Changing step from', currentStep, 'to', newStep);
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentStep(newStep);
       setIsTransitioning(false);
+      console.log('Step changed to:', newStep);
     }, 300); // 300ms fade out duration
   };
 
