@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,8 +10,9 @@ import { useStickyNotes } from '@/hooks/useStickyNotes';
 import { supabase } from '@/integrations/supabase/client';
 import { DesignChallenge } from '@/types/designChallenge';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { useCurrentWorkspace } from '@/hooks/useCurrentWorkspace';
+import { WorkspaceContext } from '@/components/layout/DashboardLayout';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 const ChallengeCollaboration = () => {
   const { challengeId } = useParams<{ challengeId: string }>();
@@ -19,11 +20,41 @@ const ChallengeCollaboration = () => {
   const [challenge, setChallenge] = useState<DesignChallenge | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { data: workspace } = useCurrentWorkspace();
-  const { currentUserId, userRole } = workspace || {};
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { toast } = useToast();
+  const { currentWorkspace } = useContext(WorkspaceContext);
+  const workspaceId = currentWorkspace?.id || null;
   const { stickyNotes, createStickyNote, updateStickyNotePosition, deleteStickyNote } = useStickyNotes(challengeId || null);
 
   const canDeleteAny = userRole === 'admin' || userRole === 'owner';
+
+  // Fetch user role and ID when workspace changes
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!workspaceId) return;
+      
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        setCurrentUserId(user.id);
+        
+        const { data: membershipData } = await supabase
+          .from('workspace_members')
+          .select('role')
+          .eq('workspace_id', workspaceId)
+          .eq('user_id', user.id)
+          .single();
+          
+        setUserRole(membershipData?.role || null);
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+    
+    fetchUserInfo();
+  }, [workspaceId]);
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -49,7 +80,7 @@ const ChallengeCollaboration = () => {
         setChallenge(data);
       } catch (error) {
         console.error('Error fetching challenge:', error);
-        navigate('/dashboard/challenges');
+        navigate('/dashboard/projects');
       } finally {
         setLoading(false);
       }
