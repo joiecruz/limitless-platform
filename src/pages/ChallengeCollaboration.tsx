@@ -14,7 +14,7 @@ import { WorkspaceContext } from '@/components/layout/DashboardLayout';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useUserSession } from '@/hooks/useUserProfile';
-import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
+import { useQuery } from '@tanstack/react-query';
 
 const ChallengeCollaboration = () => {
   const { challengeId } = useParams<{ challengeId: string }>();
@@ -29,15 +29,24 @@ const ChallengeCollaboration = () => {
   
   // Use existing hooks for authentication and workspace role
   const { data: currentUser } = useUserSession();
-  const { data: userRole, isLoading: roleLoading } = useWorkspaceRole(workspaceId || undefined);
   
-  // Debug the role data
-  console.log('ChallengeCollaboration Debug:', {
-    workspaceId,
-    currentUser: currentUser?.id,
-    userRole,
-    roleLoading,
-    canDeleteAny: userRole === 'admin' || userRole === 'owner'
+  // Direct query for workspace role to ensure it works correctly
+  const { data: userRole } = useQuery({
+    queryKey: ['workspace-role', workspaceId, currentUser?.id],
+    queryFn: async () => {
+      if (!workspaceId || !currentUser?.id) return null;
+
+      const { data, error } = await supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', currentUser.id)
+        .single();
+
+      if (error) return null;
+      return data?.role;
+    },
+    enabled: !!(workspaceId && currentUser?.id)
   });
   
   const canDeleteAny = userRole === 'admin' || userRole === 'owner';
