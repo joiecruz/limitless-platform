@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useImperativeHandle, useContext } from "react";
+import React, { useState, forwardRef, useImperativeHandle, useContext, useEffect } from "react";
 import { useWorkspaceMembers } from "@/hooks/useWorkspaceMembers";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 
@@ -29,35 +29,34 @@ export interface ProjectTimelineRef {
 }
 
 export default forwardRef<ProjectTimelineRef>((props, ref) => {
-  // Initial team members data
-  const initialTeamMembers = [
-    { 
-      name: "John Doe", 
-      email: "john@example.com", 
-      role: "Admin",
-      permission: "Admin",
-      image: "/sample-avatars/john.jpg"
-    },
-    { 
-      name: "Jane Smith", 
-      email: "jane@example.com", 
-      role: "Editor",
-      permission: "Can edit",
-      image: "/sample-avatars/jane.jpg"
-    },
-    { 
-      name: "Bob Wilson", 
-      email: "bob@example.com", 
-      role: "Guest",
-      permission: "Can view",
-      image: "/sample-avatars/bob.jpg"
-    },
-  ];
+  const { currentWorkspace } = useContext(WorkspaceContext);
+  const { data: workspaceMembers = [], isLoading } = useWorkspaceMembers(currentWorkspace?.id || "");
+  
+  // Convert workspace members to team members format
+  const formatWorkspaceMembers = () => {
+    return workspaceMembers.map((member) => ({
+      user_id: member.user_id,
+      name: `${member.profiles.first_name || ''} ${member.profiles.last_name || ''}`.trim() || 'Unknown User',
+      email: member.profiles.email,
+      role: member.role === 'owner' ? 'Admin' : member.role === 'admin' ? 'Editor' : 'Guest',
+      permission: member.role === 'owner' ? 'Admin' : member.role === 'admin' ? 'Can edit' : 'Can view',
+      image: "/sample-avatars/john.jpg" // Default avatar
+    }));
+  };
 
-  const [teamMembers, setTeamMembers] = useState(initialTeamMembers);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [touched, setTouched] = useState(false);
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState("");
+
+  // Update team members when workspace members load
+  useEffect(() => {
+    if (workspaceMembers.length > 0) {
+      setTeamMembers(formatWorkspaceMembers());
+    }
+  }, [workspaceMembers]);
 
   // Function to get permission based on role
   const getPermissionForRole = (role) => {
@@ -91,6 +90,34 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
           : member
       )
     );
+  };
+
+  const addNewMember = () => {
+    if (!newMemberEmail || !newMemberRole) return;
+    
+    // Check if member with this email already exists in workspace
+    const existingMember = workspaceMembers.find(m => m.profiles.email === newMemberEmail);
+    if (!existingMember) {
+      // This person is not in the workspace, can't add them
+      return;
+    }
+
+    // Check if already added to project
+    const alreadyAdded = teamMembers.find(m => m.email === newMemberEmail);
+    if (alreadyAdded) return;
+
+    const newMember = {
+      user_id: existingMember.user_id,
+      name: `${existingMember.profiles.first_name || ''} ${existingMember.profiles.last_name || ''}`.trim(),
+      email: existingMember.profiles.email,
+      role: newMemberRole,
+      permission: getPermissionForRole(newMemberRole),
+      image: "/sample-avatars/john.jpg"
+    };
+
+    setTeamMembers(prev => [...prev, newMember]);
+    setNewMemberEmail("");
+    setNewMemberRole("");
   };
 
   useImperativeHandle(ref, () => ({
@@ -158,41 +185,51 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
 
       <div className="flex w-full gap-3 mt-3">
         <div className="flex flex-col justify-between" style={{ width: '55%' }}>
-          <label className="block text-[13px] text-gray-600 font-bold font-sans mb-1" htmlFor="collaborators">Invite Collaborators</label>
-          <input
+          <label className="block text-[13px] text-gray-600 font-bold font-sans mb-1" htmlFor="collaborators">Add Team Member</label>
+          <select
             id="collaborators"
-            type="text"
-            placeholder="Enter email address"
-            className="w-full text-gray-600 rounded-[8px] border border-gray-200 font-medium px-4 py-3 text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF]"
+            value={newMemberEmail}
+            onChange={(e) => setNewMemberEmail(e.target.value)}
+            className="w-full text-gray-600 rounded-[8px] border border-gray-200 font-medium px-4 py-3 text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white"
             style={{ marginBottom: 16 }}
-          />
+          >
+            <option value="">Select workspace member</option>
+            {workspaceMembers
+              .filter(member => !teamMembers.find(tm => tm.email === member.profiles.email))
+              .map((member) => (
+                <option key={member.user_id} value={member.profiles.email}>
+                  {`${member.profiles.first_name || ''} ${member.profiles.last_name || ''}`.trim()} ({member.profiles.email})
+                </option>
+              ))}
+          </select>
         </div>
         
         <div className="flex flex-col justify-between" style={{ width: '25%' }}>
           <label className="block text-[13px] text-gray-600 font-bold font-sans mb-1" htmlFor="role">Role</label>
           <select
             id="role"
+            value={newMemberRole}
+            onChange={(e) => setNewMemberRole(e.target.value)}
             className="w-full text-gray-400 rounded-[8px] border border-gray-200 font-medium px-4  text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white"
             style={{ marginBottom: 16 }}
           >
             <option value="">Select role</option>
-            <option value="admin">Admin</option>
-            <option value="editor">Editor</option>
-            <option value="guest">Guest</option>
+            <option value="Admin">Admin</option>
+            <option value="Editor">Editor</option>
+            <option value="Guest">Guest</option>
           </select>
         </div>
         <div className="flex flex-col justify-between" style={{ width: '20%' }}>
-          <label className="block text-[13px] text-gray-600 font-bold font-sans mb-1" htmlFor="permissions">Permissions</label>
-          <select
-            id="permissions"
-            className="w-full text-gray-700 rounded-[8px] border border-gray-200 font-normal px-4 py-0 text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white"
+          <label className="block text-[13px] text-gray-600 font-bold font-sans mb-1">&nbsp;</label>
+          <button
+            type="button"
+            onClick={addNewMember}
+            disabled={!newMemberEmail || !newMemberRole}
+            className="w-full bg-[#393CA0FF] text-white rounded-[8px] px-4 py-3 text-[13px] h-[40px] font-sans hover:bg-[#2C2E7AFF] disabled:bg-gray-300 disabled:cursor-not-allowed"
             style={{ marginBottom: 16 }}
           >
-            <option value="">Can edit</option>
-            <option value="can-edit">Can edit</option>
-            <option value="admin">Admin</option>
-            <option value="can-view">Can view</option>
-          </select>
+            Add
+          </button>
         </div>
       </div>
 
