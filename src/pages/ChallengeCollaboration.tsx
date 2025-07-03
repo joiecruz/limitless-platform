@@ -32,24 +32,34 @@ const ChallengeCollaboration = () => {
   // Fetch user role and ID when workspace changes
   useEffect(() => {
     const fetchUserInfo = async () => {
-      if (!workspaceId) return;
+      if (!workspaceId) {
+        console.log('ChallengeCollaboration: No workspaceId provided');
+        return;
+      }
       
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          console.log('ChallengeCollaboration: No authenticated user');
+          return;
+        }
         
+        console.log('ChallengeCollaboration: Current user:', user.id);
         setCurrentUserId(user.id);
         
-        const { data: membershipData } = await supabase
+        const { data: membershipData, error } = await supabase
           .from('workspace_members')
           .select('role')
           .eq('workspace_id', workspaceId)
           .eq('user_id', user.id)
           .single();
+        
+        console.log('ChallengeCollaboration: Workspace membership:', { membershipData, error, workspaceId });
           
         setUserRole(membershipData?.role || null);
+        console.log('ChallengeCollaboration: User role set to:', membershipData?.role);
       } catch (error) {
-        console.error('Error fetching user info:', error);
+        console.error('ChallengeCollaboration: Error fetching user info:', error);
       }
     };
     
@@ -182,15 +192,27 @@ const ChallengeCollaboration = () => {
       {/* Collaboration Area */}
       <div className="relative w-full h-[calc(100vh-200px)] overflow-auto bg-gray-50">
         <div className="absolute inset-0 min-w-[2000px] min-h-[1500px]">
-          {stickyNotes.map((note) => (
-            <StickyNoteComponent
-              key={note.id}
-              note={note}
-              onPositionChange={(x, y) => updateStickyNotePosition(note.id, x, y)}
-              onDelete={() => deleteStickyNote(note.id)}
-              canDelete={canDeleteAny || note.created_by === currentUserId}
-            />
-          ))}
+          {stickyNotes.map((note) => {
+            const canDelete = canDeleteAny || note.created_by === currentUserId;
+            console.log('ChallengeCollaboration: Note delete permissions:', {
+              noteId: note.id,
+              canDeleteAny,
+              userRole,
+              currentUserId,
+              noteCreatedBy: note.created_by,
+              canDelete
+            });
+            
+            return (
+              <StickyNoteComponent
+                key={note.id}
+                note={note}
+                onPositionChange={(x, y) => updateStickyNotePosition(note.id, x, y)}
+                onDelete={() => deleteStickyNote(note.id)}
+                canDelete={canDelete}
+              />
+            );
+          })}
           
           {stickyNotes.length === 0 && (
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
