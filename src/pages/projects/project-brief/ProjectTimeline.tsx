@@ -1,6 +1,7 @@
 import React, { useState, forwardRef, useImperativeHandle, useContext, useEffect } from "react";
 import { useWorkspaceMembers } from "@/hooks/useWorkspaceMembers";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface ProjectTimelineRef {
   validate: () => boolean | string;
@@ -32,29 +33,39 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const { data: workspaceMembers = [], isLoading } = useWorkspaceMembers(currentWorkspace?.id || "");
   
-  // Convert workspace members to team members format
-  const formatWorkspaceMembers = () => {
-    return workspaceMembers.map((member) => ({
-      user_id: member.user_id,
-      name: `${member.profiles.first_name || ''} ${member.profiles.last_name || ''}`.trim() || 'Unknown User',
-      email: member.profiles.email,
-      role: member.role === 'owner' ? 'Admin' : member.role === 'admin' ? 'Editor' : 'Guest',
-      permission: member.role === 'owner' ? 'Admin' : member.role === 'admin' ? 'Can edit' : 'Can view',
-      image: "/sample-avatars/john.jpg" // Default avatar
-    }));
-  };
-
+  // Initialize with just the current user as owner
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [touched, setTouched] = useState(false);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("");
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Update team members when workspace members load
+  // Get current user and set as owner
   useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && workspaceMembers.length > 0) {
+        const currentMember = workspaceMembers.find(m => m.user_id === user.id);
+        if (currentMember) {
+          const ownerMember = {
+            user_id: currentMember.user_id,
+            name: `${currentMember.profiles.first_name || ''} ${currentMember.profiles.last_name || ''}`.trim() || 'You',
+            email: currentMember.profiles.email,
+            role: 'Owner',
+            permission: 'Owner',
+            image: "/sample-avatars/john.jpg",
+            isOwner: true
+          };
+          setCurrentUser(ownerMember);
+          setTeamMembers([ownerMember]);
+        }
+      }
+    };
+    
     if (workspaceMembers.length > 0) {
-      setTeamMembers(formatWorkspaceMembers());
+      getCurrentUser();
     }
   }, [workspaceMembers]);
 
@@ -64,6 +75,7 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
       case "Admin": return "Admin";
       case "Editor": return "Can edit";
       case "Guest": return "Can view";
+      case "Owner": return "Owner";
       default: return "Can view";
     }
   };
@@ -74,11 +86,15 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
       case "Admin": return "Admin";
       case "Can edit": return "Editor";
       case "Can view": return "Guest";
+      case "Owner": return "Owner";
       default: return "Guest";
     }
   };
 
   const handlePermissionChange = (index, newPermission) => {
+    // Don't allow editing owner permissions
+    if (teamMembers[index]?.isOwner) return;
+    
     setTeamMembers(prev =>
       prev.map((member, i) =>
         i === index
@@ -121,6 +137,8 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
   };
 
   const removeMember = (index: number) => {
+    // Don't allow removing owner
+    if (teamMembers[index]?.isOwner) return;
     setTeamMembers(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -199,7 +217,10 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
           >
             <option value="">Select workspace member</option>
             {workspaceMembers
-              .filter(member => !teamMembers.find(tm => tm.email === member.profiles.email))
+              .filter(member => 
+                member.user_id !== currentUser?.user_id && // Exclude current user (owner)
+                !teamMembers.find(tm => tm.email === member.profiles.email) // Exclude already added members
+              )
               .map((member) => (
                 <option key={member.user_id} value={member.profiles.email}>
                   {`${member.profiles.first_name || ''} ${member.profiles.last_name || ''}`.trim()} ({member.profiles.email})
@@ -278,6 +299,7 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
               <div style={{ width: '25%' }} className="flex items-center">
                 <span
                   className={`text-[13px] font-medium px-3 py-2 rounded-full
+                    ${member.role === 'Owner' ? 'bg-[#F4F4FB] text-[#393CA0]' : ''}
                     ${member.role === 'Admin' ? 'bg-[#F4F4FB] text-[#393CA0]' : ''}
                     ${member.role === 'Editor' ? 'bg-[#E9FAF9] text-[#1A6B5C]' : ''}
                     ${member.role === 'Guest' ? 'bg-[#FFF3F7] text-[#FF206E]' : ''}
@@ -289,21 +311,32 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
               <div style={{ width: '20%' }}>
                 <div className="flex items-center gap-2">
                   <select
-                    className="flex-1 text-gray-700 rounded-[8px] border border-gray-200 font-normal px-4 text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white"
+                    className={`flex-1 text-gray-700 rounded-[8px] border border-gray-200 font-normal px-4 text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white ${
+                      member.isOwner ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                     value={member.permission}
                     onChange={e => handlePermissionChange(index, e.target.value)}
+                    disabled={member.isOwner}
                   >
-                    <option value="Admin">Admin</option>
-                    <option value="Can edit">Can edit</option>
-                    <option value="Can view">Can view</option>
+                    {member.isOwner ? (
+                      <option value="Owner">Owner</option>
+                    ) : (
+                      <>
+                        <option value="Admin">Admin</option>
+                        <option value="Can edit">Can edit</option>
+                        <option value="Can view">Can view</option>
+                      </>
+                    )}
                   </select>
-                  <button
-                    onClick={() => removeMember(index)}
-                    className="w-8 h-8 rounded-[6px] bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center text-sm"
-                    title="Remove member"
-                  >
-                    ×
-                  </button>
+                  {!member.isOwner && (
+                    <button
+                      onClick={() => removeMember(index)}
+                      className="w-8 h-8 rounded-[6px] bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center text-sm"
+                      title="Remove member"
+                    >
+                      ×
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
