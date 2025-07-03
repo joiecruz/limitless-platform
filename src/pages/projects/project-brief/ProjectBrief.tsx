@@ -187,16 +187,18 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                 onSubmit={async (selectedChallenge) => {
                   try {
                     // Update project with selected design challenge
-                    const updatedMetadata = {
-                      ...data,
-                      designChallenge: selectedChallenge,
-                      stage: 'challenge_completed'
-                    };
                     updateData({ designChallenge: selectedChallenge } as any);
                     await saveProjectBrief();
                     
-                    // Navigate to empathize stage
-                    navigate("/dashboard/projects");
+                    toast({
+                      title: "Success",
+                      description: "Design challenge saved successfully! Your project is now ready.",
+                    });
+                    
+                    // Wait a moment then navigate back to projects
+                    setTimeout(() => {
+                      navigate("/dashboard/projects");
+                    }, 1500);
                   } catch (error) {
                     toast({
                       title: "Error",
@@ -229,20 +231,6 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
             )}
             
           </div>
-          {/* Next Button */}
-          {currentStep === 3 && (
-            <button className="mt-[-28px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1" 
-            onClick={() => handleStepChange(Math.min(currentStep + 1, 5))} >
-            <img
-                src="/projects-navbar-icons/sparkle.svg"
-                alt=""
-                width={15}
-                height={15}
-                style={{ marginRight: 2, marginLeft: -5, color: 'white' }}
-                />
-                Next
-            </button>
-          )}
         </div>
       </div>
       
