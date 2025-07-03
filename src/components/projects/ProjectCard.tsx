@@ -22,6 +22,7 @@ export interface ProjectCardProps {
   createdAt: string;
   currentStage?: string;
   projectPhases?: string[];
+  designChallenge?: string;
   canDelete?: boolean;
   onClick?: () => void;
   onDelete?: () => void;
@@ -35,9 +36,10 @@ export function ProjectCard({
   createdAt, 
   currentStage, 
   projectPhases = [], 
+  designChallenge,
   canDelete = false,
   onClick,
-  onDelete 
+  onDelete
 }: ProjectCardProps) {
   
   const getInitials = (firstName: string | null, lastName: string | null, email: string) => {
@@ -82,6 +84,15 @@ export function ProjectCard({
           <p className="text-muted-foreground text-sm line-clamp-3 mb-4">
             {description}
           </p>
+        )}
+        
+        {designChallenge && (
+          <div className="mb-4">
+            <span className="text-xs font-semibold text-primary mb-1 block">Design Challenge</span>
+            <p className="text-muted-foreground text-sm line-clamp-2 italic">
+              {designChallenge}
+            </p>
+          </div>
         )}
         
         {creator && (

@@ -1,15 +1,93 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProjectLoading from "./ProjectLoading";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const challenges = [
-  "How might we improve our customer onboarding process to ensure new users feel confident and supported from day one?",
-  "How might we reduce our product's environmental impact while maintaining its quality and affordability?",
-  "How might we create a more engaging virtual workspace that fosters collaboration and creativity among remote team members?",
-];
+interface ProjectDesignChallengesProps {
+  projectData: {
+    name: string;
+    description: string;
+    problem: string;
+    customers: string;
+    targetOutcomes: string;
+    sdgs: string[];
+    innovationTypes: string[];
+  };
+  onSubmit: (selectedChallenge: string) => void;
+}
 
-export default function ProjectDesignChallenges() {
+export default function ProjectDesignChallenges({ projectData, onSubmit }: ProjectDesignChallengesProps) {
   const [selected, setSelected] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [challenges, setChallenges] = useState<string[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    generateDesignChallenges();
+  }, []);
+
+  const generateDesignChallenges = async () => {
+    try {
+      const contextInfo = [
+        `Project: "${projectData.name}"`,
+        `Description: "${projectData.description}"`,
+        `Problem: "${projectData.problem}"`,
+        `Target audience: "${projectData.customers}"`,
+        `Target outcomes: "${projectData.targetOutcomes}"`,
+        `SDGs: ${projectData.sdgs.join(', ')}`,
+        `Innovation types: ${projectData.innovationTypes.join(', ')}`
+      ].filter(Boolean).join('. ');
+
+      const prompt = `Based on this project brief: ${contextInfo}. Generate 3 distinct "How might we..." design challenge statements that are specific to this project. Each should be actionable, inspiring, and focused on different aspects of the problem. Return them as a JSON array of strings.`;
+
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { prompt }
+      });
+      
+      if (error) throw error;
+      
+      // Try to parse as JSON, fallback to splitting by lines
+      let generatedChallenges;
+      try {
+        generatedChallenges = JSON.parse(data.generatedText);
+      } catch {
+        generatedChallenges = data.generatedText
+          .split('\n')
+          .filter((line: string) => line.trim().startsWith('How might we'))
+          .slice(0, 3);
+      }
+      
+      if (Array.isArray(generatedChallenges) && generatedChallenges.length > 0) {
+        setChallenges(generatedChallenges);
+      } else {
+        // Fallback challenges
+        setChallenges([
+          `How might we solve the core problem: ${projectData.problem}?`,
+          `How might we better serve ${projectData.customers} in achieving ${projectData.targetOutcomes}?`,
+          `How might we innovate ${projectData.name} to create meaningful impact?`
+        ]);
+      }
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: "Using fallback challenges. Please try again.",
+        variant: "destructive",
+      });
+      
+      // Fallback challenges
+      setChallenges([
+        `How might we solve the core problem: ${projectData.problem}?`,
+        `How might we better serve ${projectData.customers} in achieving ${projectData.targetOutcomes}?`,
+        `How might we innovate ${projectData.name} to create meaningful impact?`
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = () => {
+    onSubmit(challenges[selected]);
+  };
 
   if (loading) {
     return <ProjectLoading />;
@@ -40,7 +118,7 @@ export default function ProjectDesignChallenges() {
       </div>
       <button
         className="mt-[8px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1"
-        onClick={() => setLoading(true)}
+        onClick={handleSubmit}
       >
         Submit
       </button>

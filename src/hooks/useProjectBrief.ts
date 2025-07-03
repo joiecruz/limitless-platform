@@ -24,6 +24,9 @@ export interface ProjectBriefData {
     role: string;
     permission: string;
   }>;
+  
+  // Design Challenge
+  designChallenge?: string;
 }
 
 export interface ProjectBriefState {
@@ -43,7 +46,8 @@ const initialData: ProjectBriefData = {
   innovationTypes: [],
   startDate: '',
   endDate: '',
-  teamMembers: []
+  teamMembers: [],
+  designChallenge: ''
 };
 
 export const useProjectBrief = (workspaceId: string | null) => {
@@ -116,7 +120,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
             innovationTypes: metadata.innovationTypes || [],
             startDate: project.start_date ? project.start_date.split('T')[0] : '',
             endDate: project.end_date ? project.end_date.split('T')[0] : '',
-            teamMembers
+            teamMembers,
+            designChallenge: metadata.designChallenge || ''
           },
           isLoading: false,
           isDirty: false,
@@ -150,7 +155,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
         targetOutcomes: state.data.targetOutcomes,
         sdgs: state.data.sdgs,
         innovationTypes: state.data.innovationTypes,
-        stage: 'brief_completed',
+        designChallenge: state.data.designChallenge,
+        stage: state.data.designChallenge ? 'challenge_completed' : 'brief_completed',
         methodology: 'design_thinking'
       };
 

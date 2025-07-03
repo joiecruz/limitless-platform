@@ -180,8 +180,33 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
               />
             )}
             {currentStep === 2 && <ProjectTimeline ref={timelineRef} />}
-            {currentStep === 3 && <ProjectSubmission />}
-            {currentStep === 4 && <ProjectDesignChallenge />}
+            {currentStep === 3 && <ProjectSubmission onNext={() => handleStepChange(4)} />}
+            {currentStep === 4 && (
+              <ProjectDesignChallenge 
+                projectData={data}
+                onSubmit={async (selectedChallenge) => {
+                  try {
+                    // Update project with selected design challenge
+                    const updatedMetadata = {
+                      ...data,
+                      designChallenge: selectedChallenge,
+                      stage: 'challenge_completed'
+                    };
+                    updateData({ designChallenge: selectedChallenge } as any);
+                    await saveProjectBrief();
+                    
+                    // Navigate to empathize stage
+                    navigate("/dashboard/projects");
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to save design challenge",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              />
+            )}
           </div>
           <div className="flex justify-end gap-4" style={{ width: '55vw' }}>
             {currentStep > 0 && currentStep < 3 && (

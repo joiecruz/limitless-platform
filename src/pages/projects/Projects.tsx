@@ -202,6 +202,7 @@ export default function Projects() {
                             createdAt={project.created_at}
                             currentStage={project.current_stage_id ? "empathize" : "project_brief"}
                             projectPhases={["DT"]}
+                            designChallenge={project.metadata?.designChallenge}
                             canDelete={canDeleteProject(project)}
                             onClick={() => handleProjectClick(project)}
                             onDelete={() => handleDeleteProject(project.id)}
