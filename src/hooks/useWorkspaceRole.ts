@@ -1,26 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export function useWorkspaceRole() {
+export function useWorkspaceRole(workspaceId?: string) {
   return useQuery({
-    queryKey: ['workspace-role'],
+    queryKey: ['workspace-role', workspaceId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { workspaceId: null, userRole: null, currentUserId: null };
+      if (!workspaceId) return null;
 
-      // Get user's workspace
-      const { data: workspaceData } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
         .from('workspace_members')
-        .select('workspace_id, role')
+        .select('role')
+        .eq('workspace_id', workspaceId)
         .eq('user_id', user.id)
-        .limit(1)
         .single();
 
-      return {
-        workspaceId: workspaceData?.workspace_id || null,
-        userRole: workspaceData?.role || null,
-        currentUserId: user.id
-      };
-    }
+      if (error) {
+        return null;
+      }
+
+      return data?.role;
+    },
+    enabled: !!workspaceId
   });
 }

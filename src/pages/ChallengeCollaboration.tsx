@@ -10,7 +10,7 @@ import { useStickyNotes } from '@/hooks/useStickyNotes';
 import { supabase } from '@/integrations/supabase/client';
 import { DesignChallenge } from '@/types/designChallenge';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
+import { useCurrentWorkspace } from '@/hooks/useCurrentWorkspace';
 import { format } from 'date-fns';
 
 const ChallengeCollaboration = () => {
@@ -19,8 +19,8 @@ const ChallengeCollaboration = () => {
   const [challenge, setChallenge] = useState<DesignChallenge | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { data: roleData } = useWorkspaceRole();
-  const { currentUserId, userRole } = roleData || {};
+  const { data: workspace } = useCurrentWorkspace();
+  const { currentUserId, userRole } = workspace || {};
   const { stickyNotes, createStickyNote, updateStickyNotePosition, deleteStickyNote } = useStickyNotes(challengeId || null);
 
   const canDeleteAny = userRole === 'admin' || userRole === 'owner';

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CreateChallengeDialog } from '@/components/challenges/CreateChallengeDialog';
 import { useDesignChallenges } from '@/hooks/useDesignChallenges';
-import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
+import { useCurrentWorkspace } from '@/hooks/useCurrentWorkspace';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Plus, Trash2 } from 'lucide-react';
 import { DesignChallenge, ChallengeStatus } from '@/types/designChallenge';
@@ -16,8 +16,8 @@ import { format } from 'date-fns';
 const DesignChallenges = () => {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const { data: roleData } = useWorkspaceRole();
-  const { workspaceId, userRole, currentUserId } = roleData || {};
+  const { data: workspace } = useCurrentWorkspace();
+  const { workspaceId, userRole, currentUserId } = workspace || {};
   const { challenges, loading, createChallenge, updateChallengeStatus, deleteChallenge } = useDesignChallenges(workspaceId);
 
   const canManageStatus = userRole === 'admin' || userRole === 'owner';
@@ -34,7 +34,8 @@ const DesignChallenges = () => {
   };
 
   const handleStatusChange = (challengeId: string, newStatus: string) => {
-    updateChallengeStatus(challengeId, newStatus);
+    updateChallengeStatus(challengeId, newStatus as any);
+    updateChallengeStatus(challengeId, newStatus as any);
   };
 
   const handleDelete = (challengeId: string) => {
