@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { CreateProjectButton } from "@/components/projects/CreateProjectButton";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { ProjectCard, ProjectCardProps } from "@/components/projects/ProjectCard";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDesignChallenges } from "@/hooks/useDesignChallenges";
 import { useProjects } from "@/hooks/useProjects";
-import { useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
+import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { Briefcase, Plus, Trash2, Lightbulb } from "lucide-react";
 import { ProjectNavBar } from "@/components/projects/ProjectNavBar";
@@ -18,15 +18,47 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import SearchHeader from "@/components/tools/SearchHeader";
 import { DesignChallenge, ChallengeStatus } from "@/types/designChallenge";
 import { format } from 'date-fns';
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Projects() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [showDesignThinkingPage, setShowDesignThinkingPage] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { data: workspace } = useCurrentWorkspace();
-  const { workspaceId, userRole, currentUserId } = workspace || {};
+  const { toast } = useToast();
+  const { currentWorkspace } = useContext(WorkspaceContext);
+  const workspaceId = currentWorkspace?.id || null;
   const { challenges, loading: challengesLoading, createChallenge, updateChallengeStatus, deleteChallenge } = useDesignChallenges(workspaceId);
   const { projects, loading: projectsLoading, createProject } = useProjects(workspaceId);
+
+  // Fetch user role and ID when workspace changes
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!workspaceId) return;
+      
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        setCurrentUserId(user.id);
+        
+        const { data: membershipData } = await supabase
+          .from('workspace_members')
+          .select('role')
+          .eq('workspace_id', workspaceId)
+          .eq('user_id', user.id)
+          .single();
+          
+        setUserRole(membershipData?.role || null);
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+    
+    fetchUserInfo();
+  }, [workspaceId]);
 
   const canManageStatus = userRole === 'admin' || userRole === 'owner';
   

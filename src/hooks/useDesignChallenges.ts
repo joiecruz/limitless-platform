@@ -9,28 +9,9 @@ export const useDesignChallenges = (workspaceId: string | null) => {
   const { toast } = useToast();
 
   const fetchChallenges = async () => {
-    if (!workspaceId) {
-      console.log('useDesignChallenges: No workspaceId provided');
-      return;
-    }
-
-    console.log('useDesignChallenges: Fetching challenges for workspace:', workspaceId);
+    if (!workspaceId) return;
 
     try {
-      // First check if user is authenticated
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('useDesignChallenges: Current user:', user?.id);
-
-      // Check if user is in workspace
-      const { data: membershipData } = await supabase
-        .from('workspace_members')
-        .select('workspace_id, role')
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', user?.id)
-        .single();
-
-      console.log('useDesignChallenges: User membership:', membershipData);
-
       const { data, error } = await supabase
         .from('design_challenges')
         .select(`
@@ -45,8 +26,6 @@ export const useDesignChallenges = (workspaceId: string | null) => {
         `)
         .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false });
-
-      console.log('useDesignChallenges: Query result:', { data, error });
 
       if (error) throw error;
       setChallenges(data || []);
