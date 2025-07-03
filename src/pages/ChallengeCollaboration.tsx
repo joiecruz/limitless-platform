@@ -13,6 +13,8 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { WorkspaceContext } from '@/components/layout/DashboardLayout';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { useUserSession } from '@/hooks/useUserProfile';
+import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
 
 const ChallengeCollaboration = () => {
   const { challengeId } = useParams<{ challengeId: string }>();
@@ -20,51 +22,17 @@ const ChallengeCollaboration = () => {
   const [challenge, setChallenge] = useState<DesignChallenge | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const { currentWorkspace } = useContext(WorkspaceContext);
   const workspaceId = currentWorkspace?.id || null;
   const { stickyNotes, createStickyNote, updateStickyNotePosition, deleteStickyNote } = useStickyNotes(challengeId || null);
-
+  
+  // Use existing hooks for authentication and workspace role
+  const { data: currentUser } = useUserSession();
+  const { data: userRole } = useWorkspaceRole(workspaceId);
+  
   const canDeleteAny = userRole === 'admin' || userRole === 'owner';
 
-  // Fetch user role and ID when workspace changes
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      if (!workspaceId) {
-        console.log('ChallengeCollaboration: No workspaceId provided');
-        return;
-      }
-      
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.log('ChallengeCollaboration: No authenticated user');
-          return;
-        }
-        
-        console.log('ChallengeCollaboration: Current user:', user.id);
-        setCurrentUserId(user.id);
-        
-        const { data: membershipData, error } = await supabase
-          .from('workspace_members')
-          .select('role')
-          .eq('workspace_id', workspaceId)
-          .eq('user_id', user.id)
-          .single();
-        
-        console.log('ChallengeCollaboration: Workspace membership:', { membershipData, error, workspaceId });
-          
-        setUserRole(membershipData?.role || null);
-        console.log('ChallengeCollaboration: User role set to:', membershipData?.role);
-      } catch (error) {
-        console.error('ChallengeCollaboration: Error fetching user info:', error);
-      }
-    };
-    
-    fetchUserInfo();
-  }, [workspaceId]);
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -193,15 +161,7 @@ const ChallengeCollaboration = () => {
       <div className="relative w-full h-[calc(100vh-200px)] overflow-auto bg-gray-50">
         <div className="absolute inset-0 min-w-[2000px] min-h-[1500px]">
           {stickyNotes.map((note) => {
-            const canDelete = canDeleteAny || note.created_by === currentUserId;
-            console.log('ChallengeCollaboration: Note delete permissions:', {
-              noteId: note.id,
-              canDeleteAny,
-              userRole,
-              currentUserId,
-              noteCreatedBy: note.created_by,
-              canDelete
-            });
+            const canDelete = canDeleteAny || note.created_by === currentUser?.id;
             
             return (
               <StickyNoteComponent
