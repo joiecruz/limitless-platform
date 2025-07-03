@@ -120,6 +120,10 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
     setNewMemberRole("");
   };
 
+  const removeMember = (index: number) => {
+    setTeamMembers(prev => prev.filter((_, i) => i !== index));
+  };
+
   useImperativeHandle(ref, () => ({
     validate: () => {
       if (!startDate) return "Start date is required.";
@@ -246,46 +250,65 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
             <span className="text-[13px] text-gray-500 font-bold font-sans">Permission</span>
           </div>
         </div>
-        {teamMembers.map((member, index) => (
-          <div
-            key={index}
-            className={`flex w-full gap-5 px-5 py-2 items-center ${index !== teamMembers.length - 1 ? 'border-b border-gray-200' : ''}`}
-          >
-            <div style={{ width: '55%' }} className="flex items-center">
-              <img 
-                src={member.image} 
-                alt={member.name}
-                className="w-9 h-9 rounded-full mr-3 object-cover"
-              />
-              <div className="flex flex-col">
-                <span className="text-[13px] font-medium text-gray-800">{member.name}</span>
-                <span className="text-[12px] text-gray-400">{member.email}</span>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <span className="text-[13px] text-gray-500">Loading workspace members...</span>
+          </div>
+        ) : teamMembers.length === 0 ? (
+          <div className="flex justify-center items-center py-8">
+            <span className="text-[13px] text-gray-500">No team members added yet. Add members from your workspace above.</span>
+          </div>
+        ) : (
+          teamMembers.map((member, index) => (
+            <div
+              key={`${member.user_id}-${index}`}
+              className={`flex w-full gap-5 px-5 py-2 items-center ${index !== teamMembers.length - 1 ? 'border-b border-gray-200' : ''}`}
+            >
+              <div style={{ width: '55%' }} className="flex items-center">
+                <img 
+                  src={member.image} 
+                  alt={member.name}
+                  className="w-9 h-9 rounded-full mr-3 object-cover"
+                />
+                <div className="flex flex-col">
+                  <span className="text-[13px] font-medium text-gray-800">{member.name}</span>
+                  <span className="text-[12px] text-gray-400">{member.email}</span>
+                </div>
+              </div>
+              <div style={{ width: '25%' }} className="flex items-center">
+                <span
+                  className={`text-[13px] font-medium px-3 py-2 rounded-full
+                    ${member.role === 'Admin' ? 'bg-[#F4F4FB] text-[#393CA0]' : ''}
+                    ${member.role === 'Editor' ? 'bg-[#E9FAF9] text-[#1A6B5C]' : ''}
+                    ${member.role === 'Guest' ? 'bg-[#FFF3F7] text-[#FF206E]' : ''}
+                  `}
+                >
+                  {member.role}
+                </span>
+              </div>
+              <div style={{ width: '20%' }}>
+                <div className="flex items-center gap-2">
+                  <select
+                    className="flex-1 text-gray-700 rounded-[8px] border border-gray-200 font-normal px-4 text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white"
+                    value={member.permission}
+                    onChange={e => handlePermissionChange(index, e.target.value)}
+                  >
+                    <option value="Admin">Admin</option>
+                    <option value="Can edit">Can edit</option>
+                    <option value="Can view">Can view</option>
+                  </select>
+                  <button
+                    onClick={() => removeMember(index)}
+                    className="w-8 h-8 rounded-[6px] bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center text-sm"
+                    title="Remove member"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
             </div>
-            <div style={{ width: '25%' }} className="flex items-center">
-              <span
-                className={`text-[13px] font-medium px-3 py-2 rounded-full
-                  ${member.role === 'Admin' ? 'bg-[#F4F4FB] text-[#393CA0]' : ''}
-                  ${member.role === 'Editor' ? 'bg-[#E9FAF9] text-[#1A6B5C]' : ''}
-                  ${member.role === 'Guest' ? 'bg-[#FFF3F7] text-[#FF206E]' : ''}
-                `}
-              >
-                {member.role}
-              </span>
-            </div>
-            <div style={{ width: '20%' }}>
-              <select
-                className="w-full text-gray-700 rounded-[8px] border border-gray-200 font-normal px-4 text-[13px] h-[40px] font-sans focus:outline-none focus:ring-1 focus:ring-[#9095A1FF] bg-white"
-                value={member.permission}
-                onChange={e => handlePermissionChange(index, e.target.value)}
-              >
-                <option value="Admin">Admin</option>
-                <option value="Can edit">Can edit</option>
-                <option value="Can view">Can view</option>
-              </select>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
