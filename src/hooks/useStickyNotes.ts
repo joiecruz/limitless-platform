@@ -83,7 +83,7 @@ export const useStickyNotes = (challengeId: string | null) => {
 
       if (error) throw error;
 
-      setStickyNotes(prev => [...prev, data]);
+      // Don't update local state here - let real-time subscription handle it
       return data;
     } catch (error) {
       console.error('Error creating sticky note:', error);
@@ -97,19 +97,34 @@ export const useStickyNotes = (challengeId: string | null) => {
   };
 
   const updateStickyNotePosition = async (noteId: string, x: number, y: number) => {
+    // Store original position for potential revert
+    const originalNote = stickyNotes.find(note => note.id === noteId);
+    if (!originalNote) return;
+    
     try {
-      const { error } = await supabase
-        .from('sticky_notes')
-        .update({ position_x: x, position_y: y })
-        .eq('id', noteId);
-
-      if (error) throw error;
-
+      // Optimistically update local state for immediate visual feedback
       setStickyNotes(prev =>
         prev.map(note =>
           note.id === noteId ? { ...note, position_x: x, position_y: y } : note
         )
       );
+
+      const { error } = await supabase
+        .from('sticky_notes')
+        .update({ position_x: x, position_y: y })
+        .eq('id', noteId);
+
+      if (error) {
+        // Revert optimistic update on error
+        setStickyNotes(prev =>
+          prev.map(note =>
+            note.id === noteId 
+              ? { ...note, position_x: originalNote.position_x, position_y: originalNote.position_y } 
+              : note
+          )
+        );
+        throw error;
+      }
     } catch (error) {
       console.error('Error updating sticky note position:', error);
     }
@@ -124,7 +139,7 @@ export const useStickyNotes = (challengeId: string | null) => {
 
       if (error) throw error;
 
-      setStickyNotes(prev => prev.filter(note => note.id !== noteId));
+      // Don't update local state here - let real-time subscription handle it
     } catch (error) {
       console.error('Error deleting sticky note:', error);
       toast({
@@ -138,19 +153,73 @@ export const useStickyNotes = (challengeId: string | null) => {
   useEffect(() => {
     fetchStickyNotes();
 
-    // Subscribe to real-time updates
+    if (!challengeId) return;
+
+    // Subscribe to real-time updates for granular changes
     const channel = supabase
-      .channel('sticky_notes_changes')
+      .channel(`sticky_notes_${challengeId}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'sticky_notes',
           filter: `challenge_id=eq.${challengeId}`
         },
-        () => {
-          fetchStickyNotes();
+        async (payload) => {
+          // Fetch the complete note with creator info
+          const { data } = await supabase
+            .from('sticky_notes')
+            .select(`
+              *,
+              creator:profiles!sticky_notes_created_by_fkey(
+                id,
+                first_name,
+                last_name,
+                avatar_url,
+                email
+              )
+            `)
+            .eq('id', payload.new.id)
+            .single();
+          
+          if (data) {
+            setStickyNotes(prev => {
+              // Avoid duplicates
+              if (prev.some(note => note.id === data.id)) return prev;
+              return [...prev, data];
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'sticky_notes',
+          filter: `challenge_id=eq.${challengeId}`
+        },
+        (payload) => {
+          setStickyNotes(prev =>
+            prev.map(note =>
+              note.id === payload.new.id
+                ? { ...note, ...payload.new }
+                : note
+            )
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'sticky_notes',
+          filter: `challenge_id=eq.${challengeId}`
+        },
+        (payload) => {
+          setStickyNotes(prev => prev.filter(note => note.id !== payload.old.id));
         }
       )
       .subscribe();
