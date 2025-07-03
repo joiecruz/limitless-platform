@@ -14,7 +14,6 @@ import { WorkspaceContext } from '@/components/layout/DashboardLayout';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useUserSession } from '@/hooks/useUserProfile';
-import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
 
 const ChallengeCollaboration = () => {
   const { challengeId } = useParams<{ challengeId: string }>();
@@ -27,9 +26,9 @@ const ChallengeCollaboration = () => {
   const workspaceId = currentWorkspace?.id || null;
   const { stickyNotes, createStickyNote, updateStickyNotePosition, deleteStickyNote } = useStickyNotes(challengeId || null);
   
-  // Use existing hooks for authentication and workspace role
+  // Use existing hooks for authentication and get role from localStorage
   const { data: currentUser } = useUserSession();
-  const { data: userRole } = useWorkspaceRole(workspaceId);
+  const userRole = workspaceId ? localStorage.getItem(`workspace_role_${workspaceId}`) : null;
   
   const canDeleteAny = userRole === 'admin' || userRole === 'owner';
 

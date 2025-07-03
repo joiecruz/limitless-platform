@@ -51,7 +51,15 @@ export default function Projects() {
           .eq('user_id', user.id)
           .single();
           
-        setUserRole(membershipData?.role || null);
+        const role = membershipData?.role || null;
+        setUserRole(role);
+        
+        // Save role to localStorage for other components to use
+        if (role) {
+          localStorage.setItem(`workspace_role_${workspaceId}`, role);
+        } else {
+          localStorage.removeItem(`workspace_role_${workspaceId}`);
+        }
       } catch (error) {
         console.error('Error fetching user info:', error);
       }
