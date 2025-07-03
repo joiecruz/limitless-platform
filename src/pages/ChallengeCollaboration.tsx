@@ -29,7 +29,16 @@ const ChallengeCollaboration = () => {
   
   // Use existing hooks for authentication and workspace role
   const { data: currentUser } = useUserSession();
-  const { data: userRole } = useWorkspaceRole(workspaceId);
+  const { data: userRole, isLoading: roleLoading } = useWorkspaceRole(workspaceId || undefined);
+  
+  // Debug the role data
+  console.log('ChallengeCollaboration Debug:', {
+    workspaceId,
+    currentUser: currentUser?.id,
+    userRole,
+    roleLoading,
+    canDeleteAny: userRole === 'admin' || userRole === 'owner'
+  });
   
   const canDeleteAny = userRole === 'admin' || userRole === 'owner';
 
