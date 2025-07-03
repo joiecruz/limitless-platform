@@ -181,16 +181,16 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
             )}
             {currentStep === 2 && <ProjectTimeline ref={timelineRef} />}
             {currentStep === 3 && <ProjectSubmission onNext={() => handleStepChange(4)} />}
-            {currentStep === 4 && data.name && (
+            {currentStep === 4 && (
               <ProjectDesignChallenge 
                 projectData={{
-                  name: data.name,
-                  description: data.description,
-                  problem: data.problem,
-                  customers: data.customers,
-                  targetOutcomes: data.targetOutcomes,
-                  sdgs: data.sdgs,
-                  innovationTypes: data.innovationTypes
+                  name: data.name || "Innovation Project",
+                  description: data.description || "An innovative solution to address current challenges",
+                  problem: data.problem || "A challenge that needs to be addressed",
+                  customers: data.customers || "Target audience",
+                  targetOutcomes: data.targetOutcomes || "Positive impact and meaningful change",
+                  sdgs: data.sdgs || [],
+                  innovationTypes: data.innovationTypes || []
                 }}
                 onSubmit={async (selectedChallenge) => {
                   try {
