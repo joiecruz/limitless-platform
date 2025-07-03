@@ -6,7 +6,6 @@ export const navigation = [
   { name: "Projects", href: "/dashboard/projects", icon: Briefcase },
   { name: "Courses", href: "/dashboard/courses", icon: BookOpen },
   { name: "Tools", href: "/dashboard/tools", icon: Download },
-  { name: "Challenges", href: "/dashboard/challenges", icon: Lightbulb },
   { name: "Community", href: "/dashboard/community", icon: Users },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];

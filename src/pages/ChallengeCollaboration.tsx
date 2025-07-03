@@ -85,8 +85,8 @@ const ChallengeCollaboration = () => {
       <div className="container mx-auto p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Challenge Not Found</h1>
-          <Button onClick={() => navigate('/dashboard/challenges')}>
-            Back to Challenges
+          <Button onClick={() => navigate('/dashboard/projects')}>
+            Back to Projects
           </Button>
         </div>
       </div>
@@ -102,11 +102,11 @@ const ChallengeCollaboration = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/dashboard/challenges')}
+              onClick={() => navigate('/dashboard/projects')}
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Challenges
+              Back to Projects
             </Button>
           </div>
           

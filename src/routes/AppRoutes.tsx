@@ -124,7 +124,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/dashboard/tools" element={<Tools />} />
         <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
         <Route path="/dashboard/community" element={<Community />} />
-        <Route path="/dashboard/challenges" element={<DesignChallenges />} />
+        
         <Route path="/dashboard/settings" element={<Settings />} />
         <Route
           path="/dashboard/account-settings"
@@ -139,7 +139,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           element={<Lesson />}
         />
         <Route
-          path="/dashboard/challenges/:challengeId"
+          path="/dashboard/projects/ideas/:challengeId"
           element={<ChallengeCollaboration />}
         />
       </Route>
