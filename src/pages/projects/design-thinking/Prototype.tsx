@@ -126,9 +126,9 @@ export default function Prototype() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-full gap-6 pl-6 pb-11">
+    <div className="flex flex-col md:flex-row w-full h-full gap-4 pl-6 pb-11">
       {/* Left: Stepper + Cards */}
-      <div className="w-full md:w-3/5 flex flex-col mt-8">
+      <div className="w-full md:w-1/2 flex flex-col mt-8">
         <h1 className="text-3xl font-bold text-[#23262F] mb-1">Prototype</h1>
         <p className="text-[#565D6D] mb-8 text-[15px]">Bring your chosen ideas to life</p>
         <div className="flex flex-col gap-4">
@@ -194,8 +194,8 @@ export default function Prototype() {
         </div>
       </div>
       {/* Right: Document editor or UploadPrototype */}
-      <div className="w-full md:w-1/2 bg-white shadow h-[90vh] overflow-auto">
-        {activeStep === 1 ? <UploadPrototype /> : <DocumentEditor className="p-8" />}
+      <div className="w-full md:w-1/2 bg-white shadow h-[100vh] overflow-auto">
+        {activeStep === 1 ? <UploadPrototype /> : <DocumentEditor className="p-2" />}
       </div>
     </div>
   );

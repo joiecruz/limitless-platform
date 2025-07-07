@@ -95,9 +95,9 @@ export default function Test() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-full gap-6 pl-6 pb-11">
+    <div className="flex flex-col md:flex-row w-full h-full gap-4 pl-6 pb-11">
       {/* Left: Stepper + Cards */}
-      <div className="w-full md:w-3/5 flex flex-col mt-8">
+      <div className="w-full md:w-1/2 flex flex-col mt-8">
         <h1 className="text-3xl font-bold text-[#23262F] mb-1">Test</h1>
         <p className="text-[#565D6D] mb-8 text-[15px]">Validate your ideas and prototype by talking to real people</p>
         <div className="flex flex-col gap-4">
@@ -163,7 +163,7 @@ export default function Test() {
         </div>
       </div>
       {/* Right: Document editor */}
-      <div className="w-full md:w-1/2 bg-white shadow p-8 h-[90vh] overflow-auto">
+      <div className="w-full md:w-1/2 bg-white shadow p-2 h-[100vh] overflow-auto">
         <DocumentEditor />
       </div>
     </div>
