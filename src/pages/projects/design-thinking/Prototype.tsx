@@ -5,6 +5,7 @@ import DocumentEditor from "../../../components/projects/DocumentEditor";
 import UploadPrototype from '../../../components/projects/UploadPrototype';
 import Define from "./Define";
 import Test from "./Test";
+import { useStepNavigation } from "../../../components/projects/ProjectNavBar";
 
 const steps = [
   {
@@ -42,7 +43,8 @@ export default function Prototype() {
   const [selectedActions, setSelectedActions] = useState(Array(actionButtons.length).fill(false));
   const [showTest, setShowTest] = useState(false);
   const navigate = useNavigate();
-
+  const { changeStep, selectedStep } = useStepNavigation();
+  
   const handleOptionCheck = (optionIdx: number) => {
     setCheckedOptions(prev => {
       const updated = [...prev];
@@ -104,7 +106,7 @@ export default function Prototype() {
 
   const handleNext = () => {
     if (isLastStep && allChecked) {
-      setShowTest(true);
+      changeStep("Test");
     } else if (checkedSteps[activeStep] && activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
     }

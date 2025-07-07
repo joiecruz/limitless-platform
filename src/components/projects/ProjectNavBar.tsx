@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import ProjectBrief from "../../pages/projects/project-brief/ProjectBrief";
 import Empathize from "../../pages/projects/design-thinking/Empathize";
 import Define from "../../pages/projects/design-thinking/Define";
@@ -16,6 +16,23 @@ const designThinkingSteps = [
   { label: "Measure", icon: "/projects-navbar-icons/ruler.svg" },
 ];
 
+// Create context for step navigation
+interface StepNavigationContextType {
+  changeStep: (step: string) => void;
+  selectedStep: string | null;
+}
+
+const StepNavigationContext = createContext<StepNavigationContextType | undefined>(undefined);
+
+// Custom hook to use the step navigation context
+export const useStepNavigation = () => {
+  const context = useContext(StepNavigationContext);
+  if (context === undefined) {
+    throw new Error('useStepNavigation must be used within a ProjectNavBar');
+  }
+  return context;
+};
+
 interface ProjectNavBarProps {
   onBackToProjects?: () => void;
 }
@@ -29,8 +46,19 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
     }
   }, [selectedStep]);
 
+  // Function to change the selected step - can be used by other components
+  const changeStep = (step: string) => {
+    setSelectedStep(step);
+  };
+
+  // Context value
+  const contextValue: StepNavigationContextType = {
+    changeStep,
+    selectedStep,
+  };
+
   return (
-    <>
+    <StepNavigationContext.Provider value={contextValue}>
       <nav
         className="flex items-center justify-between bg-white font-sans text-[14px] pr-2"
         style={{ lineHeight: '22px', height: 60 }}
@@ -79,6 +107,6 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
           <Test />
         )}
       </div>
-    </>
+    </StepNavigationContext.Provider>
   );
 } 

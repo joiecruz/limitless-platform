@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import StepCard from "../../../components/projects/StepCard";
 import DocumentEditor from "../../../components/projects/DocumentEditor"; 
 import Define from "./Define";
+import { useStepNavigation } from "../../../components/projects/ProjectNavBar";
 
 const steps = [
   {
@@ -48,7 +49,8 @@ export default function Empathize() {
   const [showDefine, setShowDefine] = useState(false);
   const [checkedOptions, setCheckedOptions] = useState([false, false, false]);
   const navigate = useNavigate();
-
+  const { changeStep, selectedStep } = useStepNavigation();
+  
   const handleOptionCheck = (optionIdx: number) => {
     setCheckedOptions(prev => {
       const updated = [...prev];
@@ -78,7 +80,7 @@ export default function Empathize() {
 
   const handleNext = () => {
     if (isLastStep && allChecked) {
-      setShowDefine(true);
+      changeStep("Define");
     } else if (checkedSteps[activeStep] && activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
     }

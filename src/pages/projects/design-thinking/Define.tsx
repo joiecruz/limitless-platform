@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import StepCard from "../../../components/projects/StepCard";
 import DocumentEditor from "../../../components/projects/DocumentEditor";
 import HowMightWe from "../../../components/projects/HowMightWe";
+import { useStepNavigation } from "../../../components/projects/ProjectNavBar";
 
 const steps = [
   {
@@ -32,6 +33,7 @@ export default function Define() {
   const [activeStep, setActiveStep] = useState(0);
   const [checkedSteps, setCheckedSteps] = useState(Array(steps.length).fill(false));
   const navigate = useNavigate();
+  const { changeStep } = useStepNavigation();
 
   const handleCheck = (idx: number) => {
     if (idx === activeStep) {
@@ -51,7 +53,8 @@ export default function Define() {
 
   const handleNext = () => {
     if (isLastStep && allChecked) {
-      <Define />
+      // Navigate to the next design thinking step (Ideate)
+      changeStep("Ideate");
     } else if (checkedSteps[activeStep] && activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
     }
