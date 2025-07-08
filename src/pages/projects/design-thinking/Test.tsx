@@ -1,8 +1,11 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import StepCard from "../../../components/projects/StepCard";
 import DocumentEditor from "../../../components/projects/DocumentEditor"; 
 import Define from "./Define";
+import { useTest } from '@/hooks/useTest';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const steps = [
   {
@@ -10,7 +13,7 @@ const steps = [
     description: "Choose the best method to test your prototype and idea and gather feedback from people",
     options: null,
     duration: null,
-    action: { label: "Recommend", active: true },
+    action: { label: "Recommend", active: false },
   },
   {
     title: "Create a user test plan",
@@ -24,42 +27,93 @@ const steps = [
     description: "Execute your research plan to collect valuable data from your users",
     options: null,
     duration: "1 - 2 weeks",
-    action: { label: "Upload notes", active: false },
+    action: { label: "Generate", active: true },
   },
   {
     title: "Generate insights from your user test",
     description: "Analyze the test results to uncover actionable insights",
     options: null,
     duration: "2 hours",
-    action: { label: "Analyze", active: false },
+    action: { label: "Analyze", active: true },
   },
 ];
 
 const dropdownOptions = ['Interview', 'Survey', 'Usability Test', 'A/B Test', 'Focus Group'];
+const stepFields = [
+  'userTestingMethod',
+  'userTestPlan',
+  'userTestNotes',
+  'userTestInsights',
+];
 
 export default function Test() {
+  const { projectId } = useParams();
   const [activeStep, setActiveStep] = useState(0);
   const [checkedSteps, setCheckedSteps] = useState(Array(steps.length).fill(false));
   const [showDefine, setShowDefine] = useState(false);
-  const [checkedOptions, setCheckedOptions] = useState([false, false, false]);
+  const [checkedOptions, setCheckedOptions] = useState([false, false, false, false, false]);
   const [dropdownSelected, setDropdownSelected] = useState<string[]>([]);
   const navigate = useNavigate();
+  const documentEditorRef = useRef<any>(null);
+  const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleOptionCheck = (optionIdx: number) => {
-    setCheckedOptions(prev => {
-      const updated = [...prev];
-      updated[optionIdx] = !updated[optionIdx];
-      return updated;
-    });
-  };
+  // useTest hook
+  const {
+    data: testData,
+    isLoading,
+    updateData,
+    saveTest,
+    loadTest,
+  } = useTest(projectId || null);
 
-  const handleCheck = (idx: number) => {
+  // Load data on mount
+  useEffect(() => {
+    loadTest();
+    // eslint-disable-next-line
+  }, [projectId]);
+
+  // Restore editor content on step change
+  useEffect(() => {
+    if (activeStep === 0) {
+      setDropdownSelected(testData.userTestingMethod || []);
+    } else if (documentEditorRef.current) {
+      let value = '';
+      switch (activeStep) {
+        case 1:
+          value = testData.userTestPlan;
+          break;
+        case 2:
+          value = testData.userTestNotes;
+          break;
+        case 3:
+          value = testData.userTestInsights;
+          break;
+        default:
+          value = '';
+      }
+      documentEditorRef.current.setContents(value || '');
+    }
+  }, [activeStep, testData]);
+
+  // Save on check
+  const handleCheck = async (idx: number) => {
     if (idx === activeStep) {
       const newChecked = [...checkedSteps];
-      newChecked[idx] = !newChecked[idx]; // toggle
+      const wasChecked = checkedSteps[idx];
+      newChecked[idx] = !checkedSteps[idx]; // toggle
       setCheckedSteps(newChecked);
-      if (!checkedSteps[idx] && idx < steps.length - 1) {
-        // If just checked (was false, now true), move to next step
+      if (!wasChecked) {
+        // Save Test for this step
+        if (activeStep === 0) {
+          updateData({ userTestingMethod: dropdownSelected });
+        } else if (documentEditorRef.current) {
+          const editorContents = documentEditorRef.current.getContents();
+          updateData({ [stepFields[activeStep]]: editorContents });
+        }
+        await saveTest(); // Save immediately when checked
+      }
+      if (!wasChecked && idx < steps.length - 1) {
         setActiveStep(idx + 1);
       }
     }
@@ -69,7 +123,15 @@ export default function Test() {
   const isLastStep = activeStep === steps.length - 1;
   const canGoNext = isLastStep ? allChecked : checkedSteps[activeStep];
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (activeStep === 0) {
+      updateData({ userTestingMethod: dropdownSelected });
+      await saveTest();
+    } else if (documentEditorRef.current) {
+      const editorContents = documentEditorRef.current.getContents();
+      updateData({ [stepFields[activeStep]]: editorContents });
+      await saveTest();
+    }
     if (isLastStep && allChecked) {
       // TODO: Add logic to navigate to the next step
     } else if (checkedSteps[activeStep] && activeStep < steps.length - 1) {
@@ -88,6 +150,64 @@ export default function Test() {
       return dropdownSelected.length > 0 && activeStep === 0;
     }
     return activeStep === idx;
+  };
+
+  // Dropdown handler
+  const handleDropdownSelect = (selected: string[]) => {
+    setDropdownSelected(selected);
+    updateData({ userTestingMethod: selected });
+    saveTest();
+  };
+
+  const generateAIContent = async (stepIdx: number) => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    let prompt = '';
+    let field = '';
+    switch (stepIdx) {
+      case 1:
+        prompt = 'Generate a comprehensive user test plan for a design thinking project.';
+        field = 'userTestPlan';
+        break;
+      case 2:
+        prompt = 'Generate detailed user test notes for a design thinking project.';
+        field = 'userTestNotes';
+        break;
+      case 3:
+        prompt = 'Analyze user test data and generate actionable insights for a design thinking project.';
+        field = 'userTestInsights';
+        break;
+      default:
+        setIsGenerating(false);
+        return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { prompt }
+      });
+      if (error) throw error;
+      let generatedText = data.generatedText || '';
+      // Convert markdown bold (**text**) to HTML <strong>text</strong>
+      generatedText = generatedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      if (documentEditorRef.current) {
+        documentEditorRef.current.setContents(generatedText);
+      }
+      updateData({ [field]: generatedText });
+      await saveTest();
+      toast({
+        title: 'AI Content Generated',
+        description: 'AI has generated content for this step and it has been inserted into the editor.',
+        duration: 4000,
+      });
+    } catch (error) {
+      toast({
+        title: 'Generation Failed',
+        description: 'Failed to generate content. Please try again or enter manually.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   if (showDefine) {
@@ -134,10 +254,11 @@ export default function Test() {
                   onCheck={() => handleCheck(idx)}
                   canCheck={canCheckStep(idx)}
                   optionChecked={idx === 0 ? checkedOptions : undefined}
-                  onOptionCheck={idx === 0 ? handleOptionCheck : undefined}
                   dropdownOptions={idx === 0 ? dropdownOptions : undefined}
                   dropdownSelected={idx === 0 ? dropdownSelected : undefined}
-                  onDropdownSelect={idx === 0 ? setDropdownSelected : undefined}
+                  onDropdownSelect={idx === 0 ? handleDropdownSelect : undefined}
+                  onAction={step.action && step.action.active && idx !== 0 ? () => generateAIContent(idx) : undefined}
+                  isGenerating={isGenerating && activeStep === idx}
                 />
               </div>
             </div>
@@ -164,7 +285,9 @@ export default function Test() {
       </div>
       {/* Right: Document editor */}
       <div className="w-full md:w-1/2 bg-white shadow p-2 h-[100vh] overflow-auto">
-        <DocumentEditor />
+        {activeStep !== 0 && (
+          <DocumentEditor ref={documentEditorRef} />
+        )}
       </div>
     </div>
   );

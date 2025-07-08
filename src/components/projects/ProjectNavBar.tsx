@@ -105,17 +105,19 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
         {selectedStep === "Define" && (
           <Define />
         )}
+        {selectedStep === "Test" && (
+          <Test />
+        )}
         {selectedStep === "Prototype" && (
           <Prototype />
         )}
         {selectedStep === 'Implement' && <ProjectImplement inNavBar={true} />}
         {selectedStep === 'Measure' && <ProjectMeasure inNavBar={true} />}
-        {selectedStep === 'Test' && (
+        {/* {selectedStep === 'Test' && (
         <ProjectTest
           inNavBar={true}
           onBack={() => setSelectedStep('Test')}
-        />
-      )}
+        /> */}
       </div>
     </StepNavigationContext.Provider>
   );
