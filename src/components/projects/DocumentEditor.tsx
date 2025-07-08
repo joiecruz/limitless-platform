@@ -3,6 +3,8 @@ import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 import { toast } from "sonner";
+// @ts-ignore
+import mammoth from 'mammoth';
 
 // Add a toolbar container id for Quill
 const TOOLBAR_ID = "quill-toolbar-a4";
@@ -90,12 +92,22 @@ const DocumentEditor = forwardRef<{ getContents: () => string; setContents: (val
     input.onchange = () => {
       const file = input.files?.[0];
       if (file && quillRef.current) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const text = e.target?.result as string;
-          quillRef.current?.setText(text);
-        };
-        reader.readAsText(file);
+        if (file.name.endsWith('.docx')) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const arrayBuffer = e.target?.result;
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            quillRef.current?.root && (quillRef.current.root.innerHTML = result.value);
+          };
+          reader.readAsArrayBuffer(file);
+        } else {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const text = e.target?.result as string;
+            quillRef.current?.setText(text);
+          };
+          reader.readAsText(file, 'utf-8');
+        }
       }
     };
   };
