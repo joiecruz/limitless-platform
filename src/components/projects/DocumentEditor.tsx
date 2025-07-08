@@ -1,18 +1,34 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useImperativeHandle, forwardRef, useEffect } from "react";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
+import { toast } from "sonner";
 
 // Add a toolbar container id for Quill
 const TOOLBAR_ID = "quill-toolbar-a4";
 
 type DocumentEditorProps = {
   className?: string;
+  onSave?: () => void;
 };
 
-export default function DocumentEditor({ className = "" }: DocumentEditorProps) {
+const DocumentEditor = forwardRef<{ getContents: () => string; setContents: (value: string) => void }, DocumentEditorProps>(({ className = "", onSave }, ref) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<Quill | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    getContents: () => {
+      if (quillRef.current) {
+        return quillRef.current.root.innerHTML;
+      }
+      return '';
+    },
+    setContents: (value: string) => {
+      if (quillRef.current) {
+        quillRef.current.root.innerHTML = value || '';
+      }
+    }
+  }));
 
   useEffect(() => {
     if (editorRef.current && !quillRef.current) {
@@ -88,9 +104,11 @@ export default function DocumentEditor({ className = "" }: DocumentEditorProps) 
     if (quillRef.current) {
       const content = quillRef.current.getText();
       const htmlContent = quillRef.current.root.innerHTML;
+      console.log('DocumentEditor Save button - HTML content:', htmlContent);
       localStorage.setItem('documentContent', content);
       localStorage.setItem('documentHTML', htmlContent);
-      alert('Document saved successfully!');
+      toast('Document saved successfully!');
+      if (onSave) onSave();
     }
   };
 
@@ -301,4 +319,6 @@ export default function DocumentEditor({ className = "" }: DocumentEditorProps) 
       </div>
     </div>
   );
-}
+});
+
+export default DocumentEditor;

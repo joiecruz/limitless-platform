@@ -1,9 +1,11 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import StepCard from "../../../components/projects/StepCard";
 import DocumentEditor from "../../../components/projects/DocumentEditor"; 
 import Define from "./Define";
 import { useStepNavigation } from "../../../components/projects/ProjectNavBar";
+import { useEmpathize } from '@/hooks/useEmpathize';
+import { useToast } from '@/hooks/use-toast';
 
 const steps = [
   {
@@ -43,45 +45,179 @@ const steps = [
   },
 ];
 
+const stepIds = [
+  '880e8400-e29b-41d4-a716-446655440001', // Select your user research method
+  '880e8400-e29b-41d4-a716-446655440002', // Create a User Research Plan
+  '880e8400-e29b-41d4-a716-446655440003', // Conduct User Research
+  '880e8400-e29b-41d4-a716-446655440004', // Generate insights from your user research
+  '880e8400-e29b-41d4-a716-446655440005', // Create customer persona/s
+];
+
 export default function Empathize() {
+  const { projectId } = useParams();
   const [activeStep, setActiveStep] = useState(0);
   const [checkedSteps, setCheckedSteps] = useState([false, false, false, false, false]);
   const [showDefine, setShowDefine] = useState(false);
   const [checkedOptions, setCheckedOptions] = useState([false, false, false]);
   const navigate = useNavigate();
   const { changeStep, selectedStep } = useStepNavigation();
-  
-  const handleOptionCheck = (optionIdx: number) => {
-    setCheckedOptions(prev => {
-      const updated = [...prev];
-      updated[optionIdx] = !updated[optionIdx];
-      return updated;
-    });
+  const documentEditorRef = useRef<any>(null);
+  const { toast } = useToast();
+
+  // Empathize hook for current step
+  const stepId = stepIds[activeStep];
+  const {
+    data: empathizeData,
+    isLoading,
+    updateData,
+    saveEmpathize,
+    loadEmpathize,
+  } = useEmpathize(projectId || null, stepId);
+
+  // Load data on mount and when step changes
+  useEffect(() => {
+    // If you have a templateId, you can load it here
+    // For now, we assume new data each time
+    // loadEmpathize(templateId)
+    // Optionally, set checkedOptions and DocumentEditor content from empathizeData
+    if (activeStep === 0 && Array.isArray(empathizeData.userResearchMethod)) {
+      setCheckedOptions(steps[0].options.map(opt => empathizeData.userResearchMethod.includes(opt)));
+    }
+    // For other steps, set DocumentEditor content if needed
+    // (Assume DocumentEditor accepts a value prop or ref)
+  }, [activeStep]);
+
+  // Restore handleOptionCheck and handleCheck
+  const handleOptionCheck = async (optionIdx: number) => {
+    console.log('Option checkbox changed:', optionIdx);
+    // Compute the new checked state
+    const newChecked = checkedOptions.map((checked, idx) =>
+      idx === optionIdx ? !checked : checked
+    );
+    setCheckedOptions(newChecked);
+
+    await saveEmpathize();
+    const selectedMethods = newChecked
+      .map((checked, idx) => checked ? steps[0].options[idx] : null)
+      .filter(Boolean);
+    updateData({ userResearchMethod: selectedMethods });
+    // Save after state is updated
+    console.log('projectId:', projectId);
+    console.log('state.data:', empathizeData);
+    await saveEmpathize();
   };
 
-  const handleCheck = (idx: number) => {
+  const handleCheck = async (idx: number) => {
     if (idx === 0 && !checkedOptions.some(Boolean)) {
       return;
     }
     if (idx === activeStep) {
       const newChecked = [...checkedSteps];
-      newChecked[idx] = !newChecked[idx]; // toggle
+      const wasChecked = checkedSteps[idx];
+      newChecked[idx] = !checkedSteps[idx]; // toggle
       setCheckedSteps(newChecked);
-      if (!checkedSteps[idx] && idx < steps.length - 1) {
+      if (!wasChecked) {
+        // If just checked (was false, now true), save empathize for this step
+        if (activeStep === 0) {
+          const selectedMethods = checkedOptions
+            .map((checked, idx) => checked ? steps[0].options[idx] : null)
+            .filter(Boolean);
+          updateData({ userResearchMethod: selectedMethods });
+        } else if (documentEditorRef.current) {
+          const editorContents = documentEditorRef.current.getContents();
+          setEditorValue(editorContents);
+        }
+        await saveEmpathize();
+      }
+      if (!wasChecked && idx < steps.length - 1) {
         // If just checked (was false, now true), move to next step
         setActiveStep(idx + 1);
       }
     }
+    console.log('state.data:', empathizeData);
   };
 
   const allChecked = checkedSteps.every(Boolean);
   const isLastStep = activeStep === steps.length - 1;
   const canGoNext = isLastStep ? allChecked : checkedSteps[activeStep];
 
-  const handleNext = () => {
-    if (isLastStep && allChecked) {
-      changeStep("Define");
-    } else if (checkedSteps[activeStep] && activeStep < steps.length - 1) {
+  // For DocumentEditor ref-based value
+  useEffect(() => {
+    if (activeStep !== 0 && documentEditorRef.current) {
+      // Set the editor content for the current step
+      documentEditorRef.current.setContents(getEditorValue());
+    }
+    // eslint-disable-next-line
+  }, [activeStep]);
+
+  // For DocumentEditor controlled value
+  const getEditorValue = () => {
+    switch (activeStep) {
+      case 1:
+        return empathizeData.userResearchPlan;
+      case 2:
+        return empathizeData.userResearchNotes;
+      case 3:
+        return empathizeData.userResearchInsights;
+      case 4:
+        return empathizeData.customerPersona;
+      default:
+        return '';
+    }
+  };
+  const setEditorValue = (val: string) => {
+    switch (activeStep) {
+      case 1:
+        updateData({ userResearchPlan: val });
+        break;
+      case 2:
+        updateData({ userResearchNotes: val });
+        break;
+      case 3:
+        updateData({ userResearchInsights: val });
+        break;
+      case 4:
+        updateData({ customerPersona: val });
+        break;
+    }
+  };
+
+  // Save data on step change
+  const handleNext = async () => {
+    if (activeStep === 0) {
+      // Save all checked options as array
+      const selectedMethods = checkedOptions
+        .map((checked, idx) => checked ? steps[0].options[idx] : null)
+        .filter(Boolean);
+      updateData({ userResearchMethod: selectedMethods });
+      await saveEmpathize();
+    } else {
+      // Save DocumentEditor content for the current step
+      let field = '';
+      switch (activeStep) {
+        case 1:
+          field = 'userResearchPlan';
+          break;
+        case 2:
+          field = 'userResearchNotes';
+          break;
+        case 3:
+          field = 'userResearchInsights';
+          break;
+        case 4:
+          field = 'customerPersona';
+          break;
+      }
+      if (field && documentEditorRef.current) {
+        const editorContents = documentEditorRef.current.getContents();
+        console.log('Saving to DB:', { field, editorContents });
+        setEditorValue(editorContents);
+        await saveEmpathize();
+      }
+    }
+    if (activeStep === steps.length - 1) {
+      changeStep('Define');
+    } else {
       setActiveStep(activeStep + 1);
     }
   };
@@ -89,6 +225,15 @@ export default function Empathize() {
   const handleBack = () => {
     if (activeStep > 0) {
       setActiveStep(activeStep - 1);
+    }
+  };
+
+  // Add a handler to update empathize when DocumentEditor is saved
+  const handleEditorSave = async () => {
+    if (activeStep > 0 && documentEditorRef.current) {
+      const editorContents = documentEditorRef.current.getContents();
+      setEditorValue(editorContents);
+      await saveEmpathize();
     }
   };
 
@@ -163,7 +308,9 @@ export default function Empathize() {
       </div>
       {/* Right: Document editor */}
       <div className="w-full md:w-1/2 bg-white shadow p-2 h-[100vh] overflow-auto">
-        <DocumentEditor />
+        {activeStep !== 0 && (
+          <DocumentEditor ref={documentEditorRef} onSave={handleEditorSave} />
+        )}
       </div>
     </div>
   );

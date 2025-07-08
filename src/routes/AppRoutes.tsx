@@ -5,6 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useEffect } from 'react';
 import { isAppSubdomain } from '@/utils/domainHelpers';
+import { useParams } from "react-router-dom";
 
 // Public/Marketing pages
 import Index from '@/pages/Index';
@@ -57,6 +58,8 @@ import EditBlog from '@/pages/admin/blog/EditBlog';
 import AdminSettings from '@/pages/admin/AdminSettings';
 import EditCaseStudy from '@/pages/admin/case-studies/EditCaseStudy';
 import AdminReports from '@/components/admin/reports/AdminReports';
+import Empathize from '@/pages/projects/design-thinking/Empathize';
+import { ProjectNavBar } from '@/components/projects/ProjectNavBar';
 
 interface AppRoutesProps {
   session: Session | null;
@@ -116,6 +119,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/projects/*" element={<Projects />} />
         <Route path="/dashboard/projects/create-project" element={<CreateProject />} />
+        <Route path="/dashboard/projects/empathize/:projectId" element={<ProjectNavBar />} />
         <Route path="/dashboard/courses" element={<Courses />} />
         <Route
           path="/dashboard/courses/:courseId/lessons"

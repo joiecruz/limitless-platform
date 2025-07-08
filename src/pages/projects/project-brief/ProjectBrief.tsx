@@ -108,6 +108,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
 
   // Load saved data into forms when step changes
   useEffect(() => {
+    console.log('Current Step:', currentStep);
     if (overviewRef.current && data.name) {
       overviewRef.current.setValues({
         name: data.name,
@@ -218,26 +219,51 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
               />
             )}
           </div>
-          <div className="flex justify-end gap-4" style={{ width: '55vw' }}>
+          <div>
             {currentStep > 0 && currentStep < 3 && (
-              <button
-                type="button"
-                className="mt-5 bg-[#9095A1FF] text-white font-semibold py-2 rounded-[3px] text-[13px] transition-colors px-8 w-[115px] font-sans hover bg-[2565D6DFF] "
-                onClick={() => handleStepChange(Math.max(currentStep - 1, 0))}
-              >
-                Back
-              </button>
-            )}
-            {currentStep < 3 && (
+              <div className="flex justify-end gap-4" style={{ width: '55vw' }}>
                 <button
-              type="button"
-              className="mt-5 bg-[#393CA0FF] text-white font-semibold py-2 rounded-[3px] hover:bg-[#2C2E7AFF] text-[13px] transition-colors px-8 w-[115px] font-sans"
-              onClick={handleNext}
-            >
-              Next
-            </button>
+                  type="button"
+                  className="mt-5 bg-[#9095A1FF] text-white font-semibold py-2 rounded-[3px] text-[13px] transition-colors px-8 w-[115px] font-sans hover bg-[2565D6DFF] "
+                  onClick={() => handleStepChange(Math.max(currentStep - 1, 0))}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className="mt-5 bg-[#393CA0FF] text-white font-semibold py-2 rounded-[3px] hover:bg-[#2C2E7AFF] text-[13px] transition-colors px-8 w-[115px] font-sans"
+                  onClick={handleNext}
+                >
+                  Next
+                </button>
+              </div>
             )}
-            
+            {currentStep < 3 && currentStep === 0 && (
+              <div className="flex justify-end gap-4" style={{ width: '55vw' }}>
+                <button
+                  type="button"
+                  className="mt-5 bg-[#393CA0FF] text-white font-semibold py-2 rounded-[3px] hover:bg-[#2C2E7AFF] text-[13px] transition-colors px-8 w-[115px] font-sans"
+                  onClick={handleNext}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+            {currentStep === 3 && (
+              <div className="flex justify-center" style={{ width: '55vw' }}>
+                <button className="mt-[-68px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1" 
+                  onClick={() => handleStepChange(Math.min(currentStep + 1, 5))} >
+                  <img
+                    src="/projects-navbar-icons/sparkle.svg"
+                    alt=""
+                    width={15}
+                    height={15}
+                    style={{ marginRight: 2, marginLeft: -5, color: 'white' }}
+                  />
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

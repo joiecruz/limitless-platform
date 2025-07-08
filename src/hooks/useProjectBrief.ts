@@ -191,6 +191,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
             owner_id: user.id,
             start_date: state.data.startDate || null,
             end_date: state.data.endDate || null,
+            methodology_id: '550e8400-e29b-41d4-a716-446655440000',
+            current_stage_id: '660e8400-e29b-41d4-a716-446655440001',
             status: 'active',
             metadata
           })

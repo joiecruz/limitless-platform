@@ -89,10 +89,6 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
     onSubmit(challenges[selected]);
   };
 
-  if (loading) {
-    return <ProjectLoading />;
-  }
-
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full ml-[-18px]">
       <h2 className="mt-11 text-[26px] text-gray-800 font-bold text-center mb-7">Design Challenges</h2>
