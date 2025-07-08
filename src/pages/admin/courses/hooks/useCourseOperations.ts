@@ -51,7 +51,7 @@ export const useCourseOperations = () => {
         description: `Course ${currentLockState ? "unlocked" : "locked"} successfully`,
       });
     } catch (error: any) {
-      console.error("Error toggling course lock:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to update course status",

@@ -14,14 +14,14 @@ export default function CourseDetail() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  console.log("CourseDetail: courseId from params:", courseId);
+  
 
   const { data: course, isLoading } = useQuery({
     queryKey: ["public-course", courseId],
     queryFn: async () => {
       if (!courseId) throw new Error("Course ID is required");
 
-      console.log("Fetching course with ID:", courseId);
+      
 
       const { data, error } = await supabase
         .from("courses")
@@ -30,11 +30,11 @@ export default function CourseDetail() {
         .single();
 
       if (error) {
-        console.error("Error fetching course:", error);
+        
         throw error;
       }
 
-      console.log("Course data:", data);
+      
       return data;
     },
     enabled: !!courseId,
@@ -45,11 +45,11 @@ export default function CourseDetail() {
     queryKey: ["course-lessons", courseId],
     queryFn: async () => {
       if (!courseId) {
-        console.log("No courseId provided for lessons query");
+        
         return [];
       }
 
-      console.log("Fetching lessons for course:", courseId);
+      
 
       const { data, error } = await supabase
         .from("lessons")
@@ -58,12 +58,12 @@ export default function CourseDetail() {
         .order("order");
 
       if (error) {
-        console.error("Error fetching lessons:", error);
+        
         // Don't throw, return empty array to show empty state
         return [];
       }
 
-      console.log("Lessons data:", data);
+      
       return data || [];
     },
     enabled: !!courseId,
@@ -74,11 +74,11 @@ export default function CourseDetail() {
     queryKey: ["course-enrollment-count", courseId],
     queryFn: async () => {
       if (!courseId) {
-        console.log("No courseId provided for enrollment count");
+        
         return 0;
       }
 
-      console.log("Fetching enrollment count for course:", courseId);
+      
 
       const { count, error } = await supabase
         .from("enrollments")
@@ -86,11 +86,11 @@ export default function CourseDetail() {
         .eq("course_id", courseId);
 
       if (error) {
-        console.error("Error fetching enrollment count:", error);
+        
         return 0;
       }
 
-      console.log("Enrollment count:", count);
+      
       return count || 0;
     },
     enabled: !!courseId,
@@ -115,12 +115,7 @@ export default function CourseDetail() {
   const totalHours = Math.ceil(totalDuration / 60);
   const lessonCount = lessons.length;
 
-  console.log("Calculated stats:", {
-    lessonCount,
-    totalDuration,
-    totalHours,
-    enrollmentCount
-  });
+  
 
   const handleEnrollClick = () => {
     // For in-person courses with booking link, redirect to booking

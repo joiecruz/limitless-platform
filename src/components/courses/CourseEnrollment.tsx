@@ -26,10 +26,10 @@ const CourseEnrollment = ({
   const queryClient = useQueryClient();
 
   const handleEnroll = async () => {
-    console.log('Starting enrollment process');
+    
     try {
       await onEnroll();
-      console.log('Enrollment successful');
+      
 
       // Invalidate course counts to update enrollment numbers immediately
       queryClient.invalidateQueries({ queryKey: ["course-counts", courseId] });
@@ -42,7 +42,7 @@ const CourseEnrollment = ({
         description: `You are now enrolled in ${courseTitle || "this course"}`,
       });
     } catch (error) {
-      console.error('Error enrolling:', error);
+      
       toast({
         title: "Error",
         description: "Failed to enroll in the course. Please try again.",

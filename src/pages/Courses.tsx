@@ -33,7 +33,7 @@ const Courses = () => {
         .in('format', ['Online', 'Hybrid']); // Filter for Online and Hybrid courses only
 
       if (error) {
-        console.error('Error fetching courses:', error);
+        
         toast({
           title: "Error",
           description: "Failed to load courses. Please try again later.",
@@ -73,7 +73,7 @@ const Courses = () => {
         .eq('user_id', userSession.session.user.id);
 
       if (error) {
-        console.error('Error fetching enrollments:', error);
+        
         toast({
           title: "Error",
           description: "Failed to load course progress. Please try again later.",
@@ -106,7 +106,7 @@ const Courses = () => {
         .single();
 
       if (error) {
-        console.error('Error enrolling in course:', error);
+        
         throw error;
       }
 
@@ -120,7 +120,7 @@ const Courses = () => {
       queryClient.invalidateQueries({ queryKey: ["featured-courses"] });
     },
     onError: (error) => {
-      console.error('Error enrolling in course:', error);
+      
       toast({
         title: "Error",
         description: "Failed to enroll in the course. Please try again later.",

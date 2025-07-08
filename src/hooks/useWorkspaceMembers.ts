@@ -6,7 +6,7 @@ export function useWorkspaceMembers(workspaceId: string) {
   return useQuery({
     queryKey: ["workspace-members", workspaceId],
     queryFn: async () => {
-      console.log('Fetching members for workspace:', workspaceId);
+      
       
       const { data, error } = await supabase
         .from("workspace_members")
@@ -23,11 +23,11 @@ export function useWorkspaceMembers(workspaceId: string) {
         .eq("workspace_id", workspaceId);
 
       if (error) {
-        console.error('Error fetching workspace members:', error);
+        
         throw error;
       }
 
-      console.log('Raw workspace members data:', data);
+      
 
       // Transform the data to match our WorkspaceMember type
       const transformedData = data.map((member: any) => ({
@@ -41,7 +41,7 @@ export function useWorkspaceMembers(workspaceId: string) {
         }
       }));
 
-      console.log('Transformed workspace members data:', transformedData);
+      
       return transformedData as WorkspaceMember[];
     },
     enabled: !!workspaceId,

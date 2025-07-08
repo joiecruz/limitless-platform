@@ -98,7 +98,7 @@ export function BlogCoverImageInput({ value, onChange, error, blogId }: BlogCove
         description: "Cover image uploaded successfully",
       });
     } catch (error: any) {
-      console.error('Error uploading image:', error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to upload image. Please try again.",

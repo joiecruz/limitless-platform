@@ -103,7 +103,7 @@ export function RichTextEditor({ value, onChange, className, blogId }: RichTextE
         });
       }
     } catch (error: any) {
-      console.error("Error uploading image:", error);
+      
       toast({
         title: "Upload failed",
         description: error.message || "Failed to upload image",

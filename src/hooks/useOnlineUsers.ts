@@ -42,7 +42,7 @@ export function useOnlineUsers(workspaceId: string | null): WorkspaceUsersData {
         .eq('workspace_id', workspaceId);
 
       if (error) {
-        console.error('Error fetching workspace users:', error);
+        
         return;
       }
 
@@ -53,12 +53,12 @@ export function useOnlineUsers(workspaceId: string | null): WorkspaceUsersData {
     fetchAllWorkspaceUsers();
 
     const channelName = `workspace_presence:${workspaceId}`;
-    console.log("Setting up workspace presence for:", channelName);
+    
 
     const presence = supabase.channel(channelName)
       .on('presence', { event: 'sync' }, () => {
         const presenceState = presence.presenceState();
-        console.log('Workspace presence state:', presenceState);
+        
 
         // Get all unique user IDs from presence state
         const userIds = new Set<string>();
@@ -83,7 +83,7 @@ export function useOnlineUsers(workspaceId: string | null): WorkspaceUsersData {
             .in('id', Array.from(userIds));
 
           if (error) {
-            console.error('Error fetching workspace online users:', error);
+            
             return;
           }
 
@@ -93,7 +93,7 @@ export function useOnlineUsers(workspaceId: string | null): WorkspaceUsersData {
         fetchUserProfiles();
       })
       .subscribe(async (status) => {
-        console.log('Workspace presence subscription status:', status);
+        
         if (status === 'SUBSCRIBED') {
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {

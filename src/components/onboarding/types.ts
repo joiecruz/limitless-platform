@@ -1,3 +1,5 @@
+
+// Onboarding data interface for user registration flow
 export interface OnboardingData {
   firstName: string;
   lastName: string;

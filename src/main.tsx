@@ -17,7 +17,7 @@ const hasRedirected = sessionStorage.getItem('apex_redirect_attempted');
 
 // Redirect apex domain to www if needed, but only if we haven't tried redirecting before
 if (isApexDomain() && !hasRedirected) {
-  console.log("Redirecting from apex domain to www subdomain");
+  
   sessionStorage.setItem('apex_redirect_attempted', 'true');
   window.location.href = `https://www.limitlesslab.org${window.location.pathname}${window.location.search}`;
 } else {

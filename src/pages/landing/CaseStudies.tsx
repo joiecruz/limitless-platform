@@ -16,14 +16,14 @@ export default function CaseStudies() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["case-studies"],
     queryFn: async () => {
-      console.log("Fetching case studies...");
+      
       const { data, error } = await supabase
         .from('case_studies')
         .select('*')
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error("Error fetching case studies:", error);
+        
         toast({
           title: "Error loading case studies",
           description: "Failed to load case studies. Please try again later.",
@@ -32,12 +32,12 @@ export default function CaseStudies() {
         throw error;
       }
       
-      console.log("Case studies data:", data);
+      
       return data || [];
     },
     meta: {
       onError: (error: Error) => {
-        console.error("Query error:", error);
+        
         toast({
           title: "Error loading case studies",
           description: "Failed to load case studies. Please try again later.",
@@ -57,18 +57,18 @@ export default function CaseStudies() {
 
   // Add additional console logs to debug OpenGraph tags
   useEffect(() => {
-    console.log("Setting case studies listing OpenGraph tags:");
-    console.log("- Title:", pageTitle);
-    console.log("- Description:", pageDescription);
-    console.log("- Image:", pageImage);
-    console.log("- URL:", canonicalUrl);
+    
+    
+    
+    
+    
     
     // Debug what the document head contains
     setTimeout(() => {
       const metaTags = document.querySelectorAll('meta');
-      console.log("Current meta tags in document for case studies:");
+      
       metaTags.forEach(tag => {
-        console.log(`${tag.getAttribute('property') || tag.getAttribute('name')}: ${tag.getAttribute('content')}`);
+        
       });
     }, 500);
   }, [pageTitle, pageDescription, pageImage, canonicalUrl]);

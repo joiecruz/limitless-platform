@@ -33,11 +33,11 @@ export function useMembers(workspaceId?: string) {
         .returns<WorkspaceMember[]>();
 
       if (activeMembersError) {
-        console.error('Error fetching active members:', activeMembersError);
+        
         throw activeMembersError;
       }
 
-      console.log('Active members data:', activeMembers);
+      
 
       // Fetch pending invitations - avoid FK validation by selecting specific fields
       const { data: pendingInvites, error: pendingInvitesError } = await supabase
@@ -48,7 +48,7 @@ export function useMembers(workspaceId?: string) {
         .order('created_at', { ascending: false });
 
       if (pendingInvitesError) {
-        console.error('Error fetching pending invites:', pendingInvitesError);
+        
         // Don't throw error, just log it and continue with empty pending invites
       }
 
@@ -106,7 +106,7 @@ export function useMembers(workspaceId?: string) {
         .single();
 
       if (roleError) {
-        console.error('Error fetching user role:', roleError);
+        
         throw new Error('Could not determine your permissions');
       }
 
@@ -137,7 +137,7 @@ export function useMembers(workspaceId?: string) {
           .eq('user_id', member.id);
 
         if (memberError) {
-          console.error('Error deleting member:', memberError);
+          
           throw memberError;
         }
 
@@ -149,7 +149,7 @@ export function useMembers(workspaceId?: string) {
           .eq('email', member.email);
 
         if (inviteError) {
-          console.error('Error deleting related invitations:', inviteError);
+          
           // Don't throw - this is not critical
         }
       } else {
@@ -160,7 +160,7 @@ export function useMembers(workspaceId?: string) {
           .eq('id', member.id);
 
         if (inviteError) {
-          console.error('Error cancelling invitation:', inviteError);
+          
           throw inviteError;
         }
       }
@@ -177,7 +177,7 @@ export function useMembers(workspaceId?: string) {
           : "Invitation has been cancelled",
       });
     } catch (error: any) {
-      console.error('Error deleting member:', error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to remove member",

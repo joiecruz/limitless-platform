@@ -20,7 +20,7 @@ export default function Privacy() {
         .single();
 
       if (error) {
-        console.error("Error fetching privacy policy:", error);
+        
         return null;
       }
 

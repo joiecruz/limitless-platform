@@ -18,7 +18,6 @@ export function useWorkspaceRole(workspaceId?: string) {
         .single();
 
       if (error) {
-        console.error('Error fetching user role:', error);
         return null;
       }
 

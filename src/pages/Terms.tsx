@@ -20,7 +20,7 @@ export default function Terms() {
         .single();
 
       if (error) {
-        console.error("Error fetching terms of service:", error);
+        
         return null;
       }
 

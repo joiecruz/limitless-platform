@@ -53,7 +53,7 @@ export default function AdminWorkspaces() {
         .single();
 
       if (profileError) {
-        console.error('Profile error:', profileError);
+        
         throw new Error("Failed to get user profile");
       }
 
@@ -79,7 +79,7 @@ export default function AdminWorkspaces() {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Database access error:', error);
+        
         throw error;
       }
 

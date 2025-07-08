@@ -1,6 +1,10 @@
 import React from "react";
 
-export default function ProjectSubmission() {
+interface ProjectSubmissionProps {
+  onNext: () => void;
+}
+
+export default function ProjectSubmission({ onNext }: ProjectSubmissionProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
       {/* Checkmark Circle */}
@@ -16,7 +20,7 @@ export default function ProjectSubmission() {
       <h2 className="text-[22px] font-bold text-center text-gray-800 mb-6">Great job, you've submitted<br />your project brief!</h2>
       {/* Subheading */}
       <p className="text-center text-[15px] text-gray-500 mb-6 max-w-xl">
-        Our AI is now working on generating design challenges tailored to your needs based on the information you provided.
+        Click Next to generate design challenges tailored to your project based on the information you provided.
       </p>
       {/* Info Box */}
       <div className="bg-white border border-gray-200 rounded-[6px] px-5 py-4 mb-6 mt-2 max-w-xl w-full flex items-start gap-0">
@@ -27,6 +31,20 @@ export default function ProjectSubmission() {
         </div>
       </div>
       
+      {/* Next Button */}
+      <button 
+        className="mt-[8px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1"
+        onClick={onNext}
+      >
+        <img
+          src="/projects-navbar-icons/sparkle.svg"
+          alt=""
+          width={15}
+          height={15}
+          style={{ marginRight: 2, marginLeft: -5, color: 'white' }}
+        />
+        Next
+      </button>
     </div>
   );
 }

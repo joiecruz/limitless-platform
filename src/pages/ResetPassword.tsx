@@ -25,11 +25,7 @@ export default function ResetPassword() {
     const type = hashParams.get('type');
     const accessToken = hashParams.get('access_token') || queryParams.get('token');
 
-    console.log('Reset password page loaded', {
-      hashType: type,
-      hasHashToken: !!hashParams.get('access_token'),
-      hasQueryToken: !!queryParams.get('token')
-    });
+    
 
     if (!accessToken) {
       toast({
@@ -100,7 +96,7 @@ export default function ResetPassword() {
       setIsNavigating(true);
       setTimeout(() => navigate('/signin'), 2000);
     } catch (error: any) {
-      console.error("Password reset error:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to update password",

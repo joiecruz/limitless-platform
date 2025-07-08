@@ -13,7 +13,7 @@ export function useInviteSubmit(token?: string | null) {
   const navigate = useNavigate();
 
   const handleSubmit = async (data: { password: string; email: string }) => {
-    console.log("Starting invite submission process");
+    
     setIsLoading(true);
 
     try {
@@ -29,11 +29,11 @@ export function useInviteSubmit(token?: string | null) {
         .maybeSingle();
 
       if (inviteError || !inviteData) {
-        console.error("Error fetching invitation:", inviteError);
+        
         throw new Error("Invalid or expired invitation");
       }
 
-      console.log("Found invitation:", inviteData);
+      
 
       // Sign up the user with their email and password
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -47,11 +47,11 @@ export function useInviteSubmit(token?: string | null) {
       });
 
       if (signUpError || !authData.user) {
-        console.error("Error signing up:", signUpError);
+        
         throw signUpError;
       }
 
-      console.log("User signed up successfully:", authData.user.id);
+      
 
       // Profile is automatically created by database trigger, so we skip manual creation
 
@@ -66,7 +66,7 @@ export function useInviteSubmit(token?: string | null) {
       });
 
       if (processError) {
-        console.error("Error processing invitation:", processError);
+        
         throw new Error(processError.message || "Failed to join workspace");
       }
 
@@ -77,11 +77,11 @@ export function useInviteSubmit(token?: string | null) {
         });
 
         if (confirmError) {
-          console.error("Error confirming email:", confirmError);
+          
           // Don't throw - user can still continue
         }
       } catch (confirmError) {
-        console.error("Error confirming email:", confirmError);
+        
         // Continue anyway
       }
 
@@ -104,7 +104,7 @@ export function useInviteSubmit(token?: string | null) {
       });
 
     } catch (error: any) {
-      console.error("Error in invite submission:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to set password",

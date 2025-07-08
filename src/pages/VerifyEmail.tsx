@@ -21,7 +21,7 @@ export default function VerifyEmail() {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
-        console.log('User signed in:', session?.user.id);
+        
         try {
           // Call our edge function to handle workspace creation
           const { error } = await supabase.functions.invoke('handle-email-verification', {
@@ -33,7 +33,7 @@ export default function VerifyEmail() {
           // Navigate to dashboard after successful verification and workspace creation
           navigate('/dashboard');
         } catch (error: any) {
-          console.error('Error handling email verification:', error);
+          
           toast({
             title: "Error",
             description: "There was an error setting up your workspace. Please try again.",
@@ -68,7 +68,7 @@ export default function VerifyEmail() {
         description: "Please check your inbox for the verification link",
       });
     } catch (error: any) {
-      console.error("Error resending verification email:", error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to resend verification email",

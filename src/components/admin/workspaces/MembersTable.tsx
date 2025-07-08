@@ -32,7 +32,7 @@ export function MembersTable({ members, onDeleteMember }: MembersTableProps) {
         .single();
 
       if (error) {
-        console.error('Error fetching user role:', error);
+        
         return null;
       }
       return data?.role;

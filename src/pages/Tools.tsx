@@ -42,7 +42,7 @@ export default function Tools() {
   if (isLoading) return <LoadingQuotes />;
 
   if (error) {
-    console.error('Error loading tools:', error);
+    
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-semibold text-gray-900">Error loading tools</h2>

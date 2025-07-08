@@ -71,11 +71,11 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
         .eq("course_id", courseId);
 
       if (error) {
-        console.error("Error fetching enrolled users:", error);
+        
         throw error;
       }
 
-      console.log("Enrolled users data:", data);
+      
       return data as EnrolledUser[];
     },
   });
@@ -98,11 +98,11 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
         .eq("course_id", courseId);
 
       if (error) {
-        console.error("Error fetching users with access:", error);
+        
         throw error;
       }
 
-      console.log("Users with access data:", data);
+      
       return data as UserWithAccess[];
     },
   });
@@ -123,7 +123,7 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
         .eq("course_id", courseId);
 
       if (error) {
-        console.error("Error fetching workspaces with access:", error);
+        
         throw error;
       }
 

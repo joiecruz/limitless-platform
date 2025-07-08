@@ -59,7 +59,7 @@ const SignupSteps = () => {
     try {
       setIsLoading(true);
       const redirectUrl = `${window.location.origin}/dashboard`;
-      console.log("Signup redirect URL:", redirectUrl);
+      
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -87,7 +87,7 @@ const SignupSteps = () => {
         });
       }
     } catch (error: any) {
-      console.error("Signup error:", error);
+      
       toast({
         title: "Error",
         description: error.message || "An error occurred during signup",

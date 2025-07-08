@@ -19,13 +19,13 @@ export default function CaseStudy() {
 
   // Log the slug value to help with debugging
   useEffect(() => {
-    console.log("Case study slug:", slug);
+    
   }, [slug]);
 
   const { data: caseStudy, isLoading, error } = useQuery({
     queryKey: ['case-study', slug],
     queryFn: async () => {
-      console.log("Fetching case study with slug:", slug);
+      
       const { data, error } = await supabase
         .from('case_studies')
         .select('*')
@@ -33,7 +33,7 @@ export default function CaseStudy() {
         .single();
 
       if (error) {
-        console.error("Error fetching case study:", error);
+        
         toast({
           title: "Error loading case study",
           description: "Unable to load the case study. Please try again later.",
@@ -42,7 +42,7 @@ export default function CaseStudy() {
         throw error;
       }
       
-      console.log("Case study data:", data);
+      
       return data;
     },
     retry: 1,
@@ -52,7 +52,7 @@ export default function CaseStudy() {
   // Handle error state
   useEffect(() => {
     if (error) {
-      console.error("Error loading case study:", error);
+      
     }
   }, [error]);
 
@@ -77,11 +77,11 @@ export default function CaseStudy() {
 
   // Debug OpenGraph tags
   useEffect(() => {
-    console.log("Case Study Debug Info:");
-    console.log("- URL:", canonicalUrl);
-    console.log("- Slug:", slug);
-    console.log("- Case Study loaded:", !!caseStudy);
-    console.log("- Image:", pageImage);
+    
+    
+    
+    
+    
   }, [canonicalUrl, slug, caseStudy, pageImage]);
 
   if (isLoading) {

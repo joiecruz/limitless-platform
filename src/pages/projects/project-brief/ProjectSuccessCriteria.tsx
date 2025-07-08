@@ -1,4 +1,8 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const SDG_LIST = [
   "No Poverty",
@@ -38,13 +42,32 @@ const TYPE_ICONS: Record<string, JSX.Element> = {
 
 export interface ProjectSuccessCriteriaRef {
   validate: () => boolean | string;
+  getValues: () => {
+    targetOutcomes: string;
+    sdgs: string[];
+    innovationTypes: string[];
+  };
+  setValues: (values: {
+    targetOutcomes: string;
+    sdgs: string[];
+    innovationTypes: string[];
+  }) => void;
 }
 
-const ProjectSuccessCriteria = forwardRef<ProjectSuccessCriteriaRef>((props, ref) => {
+interface ProjectSuccessCriteriaProps {
+  projectName?: string;
+  projectDescription?: string;
+  projectProblem?: string;
+  projectCustomers?: string;
+}
+
+const ProjectSuccessCriteria = forwardRef<ProjectSuccessCriteriaRef, ProjectSuccessCriteriaProps>((props, ref) => {
   const [selectedSDGs, setSelectedSDGs] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [targetOutcomes, setTargetOutcomes] = useState("");
   const [touched, setTouched] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
 
   useImperativeHandle(ref, () => ({
     validate: () => {
@@ -53,8 +76,63 @@ const ProjectSuccessCriteria = forwardRef<ProjectSuccessCriteriaRef>((props, ref
       if (selectedSDGs.length === 0) return "At least one SDG is required.";
       if (selectedTypes.length === 0) return "At least one innovation type is required.";
       return true;
+    },
+    getValues: () => ({
+      targetOutcomes,
+      sdgs: selectedSDGs,
+      innovationTypes: selectedTypes
+    }),
+    setValues: (values) => {
+      setTargetOutcomes(values.targetOutcomes);
+      setSelectedSDGs(values.sdgs);
+      setSelectedTypes(values.innovationTypes);
     }
   }));
+
+  const generateTargetOutcomes = async () => {
+    if (!props.projectName?.trim()) {
+      toast({
+        title: "Project name required",
+        description: "Please enter a project name first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      const contextInfo = [
+        props.projectName ? `Project: "${props.projectName}"` : '',
+        props.projectDescription ? `Description: "${props.projectDescription}"` : '',
+        props.projectProblem ? `Problem: "${props.projectProblem}"` : '',
+        props.projectCustomers ? `Target audience: "${props.projectCustomers}"` : ''
+      ].filter(Boolean).join('. ');
+
+      const prompt = `Generate specific, measurable target outcomes based on: ${contextInfo}. Focus on concrete impacts, success metrics, and expected results. Keep it concise (2-3 sentences).`;
+
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { prompt }
+      });
+      
+      if (error) throw error;
+      
+      setTargetOutcomes(data.generatedText);
+      
+      toast({
+        title: "Content Generated",
+        description: "AI has generated target outcomes",
+      });
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate target outcomes. Please try again or enter manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const showSDGError = touched && selectedSDGs.length === 0;
   const showTypeError = touched && selectedTypes.length === 0;
@@ -78,7 +156,20 @@ const ProjectSuccessCriteria = forwardRef<ProjectSuccessCriteriaRef>((props, ref
         <img src="/projects-navbar-icons/check-circle.svg" alt="Info" width={22} height={14} style={{ marginRight: 13, color: '#2FD5C8', filter: 'invert(62%) sepia(99%) saturate(377%) hue-rotate(127deg) brightness(97%) contrast(92%)' }} />
         <span className="text-[17px] font-bold font-sans" style={{ color: '#1E2128FF' }}>Success Criteria</span>
       </div>
-      <label className="block text-[13px] text-gray-600 font-bold font-sans mb-1" htmlFor="project-target-outcomes">Target Outcomes</label>
+      <div className="flex items-center gap-2 mb-1">
+        <label className="block text-[13px] text-gray-600 font-bold font-sans" htmlFor="project-target-outcomes">Target Outcomes</label>
+        <Button 
+          type="button" 
+          size="sm" 
+          variant="outline" 
+          className="flex items-center gap-1 h-6 px-2 text-[11px]"
+          onClick={generateTargetOutcomes}
+          disabled={isGenerating}
+        >
+          <Sparkles className="h-3 w-3" />
+          {isGenerating ? "Generating..." : "Generate with AI"}
+        </Button>
+      </div>
       <textarea
         id="project-target-outcomes"
         placeholder="Describe the impact and outcomes that you hope to achieve through this innovation project."

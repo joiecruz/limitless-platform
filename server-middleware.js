@@ -86,7 +86,7 @@ exports.handler = async function(event, context) {
         };
       }
     } catch (error) {
-      console.error('Error fetching blog data:', error);
+      // console.error('Error fetching blog data:', error);
     }
   }
 

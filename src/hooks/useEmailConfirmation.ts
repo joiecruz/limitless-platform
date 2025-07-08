@@ -18,18 +18,14 @@ export const useEmailConfirmation = () => {
 };
 
 export const extractTokenFromUrl = (): string | null => {
-  console.log("Extracting token from URL:", {
-    hash: window.location.hash,
-    search: window.location.search,
-    pathname: window.location.pathname
-  });
+  
   
   // Method 1: Check for token in hash parameters (Supabase default method)
   if (window.location.hash) {
     // Check for access_token in the hash (Supabase format)
     const tokenMatch = window.location.hash.match(/access_token=([^&]+)/);
     if (tokenMatch && tokenMatch[1]) {
-      console.log("Found token in hash parameters");
+      
       return tokenMatch[1];
     }
   }
@@ -39,7 +35,7 @@ export const extractTokenFromUrl = (): string | null => {
   const queryToken = queryParams.get('token');
     
   if (queryToken) {
-    console.log("Found token in query parameters");
+    
     return queryToken;
   }
   
@@ -51,7 +47,7 @@ export const extractTokenFromUrl = (): string | null => {
       const possibleToken = pathParts[pathParts.length - 1];
       // Basic validation: token should be at least 10 chars
       if (possibleToken && possibleToken.length > 10) {
-        console.log("Found token in URL path");
+        
         return possibleToken;
       }
     }
@@ -63,11 +59,11 @@ export const extractTokenFromUrl = (): string | null => {
   const jwtMatch = fullUrl.match(jwtPattern);
   
   if (jwtMatch && jwtMatch[0]) {
-    console.log("Found JWT-like token in URL");
+    
     return jwtMatch[0];
   }
   
-  console.log("No token found in URL");
+  
   return null;
 };
 

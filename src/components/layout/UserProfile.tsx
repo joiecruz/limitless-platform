@@ -72,7 +72,7 @@ export function UserProfile() {
   }
 
   if (profileError) {
-    console.error('Error loading profile:', profileError);
+    
   }
 
   return (

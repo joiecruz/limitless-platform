@@ -31,7 +31,7 @@ const Lesson = () => {
         .single();
 
       if (error) {
-        console.error("Error fetching lesson:", error);
+        
         toast({
           title: "Error",
           description: "Failed to load lesson details. Please try again later.",
@@ -58,7 +58,7 @@ const Lesson = () => {
         .order("order");
 
       if (error) {
-        console.error("Error fetching lessons:", error);
+        
         toast({
           title: "Error",
           description: "Failed to load lessons. Please try again later.",
@@ -110,7 +110,7 @@ const Lesson = () => {
         navigate(`/dashboard/courses/${courseId}/lessons/${nextLesson.id}`);
       }
     } catch (error) {
-      console.error("Error updating progress:", error);
+      
       toast({
         title: "Error",
         description: "Failed to update progress. Please try again later.",

@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -6,9 +6,10 @@ import {
   BookOpen,
   ArrowLeft,
   FileText,
-  Database
-} from "lucide-react";
-import { UserProfile } from "@/components/layout/UserProfile";
+  Database,
+  AlertCircle,
+} from 'lucide-react';
+import { UserProfile } from '@/components/layout/UserProfile';
 
 export function AdminSidebar() {
   const location = useLocation();
@@ -41,7 +42,9 @@ export function AdminSidebar() {
           </Link>
           <Link
             to="/admin/workspaces"
-            className={`nav-item ${isActive('/admin/workspaces') ? 'active' : ''}`}
+            className={`nav-item ${
+              isActive('/admin/workspaces') ? 'active' : ''
+            }`}
           >
             <Briefcase className="h-5 w-5" />
             Workspaces
@@ -52,6 +55,13 @@ export function AdminSidebar() {
           >
             <BookOpen className="h-5 w-5" />
             Courses
+          </Link>
+          <Link
+            to="/admin/reports"
+            className={`nav-item ${isActive('/admin/reports') ? 'active' : ''}`}
+          >
+            <AlertCircle className="h-5 w-5" />
+            Reports
           </Link>
 
           {/* Website section */}
@@ -68,7 +78,9 @@ export function AdminSidebar() {
             </Link>
             <Link
               to="/admin/content"
-              className={`nav-item ${isActive('/admin/content') ? 'active' : ''}`}
+              className={`nav-item ${
+                isActive('/admin/content') ? 'active' : ''
+              }`}
             >
               <Database className="h-5 w-5" />
               Content

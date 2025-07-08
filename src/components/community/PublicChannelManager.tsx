@@ -81,7 +81,7 @@ export function PublicChannelManager({ onChannelCreated }: PublicChannelManagerP
         onChannelCreated(data);
       }
     } catch (error) {
-      console.error('Error creating public channel:', error);
+      
       toast({
         title: "Error",
         description: "Failed to create public channel",

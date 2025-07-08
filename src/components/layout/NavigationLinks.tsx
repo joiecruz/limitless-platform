@@ -1,4 +1,4 @@
-import { Home, BookOpen, Users, Settings, Download, Briefcase } from "lucide-react";
+import { Home, BookOpen, Users, Settings, Download, Briefcase, Lightbulb } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export const navigation = [

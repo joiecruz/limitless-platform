@@ -66,7 +66,7 @@ export function ProfileForm({ loading, profile, userEmail, onSubmit }: ProfileFo
       setPassword('');
       setConfirmPassword('');
     } catch (error) {
-      console.error('Error updating password:', error);
+      
       toast({
         title: "Error",
         description: "Failed to update password. Please try again.",

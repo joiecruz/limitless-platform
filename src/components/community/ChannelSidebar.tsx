@@ -67,7 +67,7 @@ export function ChannelSidebar({
       setIsCreatePrivateDialogOpen(false);
       setNewPrivateChannelName("");
     } catch (error) {
-      console.error('Error creating private channel:', error);
+      
     }
   };
 
@@ -107,7 +107,7 @@ export function ChannelSidebar({
       setPublicChannelDescription("");
       setIsReadOnly(false);
     } catch (error) {
-      console.error('Error creating public channel:', error);
+      
       toast({
         title: "Error",
         description: "Failed to create public channel",
