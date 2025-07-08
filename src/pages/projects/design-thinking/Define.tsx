@@ -1,9 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import StepCard from "../../../components/projects/StepCard";
 import DocumentEditor from "../../../components/projects/DocumentEditor";
 import HowMightWe from "../../../components/projects/HowMightWe";
 import { useStepNavigation } from "../../../components/projects/ProjectNavBar";
+import { useDefine } from '@/hooks/useDefine';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const steps = [
   {
@@ -25,23 +28,67 @@ const steps = [
     description: "Collaborate with your team to select the most impactful 'How Might We' questions to carry forward into ideation",
     options: null,
     duration: "15 mins",
-    action: { label: "Create notes", active: false },
+    action: { label: "Create notes", active: true },
   }
 ];
 
+const stepFields = [
+  'mainInsights',
+  'howMightWe',
+  'selectedChallenge',
+];
+
 export default function Define() {
+  const { projectId } = useParams();
   const [activeStep, setActiveStep] = useState(0);
   const [checkedSteps, setCheckedSteps] = useState(Array(steps.length).fill(false));
   const navigate = useNavigate();
   const { changeStep } = useStepNavigation();
+  const documentEditorRef = useRef<any>(null);
+  const { toast } = useToast();
 
-  const handleCheck = (idx: number) => {
+  // useDefine hook
+  const {
+    data: defineData,
+    isLoading,
+    updateData,
+    saveDefine,
+    loadDefine,
+  } = useDefine(projectId || null);
+
+  // Load data on mount
+  useEffect(() => {
+    loadDefine();
+    // eslint-disable-next-line
+  }, [projectId]);
+
+  // Restore editor content on step change
+  useEffect(() => {
+    if (activeStep === 0 && documentEditorRef.current) {
+      documentEditorRef.current.setContents(defineData.mainInsights || '');
+    } else if (activeStep === 1 && documentEditorRef.current) {
+      documentEditorRef.current.setContents(defineData.howMightWe || '');
+    } else if (activeStep === 2 && documentEditorRef.current) {
+      documentEditorRef.current.setContents(defineData.selectedChallenge || '');
+    }
+  }, [activeStep, defineData]);
+
+  // Save on check
+  const handleCheck = async (idx: number) => {
     if (idx === activeStep) {
       const newChecked = [...checkedSteps];
-      newChecked[idx] = !newChecked[idx]; // toggle
+      const wasChecked = checkedSteps[idx];
+      newChecked[idx] = !checkedSteps[idx]; // toggle
       setCheckedSteps(newChecked);
-      if (!checkedSteps[idx] && idx < steps.length - 1) {
-        // If just checked (was false, now true), move to next step
+      if (!wasChecked) {
+        // Save Define for this step
+        if (documentEditorRef.current) {
+          const editorContents = documentEditorRef.current.getContents();
+          updateData({ [stepFields[activeStep]]: editorContents });
+          await saveDefine();
+        }
+      }
+      if (!wasChecked && idx < steps.length - 1) {
         setActiveStep(idx + 1);
       }
     }
@@ -51,9 +98,13 @@ export default function Define() {
   const isLastStep = activeStep === steps.length - 1;
   const canGoNext = isLastStep ? allChecked : checkedSteps[activeStep];
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (documentEditorRef.current) {
+      const editorContents = documentEditorRef.current.getContents();
+      updateData({ [stepFields[activeStep]]: editorContents });
+      await saveDefine();
+    }
     if (isLastStep && allChecked) {
-      // Navigate to the next design thinking step (Ideate)
       changeStep("Ideate");
     } else if (checkedSteps[activeStep] && activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
@@ -63,6 +114,67 @@ export default function Define() {
   const handleBack = () => {
     if (activeStep > 0) {
       setActiveStep(activeStep - 1);
+    }
+  };
+
+  // AI content generation
+  const [isGenerating, setIsGenerating] = useState(false);
+  const generateAIContent = async (stepIdx: number) => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    let prompt = '';
+    let field = '';
+    switch (stepIdx) {
+      case 0:
+        prompt = 'Analyze the insights gathered during the Empathize phase. Identify key themes and patterns that stand out.';
+        field = 'mainInsights';
+        break;
+      case 1:
+        prompt = "Work with your team to develop new 'How Might We' questions based on your persona and insights.";
+        field = 'howMightWe';
+        break;
+      case 2:
+        prompt = "Collaborate with your team to select the most impactful 'How Might We' questions to carry forward into ideation.";
+        field = 'selectedChallenge';
+        break;
+      default:
+        setIsGenerating(false);
+        return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { prompt }
+      });
+      if (error) throw error;
+      let generatedText = data.generatedText || '';
+      // Convert markdown bold (**text**) to HTML <strong>text</strong>
+      generatedText = generatedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      if (documentEditorRef.current) {
+        documentEditorRef.current.setContents(generatedText);
+      }
+      updateData({ [field]: generatedText });
+      toast({
+        title: 'AI Content Generated',
+        description: 'AI has generated content for this step and it has been inserted into the editor.',
+        duration: 4000,
+      });
+    } catch (error) {
+      toast({
+        title: 'Generation Failed',
+        description: 'Failed to generate content. Please try again or enter manually.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // DocumentEditor onSave handler
+  const handleEditorSave = async () => {
+    if (documentEditorRef.current) {
+      const editorContents = documentEditorRef.current.getContents();
+      updateData({ [stepFields[activeStep]]: editorContents });
+      await saveDefine();
     }
   };
 
@@ -105,6 +217,8 @@ export default function Define() {
                   checked={checkedSteps[idx]}
                   onCheck={() => handleCheck(idx)}
                   canCheck={activeStep === idx}
+                  onAction={step.action && step.action.active ? () => generateAIContent(idx) : undefined}
+                  isGenerating={isGenerating && activeStep === idx}
                 />
               </div>
             </div>
@@ -131,7 +245,10 @@ export default function Define() {
       </div>
       {/* Right: Document editor or HowMightWe */}
       <div className="w-full bg-white shadow h-[100vh] overflow-auto">
-        {(activeStep === 1 || activeStep === 2) ? <HowMightWe /> : <DocumentEditor className="p-2" />}
+        {/* Step 1 and 2 use HowMightWe, but still need to save text field */}
+        {(activeStep === 1 || activeStep === 2)
+          ? <DocumentEditor ref={documentEditorRef} className="p-2" onSave={handleEditorSave} />
+          : <DocumentEditor ref={documentEditorRef} className="p-2" onSave={handleEditorSave} />}
       </div>
     </div>
   );
