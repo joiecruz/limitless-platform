@@ -6,6 +6,7 @@ import Define from "./Define";
 import { useStepNavigation } from "../../../components/projects/ProjectNavBar";
 import { useEmpathize } from '@/hooks/useEmpathize';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const steps = [
   {
@@ -27,21 +28,21 @@ const steps = [
     description: "Execute your research plan to collect valuable data from your users",
     options: null,
     duration: "1 - 2 weeks",
-    action: { label: "Upload notes", active: false },
+    action: { label: "Generate", active: true },
   },
   {
     title: "Generate insights from your user research",
     description: "Analyze the gathered data to uncover actionable insights",
     options: null,
     duration: "2 days",
-    action: { label: "Analyze", active: false },
+    action: { label: "Analyze", active: true },
   },
   {
     title: "Create customer persona/s",
     description: "Come up with a visual representation of the people you are designing for",
     options: null,
     duration: "30 mins",
-    action: { label: "Generate", active: false },
+    action: { label: "Generate", active: true },
   },
 ];
 
@@ -76,16 +77,32 @@ export default function Empathize() {
 
   // Load data on mount and when step changes
   useEffect(() => {
-    // If you have a templateId, you can load it here
-    // For now, we assume new data each time
-    // loadEmpathize(templateId)
-    // Optionally, set checkedOptions and DocumentEditor content from empathizeData
+    loadEmpathize();
+  }, [projectId, stepId]);
+
+  useEffect(() => {
+    // Pre-fill checkboxes for step 0
     if (activeStep === 0 && Array.isArray(empathizeData.userResearchMethod)) {
       setCheckedOptions(steps[0].options.map(opt => empathizeData.userResearchMethod.includes(opt)));
+      if (empathizeData.userResearchMethod.length > 0) {
+        toast({ title: 'Progress restored!', description: 'Your previous selections have been loaded.' });
+      }
+    } else if (activeStep !== 0 && documentEditorRef.current) {
+      const value = getEditorValue();
+      documentEditorRef.current.setContents(value);
+      if (value && value.length > 0) {
+        toast({ title: 'Progress restored!', description: 'Your previous document has been loaded.' });
+      }
     }
-    // For other steps, set DocumentEditor content if needed
-    // (Assume DocumentEditor accepts a value prop or ref)
-  }, [activeStep]);
+    // eslint-disable-next-line
+  }, [
+    activeStep,
+    empathizeData.userResearchMethod,
+    empathizeData.userResearchPlan,
+    empathizeData.userResearchNotes,
+    empathizeData.userResearchInsights,
+    empathizeData.customerPersona
+  ]);
 
   // Restore handleOptionCheck and handleCheck
   const handleOptionCheck = async (optionIdx: number) => {
@@ -237,6 +254,63 @@ export default function Empathize() {
     }
   };
 
+  // AI content generation for document steps
+  const [isGenerating, setIsGenerating] = useState(false);
+  const generateAIContent = async (stepIdx: number) => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    let prompt = '';
+    let field = '';
+    switch (stepIdx) {
+      case 1:
+        prompt = 'Generate a comprehensive user research plan for a design thinking project.';
+        field = 'userResearchPlan';
+        break;
+      case 2:
+        prompt = 'Generate detailed user research notes for a design thinking project.';
+        field = 'userResearchNotes';
+        break;
+      case 3:
+        prompt = 'Analyze user research data and generate actionable insights for a design thinking project.';
+        field = 'userResearchInsights';
+        break;
+      case 4:
+        prompt = 'Create a customer persona based on user research for a design thinking project.';
+        field = 'customerPersona';
+        break;
+      default:
+        setIsGenerating(false);
+        return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { prompt }
+      });
+      if (error) throw error;
+      let generatedText = data.generatedText || '';
+      // Convert markdown bold (**text**) to HTML <strong>text</strong>
+      generatedText = generatedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      if (documentEditorRef.current) {
+        documentEditorRef.current.setContents(generatedText);
+      }
+      // Update empathizeData for the current field
+      updateData({ [field]: generatedText });
+      toast({
+        title: 'AI Content Generated',
+        description: 'AI has generated content for this step and it has been inserted into the editor.',
+        duration: 4000,
+      });
+    } catch (error) {
+      toast({
+        title: 'Generation Failed',
+        description: 'Failed to generate content. Please try again or enter manually.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (showDefine) {
     return <Define />;
   }
@@ -282,6 +356,8 @@ export default function Empathize() {
                   canCheck={activeStep === idx}
                   optionChecked={idx === 0 ? checkedOptions : undefined}
                   onOptionCheck={idx === 0 ? handleOptionCheck : undefined}
+                  onAction={step.action && step.action.active && idx !== 0 ? () => generateAIContent(idx) : undefined}
+                  isGenerating={isGenerating && activeStep === idx}
                 />
               </div>
             </div>

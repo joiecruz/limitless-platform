@@ -19,6 +19,8 @@ interface StepCardProps {
   dropdownOptions?: string[];
   dropdownSelected?: string[];
   onDropdownSelect?: (selected: string[]) => void;
+  onAction?: () => void;
+  isGenerating?: boolean;
 }
 
 const StepCard: React.FC<StepCardProps> = ({
@@ -40,6 +42,8 @@ const StepCard: React.FC<StepCardProps> = ({
   dropdownOptions,
   dropdownSelected,
   onDropdownSelect,
+  onAction,
+  isGenerating,
 }) => {
   // Use colored right side and button for active or checked cards
   const isActiveOrChecked = active || checked;
@@ -181,11 +185,12 @@ const StepCard: React.FC<StepCardProps> = ({
       <div className={`flex items-center justify-center ${rightBg} rounded-r px-6 basis-[30%] w-1/5 min-w-[120px]`}>
         <button
           className={`flex items-center gap-2 px-2 py-2 rounded text-[13px] transition-colors ${buttonBg}`}
-          disabled={!action.active}
+          disabled={!action.active || isGenerating}
+          onClick={onAction}
         >
           {/* Icon (magic wand) */}
           <svg width="16" height="16" fill="none" viewBox="0 0 18 18"><path d="M7.5 2.25v1.5M2.25 7.5h1.5M4.5 4.5l-1.06-1.06M13.5 4.5l1.06-1.06M15.75 7.5h-1.5M10.5 2.25v1.5M13.5 13.5l1.06 1.06M7.5 15.75v-1.5M2.25 10.5h1.5M4.5 13.5l-1.06 1.06M10.5 15.75v-1.5M15.75 10.5h-1.5M13.5 13.5l1.06 1.06M10.5 10.5l-6-6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          {action.label}
+          {isGenerating ? 'Generating...' : action.label}
         </button>
       </div>
     </div>

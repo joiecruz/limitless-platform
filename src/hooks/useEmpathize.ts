@@ -63,9 +63,9 @@ export const useEmpathize = (projectIdProp: string | null, stepId: string) => {
         .select('*')
         .eq('project_id', projectId)
         .eq('stage_id', '660e8400-e29b-41d4-a716-446655440002')
-        .single();
+        .maybeSingle();
       if (error) throw error;
-      if (data) {
+      if (data && data.project_id === projectId && data.stage_id === '660e8400-e29b-41d4-a716-446655440002') {
         let structure: EmpathizeData = initialData;
         if (
           data.content_data &&
@@ -80,8 +80,12 @@ export const useEmpathize = (projectIdProp: string | null, stepId: string) => {
           isDirty: false,
           rowId: data.id,
         });
+        console.log('Loaded existing data for project_id and stage_id:', data);
+        return structure;
       } else {
         setState(prev => ({ ...prev, isLoading: false, rowId: null }));
+        console.log('No existing data for project_id and stage_id, using initialData');
+        return initialData;
       }
     } catch (error) {
       toast({
@@ -90,6 +94,7 @@ export const useEmpathize = (projectIdProp: string | null, stepId: string) => {
         variant: 'destructive',
       });
       setState(prev => ({ ...prev, isLoading: false }));
+      return initialData;
     }
   };
 
