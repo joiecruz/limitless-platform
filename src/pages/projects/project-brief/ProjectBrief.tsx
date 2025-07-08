@@ -101,8 +101,8 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   const handleBack = () => {
     if (currentStep === 0) {
       navigate("/dashboard/projects");
-    } else if (onBack) {
-      onBack();
+    } else {
+      setCurrentStep(currentStep - 1);
     }
   };
 

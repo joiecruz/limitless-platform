@@ -1,5 +1,6 @@
 import ProjectBrief from "@/pages/projects/project-brief/ProjectBrief";
 import { useNavigate } from "react-router-dom";
+import { ProjectNavBar } from "@/components/projects/ProjectNavBar";
 
 export default function CreateProject() {
   const navigate = useNavigate();
