@@ -1,4 +1,5 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, createContext, useContext, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import ProjectBrief from "../../pages/projects/project-brief/ProjectBrief";
 import Empathize from "../../pages/projects/design-thinking/Empathize";
 import Define from "../../pages/projects/design-thinking/Define";
@@ -42,6 +43,7 @@ interface ProjectNavBarProps {
 
 export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (selectedStep === null) {
@@ -68,16 +70,11 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
       >
         {designThinkingSteps.map((step) => {
           const isSelected = selectedStep === step.label;
-          // Disable all other steps if "Project Brief" is selected
-          const isDisabled = selectedStep === "Project Brief" && step.label !== "Project Brief";
           return (
             <button
               key={step.label}
-              onClick={() => {
-                if (!isDisabled) setSelectedStep(step.label);
-              }}
-              disabled={isDisabled}
-              className={`flex-1 bg-white py-0 px-0 h-full font-medium focus:outline-none hover:bg-[#F4F4FB] transition-colors flex items-center justify-center ${isSelected ? 'text-[#393CA0FF]' : 'text-[#565D6D]'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={() => setSelectedStep(step.label)}
+              className={`flex-1 bg-white py-0 px-0 h-full font-medium focus:outline-none hover:bg-[#F4F4FB] transition-colors flex items-center justify-center ${isSelected ? 'text-[#393CA0FF]' : 'text-[#565D6D]'}`}
               style={{
                 height: '100%',
                 padding: '26px 0',
