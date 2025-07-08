@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import StepCard from "../../../components/projects/StepCard";
 import DocumentEditor from "../../../components/projects/DocumentEditor";
-import UploadPrototype from '../../../components/projects/UploadPrototype';
+import UploadPrototype, { UploadedPrototype } from '../../../components/projects/UploadPrototype';
 import Define from "./Define";
 import Test from "./Test";
 import { useStepNavigation } from "../../../components/projects/ProjectNavBar";
+import { usePrototype } from '@/hooks/usePrototype';
+import { supabase } from '@/integrations/supabase/client';
 
 const steps = [
   {
@@ -36,38 +38,96 @@ const actionButtons = [
 ];
 
 export default function Prototype() {
+  const { projectId } = useParams();
   const [activeStep, setActiveStep] = useState(0);
-  const [checkedSteps, setCheckedSteps] = useState(Array(steps.length).fill(false));
   const [showDefine, setShowDefine] = useState(false);
-  const [checkedOptions, setCheckedOptions] = useState([false, false, false]);
-  const [selectedActions, setSelectedActions] = useState(Array(actionButtons.length).fill(false));
   const [showTest, setShowTest] = useState(false);
   const navigate = useNavigate();
   const { changeStep, selectedStep } = useStepNavigation();
-  
-  const handleOptionCheck = (optionIdx: number) => {
-    setCheckedOptions(prev => {
-      const updated = [...prev];
-      updated[optionIdx] = !updated[optionIdx];
-      return updated;
-    });
-  };
+  const documentEditorRef = useRef<any>(null);
 
-  const handleCheck = (idx: number) => {
-    if (idx === 0 && !checkedOptions.some(Boolean)) {
-      return;
-    }
-    if (idx === activeStep) {
-      const newChecked = [...checkedSteps];
-      newChecked[idx] = !newChecked[idx]; // toggle
-      setCheckedSteps(newChecked);
-      if (!checkedSteps[idx] && idx < steps.length - 1) {
-        // If just checked (was false, now true), move to next step
-        setActiveStep(idx + 1);
+  // usePrototype hook
+  const {
+    data: prototypeData,
+    isLoading,
+    updateData,
+    savePrototype,
+    loadPrototype,
+  } = usePrototype(projectId || null);
+
+  // State for UI, synced with backend data
+  const [checkedSteps, setCheckedSteps] = useState(Array(steps.length).fill(false));
+  const [selectedActions, setSelectedActions] = useState(Array(actionButtons.length).fill(false));
+  const [isUploading, setIsUploading] = useState(false);
+
+  // AI content generation for prototype type recommendations
+  const [isGenerating, setIsGenerating] = useState(false);
+  const generateAIContent = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    try {
+      // Example prompt for prototype type recommendation
+      const prompt = 'Recommend 3 prototyping techniques for our project. Return only the names as a comma-separated list.';
+      const { data, error } = await supabase.functions.invoke('generate-description', {
+        body: { prompt }
+      });
+      if (error) throw error;
+      let generatedText = data.generatedText || '';
+      // Parse comma-separated list into array
+      const types = generatedText.split(',').map(t => t.trim()).filter(Boolean);
+      // Map to actionButtons labels (if present)
+      const selectedLabels = actionButtons
+        .map(a => a.label)
+        .filter(label => types.some(t => label.toLowerCase().includes(t.toLowerCase())));
+      // If none match, just use the first 3
+      const finalLabels = selectedLabels.length > 0 ? selectedLabels.slice(0, 3) : actionButtons.slice(0, 3).map(a => a.label);
+      // Update UI and backend for selected types
+      setSelectedActions(actionButtons.map(a => finalLabels.includes(a.label)));
+      updateData({ selectedPrototypeTypes: finalLabels });
+
+      // Generate explanation for document editor
+      const notesPrompt = `Write a short paragraph explaining why these prototyping techniques (${finalLabels.join(', ')}) are recommended for our project.`;
+      const { data: notesData, error: notesError } = await supabase.functions.invoke('generate-description', {
+        body: { prompt: notesPrompt }
+      });
+      if (notesError) throw notesError;
+      const notesText = notesData.generatedText || '';
+      if (documentEditorRef.current) {
+        documentEditorRef.current.setContents(notesText);
       }
+      updateData({ prototypeNotes: notesText });
+
+      await savePrototype();
+    } catch (error) {
+      // Optionally show a toast here
+    } finally {
+      setIsGenerating(false);
     }
   };
 
+  // Load data on mount
+  useEffect(() => {
+    loadPrototype();
+    // eslint-disable-next-line
+  }, [projectId]);
+
+  // Remove auto-check logic from useEffect that syncs selectedActions to checkedSteps
+  useEffect(() => {
+    if (Array.isArray(prototypeData.selectedPrototypeTypes)) {
+      const arr = actionButtons.map(btn => prototypeData.selectedPrototypeTypes.includes(btn.label));
+      setSelectedActions(arr);
+      // Do not auto-check the step here
+    }
+  }, [prototypeData.selectedPrototypeTypes]);
+
+  // Sync DocumentEditor with backend data
+  useEffect(() => {
+    if (activeStep === 0 && documentEditorRef.current) {
+      documentEditorRef.current.setContents(prototypeData.prototypeNotes || '');
+    }
+  }, [activeStep, prototypeData.prototypeNotes]);
+
+  // Handle action select (prototype type)
   const handleActionSelect = (idx: number) => {
     setSelectedActions(prev => {
       const count = prev.filter(Boolean).length;
@@ -77,20 +137,71 @@ export default function Prototype() {
       } else if (count < 3) {
         updated[idx] = true;
       }
-      // After updating, check if at least one is selected
-      const anySelected = updated.some(Boolean);
-      setCheckedSteps(cs => {
-        const csUpdated = [...cs];
-        const wasChecked = cs[0];
-        csUpdated[0] = anySelected;
-        // Move to next step if just checked and on the active step
-        if (anySelected && !wasChecked && activeStep === 0 && steps.length > 1) {
-          setActiveStep(1);
-        }
-        return csUpdated;
-      });
+      // Save selected prototype types to backend (on every click)
+      const selectedLabels = actionButtons.filter((_, i) => updated[i]).map(a => a.label);
+      updateData({ selectedPrototypeTypes: selectedLabels });
+      savePrototype();
       return updated;
     });
+  };
+
+  // Handle check (step completion)
+  const handleCheck = async (idx: number) => {
+    if (idx === 0 && !selectedActions.some(Boolean)) {
+      return;
+    }
+    if (idx === activeStep) {
+      const newChecked = [...checkedSteps];
+      const wasChecked = checkedSteps[idx];
+      newChecked[idx] = !checkedSteps[idx]; // toggle
+      setCheckedSteps(newChecked);
+      if (!wasChecked) {
+        // Save notes for this step
+        if (documentEditorRef.current) {
+          const editorContents = documentEditorRef.current.getContents();
+          updateData({ prototypeNotes: editorContents });
+        }
+        await savePrototype();
+      }
+      if (!wasChecked && idx < steps.length - 1) {
+        setActiveStep(idx + 1);
+      }
+    }
+  };
+
+  // Handle photo upload for prototypes
+  const handleUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      // Upload to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      const filePath = `${userId}/${fileName}`;
+      const { data, error } = await supabase.storage.from('prototype-uploads').upload(filePath, file);
+      if (error) {
+        console.error('Supabase upload error:', error);
+        alert(error.message || 'Upload failed');
+        return;
+      }
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage.from('prototype-uploads').getPublicUrl(filePath);
+      const publicUrl = publicUrlData?.publicUrl || '';
+      // Add to uploadedPrototypes in backend
+      const newPrototype: UploadedPrototype = {
+        id: filePath, // Use the full path as the ID
+        name: file.name,
+        image: publicUrl,
+      };
+      const updatedPrototypes = [...(prototypeData.uploadedPrototypes || []), newPrototype];
+      updateData({ uploadedPrototypes: updatedPrototypes });
+      await savePrototype();
+    } catch (err) {
+      // Optionally show a toast here
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const allChecked = checkedSteps.every(Boolean);
@@ -104,7 +215,12 @@ export default function Prototype() {
     return activeStep === idx;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (documentEditorRef.current) {
+      const editorContents = documentEditorRef.current.getContents();
+      updateData({ prototypeNotes: editorContents });
+      await savePrototype();
+    }
     if (isLastStep && allChecked) {
       changeStep("Test");
     } else if (checkedSteps[activeStep] && activeStep < steps.length - 1) {
@@ -164,11 +280,13 @@ export default function Prototype() {
                   checked={checkedSteps[idx]}
                   onCheck={() => handleCheck(idx)}
                   canCheck={canCheckStep(idx)}
-                  optionChecked={idx === 0 ? checkedOptions : undefined}
-                  onOptionCheck={idx === 0 ? handleOptionCheck : undefined}
                   actions={idx === 0 ? actionButtons : undefined}
                   actionSelected={idx === 0 ? selectedActions : undefined}
                   onActionSelect={idx === 0 ? handleActionSelect : undefined}
+                  onAction={idx === 0 ? generateAIContent : undefined}
+                  isGenerating={idx === 0 ? isGenerating : undefined}
+                  onUpload={idx === 1 ? handleUpload : undefined}
+                  isUploading={idx === 1 ? isUploading : undefined}
                 />
               </div>
             </div>
@@ -195,7 +313,15 @@ export default function Prototype() {
       </div>
       {/* Right: Document editor or UploadPrototype */}
       <div className="w-full md:w-1/2 bg-white shadow h-[100vh] overflow-auto">
-        {activeStep === 1 ? <UploadPrototype /> : <DocumentEditor className="p-2" />}
+        {activeStep === 1 ? (
+          <UploadPrototype
+            uploadedPrototypes={prototypeData.uploadedPrototypes || []}
+            onUpload={handleUpload}
+            isUploading={isUploading}
+          />
+        ) : (
+          <DocumentEditor ref={documentEditorRef} className="p-2" />
+        )}
       </div>
     </div>
   );

@@ -1,28 +1,31 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 
-const prototypes = [
-  {
-    id: 1,
-    name: "Prototype name",
-    image: "/images/prototype.jpg",
-  },
-  {
-    id: 2,
-    name: "Prototype name",
-    image: "/images/proto.avif",
-  },
-  {
-    id: 3,
-    name: "Prototype name",
-    image: "/images/prototype-1.jpeg",
-  },
-];
+export interface UploadedPrototype {
+  id: string;
+  name: string;
+  image: string;
+}
 
-export default function UploadPrototype() {
-  const [expanded, setExpanded] = useState(false);
+interface UploadPrototypeProps {
+  uploadedPrototypes: UploadedPrototype[];
+  onUpload: (file: File) => void;
+  isUploading: boolean;
+}
+
+export default function UploadPrototype({ uploadedPrototypes, onUpload, isUploading }: UploadPrototypeProps) {
+  const [expanded, setExpanded] = React.useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onUpload(file);
+      e.target.value = '';
+    }
+  };
 
   const content = (
-    <div className="w-full h-full p-8 bg-[#F4F4FB] relative">
+    <div className="w-full min-h-full p-8 bg-[#F4F4FB] relative">
       {/* Expand button */}
       <button
         className="absolute top-4 right-4 bg-white rounded-[10px] border border-[#E5E7EB] w-9 h-9 flex items-center justify-center hover:bg-[#F4F4F4] transition"
@@ -42,12 +45,24 @@ export default function UploadPrototype() {
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
         {/* Add prototype card */}
-        <div className="flex flex-col items-center justify-center border-2 border-[#393CA0] rounded-lg h-[210px] cursor-pointer transition hover:bg-[#F4F4FB]">
+        <div
+          className="flex flex-col items-center justify-center border-2 border-[#393CA0] rounded-lg h-[210px] cursor-pointer transition hover:bg-[#F4F4FB] relative"
+          onClick={() => fileInputRef.current?.click()}
+        >
           <span className="text-2xl text-[#393CA0] mb-2">+</span>
           <span className="text-[#393CA0] text-lg font-normal">Add prototype</span>
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={isUploading}
+          />
+          {isUploading && <span className="absolute bottom-2 text-xs text-[#393CA0]">Uploading...</span>}
         </div>
         {/* Existing prototypes */}
-        {prototypes.map((p) => (
+        {uploadedPrototypes.map((p) => (
           <div key={p.id} className="flex flex-col">
             <img
               src={p.image}

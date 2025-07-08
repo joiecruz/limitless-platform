@@ -13,7 +13,7 @@ const steps = [
     description: "Choose the best method to test your prototype and idea and gather feedback from people",
     options: null,
     duration: null,
-    action: { label: "Recommend", active: false },
+    action: { label: "Recommend", active: true },
   },
   {
     title: "Create a user test plan",
@@ -164,7 +164,13 @@ export default function Test() {
     setIsGenerating(true);
     let prompt = '';
     let field = '';
+    let isDropdown = false;
     switch (stepIdx) {
+      case 0:
+        prompt = 'Recommend 2-3 user testing methods for a design thinking project. Return only the method names as a comma-separated list.';
+        field = 'userTestingMethod';
+        isDropdown = true;
+        break;
       case 1:
         prompt = 'Generate a comprehensive user test plan for a design thinking project.';
         field = 'userTestPlan';
@@ -189,16 +195,32 @@ export default function Test() {
       let generatedText = data.generatedText || '';
       // Convert markdown bold (**text**) to HTML <strong>text</strong>
       generatedText = generatedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      if (documentEditorRef.current) {
-        documentEditorRef.current.setContents(generatedText);
+      if (isDropdown) {
+        // Parse comma-separated list into array
+        const methods = generatedText.split(',').map(t => t.trim()).filter(Boolean);
+        // Only use methods that are in dropdownOptions
+        const selected = dropdownOptions.filter(opt => methods.some(m => opt.toLowerCase().includes(m.toLowerCase())));
+        const finalSelected = selected.length > 0 ? selected.slice(0, 3) : dropdownOptions.slice(0, 2);
+        setDropdownSelected(finalSelected);
+        updateData({ userTestingMethod: finalSelected });
+        await saveTest();
+        toast({
+          title: 'AI Methods Recommended',
+          description: 'AI has recommended user testing methods and selected them in the dropdown.',
+          duration: 4000,
+        });
+      } else {
+        if (documentEditorRef.current) {
+          documentEditorRef.current.setContents(generatedText);
+        }
+        updateData({ [field]: generatedText });
+        await saveTest();
+        toast({
+          title: 'AI Content Generated',
+          description: 'AI has generated content for this step and it has been inserted into the editor.',
+          duration: 4000,
+        });
       }
-      updateData({ [field]: generatedText });
-      await saveTest();
-      toast({
-        title: 'AI Content Generated',
-        description: 'AI has generated content for this step and it has been inserted into the editor.',
-        duration: 4000,
-      });
     } catch (error) {
       toast({
         title: 'Generation Failed',
@@ -249,6 +271,10 @@ export default function Test() {
               <div className="flex-1">
                 <StepCard
                   {...step}
+                  action={{
+                    ...step.action,
+                    label: idx === 0 && isGenerating && activeStep === 0 ? 'Recommending...' : step.action.label,
+                  }}
                   active={activeStep === idx}
                   checked={checkedSteps[idx]}
                   onCheck={() => handleCheck(idx)}
@@ -257,7 +283,7 @@ export default function Test() {
                   dropdownOptions={idx === 0 ? dropdownOptions : undefined}
                   dropdownSelected={idx === 0 ? dropdownSelected : undefined}
                   onDropdownSelect={idx === 0 ? handleDropdownSelect : undefined}
-                  onAction={step.action && step.action.active && idx !== 0 ? () => generateAIContent(idx) : undefined}
+                  onAction={step.action && (step.action.active || idx === 0) ? () => generateAIContent(idx) : undefined}
                   isGenerating={isGenerating && activeStep === idx}
                 />
               </div>

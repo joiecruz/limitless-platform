@@ -302,7 +302,7 @@ const DocumentEditor = forwardRef<{ getContents: () => string; setContents: (val
       <div className="flex gap-2 mb-2 items-center border-b pb-2">
         <button type="button" className="px-2 py-1 rounded border border-[#E5E7EB] bg-white hover:bg-[#F4F4F4] text-sm" title="Upload File" onClick={handleFileUpload}>
           <span role="img" aria-label="file">Upload File</span>
-        </button>
+          </button>
         <button type="button" className="px-2 py-1 rounded border border-[#E5E7EB] bg-white hover:bg-[#F4F4F4] text-sm" title="Save Document" onClick={handleSave}>
           <span role="img" aria-label="save">💾</span>
         </button>

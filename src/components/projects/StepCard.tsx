@@ -21,6 +21,8 @@ interface StepCardProps {
   onDropdownSelect?: (selected: string[]) => void;
   onAction?: () => void;
   isGenerating?: boolean;
+  onUpload?: (file: File) => void;
+  isUploading?: boolean;
 }
 
 const StepCard: React.FC<StepCardProps> = ({
@@ -44,6 +46,8 @@ const StepCard: React.FC<StepCardProps> = ({
   onDropdownSelect,
   onAction,
   isGenerating,
+  onUpload,
+  isUploading,
 }) => {
   // Use colored right side and button for active or checked cards
   const isActiveOrChecked = active || checked;
@@ -71,6 +75,15 @@ const StepCard: React.FC<StepCardProps> = ({
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownOpen]);
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onUpload) {
+      onUpload(file);
+      e.target.value = '';
+    }
+  };
 
   return (
     <div
@@ -183,6 +196,28 @@ const StepCard: React.FC<StepCardProps> = ({
       </div>
       {/* Right: Action button on colored background */}
       <div className={`flex items-center justify-center ${rightBg} rounded-r px-6 basis-[30%] w-1/5 min-w-[120px]`}>
+        {/* Upload button for photo upload */}
+        {onUpload ? (
+          <>
+            <button
+              className={`flex items-center gap-2 px-2 py-2 rounded text-[13px] transition-colors bg-[#393CA0] text-white hover:bg-[#232262]`}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              type="button"
+            >
+              <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M3 10.5V13h10v-2.5M8 3v7.5m0 0l-2.5-2.5M8 10.5l2.5-2.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              {isUploading ? 'Uploading...' : 'Upload Photo'}
+            </button>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={isUploading}
+            />
+          </>
+        ) : (
         <button
           className={`flex items-center gap-2 px-2 py-2 rounded text-[13px] transition-colors ${buttonBg}`}
           disabled={!action.active || isGenerating}
@@ -192,6 +227,7 @@ const StepCard: React.FC<StepCardProps> = ({
           <svg width="16" height="16" fill="none" viewBox="0 0 18 18"><path d="M7.5 2.25v1.5M2.25 7.5h1.5M4.5 4.5l-1.06-1.06M13.5 4.5l1.06-1.06M15.75 7.5h-1.5M10.5 2.25v1.5M13.5 13.5l1.06 1.06M7.5 15.75v-1.5M2.25 10.5h1.5M4.5 13.5l-1.06 1.06M10.5 15.75v-1.5M15.75 10.5h-1.5M13.5 13.5l1.06 1.06M10.5 10.5l-6-6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           {isGenerating ? 'Generating...' : action.label}
         </button>
+        )}
       </div>
     </div>
   );
