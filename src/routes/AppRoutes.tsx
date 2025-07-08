@@ -114,8 +114,8 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}
       >
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/dashboard/projects" element={<Projects />} />
-        <Route path="/dashboard/projects/create-project" element={<CreateProject />} />
+        <Route path="/dashboard/projects/*" element={<Projects />} />
+        {/* <Route path="/dashboard/projects/create-project" element={<CreateProject />} /> */}
         <Route path="/dashboard/courses" element={<Courses />} />
         <Route
           path="/dashboard/courses/:courseId/lessons"
