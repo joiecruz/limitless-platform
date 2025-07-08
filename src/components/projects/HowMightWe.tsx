@@ -1,7 +1,22 @@
 import React, { useState } from 'react';
 import HMWCard from './HMWCard';
 
-const questions = [
+export interface HMWQuestion {
+  id: number;
+  text: string;
+  stars: number;
+  avatar: string;
+}
+
+interface HowMightWeProps {
+  questions?: HMWQuestion[];
+  onQuestionsChange?: (questions: HMWQuestion[]) => void;
+  selectedIds?: number[];
+  onQuestionsSelect?: (selected: HMWQuestion[]) => void;
+  onAdd?: (question: HMWQuestion) => void;
+}
+
+const defaultQuestions: HMWQuestion[] = [
   {
     id: 1,
     text: 'How might we create more farms in the Philippines?',
@@ -40,8 +55,65 @@ const questions = [
   },
 ];
 
-export default function HowMightWe() {
+export default function HowMightWe({ questions, onQuestionsChange, selectedIds: selectedIdsProp, onQuestionsSelect, onAdd }: HowMightWeProps) {
   const [expanded, setExpanded] = useState(false);
+  // Use controlled questions if provided, otherwise fallback to local state
+  const [internalQuestions, setInternalQuestions] = useState<HMWQuestion[]>(defaultQuestions);
+  const displayQuestions = questions || internalQuestions;
+  // Selection state (controlled or uncontrolled)
+  const [internalSelectedIds, setInternalSelectedIds] = useState<number[]>([]);
+  const selectedIds = selectedIdsProp || internalSelectedIds;
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [newQuestion, setNewQuestion] = useState('');
+
+  // Example: Add question handler (not used yet)
+  const handleAddQuestion = (q: HMWQuestion) => {
+    if (questions && onQuestionsChange) {
+      onQuestionsChange([...questions, q]);
+    } else {
+      setInternalQuestions(prev => [...prev, q]);
+    }
+    if (onAdd) onAdd(q);
+  };
+
+  // Handle card select
+  const handleCardSelect = (id: number) => {
+    let newSelected: number[];
+    if (selectedIds.includes(id)) {
+      newSelected = selectedIds.filter(sid => sid !== id);
+    } else {
+      newSelected = [...selectedIds, id];
+    }
+    if (selectedIdsProp && onQuestionsSelect) {
+      // Controlled
+      onQuestionsSelect(displayQuestions.filter(q => newSelected.includes(q.id)));
+    } else {
+      setInternalSelectedIds(newSelected);
+      if (onQuestionsSelect) {
+        onQuestionsSelect(displayQuestions.filter(q => newSelected.includes(q.id)));
+      }
+    }
+  };
+
+  // Modal submit handler
+  const handleModalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newQuestion.trim()) return;
+    const nextId = displayQuestions.length > 0 ? Math.max(...displayQuestions.map(q => q.id)) + 1 : 1;
+    const q: HMWQuestion = {
+      id: nextId,
+      text: newQuestion.trim(),
+      stars: 3,
+      avatar: '/sample-avatars/john.jpg',
+    };
+    // Add to array and update parent immediately
+    const updated = [...displayQuestions, q];
+    if (onQuestionsChange) onQuestionsChange(updated);
+    if (onAdd) onAdd(q);
+    setNewQuestion('');
+    setShowModal(false);
+  };
 
   const content = (
     <div className="bg-[#F4F4FB] h-full w-full p-8 relative">
@@ -63,16 +135,58 @@ export default function HowMightWe() {
           </p>
         </div>
         <div className="flex justify-end flex-1 basis-[40%] max-w-[40%]">
-          <button className="flex items-center gap-2 bg-[#393CA0] hover:bg-[#232262] text-white font-normal px-2 y-2 rounded-[3px] text-[13px] shadow-none h-[42px]">
+          <button
+            className="flex items-center gap-2 bg-[#393CA0] hover:bg-[#232262] text-white font-normal px-2 y-2 rounded-[3px] text-[13px] shadow-none h-[42px]"
+            onClick={() => setShowModal(true)}
+          >
             <span className="text-lg font-normal">+</span> Add HMW Question
           </button>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-7">
-        {questions.map(q => (
-          <HMWCard key={q.id} text={q.text} stars={q.stars} avatar={q.avatar} />
+        {displayQuestions.map(q => (
+          <HMWCard
+            key={q.id}
+            text={q.text}
+            stars={q.stars}
+            avatar={q.avatar}
+            selected={selectedIds.includes(q.id)}
+            onSelect={() => handleCardSelect(q.id)}
+          />
         ))}
       </div>
+      {/* Modal for adding HMW question */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 text-[#393CA0] text-xl font-bold"
+              onClick={() => setShowModal(false)}
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-4">Add HMW Question</h2>
+            <form onSubmit={handleModalSubmit}>
+              <input
+                type="text"
+                className="w-full border border-[#E5E7EB] rounded px-3 py-2 mb-4"
+                placeholder="Enter your How Might We question..."
+                value={newQuestion}
+                onChange={e => setNewQuestion(e.target.value)}
+                autoFocus
+              />
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="bg-[#393CA0] text-white px-4 py-2 rounded hover:bg-[#232262]"
+                >
+                  Add
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 

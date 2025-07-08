@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import StepCard from "../../../components/projects/StepCard";
 import DocumentEditor from "../../../components/projects/DocumentEditor";
-import HowMightWe from "../../../components/projects/HowMightWe";
+import HowMightWe, { HMWQuestion } from "../../../components/projects/HowMightWe";
 import { useStepNavigation } from "../../../components/projects/ProjectNavBar";
 import { useDefine } from '@/hooks/useDefine';
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +28,7 @@ const steps = [
     description: "Collaborate with your team to select the most impactful 'How Might We' questions to carry forward into ideation",
     options: null,
     duration: "15 mins",
-    action: { label: "Create notes", active: true },
+    action: { label: "Select", active: false },
   }
 ];
 
@@ -46,6 +46,8 @@ export default function Define() {
   const { changeStep } = useStepNavigation();
   const documentEditorRef = useRef<any>(null);
   const { toast } = useToast();
+  const [howMightWeQuestions, setHowMightWeQuestions] = useState<HMWQuestion[]>([]);
+  const [selectedHMWIds, setSelectedHMWIds] = useState<number[]>([]);
 
   // useDefine hook
   const {
@@ -61,6 +63,13 @@ export default function Define() {
     loadDefine();
     // eslint-disable-next-line
   }, [projectId]);
+
+  // Load howMightWeQuestions from backend if present
+  useEffect(() => {
+    if (Array.isArray(defineData.howMightWe)) {
+      setHowMightWeQuestions(defineData.howMightWe);
+    }
+  }, [defineData.howMightWe]);
 
   // Restore editor content on step change
   useEffect(() => {
@@ -85,8 +94,8 @@ export default function Define() {
         if (documentEditorRef.current) {
           const editorContents = documentEditorRef.current.getContents();
           updateData({ [stepFields[activeStep]]: editorContents });
-          await saveDefine();
         }
+        await saveDefine(); // Save immediately when checked
       }
       if (!wasChecked && idx < steps.length - 1) {
         setActiveStep(idx + 1);
@@ -124,14 +133,16 @@ export default function Define() {
     setIsGenerating(true);
     let prompt = '';
     let field = '';
+    let isHMW = false;
     switch (stepIdx) {
       case 0:
         prompt = 'Analyze the insights gathered during the Empathize phase. Identify key themes and patterns that stand out.';
         field = 'mainInsights';
         break;
       case 1:
-        prompt = "Work with your team to develop new 'How Might We' questions based on your persona and insights.";
+        prompt = "Generate a list of 5-7 'How Might We' questions based on the persona and insights from the Empathize phase. Return only the questions as a numbered list.";
         field = 'howMightWe';
+        isHMW = true;
         break;
       case 2:
         prompt = "Collaborate with your team to select the most impactful 'How Might We' questions to carry forward into ideation.";
@@ -149,15 +160,39 @@ export default function Define() {
       let generatedText = data.generatedText || '';
       // Convert markdown bold (**text**) to HTML <strong>text</strong>
       generatedText = generatedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      if (documentEditorRef.current) {
-        documentEditorRef.current.setContents(generatedText);
+      if (isHMW) {
+        // Parse numbered list into questions
+        const lines = generatedText.split(/\n|<br\s*\/?>(?:\n)?/).filter(l => l.trim().length > 0);
+        const questions: HMWQuestion[] = lines.map((line, idx) => {
+          // Remove leading number and dot
+          const text = line.replace(/^\d+\.?\s*/, '').trim();
+          return {
+            id: idx + 1,
+            text,
+            stars: 3,
+            avatar: '/sample-avatars/john.jpg',
+          };
+        }).filter(q => q.text.length > 0);
+        setHowMightWeQuestions(questions);
+        updateData({ [field]: questions }); // Save array to backend
+        await saveDefine();
+        toast({
+          title: 'AI HMW Questions Generated',
+          description: 'AI has generated How Might We questions and they are now displayed.',
+          duration: 4000,
+        });
+      } else {
+        if (documentEditorRef.current) {
+          documentEditorRef.current.setContents(generatedText);
+        }
+        updateData({ [field]: generatedText });
+        await saveDefine();
+        toast({
+          title: 'AI Content Generated',
+          description: 'AI has generated content for this step and it has been inserted into the editor.',
+          duration: 4000,
+        });
       }
-      updateData({ [field]: generatedText });
-      toast({
-        title: 'AI Content Generated',
-        description: 'AI has generated content for this step and it has been inserted into the editor.',
-        duration: 4000,
-      });
     } catch (error) {
       toast({
         title: 'Generation Failed',
@@ -167,6 +202,28 @@ export default function Define() {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  // When user edits questions in HowMightWe, update backend
+  const handleQuestionsChange = (questions: HMWQuestion[]) => {
+    setHowMightWeQuestions(questions);
+    updateData({ howMightWe: questions });
+    saveDefine();
+  };
+
+  // When user selects/deselects HMW questions, update selectedChallenge in backend
+  const handleQuestionsSelect = (selected: HMWQuestion[]) => {
+    setSelectedHMWIds(selected.map(q => q.id));
+    updateData({ selectedChallenge: selected });
+    saveDefine();
+  };
+
+  // When user adds a new HMW question, update only howMightWe array in backend
+  const handleAddHMWQuestion = (q: HMWQuestion) => {
+    const updatedQuestions = [...howMightWeQuestions, q];
+    setHowMightWeQuestions(updatedQuestions);
+    updateData({ howMightWe: updatedQuestions });
+    saveDefine();
   };
 
   // DocumentEditor onSave handler
@@ -245,10 +302,19 @@ export default function Define() {
       </div>
       {/* Right: Document editor or HowMightWe */}
       <div className="w-full bg-white shadow h-[100vh] overflow-auto">
-        {/* Step 1 and 2 use HowMightWe, but still need to save text field */}
-        {(activeStep === 1 || activeStep === 2)
-          ? <DocumentEditor ref={documentEditorRef} className="p-2" onSave={handleEditorSave} />
-          : <DocumentEditor ref={documentEditorRef} className="p-2" onSave={handleEditorSave} />}
+        {activeStep === 0 ? (
+          <DocumentEditor ref={documentEditorRef} className="p-2" onSave={handleEditorSave} />
+        ) : (
+          <div className="flex flex-col h-full">
+            <HowMightWe
+              questions={howMightWeQuestions}
+              onQuestionsChange={handleQuestionsChange}
+              selectedIds={selectedHMWIds}
+              onQuestionsSelect={handleQuestionsSelect}
+              onAdd={handleAddHMWQuestion}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -3,11 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import type { Json } from '@/integrations/supabase/types';
+import type { HMWQuestion } from '@/components/projects/HowMightWe';
 
 export interface DefineData {
-  mainInsights: string;
-  howMightWe: string;
-  selectedChallenge: string;
+  mainInsights: string | HMWQuestion[];
+  howMightWe: string | HMWQuestion[];
+  selectedChallenge: string | HMWQuestion[];
 }
 
 export interface DefineState {
