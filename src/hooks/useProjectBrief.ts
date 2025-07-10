@@ -78,6 +78,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
 
   const loadProjectBrief = async (projectId: string) => {
     setState(prev => ({ ...prev, isLoading: true }));
+    console.log('-----LOADING project brief for projectId:', projectId);
     
     try {
       const { data: project, error } = await supabase
@@ -96,7 +97,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
         `)
         .eq('id', projectId)
         .single();
-
+      console.log('Project data:', project);
       if (error) throw error;
 
       if (project) {
@@ -169,7 +170,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
           .update({
             name: state.data.name,
             description: state.data.description,
-            start_date: state.data.startDate || null,
+            start_date: state.data.startDate,
             end_date: state.data.endDate || null,
             metadata,
             updated_at: new Date().toISOString()
@@ -182,6 +183,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
         projectData = data;
       } else {
         // Create new project
+        console.log('Creating new project');
         const { data, error } = await supabase
           .from('projects')
           .insert({
@@ -203,6 +205,17 @@ export const useProjectBrief = (workspaceId: string | null) => {
         projectData = data;
 
         setState(prev => ({ ...prev, projectId: data.id }));
+
+        // Add owner to project_members as admin
+        await supabase
+          .from('project_members')
+          .insert({
+            project_id: data.id,
+            user_id: user.id,
+            workspace_id: workspaceId,
+            role: 'admin'
+          });
+        console.log('OWNER INSERTED TO PROJECT_MEMBERS');
       }
 
       // Update team members
@@ -246,12 +259,28 @@ export const useProjectBrief = (workspaceId: string | null) => {
     }
   };
 
+  const refetch = async () => {
+    if (state.projectId) {
+      const prevData = state.data;
+      const prevString = JSON.stringify(prevData);
+      await loadProjectBrief(state.projectId);
+      const newString = JSON.stringify(state.data);
+      if (prevString !== newString) {
+        toast({
+          title: 'Project brief reloaded',
+          description: 'Latest saved content loaded from the database.',
+        });
+      }
+    }
+  };
+
   return {
     ...state,
     updateData,
     resetData,
     loadProjectBrief,
-    saveProjectBrief
+    saveProjectBrief,
+    refetch
   };
 };
 

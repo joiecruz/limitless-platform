@@ -88,7 +88,7 @@ export default function Projects() {
     
     if (isBriefCompleted) {
       // Navigate to empathize stage (next after project brief)
-      navigate(`/dashboard/projects/empathize/${project.id}`);
+      navigate(`/dashboard/projects/project-brief/${project.id}`);
     } else {
       // Resume project brief
       navigate(`/dashboard/projects/create-project?projectId=${project.id}`);

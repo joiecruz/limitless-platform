@@ -116,7 +116,7 @@ export default function HowMightWe({ questions, onQuestionsChange, selectedIds: 
   };
 
   const content = (
-    <div className="bg-[#F4F4FB] h-full w-full p-8 relative">
+    <div className="bg-[#F4F4FB] w-full p-8 relative">
       {/* Expand button */}
       <button
         className="absolute top-4 right-4 bg-white rounded-[10px] border border-[#E5E7EB] w-9 h-9 flex items-center justify-center hover:bg-[#F4F4F4] transition"

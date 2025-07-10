@@ -119,7 +119,8 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/projects/*" element={<Projects />} />
         <Route path="/dashboard/projects/create-project" element={<CreateProject />} />
-        <Route path="/dashboard/projects/empathize/:projectId" element={<ProjectNavBar />} />
+        <Route path="/dashboard/projects/project-brief/:projectId" element={<ProjectNavBar />} />
+        {/* <Route path="/dashboard/projects/empathize/:projectId" element={<ProjectNavBar />} /> */}
         <Route path="/dashboard/courses" element={<Courses />} />
         <Route
           path="/dashboard/courses/:courseId/lessons"

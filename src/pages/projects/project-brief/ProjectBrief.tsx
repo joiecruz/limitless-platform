@@ -1,5 +1,5 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ProjectBriefProgressBar from "../../../components/projects/ProjectBriefProgressBar";
 import ProjectOverview, { ProjectOverviewRef } from "./ProjectOverview";
 import ProjectSuccessCriteria, { ProjectSuccessCriteriaRef } from "./ProjectSuccessCriteria";
@@ -11,6 +11,7 @@ import { useProjectBrief } from "@/hooks/useProjectBrief";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 
 export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
+  const { projectId } = useParams();
   const [currentStep, setCurrentStep] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   const timelineRef = useRef<ProjectTimelineRef>(null);
   const { toast } = useToast();
   const { currentWorkspace } = useContext(WorkspaceContext);
-  const { data, isLoading, saveProjectBrief, updateData } = useProjectBrief(currentWorkspace?.id || null);
+  const { data, isLoading, saveProjectBrief, updateData, refetch, loadProjectBrief } = useProjectBrief(currentWorkspace?.id || null);
 
   const handleStepChange = (newStep: number) => {
     setIsTransitioning(true);
@@ -106,10 +107,23 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
     }
   };
 
+  // Automatically reload saved content on mount or workspace change
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line
+  }, [currentWorkspace?.id]);
+
   // Load saved data into forms when step changes
   useEffect(() => {
     console.log('Current Step:', currentStep);
-    if (overviewRef.current && data.name) {
+    console.log('ProjectBrief data:', data);
+    if (overviewRef.current) {
+      console.log('Calling overviewRef.current.setValues with:', {
+        name: data.name,
+        description: data.description,
+        problem: data.problem,
+        customers: data.customers
+      });
       overviewRef.current.setValues({
         name: data.name,
         description: data.description,
@@ -132,6 +146,15 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
       });
     }
   }, [currentStep, data]);
+
+  useEffect(() => {
+    if (projectId) {
+      loadProjectBrief(projectId).then(() => {
+        console.log('[ProjectBrief] Loaded project brief data:', data);
+      });
+    }
+    // eslint-disable-next-line
+  }, [projectId]);
 
   return (
     <div className="w-full flex flex-col items-center justify-center mt-7 ml-5">
@@ -170,7 +193,9 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                 <h2 className="font-bold text-center font-sans text-[24px] mb-2 mt-5">Create an Innovation Project</h2>
             )}
           <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-            {currentStep === 0 && <ProjectOverview ref={overviewRef} />}
+            {currentStep === 0 && (
+              <ProjectOverview ref={overviewRef} />
+            )}
             {currentStep === 1 && (
               <ProjectSuccessCriteria 
                 ref={successCriteriaRef} 
@@ -251,7 +276,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
             )}
             {currentStep === 3 && (
               <div className="flex justify-center" style={{ width: '55vw' }}>
-                <button className="mt-[-68px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1" 
+                <button className="mt-[-33px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1" 
                   onClick={() => handleStepChange(Math.min(currentStep + 1, 5))} >
                   <img
                     src="/projects-navbar-icons/sparkle.svg"

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useParams } from "react-router-dom";
 
 export interface ProjectOverviewRef {
   validate: () => boolean | string;
@@ -21,6 +22,7 @@ export interface ProjectOverviewRef {
 }
 
 const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
+  const { projectId } = useParams();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [problem, setProblem] = useState("");
@@ -46,10 +48,16 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
     },
     getValues: () => ({ name, description, problem, customers }),
     setValues: (values) => {
+      if (projectId) {
+        console.log('[ProjectOverview] For projectId:', projectId, 'reloaded fields from database:', values);
+      } else {
+        console.log('[ProjectOverview] Reloaded fields from database:', values);
+      }
       setName(values.name);
       setDescription(values.description);
-      setProblem(values.problem);
-      setCustomers(values.customers);
+      // If values.problem or values.customers are undefined, fallback to empty string
+      setProblem(values.problem ?? '');
+      setCustomers(values.customers ?? '');
     }
   }));
 
