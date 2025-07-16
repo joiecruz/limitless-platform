@@ -5,9 +5,10 @@ import Empathize from "../../pages/projects/design-thinking/Empathize";
 import Define from "../../pages/projects/design-thinking/Define";
 import Prototype from "../../pages/projects/design-thinking/Prototype";
 import Test from "../../pages/projects/design-thinking/Test";
-import ProjectTest from "@/pages/projects/project-test/ProjectTest";
-import ProjectImplement from "@/pages/projects/project-implement/ProjectImplement";
-import ProjectMeasure from "@/pages/projects/project-measure/ProjectMeasure";
+//import ProjectTest from "@/pages/projects/project-test/ProjectTest";
+import Implement from "../../pages/projects/design-thinking/Implement";
+import Measure from "../../pages/projects/design-thinking/Measure";
+import Ideate from "../../pages/projects/design-thinking/Ideate";
 
 const designThinkingSteps = [
   { label: "Project Brief", icon: "/projects-navbar-icons/paper.svg" },
@@ -105,14 +106,17 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
         {selectedStep === "Define" && (
           <Define />
         )}
+        {selectedStep === "Ideate" && (
+          <Ideate />
+        )}
         {selectedStep === "Test" && (
           <Test />
         )}
         {selectedStep === "Prototype" && (
           <Prototype />
         )}
-        {selectedStep === 'Implement' && <ProjectImplement inNavBar={true} />}
-        {selectedStep === 'Measure' && <ProjectMeasure inNavBar={true} />}
+        {selectedStep === 'Implement' && <Implement inNavBar={true} />}
+        {selectedStep === 'Measure' && <Measure inNavBar={true} />}
         {/* {selectedStep === 'Test' && (
         <ProjectTest
           inNavBar={true}
