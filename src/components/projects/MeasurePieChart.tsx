@@ -2,11 +2,12 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 
 interface MeasurePieChartProps {
-  score: number;
-  maxScore: number;
-  progress: number; // percent (0-100)
-  color?: string; // Optional override
-  label?: string;
+  title: string;
+  percentage: number;
+  color: string;
+  icon: JSX.Element;
+  current: number;
+  target: number;
 }
 
 // Color logic matching progress bars
@@ -19,84 +20,80 @@ function getProgressColor(progress: number) {
 }
 
 const MeasurePieChart: React.FC<MeasurePieChartProps> = ({
-  score,
-  maxScore,
-  progress,
+  title,
+  percentage,
   color,
-  label = 'Progress',
+  current,
+  icon,
+  target
 }) => {
-  // SVG settings for full circle
-  const size = 200;
-  const strokeWidth = 20;
+  // SVG settings for half circle
+  const size = 150;
+  const strokeWidth = 16;
   const radius = (size - strokeWidth) / 2;
-  const center = size / 2;
-  const circumference = 2 * Math.PI * radius;
-  const arcColor = color || getProgressColor(progress);
+  const centerX = size / 2;
+  const centerY = size / 2;
+  const arcColor = color || getProgressColor(percentage);
 
-  // Progress arc math
-  const progressLength = (progress / 100) * circumference;
-  const dashArray = `${progressLength} ${circumference - progressLength}`;
+  // For half circle, circumference is only half
+  const halfCircumference = Math.PI * radius;
+  const progressLength = (percentage / 100) * halfCircumference;
+  const dashArray = halfCircumference;
+  const dashOffset = halfCircumference - progressLength;
 
   return (
-    <div className="rounded-lg border shadow-sm bg-white">
+    <div className="rounded-lg border shadow-sm bg-white h-[200px]">
       <div className="p-6">
-        <div className="mb-4">
-          <div className="text-sm text-gray-500">Key Result</div>
-          <div className="font-semibold" style={{ color }}>{label}</div>
+        <div className="text-sm 
+          text-gray-500">Key Result</div>
+        <div className="mb-2 flex items-center gap-2">
+          <div className="font-semibold" style={{ color }}>{title}</div>
         </div>
         <div className="flex flex-col items-center justify-center">
-          <div className="w-48 h-48">
-            <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} className="w-full h-full">
-              {/* Background full circle */}
-              <circle
-                cx={center}
-                cy={center}
-                r={radius}
+          <div className="w-40 h-24">
+            <svg viewBox={`0 0 ${size} ${size / 2}`} width={size} height={size / 2} className="w-full h-full">
+              {/* Background half circle */}
+              <path
+                d={`M ${centerX - radius},${centerY} A ${radius},${radius} 0 0 1 ${centerX + radius},${centerY}`}
                 fill="none"
                 stroke="#f3f4f6"
                 strokeWidth={strokeWidth}
-                strokeDasharray={circumference}
-                strokeDashoffset={0}
                 strokeLinecap="round"
               />
               {/* Progress arc */}
-              <circle
-                cx={center}
-                cy={center}
-                r={radius}
+              <path
+                d={`M ${centerX - radius},${centerY} A ${radius},${radius} 0 0 1 ${centerX + radius},${centerY}`}
                 fill="none"
                 stroke={arcColor}
                 strokeWidth={strokeWidth}
-                strokeDasharray={dashArray}
-                strokeDashoffset={circumference / 4} // Start at top (12 o'clock)
                 strokeLinecap="round"
-                style={{
-                  transform: `rotate(-90deg)`,
-                  transformOrigin: '50% 50%',
-                  transition: 'stroke 0.3s',
-                }}
+                strokeDasharray={dashArray}
+                strokeDashoffset={dashOffset}
+                style={{ transition: 'stroke-dashoffset 0.3s' }}
               />
-              {/* Centered text (smaller) */}
+              {/* Progress label */}
               <text
-                x={center}
-                y={center - 10}
+                x={centerX}
+                y={centerY - 30}
                 textAnchor="middle"
-                fontSize="20"
-                fill="#374151"
+                fontSize="12"
+                fill="#6B7280"
+                fontWeight="normal"
+                dominantBaseline="middle"
+              >
+                Progress
+              </text>
+              {/* Current/Target text below percentage */}
+              <text
+                x={centerX}
+                y={centerY - 4}
+                textAnchor="middle"
+                fontSize="22"
+                fill="#4B5563"
                 fontWeight="bold"
                 dominantBaseline="middle"
               >
-                {score}/{maxScore}
-              </text>
-              <text
-                x={center}
-                y={center + 20}
-                textAnchor="middle"
-                fontSize="14"
-                fill="#6B7280"
-                dominantBaseline="middle"
-              >
-                {label}
+                {typeof (current) !== 'undefined' && typeof (target) !== 'undefined' ? `${current}/${target}` : ''}
               </text>
             </svg>
           </div>

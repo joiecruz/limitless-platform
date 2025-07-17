@@ -5,6 +5,8 @@ interface MeasureProgressBarProps {
   percentage: number;
   color?: string;
   icon?: React.ReactNode;
+  current: number;
+  target: number;
 }
 
 const MeasureProgressBar: React.FC<MeasureProgressBarProps> = ({
@@ -12,9 +14,10 @@ const MeasureProgressBar: React.FC<MeasureProgressBarProps> = ({
   percentage,
   color = '#393CA0',
   icon,
+  target
 }) => {
   return (
-    <div className="rounded-lg border shadow-sm h-full bg-white">
+    <div className="rounded-lg border shadow-sm bg-white h-[200px]">
       <div className="p-6">
         <div className="flex items-start">
           <div
@@ -28,7 +31,7 @@ const MeasureProgressBar: React.FC<MeasureProgressBarProps> = ({
             <div className="font-semibold text-gray-800">{title}</div>
           </div>
         </div>
-        <div className="mt-8">
+        <div className="mt-10">
           <div className="flex justify-between mb-2">
             <span className="text-sm text-gray-600">Target</span>
             <span className="text-sm font-medium text-gray-700">{percentage}%</span>

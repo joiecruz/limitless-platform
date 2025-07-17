@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useParams } from 'react-router-dom';
 import { useImplement, MEASURE_STAGE_ID, IMPLEMENT_STAGE_ID } from '@/hooks/useImplement';
@@ -11,6 +11,7 @@ import MeasurePieChart from '@/components/projects/MeasurePieChart';
 import MeasureNumberVolume from '@/components/projects/MeasureNumberVolume';
 import MeasureProgressBar from '@/components/projects/MeasureProgressBar';
 import MeasureDebrief from '@/components/projects/MeasureDebrief';
+import html2pdf from 'html2pdf.js';
 
 interface MeasureProps {
   inNavBar?: boolean;
@@ -23,6 +24,7 @@ interface KeyMetricResult {
   percentage: number;
   color: string;
   icon: string;
+  delta?: string;
 }
 
 const iconMap: Record<string, JSX.Element> = {
@@ -100,6 +102,24 @@ export default function Measure({
   // State for dynamic key results
   const [keyResults, setKeyResults] = useState<KeyMetricResult[]>([]);
 
+  // Refs for dynamic measurement
+  const debriefRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const N = 2; // Number of cards in the right column
+  const measureRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (debriefRef.current && cardRef.current) {
+      const debriefHeight = debriefRef.current.offsetHeight;
+      const cardHeight = cardRef.current.offsetHeight;
+      if (debriefHeight > 2 * cardHeight) {
+        // setMaxRightCards(2); // This line is removed as per the new logic
+      } else {
+        // setMaxRightCards(keyResults.length); // This line is removed as per the new logic
+      }
+    }
+  }, [keyResults, debriefRef.current, cardRef.current]);
+
   // Helper to load only metrics JSON
   const loadMetrics = async () => {
     const data = await loadImplement();
@@ -115,11 +135,11 @@ export default function Measure({
           Array.isArray(okr.keyResults)
             ? okr.keyResults.map((m: any) => ({
                 title: m.indicator || '',
-                target: m.target ?? 0,
-                current: m.current ?? 0,
+                target: m.target ?? 0, current: Array.isArray(m.lastUpdated) ? m.lastUpdated[0]?.value ?? 0 : m.lastUpdated?.value ?? 0,
                 percentage: m.progress ?? 0,
                 color: '#393CA0',
                 icon: m.icon || 'check-circle',
+                delta: m.delta,
               }))
             : []
         );
@@ -134,9 +154,9 @@ export default function Measure({
   }, [projectId]);
 
   const content = (
-    <div className="container max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div ref={measureRef} className="container max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
       {/* Header section with title and buttons */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">Measure</h1>
           <p className="text-gray-600">
@@ -144,10 +164,14 @@ export default function Measure({
           </p>
         </div>
         <div className="flex gap-3 flex-shrink-0">
-          <Button variant="outline" className="flex items-center">
+          <Button variant="outline" className="flex items-center" onClick={() => {
+            if (measureRef.current) {
+              html2pdf().from(measureRef.current).save('measure.pdf');
+            }
+          }}>
             <Download className="h-4 w-4 mr-2" /> Download
           </Button>
-          <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90">
+          <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90" onClick={() => window.location.reload()}>
             <Activity className="h-4 w-4 mr-2" />
             Update Progress
           </Button>
@@ -155,47 +179,65 @@ export default function Measure({
       </div>
 
       <div className="py-4">
-        {/* MeasurementFrameworkTab and related UI removed as requested */}
-        {/* Keep the rest of the original Measure page content/cards below or in other tabs as needed */}
-        {/* Key Results section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {keyResults.map((result, index) => (
-            <MeasureProgressBar
-              key={index}
-              title={result.title}
-              percentage={result.percentage}
-              color={result.color}
-              icon={iconMap[result.icon]}
-            />
-          ))}
-        </div>
-
-        {/* Main content area */}
-        <div className="grid grid-cols-12 gap-6">
-          {/* Left column with Transaction Volume and NPS cards  */}
-          <div className="col-span-12 md:col-span-4 flex flex-col gap-6">
-            {/* Transaction Volume card */}
-            <MeasureNumberVolume
-              value={671}
-              label="Total Transaction Volume"
-              delta="+15% from last week"
-              target={1200}
-              color="#393CA0"
-            />
-
-            {/* Net Promoter Score card */}
-            <MeasurePieChart
-              score={72}
-              maxScore={100}
-              progress={72}
-              color="#FF4D8F"
-              label="Net Promoter Score"
-            />
+        {/* Two-column section: left = MeasureDebrief, right = up to N cards */}
+        <div className="flex flex-col md:flex-row gap-6 mb-4">
+          <div className="flex flex-col gap-4 w-full md:w-[350px]">
+            {(() => {
+              const components = [MeasureProgressBar, MeasureNumberVolume, MeasurePieChart];
+              const colorCycle = ['#393CA0', '#2FD5C8', '#FF5A96'];
+              const rightCards = keyResults.slice(0, N);
+              return rightCards.map((result, idx) => {
+                const Comp = components[idx % components.length];
+                const color = colorCycle[idx % colorCycle.length];
+                // Attach ref to the first card for measurement
+                const ref = idx === 0 ? cardRef : undefined;
+                return (
+                  <div ref={ref} key={result.title + '-right-' + idx}>
+                    <Comp
+                      title={result.title}
+                      percentage={result.percentage}
+                      color={color}
+                      target={result.target}
+                      icon={iconMap[result.icon]}
+                      current={result.current}
+                      {...(Comp === MeasureNumberVolume ? { delta: result.delta } : {})}
+                    />
+                  </div>
+                );
+              });
+            })()}
           </div>
-
-          {/* Right column */}
-          <MeasureDebrief />
+          <div className="flex-1 min-w-0" ref={debriefRef}>
+            <MeasureDebrief />
+          </div>
         </div>
+
+        {/* Overflow cards below the two-column section */}
+        {keyResults.length > N && (() => {
+          const components = [MeasureProgressBar, MeasureNumberVolume, MeasurePieChart];
+          const colorCycle = ['#393CA0', '#2FD5C8', '#FF5A96'];
+          const bottomCards = keyResults.slice(N);
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {bottomCards.map((result, idx) => {
+                const Comp = components[(idx + N) % components.length];
+                const color = colorCycle[(idx + N) % colorCycle.length];
+                return (
+                  <Comp
+                    key={result.title + '-bottom-' + idx}
+                    title={result.title}
+                    percentage={result.percentage}
+                    color={color}
+                    target={result.target}
+                    icon={iconMap[result.icon]}
+                    current={result.current}
+                    {...(Comp === MeasureNumberVolume ? { delta: result.delta } : {})}
+                  />
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

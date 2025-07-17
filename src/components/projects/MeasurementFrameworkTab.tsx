@@ -143,7 +143,7 @@ export default function MeasurementFrameworkTab({
   // Instructional box with generate/regenerate button
   const instructionBox = (
     <div className="flex items-center bg-white border rounded-lg shadow-sm p-6 mb-6">
-      <div className="flex-1">
+      <div className="flex-1 mr-2">
         <h2 className="text-md font-semibold mb-1">
           Set the key indicators that will determine the success of your project
         </h2>
