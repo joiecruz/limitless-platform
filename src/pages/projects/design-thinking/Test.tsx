@@ -6,6 +6,7 @@ import Define from "./Define";
 import { useTest } from '@/hooks/useTest';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import Decision from "./steps/Decision";
 
 const steps = [
   {
@@ -57,6 +58,7 @@ export default function Test() {
   const documentEditorRef = useRef<any>(null);
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showDecision, setShowDecision] = useState(false);
 
   // useTest hook
   const {
@@ -133,7 +135,8 @@ export default function Test() {
       await saveTest();
     }
     if (isLastStep && allChecked) {
-      // TODO: Add logic to navigate to the next step
+      // Show the Decision component
+      setShowDecision(true);
     } else if (checkedSteps[activeStep] && activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
     }
@@ -234,6 +237,9 @@ export default function Test() {
 
   if (showDefine) {
     return <Define />;
+  }
+  if (showDecision) {
+    return <Decision />;
   }
 
   return (

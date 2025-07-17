@@ -107,17 +107,24 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
                 : "border-gray-200 bg-white hover:border-[#393CA0]"
             }`}
             onClick={() => setSelected(idx)}
+            disabled={loading}
           >
             {challenge}
           </button>
         ))}
       </div>
-      <button
-        className="mt-[8px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1"
-        onClick={handleSubmit}
-      >
-        Submit
-      </button>
+      {loading ? (
+        <div className="mt-[8px] text-gray-500 text-[15px] font-sans flex items-center justify-center gap-1">
+          Generating design challenges...
+        </div>
+      ) : (
+        <button
+          className="mt-[8px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1"
+          onClick={handleSubmit}
+        >
+          Submit
+        </button>
+      )}
     </div>
   );
 }

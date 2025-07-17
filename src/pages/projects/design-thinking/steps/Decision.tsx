@@ -13,20 +13,29 @@ import {
   RefreshCw,
   Target,
 } from 'lucide-react';
+import { useStepNavigation } from '@/components/projects/ProjectNavBar';
 
 interface DecisionProps {
   inNavBar?: boolean;
   onBack?: () => void;
+  onChangeStep?: (step: string) => void;
 }
 
 export default function Decision({
   inNavBar = false,
   onBack,
+  onChangeStep,
 }: DecisionProps) {
   usePageTitle('Project Decision | Limitless Lab');
   const [selectedDecision, setSelectedDecision] = useState<string | null>(null);
   const navigate = useNavigate();
   const { projectId } = useParams();
+  let changeStep: ((step: string) => void) | undefined;
+  try {
+    changeStep = useStepNavigation().changeStep;
+  } catch {
+    changeStep = undefined;
+  }
 
   const handleBack = () => {
     if (onBack) {
@@ -39,18 +48,21 @@ export default function Decision({
   const handleNext = () => {
     if (!selectedDecision) return;
 
-    if (selectedDecision === 'implement') {
-      navigate(`/projects/${projectId}/implement`);
-    } else if (selectedDecision === 'empathize') {
-      navigate(`/projects/${projectId}/empathize`);
-    } else if (selectedDecision === 'idea') {
-      navigate(`/projects/${projectId}/ideate`);
-    } else if (selectedDecision === 'iterate') {
-      navigate(`/projects/${projectId}/prototype`);
-    } else if (selectedDecision === 'test') {
-      navigate(`/projects/${projectId}/test`);
+    const stepMap: Record<string, string> = {
+      implement: 'Implement',
+      empathize: 'Empathize',
+      idea: 'Ideate',
+      iterate: 'Prototype',
+      test: 'Test',
+      // pause: 'Project Brief', // do not map pause to a step
+    };
+    const nextStep = stepMap[selectedDecision];
+    if (onChangeStep && nextStep) {
+      onChangeStep(nextStep);
+    } else if (changeStep && nextStep) {
+      changeStep(nextStep);
     } else if (selectedDecision === 'pause') {
-      navigate(`/projects`);
+      navigate('/dashboard/projects');
     }
   };
 

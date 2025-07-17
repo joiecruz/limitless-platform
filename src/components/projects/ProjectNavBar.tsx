@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ProjectBrief from "../../pages/projects/project-brief/ProjectBrief";
 import Empathize from "../../pages/projects/design-thinking/Empathize";
 import Define from "../../pages/projects/design-thinking/Define";
@@ -45,6 +45,7 @@ interface ProjectNavBarProps {
 export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { projectId } = useParams();
 
   useEffect(() => {
     if (selectedStep === null) {
@@ -63,6 +64,9 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
     selectedStep,
   };
 
+  // Determine if this is a new project (no projectId in URL)
+  const isNewProject = !projectId;
+
   return (
     <StepNavigationContext.Provider value={contextValue}>
       <nav
@@ -71,11 +75,16 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
       >
         {designThinkingSteps.map((step) => {
           const isSelected = selectedStep === step.label;
+          const isProjectBrief = step.label === "Project Brief";
+          const isDisabled = isNewProject && !isProjectBrief;
           return (
             <button
               key={step.label}
-              onClick={() => setSelectedStep(step.label)}
-              className={`flex-1 bg-white py-0 px-0 h-full font-medium focus:outline-none hover:bg-[#F4F4FB] transition-colors flex items-center justify-center ${isSelected ? 'text-[#393CA0FF]' : 'text-[#565D6D]'}`}
+              onClick={() => {
+                if (!isDisabled) setSelectedStep(step.label);
+              }}
+              disabled={isDisabled}
+              className={`flex-1 bg-white py-0 px-0 h-full font-medium focus:outline-none flex items-center justify-center transition-colors ${isSelected ? 'text-[#393CA0FF]' : 'text-[#565D6D]'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#F4F4FB]'}`}
               style={{
                 height: '100%',
                 padding: '26px 0',
@@ -84,7 +93,7 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
                 fontWeight: 500,
               }}
             >
-              <img src={step.icon} alt="" width={20} height={20} style={{ marginRight: 8 }} />
+              <img src={step.icon} alt="" width={20} height={20} style={{ marginRight: 8, opacity: isDisabled ? 0.5 : 1 }} />
               {step.label}
             </button>
           );
@@ -100,28 +109,23 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
             }
           }} />
         )}
-        {selectedStep === "Empathize" && (
+        {selectedStep === "Empathize" && !isNewProject && (
           <Empathize />
         )}
-        {selectedStep === "Define" && (
+        {selectedStep === "Define" && !isNewProject && (
           <Define />
         )}
-        {selectedStep === "Ideate" && (
+        {selectedStep === "Ideate" && !isNewProject && (
           <Ideate />
         )}
-        {selectedStep === "Test" && (
+        {selectedStep === "Test" && !isNewProject && (
           <Test />
         )}
-        {selectedStep === "Prototype" && (
+        {selectedStep === "Prototype" && !isNewProject && (
           <Prototype />
         )}
-        {selectedStep === 'Implement' && <Implement inNavBar={true} />}
-        {selectedStep === 'Measure' && <Measure inNavBar={true} />}
-        {/* {selectedStep === 'Test' && (
-        <ProjectTest
-          inNavBar={true}
-          onBack={() => setSelectedStep('Test')}
-        /> */}
+        {selectedStep === 'Implement' && !isNewProject && <Implement inNavBar={true} />}
+        {selectedStep === 'Measure' && !isNewProject && <Measure inNavBar={true} />}
       </div>
     </StepNavigationContext.Provider>
   );
