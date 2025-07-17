@@ -1,4 +1,5 @@
 import React from 'react';
+import { Card } from '@/components/ui/card';
 
 interface MeasurePieChartProps {
   score: number;
@@ -37,61 +38,69 @@ const MeasurePieChart: React.FC<MeasurePieChartProps> = ({
   const dashArray = `${progressLength} ${circumference - progressLength}`;
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="w-48 h-48"> {/* Adjusted height for full circle */}
-        <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} className="w-full h-full">
-          {/* Background full circle */}
-          <circle
-            cx={center}
-            cy={center}
-            r={radius}
-            fill="none"
-            stroke="#f3f4f6"
-            strokeWidth={strokeWidth}
-            strokeDasharray={circumference}
-            strokeDashoffset={0}
-            strokeLinecap="round"
-          />
-          {/* Progress arc */}
-          <circle
-            cx={center}
-            cy={center}
-            r={radius}
-            fill="none"
-            stroke={arcColor}
-            strokeWidth={strokeWidth}
-            strokeDasharray={dashArray}
-            strokeDashoffset={circumference / 4} // Start at top (12 o'clock)
-            strokeLinecap="round"
-            style={{
-              transform: `rotate(-90deg)`,
-              transformOrigin: '50% 50%',
-              transition: 'stroke 0.3s',
-            }}
-          />
-          {/* Centered text (smaller) */}
-          <text
-            x={center}
-            y={center - 10}
-            textAnchor="middle"
-            fontSize="20"
-            fill="#374151"
-            fontWeight="bold"
-            dominantBaseline="middle"
-          >
-            {score}/{maxScore}
-          </text>
-          <text
-            x={center}
-            y={center + 20}
-            textAnchor="middle"
-            fontSize="14"
-            fill="#6B7280"
-            dominantBaseline="middle"
-          >
-            {label}
-          </text>
-        </svg>
+    <div className="rounded-lg border shadow-sm bg-white">
+      <div className="p-6">
+        <div className="mb-4">
+          <div className="text-sm text-gray-500">Key Result</div>
+          <div className="font-semibold" style={{ color }}>{label}</div>
+        </div>
+        <div className="flex flex-col items-center justify-center">
+          <div className="w-48 h-48">
+            <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} className="w-full h-full">
+              {/* Background full circle */}
+              <circle
+                cx={center}
+                cy={center}
+                r={radius}
+                fill="none"
+                stroke="#f3f4f6"
+                strokeWidth={strokeWidth}
+                strokeDasharray={circumference}
+                strokeDashoffset={0}
+                strokeLinecap="round"
+              />
+              {/* Progress arc */}
+              <circle
+                cx={center}
+                cy={center}
+                r={radius}
+                fill="none"
+                stroke={arcColor}
+                strokeWidth={strokeWidth}
+                strokeDasharray={dashArray}
+                strokeDashoffset={circumference / 4} // Start at top (12 o'clock)
+                strokeLinecap="round"
+                style={{
+                  transform: `rotate(-90deg)`,
+                  transformOrigin: '50% 50%',
+                  transition: 'stroke 0.3s',
+                }}
+              />
+              {/* Centered text (smaller) */}
+              <text
+                x={center}
+                y={center - 10}
+                textAnchor="middle"
+                fontSize="20"
+                fill="#374151"
+                fontWeight="bold"
+                dominantBaseline="middle"
+              >
+                {score}/{maxScore}
+              </text>
+              <text
+                x={center}
+                y={center + 20}
+                textAnchor="middle"
+                fontSize="14"
+                fill="#6B7280"
+                dominantBaseline="middle"
+              >
+                {label}
+              </text>
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
   );

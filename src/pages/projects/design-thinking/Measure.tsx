@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useParams } from 'react-router-dom';
-import { useImplement, MEASURE_STAGE_ID } from '@/hooks/useImplement';
+import { useImplement, MEASURE_STAGE_ID, IMPLEMENT_STAGE_ID } from '@/hooks/useImplement';
 import { useToast } from '@/hooks/use-toast';
 import MeasurementFrameworkTab from '@/components/projects/MeasurementFrameworkTab';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import MeasurePieChart from '@/components/projects/MeasurePieChart';
 import MeasureNumberVolume from '@/components/projects/MeasureNumberVolume';
 import MeasureProgressBar from '@/components/projects/MeasureProgressBar';
+import MeasureDebrief from '@/components/projects/MeasureDebrief';
 
 interface MeasureProps {
   inNavBar?: boolean;
@@ -94,60 +95,43 @@ export default function Measure({
     updateMetric,
     addMetric,
     // You can add more functions here if needed
-  } = useImplement(projectId, MEASURE_STAGE_ID);
+  } = useImplement(projectId, IMPLEMENT_STAGE_ID);
+
+  // State for dynamic key results
+  const [keyResults, setKeyResults] = useState<KeyMetricResult[]>([]);
+
+  // Helper to load only metrics JSON
+  const loadMetrics = async () => {
+    const data = await loadImplement();
+    return data && data.metrics ? data.metrics : null;
+  };
 
   useEffect(() => {
-    loadImplement().then((data) => {
-      console.log('Loaded measure data:', data);
+    loadMetrics().then((metrics) => {
+      if (metrics && Array.isArray(metrics)) {
+        console.log('Loaded metrics array:', metrics);
+        // Map metrics to KeyMetricResult[] (retain only common fields)
+        const mapped = metrics.flatMap((okr: any) =>
+          Array.isArray(okr.keyResults)
+            ? okr.keyResults.map((m: any) => ({
+                title: m.indicator || '',
+                target: m.target ?? 0,
+                current: m.current ?? 0,
+                percentage: m.progress ?? 0,
+                color: '#393CA0',
+                icon: m.icon || 'check-circle',
+              }))
+            : []
+        );
+        setKeyResults(mapped);
+        console.log('Metrics JSON:', metrics);
+      } else {
+        setKeyResults([]);
+        console.log('No saved key indicators found.');
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
-
-  // Handler for generating metrics
-  const handleGenerateMetrics = async () => {
-    setIsGenerating(true);
-    try {
-      // The original code had generateMetrics here, but generateMetrics is not part of useImplement
-      // This function is kept as it was in the original file.
-      // If generateMetrics is intended to be part of useImplement, it needs to be added.
-      // For now, it's removed as per the new_code.
-    } catch (error) {
-      toast({
-        title: 'Error generating metrics',
-        description: error?.message || 'Failed to generate metrics. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const keyResults: KeyMetricResult[] = [
-    {
-      title: 'Tasks Completed on Time',
-      target: 100,
-      current: 95,
-      percentage: 95,
-      color: '#393CA0',
-      icon: 'check-circle',
-    },
-    {
-      title: 'Target population onboarded within first year',
-      target: 100,
-      current: 70,
-      percentage: 70,
-      color: '#2FD5C8',
-      icon: 'users',
-    },
-    {
-      title: 'Increase in banked population within first year',
-      target: 100,
-      current: 20,
-      percentage: 20,
-      color: '#FF4D8F',
-      icon: 'bank',
-    },
-  ];
 
   const content = (
     <div className="container max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -167,19 +151,6 @@ export default function Measure({
             <Activity className="h-4 w-4 mr-2" />
             Update Progress
           </Button>
-        </div>
-      </div>
-
-      {/* Tab navigation */}
-      <div className="border-b border-gray-200 mb-8">
-        <div className="flex -mb-px">
-          <button
-            onClick={() => setActiveTab('metrics')}
-            className={`mr-8 py-4 text-sm font-medium border-b-2 ${activeTab === 'metrics' ? 'border-[#393CA0] text-[#393CA0]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-            Measurement Framework
-          </button>
-          {/* Add more tabs here if needed */}
         </div>
       </div>
 
@@ -213,67 +184,17 @@ export default function Measure({
             />
 
             {/* Net Promoter Score card */}
-            <Card className="rounded-lg border shadow-sm">
-              <div className="p-6">
-                <div className="mb-4">
-                  <div className="text-sm text-gray-500">Key Result</div>
-                  <div className="font-semibold text-pink-500">
-                    Net Promoter Score
-                  </div>
-                </div>
-                <div className="flex justify-center">
-                  <MeasurePieChart
-                    score={72}
-                    maxScore={100}
-                    progress={72}
-                    color="#FF4D8F"
-                    label="Progress"
-                  />
-                </div>
-              </div>
-            </Card>
+            <MeasurePieChart
+              score={72}
+              maxScore={100}
+              progress={72}
+              color="#FF4D8F"
+              label="Net Promoter Score"
+            />
           </div>
 
           {/* Right column */}
-          <Card className="col-span-12 md:col-span-8 rounded-lg border shadow-sm h-full">
-            <div className="p-6 h-full">
-              <div className="mb-6">
-                <div className="text-sm text-gray-500">Debrief & Reflections</div>
-                <div className="font-semibold text-gray-800">
-                  Project Retrospective
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <button className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                    <span className="font-medium">
-                      What went well with this project
-                    </span>
-                    <ChevronDown className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <div>
-                  <button className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                    <span className="font-medium">
-                      What went wrong with this project
-                    </span>
-                    <ChevronDown className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <div>
-                  <button className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                    <span className="font-medium">
-                      What can be improved in this project
-                    </span>
-                    <ChevronDown className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <MeasureDebrief />
         </div>
       </div>
     </div>

@@ -83,17 +83,15 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
     }
 
     // Save to database before moving to next step
-    if (currentStep < 3) {
-      try {
-        await saveProjectBrief();
-      } catch (error) {
-        // Don't block progression if save fails, just warn
-        toast({
-          title: "Warning",
-          description: "Form data saved locally. Will sync when possible.",
-          variant: "default"
-        });
-      }
+    try {
+      await saveProjectBrief();
+    } catch (error) {
+      // Don't block progression if save fails, just warn
+      toast({
+        title: "Warning",
+        description: "Form data saved locally. Will sync when possible.",
+        variant: "default"
+      });
     }
 
     handleStepChange(Math.min(currentStep + 1, 5));
