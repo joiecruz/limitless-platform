@@ -35,6 +35,7 @@ export default function Projects() {
   const workspaceId = currentWorkspace?.id || null;
   const { challenges, loading: challengesLoading, createChallenge, updateChallengeStatus, deleteChallenge } = useDesignChallenges(workspaceId);
   const { projects, loading: projectsLoading, createProject, deleteProject } = useProjects(workspaceId);
+  const [searchValue, setSearchValue] = useState("");
 
   // Fetch user role and ID when workspace changes
   useEffect(() => {
@@ -167,6 +168,14 @@ export default function Projects() {
     return email[0].toUpperCase();
   };
 
+  // Filter projects by search value
+  const filteredProjects = projects.filter(project =>
+    (project.title || project.name || "").toLowerCase().includes(searchValue.toLowerCase())
+  );
+  const filteredChallenges = challenges.filter(challenge =>
+    (challenge.title || "").toLowerCase().includes(searchValue.toLowerCase())
+  );
+
   return (
     <Routes>
       <Route
@@ -181,7 +190,7 @@ export default function Projects() {
         path="/"
         element={
           <>
-            <SearchHeader />
+            <SearchHeader value={searchValue} onChange={e => setSearchValue(e.target.value)} />
             <div className="container max-w-7xl px-8 py-8 animate-fade-in">
               <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold">Projects</h1>
@@ -197,7 +206,7 @@ export default function Projects() {
               ) : (
                 <>
                   {/* Combined Projects and Challenges */}
-                  {projects.length === 0 && challenges.length === 0 ? (
+                  {filteredProjects.length === 0 && filteredChallenges.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                       <p className="mb-4">No projects or challenges created yet</p>
                       <CreateProjectButton onClick={handleOpenCreateDialog} />
@@ -205,7 +214,7 @@ export default function Projects() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                       {/* Regular Projects */}
-                      {projects.map((project) => (
+                      {filteredProjects.map((project) => (
                         <div key={`project-${project.id}`}>
                           <ProjectCard 
                             id={project.id}
@@ -225,7 +234,7 @@ export default function Projects() {
                       ))}
 
                       {/* Design Challenges */}
-                      {challenges.map((challenge) => (
+                      {filteredChallenges.map((challenge) => (
                         <Card 
                           key={`challenge-${challenge.id}`}
                           className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
