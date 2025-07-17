@@ -262,6 +262,10 @@ export default function Empathize() {
     let prompt = '';
     let field = '';
     switch (stepIdx) {
+      case 0:
+        prompt = `Recommend the 2-3 best user research methods for this project: Name: ${projectId}. Return only the method names as a comma-separated list, matching exactly: User interviews, Surveys, Focused Groups.`;
+        field = 'userResearchMethod';
+        break;
       case 1:
         prompt = 'Generate a comprehensive user research plan for a design thinking project.';
         field = 'userResearchPlan';
@@ -288,18 +292,34 @@ export default function Empathize() {
       });
       if (error) throw error;
       let generatedText = data.generatedText || '';
-      // Convert markdown bold (**text**) to HTML <strong>text</strong>
-      generatedText = generatedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      if (documentEditorRef.current) {
-        documentEditorRef.current.setContents(generatedText);
+      // For step 0, parse and check checkboxes
+      if (stepIdx === 0) {
+        // Parse comma-separated list into array
+        const methods = generatedText.split(',').map(t => t.trim()).filter(Boolean);
+        // Only use methods that are in steps[0].options
+        const selected = steps[0].options.map(opt => methods.some(m => opt.toLowerCase() === m.toLowerCase()));
+        setCheckedOptions(selected);
+        updateData({ userResearchMethod: steps[0].options.filter((_, idx) => selected[idx]) });
+        await saveEmpathize();
+        toast({
+          title: 'AI Methods Recommended',
+          description: 'AI has recommended user research methods and checked them for you.',
+          duration: 4000,
+        });
+      } else {
+        // Convert markdown bold (**text**) to HTML <strong>text</strong>
+        generatedText = generatedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        if (documentEditorRef.current) {
+          documentEditorRef.current.setContents(generatedText);
+        }
+        // Update empathizeData for the current field
+        updateData({ [field]: generatedText });
+        toast({
+          title: 'AI Content Generated',
+          description: 'AI has generated content for this step and it has been inserted into the editor.',
+          duration: 4000,
+        });
       }
-      // Update empathizeData for the current field
-      updateData({ [field]: generatedText });
-      toast({
-        title: 'AI Content Generated',
-        description: 'AI has generated content for this step and it has been inserted into the editor.',
-        duration: 4000,
-      });
     } catch (error) {
       toast({
         title: 'Generation Failed',
@@ -356,7 +376,7 @@ export default function Empathize() {
                   canCheck={activeStep === idx}
                   optionChecked={idx === 0 ? checkedOptions : undefined}
                   onOptionCheck={idx === 0 ? handleOptionCheck : undefined}
-                  onAction={step.action && step.action.active && idx !== 0 ? () => generateAIContent(idx) : undefined}
+                  onAction={step.action && step.action.active ? () => generateAIContent(idx) : undefined}
                   isGenerating={isGenerating && activeStep === idx}
                 />
               </div>

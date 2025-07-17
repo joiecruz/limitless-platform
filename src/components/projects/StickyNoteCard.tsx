@@ -28,19 +28,14 @@ export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note, onEdit, on
     : { x: 100, y: 100 };
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [position, setPosition] = useState({ x: safePosition.x, y: safePosition.y });
   const dragRef = useRef<HTMLDivElement>(null);
-
-  // Debug: log position state
-  console.log('StickyNoteCard state', note.id, 'position:', position);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;
-    console.log('Mouse down on note', note.id, 'at', e.clientX, e.clientY);
     setIsDragging(true);
     setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
+      x: e.clientX - safePosition.x,
+      y: e.clientY - safePosition.y,
     });
   };
 
@@ -50,17 +45,12 @@ export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note, onEdit, on
     const newX = e.clientX - dragStart.x;
     const newY = e.clientY - dragStart.y;
     if (isNaN(newX) || isNaN(newY)) return;
-    console.log('Mouse move on note', note.id, 'to', newX, newY);
-    setPosition({ x: newX, y: newY });
+    onMove(note.id, { x: newX, y: newY });
   };
 
   const handleMouseUp = () => {
     if (isDragging) {
       setIsDragging(false);
-      console.log('Mouse up on note', note.id, 'final', position.x, position.y);
-      if (!isNaN(position.x) && !isNaN(position.y)) {
-        onMove(note.id, position.x, position.y);
-      }
     }
   };
 
@@ -73,13 +63,7 @@ export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note, onEdit, on
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, dragStart, position]);
-
-  React.useEffect(() => {
-    if (!isDragging) {
-      setPosition({ x: note.position.x, y: note.position.y });
-    }
-  }, [note.position.x, note.position.y, isDragging]);
+  }, [isDragging, dragStart]);
 
   return (
     <div
@@ -90,8 +74,8 @@ export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note, onEdit, on
         note.is_favorite ? 'ring-2 ring-yellow-400' : ''
       )}
       style={{
-        left: position.x,
-        top: position.y,
+        left: safePosition.x,
+        top: safePosition.y,
         background: note.color,
       }}
       onMouseDown={handleMouseDown}

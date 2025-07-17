@@ -20,6 +20,7 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
   const [selected, setSelected] = useState(0);
   const [loading, setLoading] = useState(true);
   const [challenges, setChallenges] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false); // <-- new state
   const { toast } = useToast();
 
   useEffect(() => {
@@ -86,8 +87,16 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
   };
 
   const handleSubmit = () => {
-    onSubmit(challenges[selected]);
+    setSubmitting(true);
+    setTimeout(() => {
+      onSubmit(challenges[selected]);
+      setSubmitting(false);
+    }, 1200); // simulate loading, adjust as needed
   };
+
+  if (submitting) {
+    return <ProjectLoading />;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full ml-[-18px]">
