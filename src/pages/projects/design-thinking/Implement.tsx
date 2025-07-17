@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useParams } from 'react-router-dom';
 import { useImplement } from '@/hooks/useImplement';
@@ -15,10 +15,7 @@ interface ImplementProps {
 
 export default function Implement({ inNavBar = false }: ImplementProps) {
   usePageTitle('Project Implementation | Limitless Lab');
-  const { projectId: urlProjectId } = useParams();
-  const TEST_PROJECT_ID = '19fb5cb9-0290-48a0-b7e0-ee7c9e98166e';
-  const projectId = useMemo(() => urlProjectId || TEST_PROJECT_ID, [urlProjectId]);
-  
+  const { projectId } = useParams();
   const [activeTab, setActiveTab] = useState('measurement-framework');
   const [isGenerating, setIsGenerating] = useState(false);
   const [projectData, setProjectData] = useState<{

@@ -69,7 +69,7 @@ export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note, onEdit, on
     <div
       ref={dragRef}
       className={cn(
-        'absolute w-64 min-h-40 max-h-48 rounded-xl shadow-lg p-4 cursor-move select-none transition-transform',
+        'absolute w-64 min-h-56 max-h-64 rounded-xl shadow-lg p-4 cursor-move select-none transition-transform flex flex-col',
         isDragging ? 'scale-105 shadow-xl z-50' : 'hover:scale-102 z-10',
         note.is_favorite ? 'ring-2 ring-yellow-400' : ''
       )}
@@ -97,15 +97,18 @@ export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note, onEdit, on
           )}
         </button>
       </div>
-      <div className="text-gray-700 text-sm leading-relaxed mb-4 overflow-hidden" style={{
-        display: '-webkit-box',
-        WebkitLineClamp: 4,
-        WebkitBoxOrient: 'vertical',
-        wordBreak: 'break-word'
-      }}>
+      <div
+        className="flex-1 overflow-auto mb-2"
+        style={{
+          display: '-webkit-box',
+          WebkitLineClamp: 4,
+          WebkitBoxOrient: 'vertical',
+          wordBreak: 'break-word',
+        }}
+      >
         {note.description}
       </div>
-      <div className="flex items-center justify-end gap-2 mt-auto">
+      <div className="flex items-center justify-end gap-2 mt-auto pt-2">
         <button
           onClick={e => { e.stopPropagation(); onEdit(note); }}
           className="text-indigo-600 hover:text-indigo-800 transition-colors p-1 rounded hover:bg-white/20"

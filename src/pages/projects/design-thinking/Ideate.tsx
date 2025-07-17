@@ -7,10 +7,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import StickyNoteCard, { StickyNote } from '@/components/projects/StickyNoteCard';
 import CreateNoteDialog from '@/components/projects/CreateNoteDialog';
+import { useParams } from 'react-router-dom';
+import { useRef } from 'react';
 
 export default function Ideate() {
   usePageTitle('Project Ideate | Limitless Lab');
-  const TEST_PROJECT_ID = '19fb5cb9-0290-48a0-b7e0-ee7c9e98166e';
+  const { projectId } = useParams();
+  const fallbackProjectId = '19fb5cb9-0290-48a0-b7e0-ee7c9e98166e';
+  const effectiveProjectId = projectId || fallbackProjectId;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
@@ -34,7 +38,7 @@ export default function Ideate() {
     deleteNote,
     toggleFavorite,
     moveNote,
-  } = useIdeate(TEST_PROJECT_ID);
+  } = useIdeate(effectiveProjectId);
   const [editingNote, setEditingNote] = useState<StickyNote | null>(null);
 
   // --- Local notes state for instant UI updates ---
@@ -46,7 +50,7 @@ export default function Ideate() {
       setLocalNotes(getNotes());
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [TEST_PROJECT_ID]);
+  }, [effectiveProjectId]);
 
   // When ideateData changes (e.g., after add/edit/delete), sync localNotes
   useEffect(() => {
@@ -60,7 +64,7 @@ export default function Ideate() {
         const { data: project, error } = await supabase
           .from('projects')
           .select('*')
-          .eq('id', TEST_PROJECT_ID)
+          .eq('id', effectiveProjectId)
           .single();
         if (error) throw error;
         const metadata = (project.metadata as any) || {};
@@ -80,7 +84,7 @@ export default function Ideate() {
       }
     };
     fetchProjectData();
-  }, [toast]);
+  }, [toast, effectiveProjectId]);
 
   // Generate ideas handler using Edge Function
   const handleGenerateIdeas = async () => {
@@ -115,6 +119,31 @@ export default function Ideate() {
     }
   };
 
+  const NOTE_WIDTH = 240; // px, adjust if your sticky note width is different
+  const INSTRUCTIONS_HEIGHT = 10; // px, adjust if your instructions box height changes
+
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [boardWidth, setBoardWidth] = useState<number>(0);
+
+  useEffect(() => {
+    if (boardRef.current) {
+      setBoardWidth(boardRef.current.offsetWidth);
+    }
+    const handleResize = () => {
+      if (boardRef.current) {
+        setBoardWidth(boardRef.current.offsetWidth);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const clampX = (x: number) => {
+    if (boardWidth === 0) return x; // fallback if not measured yet
+    return Math.max(0, Math.min(x, boardWidth - NOTE_WIDTH));
+  };
+  const clampY = (y: number) => Math.max(y, INSTRUCTIONS_HEIGHT);
+
   // --- Local note handlers for instant UI ---
   const handleAddNote = (noteData: Partial<StickyNote>) => {
     const notesCount = localNotes.length;
@@ -122,7 +151,7 @@ export default function Ideate() {
       id: crypto.randomUUID(),
       title: noteData.title || 'Untitled',
       description: noteData.description || '',
-      position: { x: 100 + notesCount * 30, y: 100 + notesCount * 30 },
+      position: { x: clampX(0 + notesCount * 20), y: clampY(0 + notesCount * 20) },
       color: noteData.color || '#FEF3C7',
       is_favorite: false,
       created_by: '', // always pass as string
@@ -151,8 +180,8 @@ export default function Ideate() {
     toggleFavorite(id); // sync to DB in background
   };
   const handleMoveNote = (id: string, position: { x: number; y: number }) => {
-    setLocalNotes(prev => prev.map(n => n.id === id ? { ...n, position } : n));
-    moveNote(id, position.x, position.y); // sync to DB in background
+    setLocalNotes(prev => prev.map(n => n.id === id ? { ...n, position: { x: clampX(position.x), y: clampY(position.y) } } : n));
+    moveNote(id, clampX(position.x), clampY(position.y)); // sync to DB in background
   };
   const handleGenerateSave = (noteData: Partial<StickyNote>) => {
     const notesCount = localNotes.length;
@@ -160,7 +189,7 @@ export default function Ideate() {
       id: crypto.randomUUID(),
       title: noteData.title || 'Untitled',
       description: noteData.description || '',
-      position: { x: 100 + notesCount * 30, y: 100 + notesCount * 30 },
+      position: { x: clampX(0 + notesCount * 30), y: clampY(0 + notesCount * 30) },
       color: noteData.color || '#FEF3C7',
       is_favorite: false,
       created_by: '', // always pass as string
@@ -229,7 +258,11 @@ export default function Ideate() {
           </div>
         </div>
         {/* Sticky notes board - clean, containerless */}
-        <div className="relative min-h-[600px] w-full" style={{ minHeight: 600 }}>
+        <div
+          ref={boardRef}
+          className="relative min-h-[600px] w-full"
+          style={{ minHeight: 600, position: 'relative', top: INSTRUCTIONS_HEIGHT }}
+        >
           {localNotes.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
@@ -246,7 +279,7 @@ export default function Ideate() {
                 onEdit={setEditingNote}
                 onDelete={handleDeleteNote}
                 onFavorite={handleFavoriteNote}
-                onMove={handleMoveNote}
+                onMove={(id, position) => handleMoveNote(id, { x: clampX(position.x), y: clampY(position.y) })}
               />
             ))
           )}
