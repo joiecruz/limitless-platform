@@ -88,10 +88,8 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
 
   const handleSubmit = () => {
     setSubmitting(true);
-    setTimeout(() => {
-      onSubmit(challenges[selected]);
-      setSubmitting(false);
-    }, 1200); // simulate loading, adjust as needed
+    onSubmit(challenges[selected]);
+    // setSubmitting(false); // Don't set to false here, let parent unmount
   };
 
   if (submitting) {

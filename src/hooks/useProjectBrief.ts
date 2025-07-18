@@ -131,8 +131,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to load project brief",
+        title: "Access Denied",
+        description: "You need to be a project member to view or edit this project.",
         variant: "destructive",
       });
       setState(prev => ({ ...prev, isLoading: false }));

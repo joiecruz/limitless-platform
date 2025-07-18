@@ -69,6 +69,12 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
     }
   }, [workspaceMembers]);
 
+  // Debugging logs
+  console.log('currentWorkspace', currentWorkspace);
+  console.log('workspaceMembers', workspaceMembers);
+  console.log('teamMembers', teamMembers);
+  console.log('isLoading', isLoading);
+
   // Function to get permission based on role
   const getPermissionForRole = (role) => {
     switch (role) {
@@ -216,6 +222,13 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
             style={{ marginBottom: 16 }}
           >
             <option value="">Select workspace member</option>
+            {/* DEBUG: Render all workspaceMembers without filtering */}
+            {workspaceMembers.map((member) => (
+              <option key={member.user_id} value={member.profiles.email}>
+                {`${member.profiles.first_name || ''} ${member.profiles.last_name || ''}`.trim()} ({member.profiles.email})
+              </option>
+            ))}
+            {/*
             {workspaceMembers
               .filter(member => 
                 member.user_id !== currentUser?.user_id && // Exclude current user (owner)
@@ -226,6 +239,7 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
                   {`${member.profiles.first_name || ''} ${member.profiles.last_name || ''}`.trim()} ({member.profiles.email})
                 </option>
               ))}
+            */}
           </select>
         </div>
         

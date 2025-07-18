@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useImplement, MEASURE_STAGE_ID, IMPLEMENT_STAGE_ID } from '@/hooks/useImplement';
+import { useMeasure } from '@/hooks/useMeasure';
 import { useToast } from '@/hooks/use-toast';
 import MeasurementFrameworkTab from '@/components/projects/MeasurementFrameworkTab';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,16 @@ import MeasureNumberVolume from '@/components/projects/MeasureNumberVolume';
 import MeasureProgressBar from '@/components/projects/MeasureProgressBar';
 import MeasureDebrief from '@/components/projects/MeasureDebrief';
 import html2pdf from 'html2pdf.js';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { useStepNavigation } from '@/components/projects/ProjectNavBar';
 
 interface MeasureProps {
   inNavBar?: boolean;
@@ -86,11 +97,11 @@ export default function Measure({
 }: MeasureProps) {
   usePageTitle('Project Measurement | Limitless Lab');
   const { projectId } = useParams();
-  const [activeTab, setActiveTab] = useState('metrics');
-  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { changeStep } = useStepNavigation();
 
-  // Only get the functions, do not render any UI for them
+  // Only get the functions, do not render any UI for them (implement logic untouched)
   const {
     loadImplement,
     saveImplement,
@@ -99,28 +110,55 @@ export default function Measure({
     // You can add more functions here if needed
   } = useImplement(projectId, IMPLEMENT_STAGE_ID);
 
-  // State for dynamic key results
-  const [keyResults, setKeyResults] = useState<KeyMetricResult[]>([]);
+  // --- MEASURE RETROSPECTIVE LOGIC ---
+  const {
+    data: measureData,
+    loadMeasure,
+    updateRetrospective,
+  } = useMeasure(projectId);
+  const [editOpen, setEditOpen] = useState(false);
+  const [retrospectiveDraft, setRetrospectiveDraft] = useState({
+    wentWell: '',
+    wentWrong: '',
+    improvements: '',
+  });
 
+  useEffect(() => {
+    loadMeasure().then((loaded) => {
+      if (loaded && loaded.retrospective) {
+        setRetrospectiveDraft(loaded.retrospective);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
+
+  useEffect(() => {
+    if (measureData && measureData.retrospective) {
+      setRetrospectiveDraft(measureData.retrospective);
+    }
+  }, [measureData?.retrospective]);
+
+  const handleEdit = () => setEditOpen(true);
+  const handleRetrospectiveChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setRetrospectiveDraft((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleSaveRetrospective = () => {
+    updateRetrospective(retrospectiveDraft);
+    setEditOpen(false);
+  };
+
+  // --- END MEASURE RETROSPECTIVE LOGIC ---
+
+  // State for dynamic key results (implement logic untouched)
+  const [keyResults, setKeyResults] = useState<KeyMetricResult[]>([]);
   // Refs for dynamic measurement
   const debriefRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const N = 2; // Number of cards in the right column
   const measureRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
-    if (debriefRef.current && cardRef.current) {
-      const debriefHeight = debriefRef.current.offsetHeight;
-      const cardHeight = cardRef.current.offsetHeight;
-      if (debriefHeight > 2 * cardHeight) {
-        // setMaxRightCards(2); // This line is removed as per the new logic
-      } else {
-        // setMaxRightCards(keyResults.length); // This line is removed as per the new logic
-      }
-    }
-  }, [keyResults, debriefRef.current, cardRef.current]);
-
-  // Helper to load only metrics JSON
+  // Helper to load only metrics JSON (implement logic untouched)
   const loadMetrics = async () => {
     const data = await loadImplement();
     return data && data.metrics ? data.metrics : null;
@@ -129,7 +167,6 @@ export default function Measure({
   useEffect(() => {
     loadMetrics().then((metrics) => {
       if (metrics && Array.isArray(metrics)) {
-        console.log('Loaded metrics array:', metrics);
         // Map metrics to KeyMetricResult[] (retain only common fields)
         const mapped = metrics.flatMap((okr: any) =>
           Array.isArray(okr.keyResults)
@@ -144,14 +181,32 @@ export default function Measure({
             : []
         );
         setKeyResults(mapped);
-        console.log('Metrics JSON:', metrics);
       } else {
         setKeyResults([]);
-        console.log('No saved key indicators found.');
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  useLayoutEffect(() => {
+    if (debriefRef.current && cardRef.current) {
+      const debriefHeight = debriefRef.current.offsetHeight;
+      const cardHeight = cardRef.current.offsetHeight;
+      if (debriefHeight > 2 * cardHeight) {
+        // setMaxRightCards(2); // This line is removed as per the new logic
+      } else {
+        // setMaxRightCards(keyResults.length); // This line is removed as per the new logic
+      }
+    }
+  }, [keyResults, debriefRef.current, cardRef.current]);
+
+  const handleProgressEdit = () => {
+    toast({
+      title: 'Redirected to Implement Page',
+      description: 'Update your progress here.',
+    });
+    changeStep('Implement');
+  };
 
   const content = (
     <div ref={measureRef} className="container max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -171,7 +226,7 @@ export default function Measure({
           }}>
             <Download className="h-4 w-4 mr-2" /> Download
           </Button>
-          <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90" onClick={() => window.location.reload()}>
+          <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90" onClick={handleProgressEdit}>
             <Activity className="h-4 w-4 mr-2" />
             Update Progress
           </Button>
@@ -208,7 +263,53 @@ export default function Measure({
             })()}
           </div>
           <div className="flex-1 min-w-0" ref={debriefRef}>
-            <MeasureDebrief />
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+              <MeasureDebrief retrospective={measureData?.retrospective || { wentWell: '', wentWrong: '', improvements: '' }} onEdit={handleEdit} />
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Project Retrospective</DialogTitle>
+                  <DialogDescription>Update your project debrief and reflections below.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-1" htmlFor="wentWell">What went well?</label>
+                    <textarea
+                      id="wentWell"
+                      name="wentWell"
+                      className="w-full border rounded p-2 min-h-[60px]"
+                      value={retrospectiveDraft.wentWell}
+                      onChange={handleRetrospectiveChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" htmlFor="wentWrong">What went wrong?</label>
+                    <textarea
+                      id="wentWrong"
+                      name="wentWrong"
+                      className="w-full border rounded p-2 min-h-[60px]"
+                      value={retrospectiveDraft.wentWrong}
+                      onChange={handleRetrospectiveChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" htmlFor="improvements">What can be improved?</label>
+                    <textarea
+                      id="improvements"
+                      name="improvements"
+                      className="w-full border rounded p-2 min-h-[60px]"
+                      value={retrospectiveDraft.improvements}
+                      onChange={handleRetrospectiveChange}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleSaveRetrospective} className="bg-[#393CA0] text-white hover:bg-[#393CA0]/90">Save</Button>
+                  <DialogClose asChild>
+                    <Button variant="outline">Close</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 

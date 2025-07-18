@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStepNavigation } from "@/components/projects/ProjectNavBar";
 
@@ -11,14 +11,20 @@ export default function ProjectLoading() {
     changeStep = undefined;
   }
 
+  const [timerDone, setTimerDone] = useState(false);
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (changeStep) {
-        changeStep("Empathize");
-      } 
+      setTimerDone(true);
     }, 1000);
     return () => clearTimeout(timer);
-  }, [navigate, changeStep]);
+  }, []);
+
+  useEffect(() => {
+    if (timerDone && changeStep) {
+      changeStep("Empathize");
+    }
+  }, [timerDone, changeStep]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] w-full">

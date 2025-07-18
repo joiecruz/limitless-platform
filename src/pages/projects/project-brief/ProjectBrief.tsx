@@ -226,11 +226,6 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                       title: "Success",
                       description: "Design challenge saved successfully! Your project is now ready.",
                     });
-                    
-                    // Wait a moment then navigate back to projects
-                    setTimeout(() => {
-                      navigate("/dashboard/projects");
-                    }, 1500);
                   } catch (error) {
                     toast({
                       title: "Error",
