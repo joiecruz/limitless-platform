@@ -423,7 +423,7 @@ export default function AIReadyASEAN() {
                             <Button 
                               size="sm" 
                               variant="outline"
-                              onClick={() => window.open('https://youtu.be/xNUYdwXfMaE', '_blank')}
+                              onClick={() => window.open('https://youtu.be/xNUYdwXfMaE?si=wBJlcKJLajpYxt6u&t=1', '_blank')}
                             >
                               <span className="mr-1">▶️</span>
                               Watch
@@ -432,7 +432,7 @@ export default function AIReadyASEAN() {
                         </tr>
                         <tr className="border-b hover:bg-muted/50">
                           <td className="p-3">Master Trainer Orientation</td>
-                          <td className="p-3 text-muted-foreground">December 2024</td>
+                          <td className="p-3 text-muted-foreground">June 21, 2024</td>
                           <td className="p-3 text-muted-foreground">2 hours</td>
                           <td className="p-3">
                             <Badge variant="outline">Orientation</Badge>
