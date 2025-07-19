@@ -363,9 +363,12 @@ export default function HourOfCode() {
                     <p className="text-muted-foreground mb-4">
                       Template letter to invite schools and organizations to participate in Hour of Code events.
                     </p>
-                    <Button variant="outline">
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.open('https://docs.google.com/document/d/11BENzXckQlrYFu_I1zIAD6jRvB5JTgf9qVomouqQ5_I/edit?usp=sharing', '_blank')}
+                    >
                       <span className="mr-2">📄</span>
-                      Download Invitation Letter
+                      Open Invitation Letter Template
                     </Button>
                   </CardContent>
                 </Card>
