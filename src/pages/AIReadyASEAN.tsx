@@ -386,85 +386,103 @@ export default function AIReadyASEAN() {
               <CardTitle>📥 Resources & Templates</CardTitle>
               <CardDescription>Download official materials and templates for your training programs</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Card>
-                  <CardContent className="flex items-center justify-between p-6">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-lg">📜</span>
-                        <h3 className="text-lg font-semibold">Certificate of Authorization</h3>
+            <CardContent className="space-y-8">
+              {/* Communication Guidelines & Materials Section */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <span className="mr-2">📢</span>
+                  Communication Guidelines & Materials
+                </h3>
+                <div className="space-y-4">
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">📜</span>
+                          <h4 className="text-lg font-semibold">Certificate of Authorization</h4>
+                        </div>
+                        <p className="text-muted-foreground">Apply for your official certificate confirming your status as an AI Ready ASEAN Master Trainer.</p>
                       </div>
-                      <p className="text-muted-foreground">Apply for your official certificate confirming your status as an AI Ready ASEAN Master Trainer.</p>
-                    </div>
-                    <Button 
-                      onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSfNxevvA5v3_Bvpv3x8ld72d1mGPgDSDy-B8UHdE9Az0ztosg/viewform?usp=dialog', '_blank')}
-                      className="ml-4"
-                    >
-                      <span className="mr-2">📝</span>
-                      Apply for Certificate
-                    </Button>
-                  </CardContent>
-                </Card>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSfNxevvA5v3_Bvpv3x8ld72d1mGPgDSDy-B8UHdE9Az0ztosg/viewform?usp=dialog', '_blank')}
+                        className="ml-4"
+                      >
+                        <span className="mr-2">📝</span>
+                        Apply for Certificate
+                      </Button>
+                    </CardContent>
+                  </Card>
 
-                <Card>
-                  <CardContent className="flex items-center justify-between p-6">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-lg">🏷️</span>
-                        <h3 className="text-lg font-semibold">Facebook Profile Badge</h3>
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">🏷️</span>
+                          <h4 className="text-lg font-semibold">Facebook Profile Badge</h4>
+                        </div>
+                        <p className="text-muted-foreground">Show your Master Trainer status with this official Facebook profile badge.</p>
                       </div>
-                      <p className="text-muted-foreground">Show your Master Trainer status with this official Facebook profile badge.</p>
-                    </div>
-                    <Button 
-                      onClick={() => window.open('https://www.canva.com/design/DAGtlY9Xnc4/11goxRIgx0dwROaBDs0xSQ/view?utm_content=DAGtlY9Xnc4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
-                      className="ml-4"
-                    >
-                      <span className="mr-2">🎨</span>
-                      Get Profile Badge
-                    </Button>
-                  </CardContent>
-                </Card>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open('https://www.canva.com/design/DAGtlY9Xnc4/11goxRIgx0dwROaBDs0xSQ/view?utm_content=DAGtlY9Xnc4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
+                        className="ml-4"
+                      >
+                        <span className="mr-2">🎨</span>
+                        Get Profile Badge
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
 
-                <Card>
-                  <CardContent className="flex items-center justify-between p-6">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-lg">📄</span>
-                        <h3 className="text-lg font-semibold">MOU Template</h3>
+              {/* Legal Docs Section */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <span className="mr-2">⚖️</span>
+                  Legal Docs
+                </h3>
+                <div className="space-y-4">
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">📄</span>
+                          <h4 className="text-lg font-semibold">MOU Template</h4>
+                        </div>
+                        <p className="text-muted-foreground">Memorandum of Understanding template for partnerships with schools and organizations.</p>
                       </div>
-                      <p className="text-muted-foreground">Memorandum of Understanding template for partnerships with schools and organizations.</p>
-                    </div>
-                    <Button 
-                      variant="outline"
-                      onClick={() => window.open('https://docs.google.com/document/d/1sT6WIAQcfw01v8XaLtBIDPVSYmx1U2lXVRpjLHHzLSw/edit?usp=sharing', '_blank')}
-                      className="ml-4"
-                    >
-                      <span className="mr-2">📄</span>
-                      Download MOU Template
-                    </Button>
-                  </CardContent>
-                </Card>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open('https://docs.google.com/document/d/1sT6WIAQcfw01v8XaLtBIDPVSYmx1U2lXVRpjLHHzLSw/edit?usp=sharing', '_blank')}
+                        className="ml-4"
+                      >
+                        <span className="mr-2">📄</span>
+                        Download MOU Template
+                      </Button>
+                    </CardContent>
+                  </Card>
 
-                <Card>
-                  <CardContent className="flex items-center justify-between p-6">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-lg">📋</span>
-                        <h3 className="text-lg font-semibold">Publicity Consent & Release Form</h3>
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">📋</span>
+                          <h4 className="text-lg font-semibold">Publicity Consent & Release Form</h4>
+                        </div>
+                        <p className="text-muted-foreground">Required consent form for photo and video documentation during training sessions.</p>
                       </div>
-                      <p className="text-muted-foreground">Required consent form for photo and video documentation during training sessions.</p>
-                    </div>
-                    <Button 
-                      variant="outline"
-                      onClick={() => window.open('https://drive.google.com/file/d/1jFLlksHSFJuQzXYvuQbNZPkgUrkquGQM/view?usp=sharing', '_blank')}
-                      className="ml-4"
-                    >
-                      <span className="mr-2">📋</span>
-                      Download Form
-                    </Button>
-                  </CardContent>
-                </Card>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open('https://drive.google.com/file/d/1jFLlksHSFJuQzXYvuQbNZPkgUrkquGQM/view?usp=sharing', '_blank')}
+                        className="ml-4"
+                      >
+                        <span className="mr-2">📋</span>
+                        Download Form
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </CardContent>
           </Card>
