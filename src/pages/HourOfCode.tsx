@@ -49,11 +49,9 @@ export default function HourOfCode() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="overview">📋 Overview</TabsTrigger>
-          <TabsTrigger value="guide">📄 Guide</TabsTrigger>
-          <TabsTrigger value="activities">🎯 Activities</TabsTrigger>
-          <TabsTrigger value="presentations">📊 Presentation Decks</TabsTrigger>
+          <TabsTrigger value="resources">📦 Resources & Deck</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
