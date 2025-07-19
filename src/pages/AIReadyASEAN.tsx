@@ -175,6 +175,20 @@ export default function AIReadyASEAN() {
                   </p>
                 </div>
 
+                {/* Embedded Video */}
+                <div className="mt-6">
+                  <div className="aspect-video">
+                    <iframe
+                      src="https://www.youtube.com/embed/lmyrq2yvkpM"
+                      title="AI Ready ASEAN Introduction Video"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="w-full h-full rounded-lg"
+                    ></iframe>
+                  </div>
+                </div>
+
                 <div className="mt-6">
                   <h3 className="text-xl font-semibold mb-4 flex items-center">
                     🌏 Your Responsibilities
@@ -230,32 +244,60 @@ export default function AIReadyASEAN() {
 
                 <div className="mt-6">
                   <h3 className="text-xl font-semibold mb-4 flex items-center">
-                    🚀 Get Started
+                    🔗 Quick Links & Shortcuts
                   </h3>
-                  <div className="space-y-3">
+                  <div className="grid md:grid-cols-2 gap-3">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="justify-start h-auto p-4"
                       onClick={() => setActiveTab("materials")}
                     >
-                      <span className="mr-2">📚</span>
-                      Review Training Materials – Access guides, recordings, and Hour of Code content
+                      <div className="text-left">
+                        <div className="flex items-center mb-1">
+                          <span className="mr-2">📚</span>
+                          <span className="font-medium">Training Materials</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Hour of Code & recordings</p>
+                      </div>
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="justify-start h-auto p-4"
                       onClick={() => setActiveTab("resources")}
                     >
-                      <span className="mr-2">📥</span>
-                      Download Resources – Grab your certificates, ID templates, badges, and posters
+                      <div className="text-left">
+                        <div className="flex items-center mb-1">
+                          <span className="mr-2">📥</span>
+                          <span className="font-medium">Resources</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Templates & banners</p>
+                      </div>
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="justify-start h-auto p-4"
+                      onClick={() => setActiveTab("reporting")}
+                    >
+                      <div className="text-left">
+                        <div className="flex items-center mb-1">
+                          <span className="mr-2">📊</span>
+                          <span className="font-medium">Submit Reports</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Training documentation</p>
+                      </div>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start h-auto p-4"
                       onClick={() => setActiveTab("community")}
                     >
-                      <span className="mr-2">💬</span>
-                      Join the Community – Connect with other Master Trainers and get support
+                      <div className="text-left">
+                        <div className="flex items-center mb-1">
+                          <span className="mr-2">💬</span>
+                          <span className="font-medium">Community</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Connect with trainers</p>
+                      </div>
                     </Button>
                   </div>
                 </div>
@@ -367,6 +409,24 @@ export default function AIReadyASEAN() {
                         </tr>
                       </thead>
                       <tbody>
+                        <tr className="border-b hover:bg-muted/50">
+                          <td className="p-3">Launch of Master Trainer Dashboard and Hour of Code Modules</td>
+                          <td className="p-3 text-muted-foreground">July 19, 2025</td>
+                          <td className="p-3 text-muted-foreground">-</td>
+                          <td className="p-3">
+                            <Badge variant="outline">Training</Badge>
+                          </td>
+                          <td className="p-3">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => window.open('https://youtu.be/xNUYdwXfMaE', '_blank')}
+                            >
+                              <span className="mr-1">▶️</span>
+                              Watch
+                            </Button>
+                          </td>
+                        </tr>
                         <tr className="border-b hover:bg-muted/50">
                           <td className="p-3">Master Trainer Orientation</td>
                           <td className="p-3 text-muted-foreground">December 2024</td>
