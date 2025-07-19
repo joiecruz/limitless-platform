@@ -285,37 +285,13 @@ export default function AIReadyASEAN() {
                             <Badge variant="outline">Orientation</Badge>
                           </td>
                           <td className="p-3">
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => window.open('https://www.youtube.com/watch?v=5lx4maW63Hk&list=PLYGRue6bgnXx1qDT53OYOEO8PmZm0wejS', '_blank')}
+                            >
                               <span className="mr-1">▶️</span>
                               Watch
-                            </Button>
-                          </td>
-                        </tr>
-                        <tr className="border-b hover:bg-muted/50 opacity-50">
-                          <td className="p-3">AI Literacy Training Workshop</td>
-                          <td className="p-3 text-muted-foreground">Coming Soon</td>
-                          <td className="p-3 text-muted-foreground">3 hours</td>
-                          <td className="p-3">
-                            <Badge variant="secondary">Workshop</Badge>
-                          </td>
-                          <td className="p-3">
-                            <Button size="sm" variant="outline" disabled>
-                              <span className="mr-1">🔒</span>
-                              Coming Soon
-                            </Button>
-                          </td>
-                        </tr>
-                        <tr className="border-b hover:bg-muted/50 opacity-50">
-                          <td className="p-3">Hour of Code Best Practices</td>
-                          <td className="p-3 text-muted-foreground">Coming Soon</td>
-                          <td className="p-3 text-muted-foreground">1.5 hours</td>
-                          <td className="p-3">
-                            <Badge variant="secondary">Training</Badge>
-                          </td>
-                          <td className="p-3">
-                            <Button size="sm" variant="outline" disabled>
-                              <span className="mr-1">🔒</span>
-                              Coming Soon
                             </Button>
                           </td>
                         </tr>
