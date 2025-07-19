@@ -179,13 +179,17 @@ export default function AIReadyASEAN() {
                 {/* Embedded Video */}
                 <div className="mt-6">
                   <div className="aspect-video">
-                    <ReactPlayer
-                      url="https://www.youtube.com/watch?v=lmyrq2yvkpM"
-                      width="100%"
-                      height="100%"
-                      controls
-                      className="rounded-lg overflow-hidden"
-                    />
+                    <iframe 
+                      width="100%" 
+                      height="100%" 
+                      src="https://www.youtube.com/embed/lmyrq2yvkpM?enablejsapi=1&origin=https://limitlesslab.org" 
+                      title="AI Ready ASEAN Video" 
+                      frameBorder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                      referrerPolicy="strict-origin-when-cross-origin" 
+                      allowFullScreen
+                      className="w-full h-full rounded-lg"
+                    ></iframe>
                   </div>
                 </div>
 

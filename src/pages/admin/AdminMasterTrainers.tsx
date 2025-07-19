@@ -112,7 +112,7 @@ export default function AdminMasterTrainers() {
       // First check if user exists
       const { data: existingUser } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, first_name, last_name')
         .eq('email', email.toLowerCase().trim())
         .single();
 
@@ -146,18 +146,60 @@ export default function AdminMasterTrainers() {
 
         if (error) throw error;
 
+        // Send notification email to existing user
+        try {
+          await supabase.functions.invoke('send-master-trainer-notification', {
+            body: {
+              email: email.toLowerCase().trim(),
+              firstName: existingUser.first_name,
+              lastName: existingUser.last_name,
+              isNewUser: false
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send notification email:', emailError);
+          // Don't fail the whole process if email fails
+        }
+
         toast({
           title: "Success",
-          description: `Master trainer access granted to ${email}`,
+          description: `Master trainer access granted to ${email}. Notification email sent.`,
         });
       } else {
-        // For now, just show a message that user needs to register first
+        // User doesn't exist, create invitation and send signup email
+        const { data: currentUser } = await supabase.auth.getUser();
+        if (!currentUser.user) throw new Error('Not authenticated');
+
+        // Create invitation record
+        const { error: inviteError } = await supabase
+          .from('master_trainer_invitations')
+          .insert({
+            email: email.toLowerCase().trim(),
+            invited_by: currentUser.user.id,
+            status: 'pending'
+          });
+
+        if (inviteError) throw inviteError;
+
+        // Send invitation email
+        try {
+          await supabase.functions.invoke('send-master-trainer-notification', {
+            body: {
+              email: email.toLowerCase().trim(),
+              firstName: null,
+              lastName: null,
+              isNewUser: true
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send invitation email:', emailError);
+          // Don't fail the whole process if email fails
+        }
+
         toast({
-          title: "User Not Found",
-          description: `${email} needs to create an account first. Please ask them to register and then try again.`,
-          variant: "destructive",
+          title: "Invitation Sent",
+          description: `Invitation sent to ${email}. They will receive instructions to create an account and access the Master Trainer dashboard.`,
         });
-        return;
       }
 
       await fetchMasterTrainers();
