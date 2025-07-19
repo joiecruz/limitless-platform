@@ -57,6 +57,7 @@ import AdminContent from '@/pages/admin/AdminContent';
 import CreateBlog from '@/pages/admin/blog/CreateBlog';
 import EditBlog from '@/pages/admin/blog/EditBlog';
 import AdminSettings from '@/pages/admin/AdminSettings';
+import AdminMasterTrainers from '@/pages/admin/AdminMasterTrainers';
 import EditCaseStudy from '@/pages/admin/case-studies/EditCaseStudy';
 import AdminReports from '@/components/admin/reports/AdminReports';
 
@@ -168,6 +169,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           element={<EditCaseStudy />}
         />
         <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/master-trainers" element={<AdminMasterTrainers />} />
         <Route path="/admin/reports" element={<AdminReports />} />
       </Route>
 

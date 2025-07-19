@@ -8,6 +8,7 @@ import {
   FileText,
   Database,
   AlertCircle,
+  GraduationCap,
 } from 'lucide-react';
 import { UserProfile } from '@/components/layout/UserProfile';
 
@@ -55,6 +56,13 @@ export function AdminSidebar() {
           >
             <BookOpen className="h-5 w-5" />
             Courses
+          </Link>
+          <Link
+            to="/admin/master-trainers"
+            className={`nav-item ${isActive('/admin/master-trainers') ? 'active' : ''}`}
+          >
+            <GraduationCap className="h-5 w-5" />
+            Master Trainers
           </Link>
           <Link
             to="/admin/reports"

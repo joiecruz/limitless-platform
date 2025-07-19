@@ -34,34 +34,20 @@ interface MasterTrainer {
   granted_by: string;
   created_at: string;
   updated_at: string;
-  profiles: {
+  user_profile?: {
     email: string;
     first_name?: string;
     last_name?: string;
-  } | null;
-  granted_by_profile: {
+  };
+  granted_by_profile?: {
     email: string;
     first_name?: string;
     last_name?: string;
-  } | null;
-}
-
-interface PendingInvitation {
-  id: string;
-  email: string;
-  invited_by: string;
-  created_at: string;
-  status: string;
-  invited_by_profile: {
-    email: string;
-    first_name?: string;
-    last_name?: string;
-  } | null;
+  };
 }
 
 export default function AdminMasterTrainers() {
   const [masterTrainers, setMasterTrainers] = useState<MasterTrainer[]>([]);
-  const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isInviting, setIsInviting] = useState(false);
   const [newInviteEmail, setNewInviteEmail] = useState("");
@@ -71,25 +57,37 @@ export default function AdminMasterTrainers() {
 
   const fetchMasterTrainers = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: trainers, error } = await supabase
         .from('master_trainer_access')
-        .select(`
-          *,
-          profiles:user_id (
-            email,
-            first_name,
-            last_name
-          ),
-          granted_by_profile:granted_by (
-            email,
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setMasterTrainers(data || []);
+
+      // Fetch user profiles separately
+      const trainersWithProfiles: MasterTrainer[] = [];
+      
+      for (const trainer of trainers || []) {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('id', trainer.user_id)
+          .single();
+
+        const { data: grantedByProfile } = await supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('id', trainer.granted_by)
+          .single();
+
+        trainersWithProfiles.push({
+          ...trainer,
+          user_profile: userProfile || undefined,
+          granted_by_profile: grantedByProfile || undefined
+        });
+      }
+
+      setMasterTrainers(trainersWithProfiles);
     } catch (error) {
       console.error('Error fetching master trainers:', error);
       toast({
@@ -100,32 +98,10 @@ export default function AdminMasterTrainers() {
     }
   };
 
-  const fetchPendingInvitations = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('master_trainer_invitations')
-        .select(`
-          *,
-          invited_by_profile:invited_by (
-            email,
-            first_name,
-            last_name
-          )
-        `)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (error && error.code !== 'PGRST116') throw error; // Ignore table doesn't exist error
-      setPendingInvitations(data || []);
-    } catch (error) {
-      console.error('Error fetching pending invitations:', error);
-    }
-  };
-
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await Promise.all([fetchMasterTrainers(), fetchPendingInvitations()]);
+      await fetchMasterTrainers();
       setIsLoading(false);
     };
     loadData();
@@ -145,6 +121,22 @@ export default function AdminMasterTrainers() {
         const { data: currentUser } = await supabase.auth.getUser();
         if (!currentUser.user) throw new Error('Not authenticated');
 
+        // Check if user already has access
+        const { data: existingAccess } = await supabase
+          .from('master_trainer_access')
+          .select('id')
+          .eq('user_id', existingUser.id)
+          .single();
+
+        if (existingAccess) {
+          toast({
+            title: "User Already Has Access",
+            description: `${email} already has Master Trainer access`,
+            variant: "destructive",
+          });
+          return;
+        }
+
         const { error } = await supabase
           .from('master_trainer_access')
           .insert({
@@ -159,27 +151,16 @@ export default function AdminMasterTrainers() {
           description: `Master trainer access granted to ${email}`,
         });
       } else {
-        // User doesn't exist, create pending invitation
-        const { data: currentUser } = await supabase.auth.getUser();
-        if (!currentUser.user) throw new Error('Not authenticated');
-
-        const { error } = await supabase
-          .from('master_trainer_invitations')
-          .insert({
-            email: email.toLowerCase().trim(),
-            invited_by: currentUser.user.id,
-            status: 'pending'
-          });
-
-        if (error) throw error;
-
+        // For now, just show a message that user needs to register first
         toast({
-          title: "Invitation Sent",
-          description: `Invitation sent to ${email}. Access will be granted when they create an account.`,
+          title: "User Not Found",
+          description: `${email} needs to create an account first. Please ask them to register and then try again.`,
+          variant: "destructive",
         });
+        return;
       }
 
-      await Promise.all([fetchMasterTrainers(), fetchPendingInvitations()]);
+      await fetchMasterTrainers();
     } catch (error: any) {
       console.error('Error inviting user:', error);
       toast({
@@ -252,31 +233,6 @@ export default function AdminMasterTrainers() {
     }
   };
 
-  const cancelInvitation = async (invitationId: string, email: string) => {
-    try {
-      const { error } = await supabase
-        .from('master_trainer_invitations')
-        .update({ status: 'cancelled' })
-        .eq('id', invitationId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Invitation Cancelled",
-        description: `Invitation cancelled for ${email}`,
-      });
-
-      await fetchPendingInvitations();
-    } catch (error: any) {
-      console.error('Error cancelling invitation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to cancel invitation",
-        variant: "destructive",
-      });
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[400px]">
@@ -304,7 +260,7 @@ export default function AdminMasterTrainers() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Master Trainers</CardTitle>
@@ -317,22 +273,12 @@ export default function AdminMasterTrainers() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Invitations</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingInvitations.length}</div>
-            <p className="text-xs text-muted-foreground">Awaiting user registration</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Managed</CardTitle>
             <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{masterTrainers.length + pendingInvitations.length}</div>
-            <p className="text-xs text-muted-foreground">Active + pending</p>
+            <div className="text-2xl font-bold">{masterTrainers.length}</div>
+            <p className="text-xs text-muted-foreground">Active trainers</p>
           </CardContent>
         </Card>
       </div>
@@ -342,10 +288,10 @@ export default function AdminMasterTrainers() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            Invite New Master Trainer
+            Grant Master Trainer Access
           </CardTitle>
           <CardDescription>
-            Grant access to the AI Ready ASEAN Master Trainer dashboard
+            Grant access to the AI Ready ASEAN Master Trainer dashboard. Note: Users must have already created an account.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -371,7 +317,7 @@ export default function AdminMasterTrainers() {
                 ) : (
                   <Send className="h-4 w-4 mr-2" />
                 )}
-                Invite
+                Grant Access
               </Button>
             </div>
           </div>
@@ -384,10 +330,10 @@ export default function AdminMasterTrainers() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Bulk Invite Master Trainers
+              Bulk Grant Master Trainer Access
             </CardTitle>
             <CardDescription>
-              Enter multiple email addresses separated by commas or new lines
+              Enter multiple email addresses separated by commas or new lines. Users must have already created accounts.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -412,7 +358,7 @@ export default function AdminMasterTrainers() {
                   ) : (
                     <Send className="h-4 w-4 mr-2" />
                   )}
-                  Send Invitations
+                  Grant Access to All
                 </Button>
                 <Button 
                   variant="outline" 
@@ -422,80 +368,6 @@ export default function AdminMasterTrainers() {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Pending Invitations */}
-      {pendingInvitations.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
-              Pending Invitations
-            </CardTitle>
-            <CardDescription>
-              Invitations waiting for users to create accounts
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Invited By</TableHead>
-                  <TableHead>Date Invited</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingInvitations.map((invitation) => (
-                  <TableRow key={invitation.id}>
-                    <TableCell className="font-medium">{invitation.email}</TableCell>
-                    <TableCell>
-                      {invitation.invited_by_profile?.first_name || invitation.invited_by_profile?.last_name
-                        ? `${invitation.invited_by_profile.first_name || ''} ${invitation.invited_by_profile.last_name || ''}`.trim()
-                        : invitation.invited_by_profile?.email || 'Unknown'}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(invitation.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Pending
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Cancel Invitation</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to cancel the invitation for {invitation.email}?
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => cancelInvitation(invitation.id, invitation.email)}
-                            >
-                              Cancel Invitation
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
           </CardContent>
         </Card>
       )}
@@ -527,11 +399,11 @@ export default function AdminMasterTrainers() {
               {masterTrainers.map((trainer) => (
                 <TableRow key={trainer.id}>
                   <TableCell className="font-medium">
-                    {trainer.profiles?.first_name || trainer.profiles?.last_name
-                      ? `${trainer.profiles.first_name || ''} ${trainer.profiles.last_name || ''}`.trim()
+                    {trainer.user_profile?.first_name || trainer.user_profile?.last_name
+                      ? `${trainer.user_profile.first_name || ''} ${trainer.user_profile.last_name || ''}`.trim()
                       : 'Unknown User'}
                   </TableCell>
-                  <TableCell>{trainer.profiles?.email || 'No email'}</TableCell>
+                  <TableCell>{trainer.user_profile?.email || 'No email'}</TableCell>
                   <TableCell>
                     {trainer.granted_by_profile?.first_name || trainer.granted_by_profile?.last_name
                       ? `${trainer.granted_by_profile.first_name || ''} ${trainer.granted_by_profile.last_name || ''}`.trim()
@@ -557,14 +429,14 @@ export default function AdminMasterTrainers() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Revoke Access</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to revoke Master Trainer access for {trainer.profiles?.email}?
+                            Are you sure you want to revoke Master Trainer access for {trainer.user_profile?.email}?
                             They will no longer be able to access the Master Trainer dashboard.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction
-                            onClick={() => revokeAccess(trainer.id, trainer.profiles?.email || 'this user')}
+                            onClick={() => revokeAccess(trainer.id, trainer.user_profile?.email || 'this user')}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
                             Revoke Access
