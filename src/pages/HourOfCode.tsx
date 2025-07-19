@@ -313,63 +313,72 @@ export default function HourOfCode() {
           </Accordion>
         </TabsContent>
 
-        {/* Guide Tab */}
-        <TabsContent value="guide" className="space-y-6">
+        {/* Resources & Deck Tab */}
+        <TabsContent value="resources" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>📄 Hour of Code Guide</CardTitle>
-              <CardDescription>Step-by-step instructions for conducting successful sessions</CardDescription>
+              <CardTitle>📦 Resources & Deck</CardTitle>
+              <CardDescription>Essential materials to facilitate Hour of Code sessions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">📚 Complete Guide Package</CardTitle>
+                    <CardTitle className="text-lg">📊 Facilitator's Deck</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">
-                      Download the comprehensive Hour of Code guide with detailed instructions, timing, and facilitation tips.
+                      Complete presentation slides to guide your Hour of Code session with AI activities and concepts.
                     </p>
                     <Button>
                       <span className="mr-2">📥</span>
-                      Download Complete Guide (PDF)
+                      Download Facilitator's Deck
                     </Button>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">⏱️ Session Planning Template</CardTitle>
+                    <CardTitle className="text-lg">✉️ Letter of Invitation / Partnership Request</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">
-                      Ready-to-use session plan template with timing, materials list, and facilitator notes.
+                      Template letter to invite schools and organizations to participate in Hour of Code events.
                     </p>
                     <Button variant="outline">
-                      <span className="mr-2">📋</span>
-                      Download Template
+                      <span className="mr-2">📄</span>
+                      Download Invitation Letter
                     </Button>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">📝 Attendance & Report Forms</CardTitle>
+                    <CardTitle className="text-lg">📱 Social Media Cards</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">
-                      Pre-formatted forms for tracking attendance and collecting participant feedback.
+                      Ready-to-use graphics for promoting your Hour of Code events on social media platforms.
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline">
-                        <span className="mr-2">📋</span>
-                        Attendance Sheet
-                      </Button>
-                      <Button variant="outline">
-                        <span className="mr-2">📝</span>
-                        Feedback Form
-                      </Button>
-                    </div>
+                    <Button variant="outline">
+                      <span className="mr-2">🎨</span>
+                      Download Social Media Pack
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">📋 Attendance Sheet</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      Track participant information and collect required data for reporting purposes.
+                    </p>
+                    <Button variant="outline">
+                      <span className="mr-2">📊</span>
+                      Download Attendance Sheet
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
@@ -377,224 +386,6 @@ export default function HourOfCode() {
           </Card>
         </TabsContent>
 
-        {/* Activities Tab */}
-        <TabsContent value="activities" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>🎯 Activities & Exercises</CardTitle>
-              <CardDescription>Interactive activities for different learning environments</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">🔌 Plugged Activities</CardTitle>
-                    <Badge variant="outline">Requires Computers</Badge>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">
-                      Computer-based activities using Code.org platforms and AI tools.
-                    </p>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>🤖</span>
-                        <span>AI for Oceans (Code.org)</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>🎨</span>
-                        <span>Machine Learning with Scratch</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>📸</span>
-                        <span>Teachable Machine Activities</span>
-                      </div>
-                    </div>
-                    <Button>
-                      <span className="mr-2">📥</span>
-                      Download Plugged Activities
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">📱 Unplugged Activities</CardTitle>
-                    <Badge variant="outline">No Computers Needed</Badge>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">
-                      Hands-on activities that teach AI concepts without technology.
-                    </p>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>🧠</span>
-                        <span>How AI Learns (Card Game)</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>🔍</span>
-                        <span>Pattern Recognition Activities</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span>🎭</span>
-                        <span>AI Ethics Role Play</span>
-                      </div>
-                    </div>
-                    <Button>
-                      <span className="mr-2">📥</span>
-                      Download Unplugged Activities
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">🎮 Interactive Demos</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Ready-to-use AI demonstrations and interactive experiences for your sessions.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-muted p-4 rounded-lg text-center">
-                      <div className="text-2xl mb-2">🎯</div>
-                      <div className="font-medium">Quick Sort Demo</div>
-                      <div className="text-sm text-muted-foreground">5 minutes</div>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg text-center">
-                      <div className="text-2xl mb-2">🖼️</div>
-                      <div className="font-medium">Image Recognition</div>
-                      <div className="text-sm text-muted-foreground">10 minutes</div>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg text-center">
-                      <div className="text-2xl mb-2">💬</div>
-                      <div className="font-medium">Chatbot Basics</div>
-                      <div className="text-sm text-muted-foreground">15 minutes</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Presentation Decks Tab */}
-        <TabsContent value="presentations" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>📊 Presentation Decks</CardTitle>
-              <CardDescription>Ready-to-use presentation materials for your Hour of Code sessions</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">🎯 Main Session Presentation</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">
-                      Complete presentation deck for facilitating your Hour of Code session, including intro slides, activity instructions, and wrap-up.
-                    </p>
-                    <div className="flex items-center justify-between p-3 border rounded-lg mb-4">
-                      <div>
-                        <div className="font-medium">Hour of Code Master Deck</div>
-                        <div className="text-sm text-muted-foreground">PowerPoint • 45 slides</div>
-                      </div>
-                      <Button size="sm">
-                        <span className="mr-1">📥</span>
-                        Download
-                      </Button>
-                    </div>
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <div className="font-medium">Google Slides Version</div>
-                        <div className="text-sm text-muted-foreground">Interactive • Edit online</div>
-                      </div>
-                      <Button size="sm" variant="outline">
-                        <span className="mr-1">🔗</span>
-                        Open
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">👨‍🏫 Facilitator Presentation</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">
-                      Presentation specifically designed for training other facilitators and explaining the Hour of Code concept to stakeholders.
-                    </p>
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <div className="font-medium">Train-the-Trainer Deck</div>
-                        <div className="text-sm text-muted-foreground">PowerPoint • 30 slides</div>
-                      </div>
-                      <Button size="sm">
-                        <span className="mr-1">📥</span>
-                        Download
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">🎨 Customizable Templates</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">
-                      Blank templates with AI Ready ASEAN branding that you can customize for specific audiences or contexts.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <div className="font-medium">Elementary Template</div>
-                          <div className="text-sm text-muted-foreground">Ages 6-12</div>
-                        </div>
-                        <Button size="sm" variant="outline">
-                          <span className="mr-1">📥</span>
-                          Download
-                        </Button>
-                      </div>
-                      <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <div className="font-medium">Secondary Template</div>
-                          <div className="text-sm text-muted-foreground">Ages 13-18</div>
-                        </div>
-                        <Button size="sm" variant="outline">
-                          <span className="mr-1">📥</span>
-                          Download
-                        </Button>
-                      </div>
-                      <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <div className="font-medium">Adult Learners Template</div>
-                          <div className="text-sm text-muted-foreground">18+ years</div>
-                        </div>
-                        <Button size="sm" variant="outline">
-                          <span className="mr-1">📥</span>
-                          Download
-                        </Button>
-                      </div>
-                      <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <div className="font-medium">Community Template</div>
-                          <div className="text-sm text-muted-foreground">Mixed ages</div>
-                        </div>
-                        <Button size="sm" variant="outline">
-                          <span className="mr-1">📥</span>
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );
