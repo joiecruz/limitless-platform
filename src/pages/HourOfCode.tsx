@@ -324,6 +324,22 @@ export default function HourOfCode() {
               <div className="grid gap-4">
                 <Card>
                   <CardHeader>
+                    <CardTitle className="text-lg">📚 Hour of Code Full Guide</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      Comprehensive guide with detailed instructions, best practices, and everything you need to know.
+                    </p>
+                    <Button 
+                      onClick={() => window.open('https://docs.google.com/document/d/1f_-kqD-U_6TTARaehqAAGDQzu2tpt6qx1cLhtEhZ7_0/edit?usp=sharing', '_blank')}
+                    >
+                      <span className="mr-2">📖</span>
+                      Open Full Guide
+                    </Button>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
                     <CardTitle className="text-lg">📊 Facilitator's Deck</CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -377,9 +393,12 @@ export default function HourOfCode() {
                     <p className="text-muted-foreground mb-4">
                       Track participant information and collect required data for reporting purposes.
                     </p>
-                    <Button variant="outline">
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.open('https://docs.google.com/spreadsheets/d/1W7lBLNerjb2KBkgfdasIFih_nOu7VyMFZh_EXVJfCME/edit?usp=sharing', '_blank')}
+                    >
                       <span className="mr-2">📊</span>
-                      Download Attendance Sheet
+                      Open Attendance Sheet
                     </Button>
                   </CardContent>
                 </Card>
