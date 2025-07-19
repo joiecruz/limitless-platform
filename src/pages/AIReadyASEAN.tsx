@@ -344,10 +344,12 @@ export default function AIReadyASEAN() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground mb-4">Official certificate confirming your status as an AI Ready ASEAN Master Trainer.</p>
-                    <Button>
-                      <span className="mr-2">📥</span>
-                      Download Certificate
+                    <p className="text-muted-foreground mb-4">Apply for your official certificate confirming your status as an AI Ready ASEAN Master Trainer.</p>
+                    <Button 
+                      onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSfNxevvA5v3_Bvpv3x8ld72d1mGPgDSDy-B8UHdE9Az0ztosg/viewform?usp=dialog', '_blank')}
+                    >
+                      <span className="mr-2">📝</span>
+                      Apply for Certificate
                     </Button>
                   </CardContent>
                 </Card>
@@ -360,9 +362,11 @@ export default function AIReadyASEAN() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Show your Master Trainer status with this official Facebook profile badge.</p>
-                    <Button>
-                      <span className="mr-2">📥</span>
-                      Download Badge
+                    <Button 
+                      onClick={() => window.open('https://www.canva.com/design/DAGtlY9Xnc4/11goxRIgx0dwROaBDs0xSQ/view?utm_content=DAGtlY9Xnc4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
+                    >
+                      <span className="mr-2">🎨</span>
+                      Get Profile Badge
                     </Button>
                   </CardContent>
                 </Card>
@@ -370,42 +374,15 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>📋 ID and Letter Templates</span>
+                      <span>📄 MOU Template</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground mb-4">Customizable templates for official identification and correspondence.</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline">
-                        <span className="mr-2">🆔</span>
-                        ID Template
-                      </Button>
-                      <Button variant="outline">
-                        <span className="mr-2">📄</span>
-                        Letter Template
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>🖼️ Posters and Slide Decks</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Professional marketing materials and presentation templates for your training sessions.</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline">
-                        <span className="mr-2">📄</span>
-                        Event Posters
-                      </Button>
-                      <Button variant="outline">
-                        <span className="mr-2">🖼️</span>
-                        Slide Decks
-                      </Button>
-                    </div>
+                    <p className="text-muted-foreground mb-4">Memorandum of Understanding template for partnerships with schools and organizations.</p>
+                    <Button variant="outline">
+                      <span className="mr-2">📄</span>
+                      Download MOU Template
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
