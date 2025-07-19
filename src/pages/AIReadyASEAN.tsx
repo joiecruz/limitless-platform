@@ -33,18 +33,19 @@ export default function AIReadyASEAN() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-7xl">
+      {/* Banner */}
+      <div className="mb-8">
+        <img 
+          src="/lovable-uploads/bf7bd478-d4e1-4f6c-94e5-0c615cef8ccd.png" 
+          alt="AI Ready ASEAN Master Trainers Dashboard" 
+          className="w-full h-auto rounded-lg shadow-lg"
+        />
+      </div>
+
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-4">
-          <div className="flex items-center space-x-2">
-            <img src="/limitless-logo.svg" alt="Limitless Lab" className="h-8" />
-            <span className="text-2xl font-bold text-foreground">×</span>
-            <div className="text-lg font-semibold text-muted-foreground">ASEAN Foundation × Google.org</div>
-          </div>
-        </div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">AI Ready ASEAN Master Trainer Dashboard</h1>
-        <p className="text-lg text-muted-foreground mb-1">Access your training materials, submit your reports, and stay connected with your fellow Master Trainers here.</p>
-        <p className="text-sm text-primary font-medium">Empowering your community, one AI hour at a time.</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Master Trainer Dashboard</h1>
+        <p className="text-lg text-muted-foreground">Access your training materials, submit your reports, and stay connected with your fellow Master Trainers here.</p>
       </div>
 
       {/* Tabs */}
