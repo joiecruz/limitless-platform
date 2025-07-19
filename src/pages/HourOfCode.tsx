@@ -376,6 +376,42 @@ export default function HourOfCode() {
 
                 <Card>
                   <CardHeader>
+                    <CardTitle className="text-lg">🎨 Hour of Code Event Banner (4x3) - No External Partners</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      Official banner template for Hour of Code events without external partners.
+                    </p>
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.open('https://www.canva.com/design/DAGtmvQdBGM/wFcoS3Fi2K51FivCrO3PwA/view?utm_content=DAGtmvQdBGM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
+                    >
+                      <span className="mr-2">🎨</span>
+                      Download Banner
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">🎨 Hour of Code Event Banner (4x3) - With External Partners</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      Official banner template for Hour of Code events with external partners.
+                    </p>
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.open('https://www.canva.com/design/DAGtm8zCGvg/QTmrx8a77XV7lo5hTnA-IA/view?utm_content=DAGtm8zCGvg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
+                    >
+                      <span className="mr-2">🎨</span>
+                      Download Banner
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
                     <CardTitle className="text-lg">📋 Attendance Sheet</CardTitle>
                   </CardHeader>
                   <CardContent>

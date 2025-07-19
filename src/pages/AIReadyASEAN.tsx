@@ -491,6 +491,35 @@ export default function AIReadyASEAN() {
                 </div>
               </div>
 
+              {/* Other Resources Section */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <span className="mr-2">📋</span>
+                  Other Resources
+                </h3>
+                <div className="space-y-4">
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">📊</span>
+                          <h4 className="text-lg font-semibold">Attendance Sheet</h4>
+                        </div>
+                        <p className="text-muted-foreground">Track participant information and collect required data for reporting purposes.</p>
+                      </div>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open('https://docs.google.com/spreadsheets/d/1W7lBLNerjb2KBkgfdasIFih_nOu7VyMFZh_EXVJfCME/edit?usp=sharing', '_blank')}
+                        className="ml-4"
+                      >
+                        <span className="mr-2">📊</span>
+                        Open Attendance Sheet
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
               {/* Legal Docs Section */}
               <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
