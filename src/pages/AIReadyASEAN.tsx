@@ -3,7 +3,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Play, FileText, Image, MessageSquare, Upload, BarChart3, Users } from "lucide-react";
 import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -51,11 +50,11 @@ export default function AIReadyASEAN() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="welcome">Welcome</TabsTrigger>
-          <TabsTrigger value="materials">Training Materials</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
-          <TabsTrigger value="reporting">Reporting</TabsTrigger>
-          <TabsTrigger value="community">Community</TabsTrigger>
+          <TabsTrigger value="welcome">👋 Welcome</TabsTrigger>
+          <TabsTrigger value="materials">📚 Training</TabsTrigger>
+          <TabsTrigger value="resources">📥 Resources</TabsTrigger>
+          <TabsTrigger value="reporting">📊 Reporting</TabsTrigger>
+          <TabsTrigger value="community">💬 Community</TabsTrigger>
         </TabsList>
 
         {/* Welcome Tab */}
@@ -63,7 +62,6 @@ export default function AIReadyASEAN() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Users className="h-6 w-6 text-primary" />
                 <span>👋 Welcome, Master Trainer!</span>
               </CardTitle>
             </CardHeader>
@@ -150,24 +148,24 @@ export default function AIReadyASEAN() {
                       className="w-full justify-start"
                       onClick={() => setActiveTab("materials")}
                     >
-                      <FileText className="h-4 w-4 mr-2" />
-                      📚 Review Training Materials – Access guides, recordings, and Hour of Code content
+                      <span className="mr-2">📚</span>
+                      Review Training Materials – Access guides, recordings, and Hour of Code content
                     </Button>
                     <Button 
                       variant="outline" 
                       className="w-full justify-start"
                       onClick={() => setActiveTab("resources")}
                     >
-                      <Download className="h-4 w-4 mr-2" />
-                      📥 Download Resources – Grab your certificates, ID templates, badges, and posters
+                      <span className="mr-2">📥</span>
+                      Download Resources – Grab your certificates, ID templates, badges, and posters
                     </Button>
                     <Button 
                       variant="outline" 
                       className="w-full justify-start"
                       onClick={() => setActiveTab("community")}
                     >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      💬 Join the Community – Connect with other Master Trainers and get support
+                      <span className="mr-2">💬</span>
+                      Join the Community – Connect with other Master Trainers and get support
                     </Button>
                   </div>
                 </div>
@@ -180,7 +178,7 @@ export default function AIReadyASEAN() {
         <TabsContent value="materials" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Training Materials & Recordings</CardTitle>
+              <CardTitle>📚 Training Materials & Recordings</CardTitle>
               <CardDescription>Access all your training resources and video content</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -188,14 +186,13 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <FileText className="h-5 w-5" />
-                      <span>Hour of Code Guide</span>
+                      <span>📄 Hour of Code Guide</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Complete guide for conducting Hour of Code sessions with step-by-step instructions and activity summaries.</p>
                     <Button>
-                      <Download className="h-4 w-4 mr-2" />
+                      <span className="mr-2">📥</span>
                       Download PDF Guide
                     </Button>
                   </CardContent>
@@ -204,14 +201,13 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Play className="h-5 w-5" />
-                      <span>Hour of Code Tutorial Videos</span>
+                      <span>🎥 Hour of Code Tutorial Videos</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Watch comprehensive tutorials on how to facilitate engaging Hour of Code sessions.</p>
                     <Button>
-                      <Play className="h-4 w-4 mr-2" />
+                      <span className="mr-2">▶️</span>
                       Watch Tutorials
                     </Button>
                   </CardContent>
@@ -220,19 +216,18 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Download className="h-5 w-5" />
-                      <span>Activity Playlists</span>
+                      <span>📁 Activity Playlists</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Download both plugged and unplugged activity playlists for different learning environments.</p>
                     <div className="flex flex-wrap gap-2">
                       <Button variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                        <span className="mr-2">🔌</span>
                         Plugged Activities
                       </Button>
                       <Button variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                        <span className="mr-2">📱</span>
                         Unplugged Activities
                       </Button>
                     </div>
@@ -242,14 +237,13 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Play className="h-5 w-5" />
-                      <span>Master Trainer Orientation Recording</span>
+                      <span>🎬 Master Trainer Orientation Recording</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Replay the Master Trainer Orientation session to refresh your knowledge and understanding.</p>
                     <Button>
-                      <Play className="h-4 w-4 mr-2" />
+                      <span className="mr-2">▶️</span>
                       Watch Recording
                     </Button>
                   </CardContent>
@@ -258,8 +252,7 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <FileText className="h-5 w-5" />
-                      <span>In-Depth Training Modules</span>
+                      <span>📚 In-Depth Training Modules</span>
                       <Badge variant="secondary">Coming Soon</Badge>
                     </CardTitle>
                   </CardHeader>
@@ -281,7 +274,7 @@ export default function AIReadyASEAN() {
         <TabsContent value="resources" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Resources & Templates</CardTitle>
+              <CardTitle>📥 Resources & Templates</CardTitle>
               <CardDescription>Download official materials and templates for your training programs</CardDescription>
             </CardHeader>
             <CardContent>
@@ -289,14 +282,13 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <FileText className="h-5 w-5" />
-                      <span>Certificate of Authorization</span>
+                      <span>📜 Certificate of Authorization</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Official certificate confirming your status as an AI Ready ASEAN Master Trainer.</p>
                     <Button>
-                      <Download className="h-4 w-4 mr-2" />
+                      <span className="mr-2">📥</span>
                       Download Certificate
                     </Button>
                   </CardContent>
@@ -305,14 +297,13 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Image className="h-5 w-5" />
-                      <span>Facebook Profile Badge</span>
+                      <span>🏷️ Facebook Profile Badge</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Show your Master Trainer status with this official Facebook profile badge.</p>
                     <Button>
-                      <Download className="h-4 w-4 mr-2" />
+                      <span className="mr-2">📥</span>
                       Download Badge
                     </Button>
                   </CardContent>
@@ -321,19 +312,18 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <FileText className="h-5 w-5" />
-                      <span>ID and Letter Templates</span>
+                      <span>📋 ID and Letter Templates</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Customizable templates for official identification and correspondence.</p>
                     <div className="flex flex-wrap gap-2">
                       <Button variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                        <span className="mr-2">🆔</span>
                         ID Template
                       </Button>
                       <Button variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                        <span className="mr-2">📄</span>
                         Letter Template
                       </Button>
                     </div>
@@ -343,19 +333,18 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Image className="h-5 w-5" />
-                      <span>Posters and Slide Decks</span>
+                      <span>🖼️ Posters and Slide Decks</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Professional marketing materials and presentation templates for your training sessions.</p>
                     <div className="flex flex-wrap gap-2">
                       <Button variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                        <span className="mr-2">📄</span>
                         Event Posters
                       </Button>
                       <Button variant="outline">
-                        <Download className="h-4 w-4 mr-2" />
+                        <span className="mr-2">🖼️</span>
                         Slide Decks
                       </Button>
                     </div>
@@ -370,7 +359,7 @@ export default function AIReadyASEAN() {
         <TabsContent value="reporting" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Reporting</CardTitle>
+              <CardTitle>📊 Reporting</CardTitle>
               <CardDescription>Submit activity reports and track your progress</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -378,19 +367,18 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Upload className="h-5 w-5" />
-                      <span>Activity Reports</span>
+                      <span>📤 Activity Reports</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Submit reports for your Hour of Code sessions and 12-hour training programs.</p>
                     <div className="flex flex-wrap gap-2">
                       <Button>
-                        <Upload className="h-4 w-4 mr-2" />
+                        <span className="mr-2">📝</span>
                         Submit Hour of Code Report
                       </Button>
                       <Button>
-                        <Upload className="h-4 w-4 mr-2" />
+                        <span className="mr-2">📋</span>
                         Submit 12-Hour Training Report
                       </Button>
                     </div>
@@ -400,14 +388,13 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Upload className="h-5 w-5" />
-                      <span>Documentation Upload</span>
+                      <span>📸 Documentation Upload</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Upload photos, attendance lists, and other supporting documentation from your training sessions.</p>
                     <Button>
-                      <Upload className="h-4 w-4 mr-2" />
+                      <span className="mr-2">📤</span>
                       Upload Documentation
                     </Button>
                   </CardContent>
@@ -416,8 +403,7 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <BarChart3 className="h-5 w-5" />
-                      <span>Progress Tracking</span>
+                      <span>📈 Progress Tracking</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -447,7 +433,7 @@ export default function AIReadyASEAN() {
         <TabsContent value="community" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Community</CardTitle>
+              <CardTitle>💬 Community</CardTitle>
               <CardDescription>Connect with fellow Master Trainers and stay updated</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -455,14 +441,13 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Users className="h-5 w-5" />
-                      <span>Private Facebook Group</span>
+                      <span>👥 Private Facebook Group</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Join our exclusive Facebook group to connect with fellow Master Trainers across ASEAN, share experiences, and get support.</p>
                     <Button>
-                      <MessageSquare className="h-4 w-4 mr-2" />
+                      <span className="mr-2">💬</span>
                       Join Facebook Group
                     </Button>
                   </CardContent>
@@ -470,7 +455,7 @@ export default function AIReadyASEAN() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Latest Announcements</CardTitle>
+                    <CardTitle className="text-lg">📢 Latest Announcements</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -491,14 +476,13 @@ export default function AIReadyASEAN() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <MessageSquare className="h-5 w-5" />
-                      <span>Support Team</span>
+                      <span>🆘 Support Team</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Need help or have questions? Our support team is here to assist you with any aspect of the Master Trainer program.</p>
                     <Button>
-                      <MessageSquare className="h-4 w-4 mr-2" />
+                      <span className="mr-2">💬</span>
                       Contact Support
                     </Button>
                   </CardContent>
