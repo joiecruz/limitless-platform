@@ -64,74 +64,112 @@ export default function AIReadyASEAN() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Users className="h-6 w-6 text-primary" />
-                <span>Welcome, Master Trainer!</span>
+                <span>👋 Welcome, Master Trainer!</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="prose max-w-none">
                 <p className="text-lg text-muted-foreground">
-                  Thank you for joining the AI Ready ASEAN initiative as a Master Trainer. Your role is crucial in bringing AI literacy to communities across Southeast Asia.
+                  Congratulations on being selected as a Master Trainer for the AI Ready ASEAN – Philippines program! Your role is vital in building AI literacy from the ground up—especially in communities that need it most.
+                </p>
+                
+                <p className="text-muted-foreground">
+                  This dashboard will serve as your central hub for everything you need throughout your journey.
                 </p>
                 
                 <div className="bg-muted p-6 rounded-lg mt-6">
                   <h3 className="text-xl font-semibold mb-3">About AI Ready ASEAN</h3>
                   <p className="text-muted-foreground mb-4">
-                    AI Ready ASEAN is a collaborative initiative between the ASEAN Foundation and Google.org, designed to democratize AI education across Southeast Asia. Through the Hour of Code and comprehensive training programs, we're building AI literacy from the ground up.
+                    AI Ready ASEAN is a regional initiative led by the ASEAN Foundation, supported by Google.org, and implemented in the Philippines by Limitless Lab. Together, we aim to empower 5.5 million people across Southeast Asia with essential AI skills and knowledge.
                   </p>
                   <p className="text-muted-foreground">
-                    As a Master Trainer, you are empowered to conduct Hour of Code sessions, facilitate 12-hour training programs, and serve as a bridge between cutting-edge AI knowledge and your local community.
+                    As a Master Trainer, you are part of a growing community of changemakers leading AI education in the region.
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6 mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Your Mission</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                        <li>Conduct engaging Hour of Code sessions</li>
-                        <li>Facilitate comprehensive 12-hour AI training programs</li>
-                        <li>Build local AI literacy and awareness</li>
-                        <li>Submit regular reports and documentation</li>
-                        <li>Connect with fellow trainers across the region</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
+                <div className="mt-6">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center">
+                    🌏 Your Responsibilities
+                  </h3>
+                  <p className="text-muted-foreground mb-4">As a Master Trainer, you have committed to:</p>
                   
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Getting Started</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <Button 
-                          variant="outline" 
-                          className="w-full justify-start"
-                          onClick={() => setActiveTab("materials")}
-                        >
-                          <FileText className="h-4 w-4 mr-2" />
-                          Review Training Materials
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          className="w-full justify-start"
-                          onClick={() => setActiveTab("resources")}
-                        >
-                          <Download className="h-4 w-4 mr-2" />
-                          Download Resources
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          className="w-full justify-start"
-                          onClick={() => setActiveTab("community")}
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Join Community
-                        </Button>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <span className="text-green-600 font-semibold">✅</span>
+                      <span className="text-muted-foreground">Completing the 20-hour Training of Trainers (ToT) on AI literacy, ethics, and applications</span>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <span className="text-green-600 font-semibold">✅</span>
+                      <span className="text-muted-foreground">Conducting a 12-hour AI literacy training reaching at least 600 learners</span>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <span className="text-green-600 font-semibold">✅</span>
+                      <span className="text-muted-foreground">Leading the Hour of Code campaign, helping reach at least 3,000 individuals using Code.org tools</span>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <span className="text-green-600 font-semibold">✅</span>
+                      <div className="text-muted-foreground">
+                        <div>Submitting complete and accurate documentation:</div>
+                        <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                          <li>Attendance sheets</li>
+                          <li>Training reports</li>
+                          <li>Photos and feedback forms</li>
+                        </ul>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <span className="text-green-600 font-semibold">✅</span>
+                      <span className="text-muted-foreground">Upholding the values of ethical, inclusive, and responsible AI education</span>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <span className="text-green-600 font-semibold">✅</span>
+                      <span className="text-muted-foreground">Maintaining regular communication with the Limitless Lab team and participating in coordination activities</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-lg mt-6">
+                  <h3 className="text-lg font-semibold mb-3 flex items-center text-yellow-800">
+                    ⚠️ Important Notes
+                  </h3>
+                  <div className="space-y-3 text-sm text-yellow-800">
+                    <p>This is a volunteer-based leadership role, not an employment contract.</p>
+                    <p>You are eligible for a performance-based incentive of up to $300 upon meeting your commitments.</p>
+                    <p>Failure to meet minimum targets or actions that harm the program's reputation may result in removal from the Master Trainer roster.</p>
+                    <p>By joining, you allow Limitless Lab and ASEAN Foundation to document and showcase your participation with proper credit.</p>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center">
+                    🚀 Get Started
+                  </h3>
+                  <div className="space-y-3">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("materials")}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      📚 Review Training Materials – Access guides, recordings, and Hour of Code content
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("resources")}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      📥 Download Resources – Grab your certificates, ID templates, badges, and posters
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab("community")}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      💬 Join the Community – Connect with other Master Trainers and get support
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
