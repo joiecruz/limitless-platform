@@ -182,90 +182,148 @@ export default function AIReadyASEAN() {
               <CardDescription>Access all your training resources and video content</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4">
+              {/* Hour of Code and 12-Hour Training - Two Columns */}
+              <div className="grid md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>📄 Hour of Code Guide</span>
+                    <CardTitle className="text-xl flex items-center space-x-2">
+                      <span>⏰ Hour of Code</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Complete guide for conducting Hour of Code sessions with step-by-step instructions and activity summaries.</p>
-                    <Button>
-                      <span className="mr-2">📥</span>
-                      Download PDF Guide
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>🎥 Hour of Code Tutorial Videos</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Watch comprehensive tutorials on how to facilitate engaging Hour of Code sessions.</p>
-                    <Button>
-                      <span className="mr-2">▶️</span>
-                      Watch Tutorials
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>📁 Activity Playlists</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Download both plugged and unplugged activity playlists for different learning environments.</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline">
-                        <span className="mr-2">🔌</span>
-                        Plugged Activities
-                      </Button>
-                      <Button variant="outline">
-                        <span className="mr-2">📱</span>
-                        Unplugged Activities
-                      </Button>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground">
+                      Access comprehensive Hour of Code materials including guides, activities, and tutorial videos to help you conduct engaging AI literacy sessions.
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <span>📄</span>
+                        <span>Hour of Code Guide & Activities</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <span>🎥</span>
+                        <span>Tutorial Videos</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <span>📁</span>
+                        <span>Plugged & Unplugged Activities</span>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>🎬 Master Trainer Orientation Recording</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Replay the Master Trainer Orientation session to refresh your knowledge and understanding.</p>
-                    <Button>
-                      <span className="mr-2">▶️</span>
-                      Watch Recording
+                    <Button 
+                      className="w-full"
+                      onClick={() => navigate("/dashboard/ai-ready-asean/hour-of-code")}
+                    >
+                      <span className="mr-2">🚀</span>
+                      Access Hour of Code
                     </Button>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="opacity-60">
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>📚 In-Depth Training Modules</span>
+                    <CardTitle className="text-xl flex items-center space-x-2">
+                      <span>📚 12-Hour In-Depth Training Modules</span>
                       <Badge variant="secondary">Coming Soon</Badge>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Advanced training module slides and materials for comprehensive AI education programs.</p>
-                    <div className="bg-muted p-4 rounded-lg">
-                      <p className="text-sm text-muted-foreground">
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground">
+                      Comprehensive training modules covering AI literacy, ethics, and practical applications for conducting 12-hour training programs.
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <span>📖</span>
+                        <span>AI Literacy Fundamentals</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <span>⚖️</span>
+                        <span>AI Ethics & Responsible Use</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <span>🛠️</span>
+                        <span>Practical AI Applications</span>
+                      </div>
+                    </div>
+                    <Button className="w-full" disabled>
+                      <span className="mr-2">🔒</span>
+                      Access Not Available Yet
+                    </Button>
+                    <div className="bg-muted p-3 rounded-lg">
+                      <p className="text-xs text-muted-foreground">
                         <strong>Note:</strong> In-depth modules are still under development by ASEAN Foundation. This page will be updated regularly as new materials become available.
                       </p>
                     </div>
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Master Training Session Recordings - Table Format */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center space-x-2">
+                    <span>🎬 Master Training Session Recordings</span>
+                  </CardTitle>
+                  <CardDescription>Access recordings from previous training sessions and orientations</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3 font-semibold">Session Title</th>
+                          <th className="text-left p-3 font-semibold">Date</th>
+                          <th className="text-left p-3 font-semibold">Duration</th>
+                          <th className="text-left p-3 font-semibold">Type</th>
+                          <th className="text-left p-3 font-semibold">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b hover:bg-muted/50">
+                          <td className="p-3">Master Trainer Orientation</td>
+                          <td className="p-3 text-muted-foreground">December 2024</td>
+                          <td className="p-3 text-muted-foreground">2 hours</td>
+                          <td className="p-3">
+                            <Badge variant="outline">Orientation</Badge>
+                          </td>
+                          <td className="p-3">
+                            <Button size="sm" variant="outline">
+                              <span className="mr-1">▶️</span>
+                              Watch
+                            </Button>
+                          </td>
+                        </tr>
+                        <tr className="border-b hover:bg-muted/50 opacity-50">
+                          <td className="p-3">AI Literacy Training Workshop</td>
+                          <td className="p-3 text-muted-foreground">Coming Soon</td>
+                          <td className="p-3 text-muted-foreground">3 hours</td>
+                          <td className="p-3">
+                            <Badge variant="secondary">Workshop</Badge>
+                          </td>
+                          <td className="p-3">
+                            <Button size="sm" variant="outline" disabled>
+                              <span className="mr-1">🔒</span>
+                              Coming Soon
+                            </Button>
+                          </td>
+                        </tr>
+                        <tr className="border-b hover:bg-muted/50 opacity-50">
+                          <td className="p-3">Hour of Code Best Practices</td>
+                          <td className="p-3 text-muted-foreground">Coming Soon</td>
+                          <td className="p-3 text-muted-foreground">1.5 hours</td>
+                          <td className="p-3">
+                            <Badge variant="secondary">Training</Badge>
+                          </td>
+                          <td className="p-3">
+                            <Button size="sm" variant="outline" disabled>
+                              <span className="mr-1">🔒</span>
+                              Coming Soon
+                            </Button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
             </CardContent>
           </Card>
         </TabsContent>
