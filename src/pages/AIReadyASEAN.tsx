@@ -3,6 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Search } from "lucide-react";
 import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -11,6 +14,77 @@ export default function AIReadyASEAN() {
   const { hasMasterTrainerAccess, isLoading } = useMasterTrainerAccess();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("welcome");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // FAQ data for filtering
+  const faqData = [
+    {
+      id: "item-1",
+      question: "What is the AI Ready ASEAN Master Trainer program?",
+      answer: "The AI Ready ASEAN Master Trainer program is a regional initiative led by the ASEAN Foundation, supported by Google.org, and implemented in the Philippines by Limitless Lab. Master Trainers are community leaders who conduct AI literacy training to reach underserved populations across Southeast Asia."
+    },
+    {
+      id: "item-2", 
+      question: "What are my responsibilities as a Master Trainer?",
+      answer: "As a Master Trainer, you are committed to: Completing the 20-hour Training of Trainers (ToT), Conducting 12-hour AI literacy training for at least 600 learners, Leading Hour of Code campaigns for at least 3,000 individuals, Submitting complete documentation and reports, Upholding ethical AI education values"
+    },
+    {
+      id: "item-3",
+      question: "How do I access the Hour of Code materials?",
+      answer: "You can access Hour of Code materials by clicking on the 'Training' tab above and then selecting 'Access Hour of Code' from the Hour of Code card. This will take you to comprehensive guides, activities, and tutorial videos."
+    },
+    {
+      id: "item-4",
+      question: "When will the 12-hour training modules be available?",
+      answer: "The 12-hour in-depth training modules are currently under development by the ASEAN Foundation. This dashboard will be updated regularly as new materials become available. Please check back frequently for updates."
+    },
+    {
+      id: "item-5",
+      question: "How do I get my Master Trainer certificate?",
+      answer: "You can apply for your official Certificate of Authorization by going to the 'Resources' tab and clicking 'Apply for Certificate.' This will take you to the application form where you can request your official certificate confirming your Master Trainer status."
+    },
+    {
+      id: "item-6",
+      question: "What is the performance-based incentive?",
+      answer: "Master Trainers are eligible for a performance-based incentive of up to $300 upon successfully meeting all program commitments, including completing training requirements, reaching target learner numbers, and submitting required documentation."
+    },
+    {
+      id: "item-7",
+      question: "How do I join the Master Trainer Facebook group?",
+      answer: "You can join our exclusive Master Trainer Facebook group by going to the 'Community' tab and clicking 'Join Facebook Group.' This private group connects you with fellow Master Trainers across ASEAN for support and experience sharing."
+    },
+    {
+      id: "item-8",
+      question: "Where do I submit my training reports?",
+      answer: "The reporting system is currently under development. Once available, you'll be able to submit activity reports and track your progress through the 'Reporting' tab. Please check back soon for updates on this feature."
+    },
+    {
+      id: "item-9",
+      question: "What documentation do I need to submit?",
+      answer: "You need to submit complete and accurate documentation including: Attendance sheets for all training sessions, Training reports with participant feedback, Photos from training activities, Feedback forms from participants, Hour of Code campaign documentation"
+    },
+    {
+      id: "item-10",
+      question: "Who can I contact for support?",
+      answer: "If you need help or have questions about any aspect of the Master Trainer program, you can contact our support team at hello@limitlesslab.org. Our team is here to assist you throughout your Master Trainer journey."
+    },
+    {
+      id: "item-11",
+      question: "Can I lose my Master Trainer status?",
+      answer: "Yes, failure to meet minimum targets or actions that harm the program's reputation may result in removal from the Master Trainer roster. It's important to maintain your commitments and uphold the values of ethical, inclusive, and responsible AI education."
+    },
+    {
+      id: "item-12",
+      question: "What is the MOU template for?",
+      answer: "The MOU (Memorandum of Understanding) template is available in the Resources tab to help you formalize partnerships with schools, organizations, or communities where you'll be conducting your training sessions. This ensures clear expectations and professional collaboration."
+    }
+  ];
+
+  // Filter FAQs based on search query
+  const filteredFAQs = faqData.filter(faq => 
+    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     if (!isLoading && !hasMasterTrainerAccess) {
@@ -49,11 +123,12 @@ export default function AIReadyASEAN() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="welcome">👋 Welcome</TabsTrigger>
           <TabsTrigger value="materials">📚 Training</TabsTrigger>
           <TabsTrigger value="resources">📥 Resources</TabsTrigger>
           <TabsTrigger value="reporting">📊 Reporting</TabsTrigger>
+          <TabsTrigger value="faqs">❓ FAQs</TabsTrigger>
           <TabsTrigger value="community">💬 Community</TabsTrigger>
         </TabsList>
 
@@ -386,6 +461,57 @@ export default function AIReadyASEAN() {
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* FAQs Tab */}
+        <TabsContent value="faqs" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>❓ Frequently Asked Questions</CardTitle>
+              <CardDescription>Find answers to common questions about the Master Trainer program</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Search Bar */}
+              <div className="relative max-w-md mx-auto">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search FAQs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* FAQ Accordion */}
+              <Accordion type="single" collapsible className="w-full">
+                {filteredFAQs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No FAQs found matching your search.</p>
+                  </div>
+                ) : (
+                  filteredFAQs.map((faq) => (
+                    <AccordionItem key={faq.id} value={faq.id}>
+                      <AccordionTrigger>{faq.question}</AccordionTrigger>
+                      <AccordionContent>
+                        {faq.id === "item-2" || faq.id === "item-9" ? (
+                          <div className="space-y-2">
+                            <p>{faq.answer.split(':')[0]}:</p>
+                            <ul className="list-disc list-inside space-y-1 ml-4">
+                              {faq.answer.split(': ')[1]?.split(', ').map((item, index) => (
+                                <li key={index}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <p>{faq.answer}</p>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))
+                )}
+              </Accordion>
             </CardContent>
           </Card>
         </TabsContent>
