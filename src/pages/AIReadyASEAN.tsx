@@ -464,7 +464,7 @@ export default function AIReadyASEAN() {
                         className="ml-4"
                       >
                         <span className="mr-2">🎨</span>
-                        Download Banner
+                        Access Banner
                       </Button>
                     </CardContent>
                   </Card>
@@ -484,7 +484,7 @@ export default function AIReadyASEAN() {
                         className="ml-4"
                       >
                         <span className="mr-2">🎨</span>
-                        Download Banner
+                        Access Banner
                       </Button>
                     </CardContent>
                   </Card>
@@ -533,7 +533,7 @@ export default function AIReadyASEAN() {
                         className="ml-4"
                       >
                         <span className="mr-2">🆔</span>
-                        Download Template
+                        Access Template
                       </Button>
                     </CardContent>
                   </Card>

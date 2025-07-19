@@ -387,7 +387,7 @@ export default function HourOfCode() {
                       onClick={() => window.open('https://www.canva.com/design/DAGtmvQdBGM/wFcoS3Fi2K51FivCrO3PwA/view?utm_content=DAGtmvQdBGM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
                     >
                       <span className="mr-2">🎨</span>
-                      Download Banner
+                      Access Banner
                     </Button>
                   </CardContent>
                 </Card>
@@ -405,7 +405,7 @@ export default function HourOfCode() {
                       onClick={() => window.open('https://www.canva.com/design/DAGtm8zCGvg/QTmrx8a77XV7lo5hTnA-IA/view?utm_content=DAGtm8zCGvg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
                     >
                       <span className="mr-2">🎨</span>
-                      Download Banner
+                      Access Banner
                     </Button>
                   </CardContent>
                 </Card>
