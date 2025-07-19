@@ -330,9 +330,11 @@ export default function HourOfCode() {
                     <p className="text-muted-foreground mb-4">
                       Complete presentation slides to guide your Hour of Code session with AI activities and concepts.
                     </p>
-                    <Button>
-                      <span className="mr-2">📥</span>
-                      Download Facilitator's Deck
+                    <Button 
+                      onClick={() => window.open('https://docs.google.com/presentation/d/10IMj0ZgRTjOOAfNafgB_g9FELoxcyAFVoi1aagOr3zE/edit?usp=sharing', '_blank')}
+                    >
+                      <span className="mr-2">📊</span>
+                      Open Facilitator's Deck
                     </Button>
                   </CardContent>
                 </Card>
