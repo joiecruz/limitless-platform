@@ -9,6 +9,7 @@ import { Search } from "lucide-react";
 import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import ReactPlayer from 'react-player';
 
 export default function AIReadyASEAN() {
   const { hasMasterTrainerAccess, isLoading } = useMasterTrainerAccess();
@@ -178,17 +179,13 @@ export default function AIReadyASEAN() {
                 {/* Embedded Video */}
                 <div className="mt-6">
                   <div className="aspect-video">
-                    <iframe 
-                      width="560" 
-                      height="315" 
-                      src="https://www.youtube.com/embed/lmyrq2yvkpM?si=Zq3cxNBabEREihr8" 
-                      title="YouTube video player" 
-                      frameBorder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      referrerPolicy="strict-origin-when-cross-origin" 
-                      allowFullScreen
-                      className="w-full h-full rounded-lg"
-                    ></iframe>
+                    <ReactPlayer
+                      url="https://www.youtube.com/watch?v=lmyrq2yvkpM"
+                      width="100%"
+                      height="100%"
+                      controls
+                      className="rounded-lg overflow-hidden"
+                    />
                   </div>
                 </div>
 
