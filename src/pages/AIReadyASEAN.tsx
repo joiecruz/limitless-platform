@@ -517,6 +517,26 @@ export default function AIReadyASEAN() {
                       </Button>
                     </CardContent>
                   </Card>
+
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">🆔</span>
+                          <h4 className="text-lg font-semibold">Master Trainer ID Template</h4>
+                        </div>
+                        <p className="text-muted-foreground">Official ID template for AI Ready ASEAN Master Trainers.</p>
+                      </div>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open('https://www.canva.com/design/DAGtmzjtgU4/BB-VNLeIMYIDeABWpAm4yQ/view?utm_content=DAGtmzjtgU4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
+                        className="ml-4"
+                      >
+                        <span className="mr-2">🆔</span>
+                        Download Template
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
 
