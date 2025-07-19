@@ -373,20 +373,6 @@ export default function HourOfCode() {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">📱 Social Media Cards</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">
-                      Ready-to-use graphics for promoting your Hour of Code events on social media platforms.
-                    </p>
-                    <Button variant="outline">
-                      <span className="mr-2">🎨</span>
-                      Download Social Media Pack
-                    </Button>
-                  </CardContent>
-                </Card>
 
                 <Card>
                   <CardHeader>
