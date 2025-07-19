@@ -379,7 +379,10 @@ export default function AIReadyASEAN() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Memorandum of Understanding template for partnerships with schools and organizations.</p>
-                    <Button variant="outline">
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.open('https://docs.google.com/document/d/1sT6WIAQcfw01v8XaLtBIDPVSYmx1U2lXVRpjLHHzLSw/edit?usp=sharing', '_blank')}
+                    >
                       <span className="mr-2">📄</span>
                       Download MOU Template
                     </Button>
@@ -398,67 +401,14 @@ export default function AIReadyASEAN() {
               <CardDescription>Submit activity reports and track your progress</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>📤 Activity Reports</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Submit reports for your Hour of Code sessions and 12-hour training programs.</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button>
-                        <span className="mr-2">📝</span>
-                        Submit Hour of Code Report
-                      </Button>
-                      <Button>
-                        <span className="mr-2">📋</span>
-                        Submit 12-Hour Training Report
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>📸 Documentation Upload</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Upload photos, attendance lists, and other supporting documentation from your training sessions.</p>
-                    <Button>
-                      <span className="mr-2">📤</span>
-                      Upload Documentation
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center space-x-2">
-                      <span>📈 Progress Tracking</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">Monitor your completion progress and targets for the AI Ready ASEAN program.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-muted p-4 rounded-lg text-center">
-                        <div className="text-2xl font-bold text-primary">0</div>
-                        <div className="text-sm text-muted-foreground">Hour of Code Sessions</div>
-                      </div>
-                      <div className="bg-muted p-4 rounded-lg text-center">
-                        <div className="text-2xl font-bold text-primary">0</div>
-                        <div className="text-sm text-muted-foreground">12-Hour Programs</div>
-                      </div>
-                      <div className="bg-muted p-4 rounded-lg text-center">
-                        <div className="text-2xl font-bold text-primary">0</div>
-                        <div className="text-sm text-muted-foreground">Participants Reached</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              <div className="flex items-center justify-center py-16">
+                <div className="text-center space-y-4">
+                  <div className="text-6xl">🚧</div>
+                  <h3 className="text-xl font-semibold">Under Development</h3>
+                  <p className="text-muted-foreground max-w-md">
+                    The reporting system is currently being developed. Please check back soon for updates.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -481,7 +431,9 @@ export default function AIReadyASEAN() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Join our exclusive Facebook group to connect with fellow Master Trainers across ASEAN, share experiences, and get support.</p>
-                    <Button>
+                    <Button 
+                      onClick={() => window.open('https://www.facebook.com/share/g/1AyKi2skYE/', '_blank')}
+                    >
                       <span className="mr-2">💬</span>
                       Join Facebook Group
                     </Button>
@@ -493,17 +445,8 @@ export default function AIReadyASEAN() {
                     <CardTitle className="text-lg">📢 Latest Announcements</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="border-l-4 border-primary pl-4">
-                        <div className="font-medium">Welcome to the AI Ready ASEAN Master Trainer Program!</div>
-                        <div className="text-sm text-muted-foreground">December 2024</div>
-                        <p className="text-muted-foreground mt-2">We're excited to have you on board. Check out the training materials and don't hesitate to reach out if you need support.</p>
-                      </div>
-                      <div className="border-l-4 border-muted pl-4">
-                        <div className="font-medium">New Resources Available</div>
-                        <div className="text-sm text-muted-foreground">Coming Soon</div>
-                        <p className="text-muted-foreground mt-2">Additional training materials and resources will be added regularly. Stay tuned for updates.</p>
-                      </div>
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No announcements at this time. Check back later for updates.</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -516,7 +459,9 @@ export default function AIReadyASEAN() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Need help or have questions? Our support team is here to assist you with any aspect of the Master Trainer program.</p>
-                    <Button>
+                    <Button 
+                      onClick={() => window.open('mailto:hello@limitlesslab.org', '_blank')}
+                    >
                       <span className="mr-2">💬</span>
                       Contact Support
                     </Button>
