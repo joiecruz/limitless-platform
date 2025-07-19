@@ -1,5 +1,6 @@
-import { Home, BookOpen, Users, Settings, Download, Briefcase, Lightbulb } from "lucide-react";
+import { Home, BookOpen, Users, Settings, Download, Briefcase, Lightbulb, GraduationCap } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 
 export const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -10,17 +11,34 @@ export const navigation = [
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
+export const masterTrainerNavigation = [
+  { name: "AI Ready ASEAN", href: "/dashboard/ai-ready-asean", icon: GraduationCap },
+];
+
 export function NavigationLinks() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { hasMasterTrainerAccess } = useMasterTrainerAccess();
+
+  // Insert AI Ready ASEAN after Community if user has access
+  const getNavigationItems = () => {
+    const items = [...navigation];
+    if (hasMasterTrainerAccess) {
+      const communityIndex = items.findIndex(item => item.name === "Community");
+      if (communityIndex !== -1) {
+        items.splice(communityIndex + 1, 0, ...masterTrainerNavigation);
+      }
+    }
+    return items;
+  };
 
   return (
     <nav className="space-y-1 px-3 mb-6">
-      {navigation.map((item) => (
+      {getNavigationItems().map((item) => (
         <a
           key={item.name}
           href={item.href}
-          className={`nav-item ${location.pathname === item.href ? "active" : ""}`}
+          className={`nav-item ${location.pathname === item.href || location.pathname.startsWith(item.href + "/") ? "active" : ""}`}
           onClick={(e) => {
             e.preventDefault();
             navigate(item.href);
