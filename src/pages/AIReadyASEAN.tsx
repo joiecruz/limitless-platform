@@ -20,63 +20,78 @@ export default function AIReadyASEAN() {
   const faqData = [
     {
       id: "item-1",
-      question: "What is the AI Ready ASEAN Master Trainer program?",
-      answer: "The AI Ready ASEAN Master Trainer program is a regional initiative led by the ASEAN Foundation, supported by Google.org, and implemented in the Philippines by Limitless Lab. Master Trainers are community leaders who conduct AI literacy training to reach underserved populations across Southeast Asia."
+      question: "Can we co-brand our materials and events with AI Ready ASEAN?",
+      answer: "Yes. Co-branding is allowed as long as you strictly follow the official Communication and Branding Guidelines from the ASEAN Foundation. Make sure to: Use the approved logos of AI Ready ASEAN, ASEAN Foundation, and Google.org; Follow the correct logo placement and hierarchy in banners, posters, and slides; Use official hashtags: #AIReadyASEAN, #FutureReadyASEAN, #BeASEAN; Tag: @aseanfoundation, @google.org (Twitter only)"
     },
     {
-      id: "item-2", 
-      question: "What are my responsibilities as a Master Trainer?",
-      answer: "As a Master Trainer, you are committed to: Completing the 20-hour Training of Trainers (ToT), Conducting 12-hour AI literacy training for at least 600 learners, Leading Hour of Code campaigns for at least 3,000 individuals, Submitting complete documentation and reports, Upholding ethical AI education values"
+      id: "item-2",
+      question: "Can we add our organization's logo to certificates or posters?",
+      answer: "No, your logo cannot be added alongside official program logos as these are already templated by ASEAN Foundation and Google.org"
     },
     {
       id: "item-3",
-      question: "How do I access the Hour of Code materials?",
-      answer: "You can access Hour of Code materials by clicking on the 'Training' tab above and then selecting 'Access Hour of Code' from the Hour of Code card. This will take you to comprehensive guides, activities, and tutorial videos."
+      question: "Where can we download the branding templates and logos?",
+      answer: "You can access all communication assets in the Resources tab."
     },
     {
       id: "item-4",
-      question: "When will the 12-hour training modules be available?",
-      answer: "The 12-hour in-depth training modules are currently under development by the ASEAN Foundation. This dashboard will be updated regularly as new materials become available. Please check back frequently for updates."
+      question: "What is my official title as a Master Trainer?",
+      answer: "Your correct title is \"AI Ready ASEAN Master Trainer\". Please do not use \"ASEAN Foundation Master Trainer\" to avoid misrepresentation and confusion with the foundation's internal team and official staff."
     },
     {
       id: "item-5",
-      question: "How do I get my Master Trainer certificate?",
-      answer: "You can apply for your official Certificate of Authorization by going to the 'Resources' tab and clicking 'Apply for Certificate.' This will take you to the application form where you can request your official certificate confirming your Master Trainer status."
+      question: "Can I run my trainings online?",
+      answer: "Absolutely. You can conduct your sessions via Zoom, Google Meet, or Facebook Live—just make sure documentation is complete (attendance, photos/screenshots, pre/post assessments)."
     },
     {
       id: "item-6",
-      question: "What is the performance-based incentive?",
-      answer: "Master Trainers are eligible for a performance-based incentive of up to $300 upon successfully meeting all program commitments, including completing training requirements, reaching target learner numbers, and submitting required documentation."
+      question: "Can I combine audiences in one session?",
+      answer: "Yes, mixed sessions are allowed. However, it's ideal to group learners by segment (Youth, Parents, Educators) to ensure the training is more relevant to their roles and needs."
     },
     {
       id: "item-7",
-      question: "How do I join the Master Trainer Facebook group?",
-      answer: "You can join our exclusive Master Trainer Facebook group by going to the 'Community' tab and clicking 'Join Facebook Group.' This private group connects you with fellow Master Trainers across ASEAN for support and experience sharing."
+      question: "Are there any offline activities available for Hour of Code?",
+      answer: "Yes. There are unplugged activities (worksheets and hands-on tasks) that don't require internet or computers. These are ideal for areas with limited connectivity and may be used as a last resort."
     },
     {
       id: "item-8",
-      question: "Where do I submit my training reports?",
-      answer: "The reporting system is currently under development. Once available, you'll be able to submit activity reports and track your progress through the 'Reporting' tab. Please check back soon for updates on this feature."
+      question: "What are the requirements for the attendance sheet?",
+      answer: "You must collect the following information: Full Name, Mobile Number, Email (optional), Gender, Age Range, Beneficiary Type (Youth, Educator, Parent, Low Income, Person with Disability), Affiliation Type (e.g., school, NGO, LGU), Affiliation Name. For \"Low Income,\" participants may select \"Neither\" if they prefer not to declare. You may see the attendance sheet template in the Hour of Code materials in the dashboard."
     },
     {
       id: "item-9",
-      question: "What documentation do I need to submit?",
-      answer: "You need to submit complete and accurate documentation including: Attendance sheets for all training sessions, Training reports with participant feedback, Photos from training activities, Feedback forms from participants, Hour of Code campaign documentation"
+      question: "Can I use our own venue or training center?",
+      answer: "Yes. You may host sessions at schools, barangay halls, or your own training venues—as long as it's accessible, safe, and appropriate."
     },
     {
       id: "item-10",
-      question: "Who can I contact for support?",
-      answer: "If you need help or have questions about any aspect of the Master Trainer program, you can contact our support team at hello@limitlesslab.org. Our team is here to assist you throughout your Master Trainer journey."
+      question: "When is the deadline for the Hour of Code rollout?",
+      answer: "The Hour of Code deadline has been extended to November 2025. This gives Master Trainers more flexibility to plan and conduct rollouts."
     },
     {
       id: "item-11",
-      question: "Can I lose my Master Trainer status?",
-      answer: "Yes, failure to meet minimum targets or actions that harm the program's reputation may result in removal from the Master Trainer roster. It's important to maintain your commitments and uphold the values of ethical, inclusive, and responsible AI education."
+      question: "What documentation is required?",
+      answer: "Required documentation includes: Attendance sheets with required fields, Pre- and post-assessment forms, Event photos/screenshots, Brief narrative report, Publicity consent form (for any use of photos/videos)"
     },
     {
       id: "item-12",
-      question: "What is the MOU template for?",
-      answer: "The MOU (Memorandum of Understanding) template is available in the Resources tab to help you formalize partnerships with schools, organizations, or communities where you'll be conducting your training sessions. This ensures clear expectations and professional collaboration."
+      question: "Where can I get the publicity consent form?",
+      answer: "You may download it in the Resources tab."
+    },
+    {
+      id: "item-13",
+      question: "Can participants use cell phones for Hour of Code activities?",
+      answer: "Yes. Participants can use smartphones if no computers are available. However, the learning experience might be limited due to small screens and app/browser limitations."
+    },
+    {
+      id: "item-14",
+      question: "Can I charge participants a fee for attending the training or Hour of Code?",
+      answer: "No. All AI Ready ASEAN trainings, including the Hour of Code, must be offered free of charge to participants. Charging a fee goes against the program's mission of inclusive and accessible AI education."
+    },
+    {
+      id: "item-15",
+      question: "Can I accept honoraria or tokens from host institutions?",
+      answer: "Yes, you may accept honoraria or tokens if they are offered voluntarily by a school, LGU, or organization to support your time or effort. However, you must not require or expect payment from participants."
     }
   ];
 
