@@ -448,6 +448,46 @@ export default function AIReadyASEAN() {
                       </Button>
                     </CardContent>
                   </Card>
+
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">🎨</span>
+                          <h4 className="text-lg font-semibold">Hour of Code Event Banner (4x3) - No External Partners</h4>
+                        </div>
+                        <p className="text-muted-foreground">Official banner template for Hour of Code events without external partners.</p>
+                      </div>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open('https://www.canva.com/design/DAGtmvQdBGM/wFcoS3Fi2K51FivCrO3PwA/view?utm_content=DAGtmvQdBGM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
+                        className="ml-4"
+                      >
+                        <span className="mr-2">🎨</span>
+                        Download Banner
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">🎨</span>
+                          <h4 className="text-lg font-semibold">Hour of Code Event Banner (4x3) - With External Partners</h4>
+                        </div>
+                        <p className="text-muted-foreground">Official banner template for Hour of Code events with external partners.</p>
+                      </div>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open('https://www.canva.com/design/DAGtm8zCGvg/QTmrx8a77XV7lo5hTnA-IA/view?utm_content=DAGtm8zCGvg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
+                        className="ml-4"
+                      >
+                        <span className="mr-2">🎨</span>
+                        Download Banner
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
 
