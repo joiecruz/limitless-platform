@@ -178,11 +178,14 @@ export default function AIReadyASEAN() {
                 {/* Embedded Video */}
                 <div className="mt-6">
                   <div className="aspect-video">
-                    <iframe
-                      src="https://www.youtube.com/embed/lmyrq2yvkpM"
-                      title="AI Ready ASEAN Introduction Video"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    <iframe 
+                      width="560" 
+                      height="315" 
+                      src="https://www.youtube.com/embed/lmyrq2yvkpM?si=Zq3cxNBabEREihr8" 
+                      title="YouTube video player" 
+                      frameBorder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                      referrerPolicy="strict-origin-when-cross-origin" 
                       allowFullScreen
                       className="w-full h-full rounded-lg"
                     ></iframe>
