@@ -9,6 +9,7 @@ import Test from "../../pages/projects/design-thinking/Test";
 import Implement from "../../pages/projects/design-thinking/Implement";
 import Measure from "../../pages/projects/design-thinking/Measure";
 import Ideate from "../../pages/projects/design-thinking/Ideate";
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const designThinkingSteps = [
   { label: "Project Brief", icon: "/projects-navbar-icons/paper.svg" },
@@ -46,6 +47,8 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
   const navigate = useNavigate();
   const { projectId } = useParams();
+
+  usePageTitle(selectedStep || 'Project');
 
   useEffect(() => {
     if (selectedStep === null) {
