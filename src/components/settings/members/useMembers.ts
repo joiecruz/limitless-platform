@@ -37,6 +37,30 @@ export function useMembers(workspaceId?: string) {
         throw activeMembersError;
       }
 
+      // const { data: activeMembers, error: activeMembersError } = await supabase
+      //   .from('workspace_invitations')
+      //   .select(`
+      //     user_id,
+      //     role,
+      //     last_active,
+      //     workspace_id,
+      //     profiles!inner (
+      //       first_name,
+      //       last_name,
+      //       email,
+      //       id
+      //     )
+      //   `)
+      //   .eq('workspace_id', workspaceId)
+      //   .eq('status', 'accepted')
+      //   .order('created_at', { ascending: false });
+      //   .returns<WorkspaceMember[]>();
+
+      //   if (activeMembersError) {
+        
+      //     throw activeMembersError;
+      //   }
+
       
 
       // Fetch pending invitations - avoid FK validation by selecting specific fields
