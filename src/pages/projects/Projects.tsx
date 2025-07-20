@@ -161,11 +161,12 @@ export default function Projects() {
     }
   };
 
-  const getInitials = (firstName: string | null, lastName: string | null, email: string) => {
-    if (firstName && lastName) {
-      return `${firstName[0]}${lastName[0]}`.toUpperCase();
-    }
-    return email[0].toUpperCase();
+  const getInitials = (firstName: string | null | undefined, lastName: string | null | undefined, email: string | null | undefined) => {
+    const first = (firstName && firstName[0]) ? firstName[0].toUpperCase() : '';
+    const last = (lastName && lastName[0]) ? lastName[0].toUpperCase() : '';
+    if (first || last) return `${first}${last}`;
+    if (email && email[0]) return email[0].toUpperCase();
+    return '?';
   };
 
   // Filter projects by search value
