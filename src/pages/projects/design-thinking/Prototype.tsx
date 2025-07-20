@@ -45,6 +45,13 @@ export default function Prototype() {
   const navigate = useNavigate();
   const { changeStep, selectedStep } = useStepNavigation();
   const documentEditorRef = useRef<any>(null);
+  const [projectData, setProjectData] = useState<{
+    name: string;
+    description?: string;
+    problem?: string;
+    customers?: string;
+    targetOutcomes?: string;
+  } | null>(null);
 
   // usePrototype hook
   const {
@@ -62,12 +69,45 @@ export default function Prototype() {
 
   // AI content generation for prototype type recommendations
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!projectId) return;
+      try {
+        const { data: project, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+        if (error) throw error;
+        const metadata = (project.metadata as any) || {};
+        setProjectData({
+          name: project.name || '',
+          description: project.description || '',
+          problem: metadata.problem || '',
+          customers: metadata.customers || '',
+          targetOutcomes: metadata.targetOutcomes || '',
+        });
+      } catch (error) {
+        // Optionally handle error
+      }
+    };
+    fetchProjectData();
+  }, [projectId]);
+
   const generateAIContent = async () => {
     if (isGenerating) return;
     setIsGenerating(true);
     try {
+      const context = projectData ? [
+        `Project: "${projectData.name}"`,
+        projectData.description && `Description: ${projectData.description}`,
+        projectData.problem && `Problem: ${projectData.problem}`,
+        projectData.customers && `Target customers: ${projectData.customers}`,
+        projectData.targetOutcomes && `Target outcomes: ${projectData.targetOutcomes}`,
+      ].filter(Boolean).join('. ') : '';
       // Example prompt for prototype type recommendation
-      const prompt = 'Recommend 3 prototyping techniques for our project. Return only the names as a comma-separated list.';
+      const prompt = `${context}. Recommend 3 prototyping techniques for this project. Return only the names as a comma-separated list.`;
       const { data, error } = await supabase.functions.invoke('generate-description', {
         body: { prompt }
       });
@@ -86,7 +126,7 @@ export default function Prototype() {
       updateData({ selectedPrototypeTypes: finalLabels });
 
       // Generate explanation for document editor
-      const notesPrompt = `Write a short paragraph explaining why these prototyping techniques (${finalLabels.join(', ')}) are recommended for our project.`;
+      const notesPrompt = `${context}. Write a short paragraph explaining why these prototyping techniques (${finalLabels.join(', ')}) are recommended for this project.`;
       const { data: notesData, error: notesError } = await supabase.functions.invoke('generate-description', {
         body: { prompt: notesPrompt }
       });

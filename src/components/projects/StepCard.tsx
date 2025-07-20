@@ -54,7 +54,7 @@ const StepCard: React.FC<StepCardProps> = ({
   const cardBorder = active ? 'border-[#393CA0]' : 'border-[#E5E7EB]';
   const cardBg = 'bg-white';
   const rightBg = isActiveOrChecked ? 'bg-[#E6E8FA]' : 'bg-[#E5E7EB]';
-  const buttonBg = isActiveOrChecked ? 'bg-[#393CA0] text-white hover:bg-[#232262]' : 'bg-[#C7C9D9] text-[#fff]';
+  const buttonBg = isActiveOrChecked ? 'bg-[#393CA0] text-white ' : 'bg-[#C7C9D9] text-[#fff]';
   const titleColor = 'text-[#23262F]';
 
   // Dropdown state for open/close

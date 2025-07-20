@@ -59,6 +59,13 @@ export default function Test() {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [showDecision, setShowDecision] = useState(false);
+  const [projectData, setProjectData] = useState<{
+    name: string;
+    description?: string;
+    problem?: string;
+    customers?: string;
+    targetOutcomes?: string;
+  } | null>(null);
 
   // useTest hook
   const {
@@ -73,6 +80,31 @@ export default function Test() {
   useEffect(() => {
     loadTest();
     // eslint-disable-next-line
+  }, [projectId]);
+
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!projectId) return;
+      try {
+        const { data: project, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+        if (error) throw error;
+        const metadata = (project.metadata as any) || {};
+        setProjectData({
+          name: project.name || '',
+          description: project.description || '',
+          problem: metadata.problem || '',
+          customers: metadata.customers || '',
+          targetOutcomes: metadata.targetOutcomes || '',
+        });
+      } catch (error) {
+        // Optionally handle error
+      }
+    };
+    fetchProjectData();
   }, [projectId]);
 
   // Restore editor content on step change
@@ -168,22 +200,29 @@ export default function Test() {
     let prompt = '';
     let field = '';
     let isDropdown = false;
+    const context = projectData ? [
+      `Project: "${projectData.name}"`,
+      projectData.description && `Description: ${projectData.description}`,
+      projectData.problem && `Problem: ${projectData.problem}`,
+      projectData.customers && `Target customers: ${projectData.customers}`,
+      projectData.targetOutcomes && `Target outcomes: ${projectData.targetOutcomes}`,
+    ].filter(Boolean).join('. ') : '';
     switch (stepIdx) {
       case 0:
-        prompt = 'Recommend 2-3 user testing methods for a design thinking project. Return only the method names as a comma-separated list.';
+        prompt = `${context}. Recommend 2-3 user testing methods for this project. Return only the method names as a comma-separated list.`;
         field = 'userTestingMethod';
         isDropdown = true;
         break;
       case 1:
-        prompt = 'Generate a comprehensive user test plan for a design thinking project.';
+        prompt = `${context}. Generate a comprehensive user test plan for this project.`;
         field = 'userTestPlan';
         break;
       case 2:
-        prompt = 'Generate detailed user test notes for a design thinking project.';
+        prompt = `${context}. Generate detailed user test notes for this project.`;
         field = 'userTestNotes';
         break;
       case 3:
-        prompt = 'Analyze user test data and generate actionable insights for a design thinking project.';
+        prompt = `${context}. Analyze user test data and generate actionable insights for this project.`;
         field = 'userTestInsights';
         break;
       default:

@@ -64,6 +64,38 @@ export default function Empathize() {
   const { changeStep, selectedStep } = useStepNavigation();
   const documentEditorRef = useRef<any>(null);
   const { toast } = useToast();
+  const [projectData, setProjectData] = useState<{
+    name: string;
+    description?: string;
+    problem?: string;
+    customers?: string;
+    targetOutcomes?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!projectId) return;
+      try {
+        const { data: project, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+        if (error) throw error;
+        const metadata = (project.metadata as any) || {};
+        setProjectData({
+          name: project.name || '',
+          description: project.description || '',
+          problem: metadata.problem || '',
+          customers: metadata.customers || '',
+          targetOutcomes: metadata.targetOutcomes || '',
+        });
+      } catch (error) {
+        // Optionally handle error
+      }
+    };
+    fetchProjectData();
+  }, [projectId]);
 
   // Empathize hook for current step
   const stepId = stepIds[activeStep];
@@ -261,25 +293,32 @@ export default function Empathize() {
     setIsGenerating(true);
     let prompt = '';
     let field = '';
+    const context = projectData ? [
+      `Project: "${projectData.name}"`,
+      projectData.description && `Description: ${projectData.description}`,
+      projectData.problem && `Problem: ${projectData.problem}`,
+      projectData.customers && `Target customers: ${projectData.customers}`,
+      projectData.targetOutcomes && `Target outcomes: ${projectData.targetOutcomes}`,
+    ].filter(Boolean).join('. ') : '';
     switch (stepIdx) {
       case 0:
-        prompt = `Recommend the 2-3 best user research methods for this project: Name: ${projectId}. Return only the method names as a comma-separated list, matching exactly: User interviews, Surveys, Focused Groups.`;
+        prompt = `${context}. Recommend the 2-3 best user research methods for this project. Return only the method names as a comma-separated list, matching exactly: User interviews, Surveys, Focused Groups.`;
         field = 'userResearchMethod';
         break;
       case 1:
-        prompt = 'Generate a comprehensive user research plan for a design thinking project.';
+        prompt = `${context}. Generate a comprehensive user research plan for this project.`;
         field = 'userResearchPlan';
         break;
       case 2:
-        prompt = 'Generate detailed user research notes for a design thinking project.';
+        prompt = `${context}. Generate detailed user research notes for this project.`;
         field = 'userResearchNotes';
         break;
       case 3:
-        prompt = 'Analyze user research data and generate actionable insights for a design thinking project.';
+        prompt = `${context}. Analyze user research data and generate actionable insights for this project.`;
         field = 'userResearchInsights';
         break;
       case 4:
-        prompt = 'Create a customer persona based on user research for a design thinking project.';
+        prompt = `${context}. Create a customer persona based on user research for this project.`;
         field = 'customerPersona';
         break;
       default:

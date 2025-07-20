@@ -48,6 +48,13 @@ export default function Define() {
   const { toast } = useToast();
   const [howMightWeQuestions, setHowMightWeQuestions] = useState<HMWQuestion[]>([]);
   const [selectedHMWIds, setSelectedHMWIds] = useState<number[]>([]);
+  const [projectData, setProjectData] = useState<{
+    name: string;
+    description?: string;
+    problem?: string;
+    customers?: string;
+    targetOutcomes?: string;
+  } | null>(null);
 
   // useDefine hook
   const {
@@ -62,6 +69,32 @@ export default function Define() {
   useEffect(() => {
     loadDefine();
     // eslint-disable-next-line
+  }, [projectId]);
+
+  // Load project data for AI prompts
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!projectId) return;
+      try {
+        const { data: project, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+        if (error) throw error;
+        const metadata = (project.metadata as any) || {};
+        setProjectData({
+          name: project.name || '',
+          description: project.description || '',
+          problem: metadata.problem || '',
+          customers: metadata.customers || '',
+          targetOutcomes: metadata.targetOutcomes || '',
+        });
+      } catch (error) {
+        // Optionally handle error
+      }
+    };
+    fetchProjectData();
   }, [projectId]);
 
   // Load howMightWeQuestions from backend if present
@@ -134,18 +167,25 @@ export default function Define() {
     let prompt = '';
     let field = '';
     let isHMW = false;
+    const context = projectData ? [
+      `Project: "${projectData.name}"`,
+      projectData.description && `Description: ${projectData.description}`,
+      projectData.problem && `Problem: ${projectData.problem}`,
+      projectData.customers && `Target customers: ${projectData.customers}`,
+      projectData.targetOutcomes && `Target outcomes: ${projectData.targetOutcomes}`,
+    ].filter(Boolean).join('. ') : '';
     switch (stepIdx) {
       case 0:
-        prompt = 'Analyze the insights gathered during the Empathize phase. Identify key themes and patterns that stand out.';
+        prompt = `${context}. Analyze the insights gathered during the Empathize phase. Identify key themes and patterns that stand out.`;
         field = 'mainInsights';
         break;
       case 1:
-        prompt = "Generate a list of 5-7 'How Might We' questions based on the persona and insights from the Empathize phase. Return only the questions as a numbered list.";
+        prompt = `${context}. Generate a list of 5-7 'How Might We' questions based on the persona and insights from the Empathize phase. Return only the questions as a numbered list.`;
         field = 'howMightWe';
         isHMW = true;
         break;
       case 2:
-        prompt = "Collaborate with your team to select the most impactful 'How Might We' questions to carry forward into ideation.";
+        prompt = `${context}. Collaborate with your team to select the most impactful 'How Might We' questions to carry forward into ideation.`;
         field = 'selectedChallenge';
         break;
       default:
