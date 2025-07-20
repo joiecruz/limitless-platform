@@ -1,12 +1,13 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { InviteMemberDialog } from "./members/InviteMemberDialog";
 import { MembersTable } from "./members/MembersTable";
 import { useMembers } from "./members/useMembers";
 import { useWorkspaceMembersView, useWorkspaceActiveMembers, useWorkspacePendingInvitations } from "@/hooks/useWorkspaceMembersView";
-import { deleteWorkspaceMember } from "@/hooks/useDeleteWorkspaceMember";
+import { deleteInvitation, deleteWorkspaceMember } from "@/hooks/useDeleteWorkspaceMember";
 import { useWorkspaceRole } from "@/hooks/useWorkspaceRole";
+import { toast } from "@/hooks/use-toast";
 import {
   Tooltip,
   TooltipContent,
@@ -18,35 +19,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export function MembersSettings() {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-  
+
   // Option 2: Use the new view-based hooks
-  const { data: allMembers, isLoading: isLoadingView } = useWorkspaceMembersView(currentWorkspace?.id);
   const { data: activeMembers, isLoading: isLoadingActive } = useWorkspaceActiveMembers(currentWorkspace?.id);
   const { data: pendingInvitations, isLoading: isLoadingPending } = useWorkspacePendingInvitations(currentWorkspace?.id);
-  
+  const { tableData, isLoading } = useMembers(currentWorkspace?.id);
   const { data: userRole } = useWorkspaceRole(currentWorkspace?.id);
 
-
-  if (!currentWorkspace) {
-    return (
-      <div className="flex items-center justify-center h-[200px]">
-        <p className="text-muted-foreground">Please select a workspace</p>
-      </div>
-    );
-  }
-
-  const canInviteMembers = userRole === 'admin' || userRole === 'owner';
-  
-  const handleDelete = async (workspace_id: string, user_id: string) => {
-    try {
-      await deleteWorkspaceMember(workspace_id, user_id);
-      // Optionally refetch your members list here
-      // e.g., refetchMembers();
-    } catch (error) {
-      // Handle error (show toast, etc.)
-      console.error(error);
-    }
-  };
+  // State for members and invitations
+  const [members, setMembers] = useState<any[]>([]);
+  const [invitations, setInvitations] = useState<any[]>([]);
 
   // Transform view data to match MembersTable format
   const transformViewData = (viewData: any[]) => {
@@ -64,6 +46,61 @@ export function MembersSettings() {
         email: member.email
       }
     })) || [];
+  };
+
+  // Sync state with query data
+  useEffect(() => {
+    setMembers(transformViewData(activeMembers));
+  }, [activeMembers]);
+
+  useEffect(() => {
+    setInvitations(transformViewData(tableData));
+  }, [tableData]);
+
+  if (!currentWorkspace) {
+    return (
+      <div className="flex items-center justify-center h-[200px]">
+        <p className="text-muted-foreground">Please select a workspace</p>
+      </div>
+    );
+  }
+
+  const canInviteMembers = userRole === 'admin' || userRole === 'owner';
+
+  const handleDelete = async (workspace_id: string, user_id: string) => {
+    try {
+      await deleteWorkspaceMember(workspace_id, user_id);
+      setMembers(prev => prev.filter(m => m.user_id !== user_id));
+      toast({
+        title: "Success",
+        description: "Member has been deleted from workspace.",
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to remove member.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteInvite = async (workspace_id: string, email: string) => {
+    try {
+      await deleteInvitation(workspace_id, email);
+      setInvitations(prev => prev.filter(i => i.email !== email));
+      toast({
+        title: "Success",
+        description: "Invitation has been deleted.",
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to remove invite.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -104,33 +141,13 @@ export function MembersSettings() {
           workspaceName={currentWorkspace.name}
         />
 
-        {/* Option 1: Use existing approach (recommended)
-        <div className="rounded-md border">
-          {isLoading ? (
-            <div className="p-4">
-              <p className="text-sm text-muted-foreground">Loading members...</p>
-            </div>
-          ) : !tableData?.length ? (
-            <div className="p-4">
-              <p className="text-sm text-muted-foreground">No members found</p>
-            </div>
-          ) : (
-            <MembersTable
-              members={tableData}
-              onDeleteMember={handleDeleteMember}
-            />
-          )}
-        </div> */}
-
-        {/* Option 2: Use new approach with tabs for separate members and invitations */}
-        
         <Tabs defaultValue="members" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="members">
-              Active Members ({activeMembers?.length || 0})
+              Active Members ({members.length})
             </TabsTrigger>
             <TabsTrigger value="invitations">
-              Pending Invitations ({pendingInvitations?.length || 0})
+              Pending Invitations ({invitations.length})
             </TabsTrigger>
           </TabsList>
           
@@ -140,13 +157,13 @@ export function MembersSettings() {
                 <div className="p-4">
                   <p className="text-sm text-muted-foreground">Loading members...</p>
                 </div>
-              ) : !activeMembers?.length ? (
+              ) : !members.length ? (
                 <div className="p-4">
                   <p className="text-sm text-muted-foreground">No active members found</p>
                 </div>
               ) : (
                 <MembersTable
-                  members={transformViewData(activeMembers)}
+                  members={members}
                   onDeleteMember={(member) => handleDelete(member.workspace_id, member.user_id)}
                 />
               )}
@@ -155,24 +172,23 @@ export function MembersSettings() {
           
           <TabsContent value="invitations" className="space-y-4">
             <div className="rounded-md border">
-              {isLoadingPending ? (
+              {isLoading ? (
                 <div className="p-4">
                   <p className="text-sm text-muted-foreground">Loading invitations...</p>
                 </div>
-              ) : !pendingInvitations?.length ? (
+              ) : !invitations.length ? (
                 <div className="p-4">
                   <p className="text-sm text-muted-foreground">No pending invitations found</p>
                 </div>
               ) : (
                 <MembersTable
-                  members={transformViewData(pendingInvitations)}
-                  onDeleteMember={(member) => handleDelete(member.workspace_id, member.user_id)}
+                  members={invitations}
+                  onDeleteMember={(member) => handleDeleteInvite(member.workspace_id, member.email)}
                 />
               )}
             </div>
           </TabsContent>
         </Tabs>
-        
       </div>
     </div>
   );

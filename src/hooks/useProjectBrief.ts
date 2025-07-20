@@ -59,12 +59,16 @@ export const useProjectBrief = (workspaceId: string | null) => {
   });
   const { toast } = useToast();
 
-  const updateData = (updates: Partial<ProjectBriefData>) => {
-    setState(prev => ({
-      ...prev,
-      data: { ...prev.data, ...updates },
-      isDirty: true
-    }));
+  const updateData = (updates: Partial<ProjectBriefData>, callback?: () => void) => {
+    setState(prev => {
+      const newState = {
+        ...prev,
+        data: { ...prev.data, ...updates },
+        isDirty: true
+      };
+      if (callback) setTimeout(callback, 0); // call after state update
+      return newState;
+    });
   };
 
   const resetData = () => {
@@ -158,7 +162,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
         innovationTypes: state.data.innovationTypes,
         designChallenge: state.data.designChallenge,
         stage: state.data.designChallenge ? 'challenge_completed' : 'brief_completed',
-        methodology: 'design_thinking'
+        methodology: 'design_thinking',
+        teamMembers: state.data.teamMembers
       };
 
       let projectData;
@@ -170,8 +175,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
           .update({
             name: state.data.name,
             description: state.data.description,
-            start_date: state.data.startDate,
-            end_date: state.data.endDate || null,
+            start_date: state.data.startDate ? state.data.startDate : null,
+            end_date: state.data.endDate ? state.data.endDate : null,
             metadata,
             updated_at: new Date().toISOString()
           })
@@ -191,8 +196,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
             description: state.data.description,
             workspace_id: workspaceId,
             owner_id: user.id,
-            start_date: state.data.startDate || null,
-            end_date: state.data.endDate || null,
+            start_date: state.data.startDate ? state.data.startDate : null,
+            end_date: state.data.endDate ? state.data.endDate : null,
             methodology_id: '550e8400-e29b-41d4-a716-446655440000',
             current_stage_id: '660e8400-e29b-41d4-a716-446655440001',
             status: 'active',

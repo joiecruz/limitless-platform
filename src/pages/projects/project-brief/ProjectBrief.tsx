@@ -13,7 +13,10 @@ import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   const { projectId } = useParams();
   const [currentStep, setCurrentStep] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);  
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [pendingSave, setPendingSave] = useState(false);
+
   const navigate = useNavigate();
   const overviewRef = useRef<ProjectOverviewRef>(null);
   const successCriteriaRef = useRef<ProjectSuccessCriteriaRef>(null);
@@ -47,6 +50,9 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         }
         currentStepData = overviewRef.current.getValues();
         updateData(currentStepData);
+        setPendingSave(true);
+        handleStepChange(Math.min(currentStep + 1, 5));
+        return;
       }
     }
     
@@ -63,6 +69,9 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         }
         currentStepData = successCriteriaRef.current.getValues();
         updateData(currentStepData);
+        setPendingSave(true);
+        handleStepChange(Math.min(currentStep + 1, 5));
+        return;
       }
     }
     
@@ -79,21 +88,13 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         }
         currentStepData = timelineRef.current.getValues();
         updateData(currentStepData);
+        setPendingSave(true);
+        handleStepChange(Math.min(currentStep + 1, 5));
+        return;
       }
     }
 
-    // Save to database before moving to next step
-    try {
-      await saveProjectBrief();
-    } catch (error) {
-      // Don't block progression if save fails, just warn
-      toast({
-        title: "Warning",
-        description: "Form data saved locally. Will sync when possible.",
-        variant: "default"
-      });
-    }
-
+    // If not handled above, just move to next step
     handleStepChange(Math.min(currentStep + 1, 5));
   };
 
@@ -136,14 +137,14 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         innovationTypes: data.innovationTypes
       });
     }
-    if (timelineRef.current && (data.startDate || data.teamMembers.length > 0)) {
+    if (timelineRef.current && (data.startDate || teamMembers.length > 0)) {
       timelineRef.current.setValues({
         startDate: data.startDate,
         endDate: data.endDate,
-        teamMembers: data.teamMembers
+        teamMembers: data.teamMembers,
       });
     }
-  }, [currentStep, data]);
+  }, [currentStep, data, teamMembers]);
 
   useEffect(() => {
     if (projectId) {
@@ -153,6 +154,21 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
     }
     // eslint-disable-next-line
   }, [projectId]);
+
+  // Update teamMembers state when data.teamMembers changes (from DB)
+  useEffect(() => {
+    if (data.teamMembers && Array.isArray(data.teamMembers)) {
+      setTeamMembers(data.teamMembers);
+    }
+  }, [data.teamMembers]);
+
+  // Save to database after state is updated
+  useEffect(() => {
+    if (pendingSave) {
+      saveProjectBrief().finally(() => setPendingSave(false));
+    }
+    // eslint-disable-next-line
+  }, [data]);
 
   return (
     <div className="w-full flex flex-col items-center justify-center mt-7 ml-5">
@@ -203,7 +219,10 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                 projectCustomers={data.customers}
               />
             )}
-            {currentStep === 2 && <ProjectTimeline ref={timelineRef} />}
+            {currentStep === 2 && <ProjectTimeline ref={timelineRef} teamMembers={teamMembers} 
+            
+      setTeamMembers={setTeamMembers}
+      onTeamMembersChange={setTeamMembers} />}
             {currentStep === 3 && <ProjectSubmission onNext={() => handleStepChange(4)} />}
             {currentStep === 4 && (
               <ProjectDesignChallenge 

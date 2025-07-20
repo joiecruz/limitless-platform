@@ -54,7 +54,6 @@ export default function Decision({
       idea: 'Ideate',
       iterate: 'Prototype',
       test: 'Test',
-      // pause: 'Project Brief', // do not map pause to a step
     };
     const nextStep = stepMap[selectedDecision];
     if (onChangeStep && nextStep) {
