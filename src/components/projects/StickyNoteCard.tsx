@@ -22,7 +22,7 @@ interface StickyNoteCardProps {
 
 export const StickyNoteCard: React.FC<StickyNoteCardProps> = ({ note, onEdit, onDelete, onFavorite, onMove }) => {
   // Debug: log note.position
-  console.log('StickyNoteCard render', note.id, 'note.position:', note.position);
+  // console.log('StickyNoteCard render', note.id, 'note.position:', note.position);
   const safePosition = (note.position && typeof note.position.x === 'number' && typeof note.position.y === 'number')
     ? note.position
     : { x: 100, y: 100 };

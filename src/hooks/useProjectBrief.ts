@@ -82,7 +82,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
 
   const loadProjectBrief = async (projectId: string) => {
     setState(prev => ({ ...prev, isLoading: true }));
-    console.log('-----LOADING project brief for projectId:', projectId);
+    // console.log('-----LOADING project brief for projectId:', projectId);
     
     try {
       const { data: project, error } = await supabase
@@ -101,7 +101,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
         `)
         .eq('id', projectId)
         .single();
-      console.log('Project data:', project);
+      // console.log('Project data:', project);
       if (error) throw error;
 
       if (project) {
@@ -188,7 +188,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
         projectData = data;
       } else {
         // Create new project
-        console.log('Creating new project');
+        // console.log('Creating new project');
         const { data, error } = await supabase
           .from('projects')
           .insert({
@@ -220,7 +220,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
             workspace_id: workspaceId,
             role: 'admin'
           });
-        console.log('OWNER INSERTED TO PROJECT_MEMBERS');
+        // console.log('OWNER INSERTED TO PROJECT_MEMBERS');
       }
 
       // Update team members

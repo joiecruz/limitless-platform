@@ -138,7 +138,7 @@ export default function Empathize() {
 
   // Restore handleOptionCheck and handleCheck
   const handleOptionCheck = async (optionIdx: number) => {
-    console.log('Option checkbox changed:', optionIdx);
+    // console.log('Option checkbox changed:', optionIdx);
     // Compute the new checked state
     const newChecked = checkedOptions.map((checked, idx) =>
       idx === optionIdx ? !checked : checked
@@ -151,8 +151,8 @@ export default function Empathize() {
       .filter(Boolean);
     updateData({ userResearchMethod: selectedMethods });
     // Save after state is updated
-    console.log('projectId:', projectId);
-    console.log('state.data:', empathizeData);
+    // console.log('projectId:', projectId);
+    // console.log('state.data:', empathizeData);
     await saveEmpathize();
   };
 
@@ -183,7 +183,7 @@ export default function Empathize() {
         setActiveStep(idx + 1);
       }
     }
-    console.log('state.data:', empathizeData);
+    // console.log('state.data:', empathizeData);
   };
 
   const allChecked = checkedSteps.every(Boolean);
@@ -259,7 +259,7 @@ export default function Empathize() {
       }
       if (field && documentEditorRef.current) {
         const editorContents = documentEditorRef.current.getContents();
-        console.log('Saving to DB:', { field, editorContents });
+        // console.log('Saving to DB:', { field, editorContents });
         setEditorValue(editorContents);
         await saveEmpathize();
       }

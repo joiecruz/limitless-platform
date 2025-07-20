@@ -135,7 +135,7 @@ export const useProjects = (workspaceId: string | null) => {
         title: "Success",
         description: "Project deleted successfully",
       });
-      console.log('deleted project',);
+      // console.log('deleted project',);
     } catch (error) {
       console.error('Error deleting project:', error);
       toast({

@@ -57,7 +57,7 @@ export default function Implement({ inNavBar = false }: ImplementProps) {
 
   useEffect(() => {
     loadImplement().then((data) => {
-      console.log('Loaded implement data:', data);
+      // console.log('Loaded implement data:', data);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);

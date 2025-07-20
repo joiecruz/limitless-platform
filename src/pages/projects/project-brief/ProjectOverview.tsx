@@ -49,9 +49,9 @@ const ProjectOverview = forwardRef<ProjectOverviewRef>((props, ref) => {
     getValues: () => ({ name, description, problem, customers }),
     setValues: (values) => {
       if (projectId) {
-        console.log('[ProjectOverview] For projectId:', projectId, 'reloaded fields from database:', values);
+        // console.log('[ProjectOverview] For projectId:', projectId, 'reloaded fields from database:', values);
       } else {
-        console.log('[ProjectOverview] Reloaded fields from database:', values);
+        // console.log('[ProjectOverview] Reloaded fields from database:', values);
       }
       setName(values.name);
       setDescription(values.description);

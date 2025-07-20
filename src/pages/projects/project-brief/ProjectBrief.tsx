@@ -114,15 +114,15 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
 
   // Load saved data into forms when step changes
   useEffect(() => {
-    console.log('Current Step:', currentStep);
-    console.log('ProjectBrief data:', data);
+    // console.log('Current Step:', currentStep);
+    // console.log('ProjectBrief data:', data);
     if (overviewRef.current) {
-      console.log('Calling overviewRef.current.setValues with:', {
-        name: data.name,
-        description: data.description,
-        problem: data.problem,
-        customers: data.customers
-      });
+      // console.log('Calling overviewRef.current.setValues with:', {
+      //   name: data.name,
+      //   description: data.description,
+      //   problem: data.problem,
+      //   customers: data.customers
+      // });
       overviewRef.current.setValues({
         name: data.name,
         description: data.description,
@@ -149,7 +149,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   useEffect(() => {
     if (projectId) {
       loadProjectBrief(projectId).then(() => {
-        console.log('[ProjectBrief] Loaded project brief data:', data);
+        // console.log('[ProjectBrief] Loaded project brief data:', data);
       });
     }
     // eslint-disable-next-line

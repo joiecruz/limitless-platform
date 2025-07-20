@@ -44,7 +44,7 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
       const { data, error } = await supabase.functions.invoke('generate-description', {
         body: { prompt }
       });
-      console.log('AI raw output:', data.generatedText);
+      // console.log('AI raw output:', data.generatedText);
       // Try to parse as JSON, fallback to splitting by lines
       let generatedChallenges;
       try {

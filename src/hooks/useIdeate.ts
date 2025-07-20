@@ -231,7 +231,7 @@ export const useIdeate = (projectIdProp: string | null) => {
         .maybeSingle();
       if (fetchError) throw fetchError;
       const contentData = dataOverride || state.data;
-      console.log('Saving to DB:', contentData.notes); // Debug log
+      // console.log('Saving to DB:', contentData.notes); // Debug log
       if (existingRow && existingRow.id) {
         ({ data, error } = await supabase
           .from('stage_contents')

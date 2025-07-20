@@ -72,10 +72,10 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
   }, [workspaceMembers]);
 
   // Debugging logs
-  console.log('currentWorkspace', currentWorkspace);
-  console.log('workspaceMembers', workspaceMembers);
-  console.log('teamMembers', teamMembers);
-  console.log('isLoading', isLoading);
+  // console.log('currentWorkspace', currentWorkspace);
+  // console.log('workspaceMembers', workspaceMembers);
+  // console.log('teamMembers', teamMembers);
+  // console.log('isLoading', isLoading);
 
   // Function to get permission based on role
   const getPermissionForRole = (role) => {
@@ -122,14 +122,14 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
     // Check if member with this email already exists in workspace
     const existingMember = workspaceInvite.find(m => m.email === newMemberEmail);
     if (!existingMember) {
-      console.log("not in workspace")
+      // console.log("not in workspace")
       return
     }
 
     // Check if already added to project
     const alreadyAdded = teamMembers.find(m => m.email === newMemberEmail);
     if (alreadyAdded) {
-      console.log("added")
+      // console.log("added")
       return
     } 
 

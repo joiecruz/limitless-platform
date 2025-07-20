@@ -53,7 +53,7 @@ export async function runWorkspaceMembersViewMigration() {
       return false;
     }
 
-    console.log('Migration completed successfully!');
+    // console.log('Migration completed successfully!');
     return true;
   } catch (error) {
     console.error('Migration failed:', error);

@@ -81,11 +81,11 @@ export const useTest = (projectIdProp: string | null) => {
           isDirty: false,
           rowId: data.id,
         });
-        console.log('Loaded existing Test data for project_id and stage_id:', data);
+        // console.log('Loaded existing Test data for project_id and stage_id:', data);
         return structure;
       } else {
         setState(prev => ({ ...prev, isLoading: false, rowId: null }));
-        console.log('No existing Test data for project_id and stage_id, using initialData');
+        // console.log('No existing Test data for project_id and stage_id, using initialData');
         return initialData;
       }
     } catch (error) {
@@ -120,7 +120,7 @@ export const useTest = (projectIdProp: string | null) => {
       if (fetchError) throw fetchError;
       if (existingRow && existingRow.id) {
         // Update the existing row using the DB id
-        console.log('UPDATING EXISTING TEST ROW', existingRow.id);
+        // console.log('UPDATING EXISTING TEST ROW', existingRow.id);
         ({ data, error } = await supabase
           .from('stage_contents')
           .update({
@@ -131,10 +131,10 @@ export const useTest = (projectIdProp: string | null) => {
           .eq('id', existingRow.id)
           .select());
         setState(prev => ({ ...prev, rowId: existingRow.id }));
-        console.log('Test save (update) result:', { data, error });
+        // console.log('Test save (update) result:', { data, error });
       } else {
         // Insert a new row
-        console.log('INSERTING NEW TEST ROW');
+        // console.log('INSERTING NEW TEST ROW');
         const newId = uuidv4();
         ({ data, error } = await supabase
           .from('stage_contents')
@@ -148,7 +148,7 @@ export const useTest = (projectIdProp: string | null) => {
           })
           .select());
         setState(prev => ({ ...prev, rowId: newId }));
-        console.log('Test save (insert) result:', { data, error });
+        // console.log('Test save (insert) result:', { data, error });
       }
       if (error) throw error;
       setState(prev => ({ ...prev, isLoading: false, isDirty: false }));

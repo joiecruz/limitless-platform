@@ -116,7 +116,7 @@ const DocumentEditor = forwardRef<{ getContents: () => string; setContents: (val
     if (quillRef.current) {
       const content = quillRef.current.getText();
       const htmlContent = quillRef.current.root.innerHTML;
-      console.log('DocumentEditor Save button - HTML content:', htmlContent);
+      // console.log('DocumentEditor Save button - HTML content:', htmlContent);
       localStorage.setItem('documentContent', content);
       localStorage.setItem('documentHTML', htmlContent);
       toast('Document saved successfully!');
