@@ -2989,6 +2989,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      is_current_user_admin_or_superadmin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_current_user_superadmin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
