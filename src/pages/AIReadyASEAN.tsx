@@ -177,48 +177,6 @@ export default function AIReadyASEAN() {
                   </p>
                 </div>
 
-                {/* Video Player - Matching LMS VideoPlayer Component */}
-                <div className="mt-6">
-                  <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
-                    {!videoError ? (
-                      <ReactPlayer
-                        url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                        width="100%"
-                        height="100%"
-                        controls
-                        config={{
-                          youtube: {
-                            playerVars: {
-                              modestbranding: 1,
-                              rel: 0,
-                            },
-                          },
-                        }}
-                        onError={(error) => {
-                          console.error('ReactPlayer error:', error);
-                          setVideoError(true);
-                        }}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 w-full h-full bg-black rounded-lg flex items-center justify-center">
-                        <div className="text-center space-y-4">
-                          <div className="text-4xl">🎥</div>
-                          <h3 className="text-lg font-semibold text-white">Video Not Available</h3>
-                          <p className="text-white/70">
-                            The embedded video is currently unavailable. Please watch it directly on YouTube.
-                          </p>
-                          <Button 
-                            onClick={() => window.open('https://www.youtube.com/watch?v=lmyrq2yvkpM', '_blank')}
-                            className="mt-4"
-                          >
-                            <span className="mr-2">▶️</span>
-                            Watch on YouTube
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
 
                 <div className="mt-6">
                   <h3 className="text-xl font-semibold mb-4 flex items-center">
