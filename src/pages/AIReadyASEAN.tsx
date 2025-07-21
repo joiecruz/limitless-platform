@@ -27,7 +27,7 @@ export default function AIReadyASEAN() {
     },
     {
       id: "item-2", 
-      question: "Can we add our organization's logo to certificates or posters?",
+      question: "Can we add our organization's logo to certificates?",
       answer: "No, your logo cannot be added alongside official program logos as these are already templated by ASEAN Foundation and Google.org"
     },
     {
