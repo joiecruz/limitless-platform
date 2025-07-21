@@ -9,13 +9,13 @@ import { Search } from "lucide-react";
 import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import ReactPlayer from 'react-player';
 
 export default function AIReadyASEAN() {
   const { hasMasterTrainerAccess, isLoading } = useMasterTrainerAccess();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("welcome");
   const [searchQuery, setSearchQuery] = useState("");
+  const [videoError, setVideoError] = useState(false);
 
   // FAQ data for filtering
   const faqData = [
@@ -176,20 +176,40 @@ export default function AIReadyASEAN() {
                   </p>
                 </div>
 
-                {/* Embedded Video */}
+                {/* Embedded Video with Error Handling */}
                 <div className="mt-6">
                   <div className="aspect-video">
-                    <iframe 
-                      width="100%" 
-                      height="100%" 
-                      src="https://www.youtube.com/embed/lmyrq2yvkpM?enablejsapi=1" 
-                      title="AI Ready ASEAN Video" 
-                      frameBorder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                      referrerPolicy="strict-origin-when-cross-origin" 
-                      allowFullScreen
-                      className="w-full h-full rounded-lg"
-                    ></iframe>
+                    {!videoError ? (
+                      <iframe 
+                        width="100%" 
+                        height="100%" 
+                        src="https://www.youtube.com/embed/lmyrq2yvkpM?enablejsapi=1&modestbranding=1&rel=0&showinfo=0&origin=https://limitlesslab.org" 
+                        title="AI Ready ASEAN Introduction Video" 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        referrerPolicy="strict-origin-when-cross-origin" 
+                        allowFullScreen
+                        className="w-full h-full rounded-lg"
+                        onError={() => setVideoError(true)}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
+                        <div className="text-center space-y-4">
+                          <div className="text-4xl">🎥</div>
+                          <h3 className="text-lg font-semibold">Video Not Available</h3>
+                          <p className="text-muted-foreground">
+                            The embedded video is currently unavailable. Please watch it directly on YouTube.
+                          </p>
+                          <Button 
+                            onClick={() => window.open('https://www.youtube.com/watch?v=lmyrq2yvkpM', '_blank')}
+                            className="mt-4"
+                          >
+                            <span className="mr-2">▶️</span>
+                            Watch on YouTube
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
