@@ -9,6 +9,7 @@ import { Search } from "lucide-react";
 import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import ReactPlayer from "react-player";
 
 export default function AIReadyASEAN() {
   const { hasMasterTrainerAccess, isLoading } = useMasterTrainerAccess();
@@ -25,7 +26,7 @@ export default function AIReadyASEAN() {
       answer: "Yes. Co-branding is allowed as long as you strictly follow the official Communication and Branding Guidelines from the ASEAN Foundation. Make sure to: Use the approved logos of AI Ready ASEAN, ASEAN Foundation, and Google.org; Follow the correct logo placement and hierarchy in banners, posters, and slides; Use official hashtags: #AIReadyASEAN, #FutureReadyASEAN, #BeASEAN; Tag: @aseanfoundation, @google.org (Twitter only)"
     },
     {
-      id: "item-2",
+      id: "item-2", 
       question: "Can we add our organization's logo to certificates or posters?",
       answer: "No, your logo cannot be added alongside official program logos as these are already templated by ASEAN Foundation and Google.org"
     },
@@ -176,28 +177,32 @@ export default function AIReadyASEAN() {
                   </p>
                 </div>
 
-                {/* Embedded Video with Error Handling */}
+                {/* Video Player - Matching LMS VideoPlayer Component */}
                 <div className="mt-6">
-                  <div className="aspect-video">
+                  <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
                     {!videoError ? (
-                      <iframe 
-                        width="100%" 
-                        height="100%" 
-                        src="https://www.youtube.com/embed/lmyrq2yvkpM?enablejsapi=1&modestbranding=1&rel=0&showinfo=0&origin=https://limitlesslab.org" 
-                        title="AI Ready ASEAN Introduction Video" 
-                        frameBorder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        referrerPolicy="strict-origin-when-cross-origin" 
-                        allowFullScreen
-                        className="w-full h-full rounded-lg"
+                      <ReactPlayer
+                        url="https://www.youtube.com/watch?v=lmyrq2yvkpM"
+                        width="100%"
+                        height="100%"
+                        controls
+                        playing
+                        config={{
+                          youtube: {
+                            playerVars: {
+                              modestbranding: 1,
+                              rel: 0,
+                            },
+                          },
+                        }}
                         onError={() => setVideoError(true)}
                       />
                     ) : (
-                      <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
+                      <div className="absolute inset-0 w-full h-full bg-black rounded-lg flex items-center justify-center">
                         <div className="text-center space-y-4">
                           <div className="text-4xl">🎥</div>
-                          <h3 className="text-lg font-semibold">Video Not Available</h3>
-                          <p className="text-muted-foreground">
+                          <h3 className="text-lg font-semibold text-white">Video Not Available</h3>
+                          <p className="text-white/70">
                             The embedded video is currently unavailable. Please watch it directly on YouTube.
                           </p>
                           <Button 
