@@ -126,8 +126,15 @@ export default function AdminMasterTrainers() {
       }
 
       // User exists, grant access directly
-      const { data: currentUser } = await supabase.auth.getUser();
-      if (!currentUser.user) throw new Error('Not authenticated');
+      const { data: currentUser, error: authError } = await supabase.auth.getUser();
+      if (authError || !currentUser.user) {
+        toast({
+          title: "Authentication Error",
+          description: "Please refresh the page and try again. Your session may have expired.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Check if user already has access
       const { data: existingAccess } = await supabase
