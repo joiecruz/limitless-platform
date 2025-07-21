@@ -107,7 +107,7 @@ export default function AdminMasterTrainers() {
     loadData();
   }, []);
 
-  const inviteUser = async (email: string) => {
+  const grantAccess = async (email: string) => {
     try {
       // First check if user exists
       const { data: existingUser } = await supabase
@@ -116,113 +116,70 @@ export default function AdminMasterTrainers() {
         .eq('email', email.toLowerCase().trim())
         .maybeSingle();
 
-      if (existingUser) {
-        // User exists, grant access directly
-        const { data: currentUser } = await supabase.auth.getUser();
-        if (!currentUser.user) throw new Error('Not authenticated');
-
-        // Check if user already has access
-        const { data: existingAccess } = await supabase
-          .from('master_trainer_access')
-          .select('id')
-          .eq('user_id', existingUser.id)
-          .maybeSingle();
-
-        if (existingAccess) {
-          toast({
-            title: "User Already Has Access",
-            description: `${email} already has Master Trainer access`,
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const { error } = await supabase
-          .from('master_trainer_access')
-          .insert({
-            user_id: existingUser.id,
-            granted_by: currentUser.user.id
-          });
-
-        if (error) throw error;
-
-        // Send notification email to existing user
-        try {
-          await supabase.functions.invoke('send-master-trainer-notification', {
-            body: {
-              email: email.toLowerCase().trim(),
-              firstName: existingUser.first_name,
-              lastName: existingUser.last_name,
-              isNewUser: false
-            }
-          });
-        } catch (emailError) {
-          console.error('Failed to send notification email:', emailError);
-          // Don't fail the whole process if email fails
-        }
-
+      if (!existingUser) {
         toast({
-          title: "Success",
-          description: `Master trainer access granted to ${email}. Notification email sent.`,
+          title: "User Not Found",
+          description: `No account found for ${email}. User must create an account first.`,
+          variant: "destructive",
         });
-      } else {
-        // User doesn't exist, create invitation and send signup email
-        const { data: currentUser } = await supabase.auth.getUser();
-        if (!currentUser.user) throw new Error('Not authenticated');
-
-        // Create invitation record
-        const { error: inviteError } = await supabase
-          .from('master_trainer_invitations')
-          .insert({
-            email: email.toLowerCase().trim(),
-            invited_by: currentUser.user.id,
-            status: 'pending'
-          });
-
-        if (inviteError) throw inviteError;
-
-        // Send invitation email
-        try {
-          await supabase.functions.invoke('send-master-trainer-notification', {
-            body: {
-              email: email.toLowerCase().trim(),
-              firstName: null,
-              lastName: null,
-              isNewUser: true
-            }
-          });
-        } catch (emailError) {
-          console.error('Failed to send invitation email:', emailError);
-          // Don't fail the whole process if email fails
-        }
-
-        toast({
-          title: "Invitation Sent",
-          description: `Invitation sent to ${email}. They will receive instructions to create an account and access the Master Trainer dashboard.`,
-        });
+        return;
       }
+
+      // User exists, grant access directly
+      const { data: currentUser } = await supabase.auth.getUser();
+      if (!currentUser.user) throw new Error('Not authenticated');
+
+      // Check if user already has access
+      const { data: existingAccess } = await supabase
+        .from('master_trainer_access')
+        .select('id')
+        .eq('user_id', existingUser.id)
+        .maybeSingle();
+
+      if (existingAccess) {
+        toast({
+          title: "User Already Has Access",
+          description: `${email} already has Master Trainer access`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('master_trainer_access')
+        .insert({
+          user_id: existingUser.id,
+          granted_by: currentUser.user.id
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Access Granted",
+        description: `Master trainer access granted to ${email}. They can now access the AI Ready ASEAN module in their dashboard.`,
+      });
 
       await fetchMasterTrainers();
     } catch (error: any) {
-      console.error('Error inviting user:', error);
+      console.error('Error granting access:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to invite user",
+        description: error.message || "Failed to grant access",
         variant: "destructive",
       });
     }
   };
 
-  const handleSingleInvite = async () => {
+  const handleSingleGrant = async () => {
     if (!newInviteEmail.trim()) return;
     
     setIsInviting(true);
-    await inviteUser(newInviteEmail.trim());
+    await grantAccess(newInviteEmail.trim());
     setNewInviteEmail("");
     setIsInviting(false);
   };
 
-  const handleBulkInvite = async () => {
+  const handleBulkGrant = async () => {
     if (!bulkEmails.trim()) return;
 
     const emails = bulkEmails
@@ -242,7 +199,7 @@ export default function AdminMasterTrainers() {
     setIsInviting(true);
     
     for (const email of emails) {
-      await inviteUser(email);
+      await grantAccess(email);
     }
 
     setBulkEmails("");
@@ -296,7 +253,7 @@ export default function AdminMasterTrainers() {
             onClick={() => setShowBulkInvite(!showBulkInvite)}
           >
             <Users className="h-4 w-4 mr-2" />
-            Bulk Invite
+            Bulk Grant
           </Button>
         </div>
       </div>
@@ -333,7 +290,7 @@ export default function AdminMasterTrainers() {
             Grant Master Trainer Access
           </CardTitle>
           <CardDescription>
-            Grant access to the AI Ready ASEAN Master Trainer dashboard. Note: Users must have already created an account.
+            Grant access to the AI Ready ASEAN Master Trainer dashboard. Users must have an existing account. Access is immediate - no email confirmation required.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -346,18 +303,18 @@ export default function AdminMasterTrainers() {
                 placeholder="trainer@example.com"
                 value={newInviteEmail}
                 onChange={(e) => setNewInviteEmail(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSingleInvite()}
+                onKeyPress={(e) => e.key === 'Enter' && handleSingleGrant()}
               />
             </div>
             <div className="flex items-end">
               <Button 
-                onClick={handleSingleInvite}
+                onClick={handleSingleGrant}
                 disabled={isInviting || !newInviteEmail.trim()}
               >
                 {isInviting ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (
-                  <Send className="h-4 w-4 mr-2" />
+                  <UserPlus className="h-4 w-4 mr-2" />
                 )}
                 Grant Access
               </Button>
@@ -375,7 +332,7 @@ export default function AdminMasterTrainers() {
               Bulk Grant Master Trainer Access
             </CardTitle>
             <CardDescription>
-              Enter multiple email addresses separated by commas or new lines. Users must have already created accounts.
+              Enter multiple email addresses separated by commas or new lines. Users must have existing accounts. Access is granted immediately.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -392,13 +349,13 @@ export default function AdminMasterTrainers() {
               </div>
               <div className="flex gap-2">
                 <Button 
-                  onClick={handleBulkInvite}
+                  onClick={handleBulkGrant}
                   disabled={isInviting || !bulkEmails.trim()}
                 >
                   {isInviting ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
-                    <Send className="h-4 w-4 mr-2" />
+                    <UserPlus className="h-4 w-4 mr-2" />
                   )}
                   Grant Access to All
                 </Button>
