@@ -182,24 +182,57 @@ export default function AdminMasterTrainers() {
   const handleBulkGrant = async () => {
     if (!bulkEmails.trim()) return;
 
+    // Enhanced parsing for Google Sheets data - handle tabs, commas, newlines, and extra whitespace
     const emails = bulkEmails
-      .split(/[,\n]/)
-      .map(email => email.trim())
-      .filter(email => email && email.includes('@'));
+      .split(/[,\n\t;]/) // Split by comma, newline, tab, or semicolon
+      .map(email => email.trim().replace(/[\r\n\t]/g, '')) // Remove any remaining whitespace and line breaks
+      .filter(email => {
+        // Better email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return email && emailRegex.test(email);
+      });
 
     if (emails.length === 0) {
       toast({
-        title: "Error",
-        description: "Please enter valid email addresses",
+        title: "No Valid Emails Found",
+        description: "Please enter valid email addresses separated by commas, tabs, or new lines",
         variant: "destructive",
       });
       return;
     }
 
+    // Show initial feedback
+    toast({
+      title: "Processing Bulk Grant",
+      description: `Processing ${emails.length} email address${emails.length > 1 ? 'es' : ''}...`,
+    });
+
     setIsInviting(true);
     
+    let successCount = 0;
+    let errorCount = 0;
+    const errors: string[] = [];
+    
     for (const email of emails) {
-      await grantAccess(email);
+      try {
+        await grantAccess(email);
+        successCount++;
+      } catch (error) {
+        errorCount++;
+        errors.push(email);
+      }
+    }
+
+    // Provide detailed feedback
+    if (successCount > 0) {
+      toast({
+        title: "Bulk Grant Complete",
+        description: `Successfully granted access to ${successCount} user${successCount > 1 ? 's' : ''}${errorCount > 0 ? `. ${errorCount} failed.` : '.'}`,
+      });
+    }
+
+    if (errorCount > 0 && errors.length > 0) {
+      console.log('Failed emails:', errors);
     }
 
     setBulkEmails("");
@@ -332,7 +365,7 @@ export default function AdminMasterTrainers() {
               Bulk Grant Master Trainer Access
             </CardTitle>
             <CardDescription>
-              Enter multiple email addresses separated by commas or new lines. Users must have existing accounts. Access is granted immediately.
+              Enter multiple email addresses separated by commas, tabs, semicolons, or new lines. Perfect for copying data from Google Sheets or Excel. Users must have existing accounts. Access is granted immediately.
             </CardDescription>
           </CardHeader>
           <CardContent>
