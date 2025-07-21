@@ -182,7 +182,7 @@ export default function AIReadyASEAN() {
                   <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
                     {!videoError ? (
                       <ReactPlayer
-                        url="https://www.youtube.com/watch?v=lmyrq2yvkpM"
+                        url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                         width="100%"
                         height="100%"
                         controls
