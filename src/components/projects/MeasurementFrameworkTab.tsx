@@ -82,6 +82,34 @@ export default function MeasurementFrameworkTab({
     setIsUpdateModalOpen(true);
   };
 
+  // Delete handler
+  const handleDeleteMetric = (indexOrIndices: number | [number, number]) => {
+    let newMetrics;
+    if (Array.isArray(indexOrIndices)) {
+      // OKR structure
+      const [objIdx, krIdx] = indexOrIndices;
+      if (isOKRArray(metrics)) {
+        newMetrics = metrics.map((okr, i) =>
+          i === objIdx
+            ? {
+                ...okr,
+                keyResults: okr.keyResults.filter((_, idx) => idx !== krIdx),
+              }
+            : okr
+        );
+      }
+    } else {
+      // Legacy structure
+      newMetrics = metrics.filter((_, idx) => idx !== indexOrIndices);
+    }
+    onUpdateData({ metrics: newMetrics });
+    onSaveImplement({ ...metrics, metrics: newMetrics });
+    toast({
+      title: 'Metric Deleted',
+      description: 'The metric has been deleted successfully.',
+    });
+  };
+
   const handleUpdateProgress = (indexOrIndices: number | [number, number]) => {
     setSelectedMetricIndex(indexOrIndices);
     setIsQuickUpdateModalOpen(true);
@@ -302,6 +330,15 @@ export default function MeasurementFrameworkTab({
                               >
                                 Update
                               </Button>
+                              <Button
+                                onClick={() => handleDeleteMetric([objIdx, krIdx])}
+                                className="border border-red-500 text-red-500 hover:bg-red-50 px-3 rounded font-medium shadow-sm"
+                                variant="ghost"
+                                size="sm"
+                                aria-label="Delete metric"
+                              >
+                                Delete
+                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -343,6 +380,15 @@ export default function MeasurementFrameworkTab({
               {legacyMetrics.map((metric, idx) => (
                 <li key={idx}>
                   <strong>{metric.indicator}</strong> (Target: {metric.target}, Unit: {metric.unit})
+                  <Button
+                    onClick={() => handleDeleteMetric(idx)}
+                    className="border border-red-500 text-red-500 hover:bg-red-50 px-2 rounded font-medium shadow-sm ml-2"
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Delete metric"
+                  >
+                    Delete
+                  </Button>
                 </li>
               ))}
             </ul>
