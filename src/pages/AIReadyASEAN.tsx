@@ -186,7 +186,6 @@ export default function AIReadyASEAN() {
                         width="100%"
                         height="100%"
                         controls
-                        playing
                         config={{
                           youtube: {
                             playerVars: {
@@ -195,7 +194,10 @@ export default function AIReadyASEAN() {
                             },
                           },
                         }}
-                        onError={() => setVideoError(true)}
+                        onError={(error) => {
+                          console.error('ReactPlayer error:', error);
+                          setVideoError(true);
+                        }}
                       />
                     ) : (
                       <div className="absolute inset-0 w-full h-full bg-black rounded-lg flex items-center justify-center">
