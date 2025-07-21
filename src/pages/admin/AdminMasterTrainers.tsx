@@ -114,7 +114,7 @@ export default function AdminMasterTrainers() {
         .from('profiles')
         .select('id, first_name, last_name')
         .eq('email', email.toLowerCase().trim())
-        .single();
+        .maybeSingle();
 
       if (existingUser) {
         // User exists, grant access directly
@@ -126,7 +126,7 @@ export default function AdminMasterTrainers() {
           .from('master_trainer_access')
           .select('id')
           .eq('user_id', existingUser.id)
-          .single();
+          .maybeSingle();
 
         if (existingAccess) {
           toast({
