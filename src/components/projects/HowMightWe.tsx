@@ -79,20 +79,15 @@ export default function HowMightWe({ questions, onQuestionsChange, selectedIds: 
 
   // Handle card select
   const handleCardSelect = (id: number) => {
-    let newSelected: number[];
-    if (selectedIds.includes(id)) {
-      newSelected = selectedIds.filter(sid => sid !== id);
+    const updatedQuestions = displayQuestions.map(q =>
+      q.id === id
+        ? { ...q, stars: q.stars === 5 ? 3 : 5 } // Toggle favorite
+        : q
+    );
+    if (onQuestionsChange) {
+      onQuestionsChange(updatedQuestions);
     } else {
-      newSelected = [...selectedIds, id];
-    }
-    if (selectedIdsProp && onQuestionsSelect) {
-      // Controlled
-      onQuestionsSelect(displayQuestions.filter(q => newSelected.includes(q.id)));
-    } else {
-      setInternalSelectedIds(newSelected);
-      if (onQuestionsSelect) {
-        onQuestionsSelect(displayQuestions.filter(q => newSelected.includes(q.id)));
-      }
+      setInternalQuestions(updatedQuestions);
     }
   };
 
@@ -150,7 +145,7 @@ export default function HowMightWe({ questions, onQuestionsChange, selectedIds: 
             text={q.text}
             stars={q.stars}
             avatar={q.avatar}
-            selected={selectedIds.includes(q.id)}
+            selected={q.stars === 5}
             onSelect={() => handleCardSelect(q.id)}
           />
         ))}
