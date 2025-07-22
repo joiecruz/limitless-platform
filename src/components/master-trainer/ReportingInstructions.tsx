@@ -10,6 +10,12 @@ interface ReportingInstructionsProps {
 export function ReportingInstructions({ onStartReport, onBack }: ReportingInstructionsProps) {
   return (
     <div className="space-y-6">
+      <div className="flex justify-start">
+        <Button variant="outline" onClick={onBack}>
+          ← Back to Dashboard
+        </Button>
+      </div>
+      
       <Card>
         <CardHeader>
           <CardTitle>📋 Before You Start Reporting</CardTitle>
@@ -89,12 +95,6 @@ export function ReportingInstructions({ onStartReport, onBack }: ReportingInstru
                 </div>
               </Button>
             </div>
-          </div>
-
-          <div className="flex justify-between pt-4">
-            <Button variant="outline" onClick={onBack}>
-              ← Back to Dashboard
-            </Button>
           </div>
         </CardContent>
       </Card>
