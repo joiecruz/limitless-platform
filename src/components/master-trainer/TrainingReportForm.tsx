@@ -258,13 +258,24 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
 
       if (updateError) throw updateError;
 
-      // Update progress targets
+      // Update progress targets by accumulating the new participants
       const fieldToUpdate = sessionType === 'hour_of_code' ? 'hour_of_code_current' : 'depth_training_current';
+      
+      // First, get the current targets to add to existing count
+      const { data: currentTargets } = await supabase
+        .from('master_trainer_targets')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      const currentCount = currentTargets?.[fieldToUpdate] || 0;
+      const newTotal = currentCount + values.total_participants;
+      
       const { error: progressError } = await supabase
         .from('master_trainer_targets')
         .upsert({
           user_id: user.id,
-          [fieldToUpdate]: values.total_participants
+          [fieldToUpdate]: newTotal
         }, {
           onConflict: 'user_id',
           ignoreDuplicates: false
