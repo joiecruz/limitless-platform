@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink, Upload } from "lucide-react";
+import { SuccessPage } from "./SuccessPage";
 
 const formSchema = z.object({
   trainer_full_name: z.string().min(2, "Full name is required"),
@@ -77,6 +78,8 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
   const [trainerName, setTrainerName] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedProvince, setSelectedProvince] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [submittedParticipantCount, setSubmittedParticipantCount] = useState(0);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -225,6 +228,9 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
           trainer_full_name: values.trainer_full_name,
           workshop_date: values.workshop_date,
           workshop_location: values.workshop_location,
+          region: values.region,
+          province: values.province,
+          lgu: values.lgu,
           affiliation_type: values.affiliation_type,
           affiliation_name: values.affiliation_name,
           total_participants: values.total_participants,
@@ -252,12 +258,26 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
 
       if (updateError) throw updateError;
 
-      toast({
-        title: "Report submitted successfully!",
-        description: "Your training session report has been submitted for review.",
-      });
+      // Update progress targets
+      const fieldToUpdate = sessionType === 'hour_of_code' ? 'hour_of_code_current' : 'depth_training_current';
+      const { error: progressError } = await supabase
+        .from('master_trainer_targets')
+        .upsert({
+          user_id: user.id,
+          [fieldToUpdate]: values.total_participants
+        }, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
+        });
+      
+      if (progressError) {
+        console.warn('Error updating progress:', progressError);
+        // Don't fail the entire submission if progress update fails
+      }
 
-      onSubmitSuccess();
+      // Store participant count and show success page
+      setSubmittedParticipantCount(values.total_participants);
+      setShowSuccess(true);
     } catch (error) {
       console.error('Error submitting report:', error);
       toast({
@@ -269,6 +289,16 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
       setIsSubmitting(false);
     }
   };
+
+  if (showSuccess) {
+    return (
+      <SuccessPage 
+        sessionType={sessionType}
+        participantCount={submittedParticipantCount}
+        onBackToDashboard={onSubmitSuccess}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

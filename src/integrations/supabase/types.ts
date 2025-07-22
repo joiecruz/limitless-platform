@@ -2367,8 +2367,11 @@ export type Database = {
           created_at: string
           educator_count: number
           id: string
+          lgu: string | null
           parent_count: number
           photos: string[] | null
+          province: string | null
+          region: string | null
           session_type: Database["public"]["Enums"]["session_type_enum"]
           status: Database["public"]["Enums"]["report_status_enum"]
           total_participants: number
@@ -2387,8 +2390,11 @@ export type Database = {
           created_at?: string
           educator_count?: number
           id?: string
+          lgu?: string | null
           parent_count?: number
           photos?: string[] | null
+          province?: string | null
+          region?: string | null
           session_type: Database["public"]["Enums"]["session_type_enum"]
           status?: Database["public"]["Enums"]["report_status_enum"]
           total_participants: number
@@ -2407,8 +2413,11 @@ export type Database = {
           created_at?: string
           educator_count?: number
           id?: string
+          lgu?: string | null
           parent_count?: number
           photos?: string[] | null
+          province?: string | null
+          region?: string | null
           session_type?: Database["public"]["Enums"]["session_type_enum"]
           status?: Database["public"]["Enums"]["report_status_enum"]
           total_participants?: number
