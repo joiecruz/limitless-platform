@@ -59,21 +59,19 @@ export function ReportingInstructions({ onStartReport, onBack }: ReportingInstru
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Select Training Type to Report:</h3>
+          <div className="space-y-6 py-8">
+            <h3 className="text-xl font-semibold text-center">I want to report a:</h3>
             
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="flex justify-center gap-6">
               <Button
                 onClick={() => onStartReport('hour_of_code')}
-                className="h-auto p-6 justify-start"
+                className="w-48 h-32 flex flex-col items-center justify-center gap-3 text-lg font-semibold hover:bg-yellow-400 hover:text-black transition-colors"
                 size="lg"
               >
-                <div className="text-left">
-                  <div className="flex items-center mb-2">
-                    <ClipboardCheck className="h-5 w-5 mr-2" />
-                    <span className="text-lg font-semibold">Hour of Code Session</span>
-                  </div>
-                  <p className="text-sm opacity-90">Report a completed Hour of Code training session</p>
+                <ClipboardCheck className="h-8 w-8" />
+                <div className="text-center">
+                  <div>Hour of Code</div>
+                  <div>Session</div>
                 </div>
               </Button>
 
@@ -81,15 +79,13 @@ export function ReportingInstructions({ onStartReport, onBack }: ReportingInstru
                 onClick={() => onStartReport('depth_training')}
                 disabled
                 variant="outline"
-                className="h-auto p-6 justify-start opacity-50"
+                className="w-48 h-32 flex flex-col items-center justify-center gap-3 text-lg font-semibold opacity-50 hover:bg-red-400 hover:text-white transition-colors disabled:hover:bg-muted"
                 size="lg"
               >
-                <div className="text-left">
-                  <div className="flex items-center mb-2">
-                    <Users className="h-5 w-5 mr-2" />
-                    <span className="text-lg font-semibold">12-Hour In-Depth Training</span>
-                  </div>
-                  <p className="text-sm opacity-70">Coming soon - currently disabled</p>
+                <Users className="h-8 w-8" />
+                <div className="text-center">
+                  <div>12-Hour Training</div>
+                  <div>Session</div>
                 </div>
               </Button>
             </div>

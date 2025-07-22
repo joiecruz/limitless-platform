@@ -28,6 +28,7 @@ export function ProgressDashboard({ onStartReport }: ProgressDashboardProps) {
 
   return (
     <div className="space-y-6">
+      <h2 className="text-2xl font-semibold text-foreground">Your Progress</h2>
       {/* Progress Overview */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card>

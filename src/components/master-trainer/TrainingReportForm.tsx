@@ -16,6 +16,9 @@ const formSchema = z.object({
   trainer_full_name: z.string().min(2, "Full name is required"),
   workshop_date: z.string().min(1, "Workshop date is required"),
   workshop_location: z.string().min(2, "Workshop location is required"),
+  region: z.string().min(1, "Region is required"),
+  province: z.string().min(1, "Province is required"),
+  lgu: z.string().min(1, "LGU is required"),
   affiliation_type: z.enum(['School', 'Community', 'Workplace', 'University'], {
     required_error: "Please select an affiliation type",
   }),
@@ -37,11 +40,43 @@ interface TrainingReportFormProps {
   onSubmitSuccess: () => void;
 }
 
+// Philippine location data (simplified)
+const philippineLocations = {
+  "NCR": {
+    name: "National Capital Region",
+    provinces: {
+      "Metro Manila": ["Manila", "Quezon City", "Makati", "Taguig", "Pasig", "Marikina", "Mandaluyong", "San Juan", "Pasay", "Parañaque", "Las Piñas", "Muntinlupa", "Caloocan", "Malabon", "Navotas", "Valenzuela", "Pateros"]
+    }
+  },
+  "Region I": {
+    name: "Ilocos Region",
+    provinces: {
+      "Ilocos Norte": ["Laoag City", "Batac City", "Burgos", "Carasi"],
+      "Ilocos Sur": ["Vigan City", "Candon City", "Bantay", "Caoayan"],
+      "La Union": ["San Fernando City", "Agoo", "Aringay", "Bacnotan"],
+      "Pangasinan": ["Lingayen", "Dagupan City", "San Carlos City", "Urdaneta City"]
+    }
+  },
+  "Region III": {
+    name: "Central Luzon",
+    provinces: {
+      "Bataan": ["Balanga City", "Mariveles", "Bagac", "Hermosa"],
+      "Bulacan": ["Malolos City", "Meycauayan City", "San Jose del Monte City", "Marilao"],
+      "Nueva Ecija": ["Palayan City", "Cabanatuan City", "Gapan City", "San Antonio"],
+      "Pampanga": ["San Fernando City", "Angeles City", "Mabalacat City", "Arayat"],
+      "Tarlac": ["Tarlac City", "Paniqui", "Gerona", "La Paz"],
+      "Zambales": ["Iba", "Olongapo City", "Subic", "Castillejos"]
+    }
+  }
+};
+
 export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: TrainingReportFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [attendanceFile, setAttendanceFile] = useState<File | null>(null);
   const [trainerName, setTrainerName] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState("");
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -50,6 +85,9 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
       trainer_full_name: "",
       workshop_date: "",
       workshop_location: "",
+      region: "",
+      province: "",
+      lgu: "",
       affiliation_type: undefined,
       affiliation_name: "",
       total_participants: 0,
@@ -288,6 +326,112 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Location Details</h3>
+                
+                <div className="grid md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="region"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Region</FormLabel>
+                        <Select 
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedRegion(value);
+                            setSelectedProvince("");
+                            form.setValue('province', '');
+                            form.setValue('lgu', '');
+                          }}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select region" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Object.entries(philippineLocations).map(([key, region]) => (
+                              <SelectItem key={key} value={key}>
+                                {region.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="province"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Province</FormLabel>
+                        <Select 
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedProvince(value);
+                            form.setValue('lgu', '');
+                          }}
+                          value={field.value}
+                          disabled={!selectedRegion}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select province" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {selectedRegion && philippineLocations[selectedRegion as keyof typeof philippineLocations] &&
+                              Object.keys(philippineLocations[selectedRegion as keyof typeof philippineLocations].provinces).map((province) => (
+                                <SelectItem key={province} value={province}>
+                                  {province}
+                                </SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="lgu"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>LGU</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={!selectedProvince}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select LGU" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {selectedRegion && selectedProvince && 
+                              philippineLocations[selectedRegion as keyof typeof philippineLocations]?.provinces[selectedProvince]?.map((lgu) => (
+                                <SelectItem key={lgu} value={lgu}>
+                                  {lgu}
+                                </SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
