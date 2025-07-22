@@ -113,7 +113,7 @@ export default function AIReadyASEAN() {
   // Reporting helper functions
   const handleStartReport = (type: 'hour_of_code' | 'depth_training') => {
     setReportingSessionType(type);
-    setReportingView('instructions');
+    setReportingView('form');
   };
 
   const handleShowForm = (type: 'hour_of_code' | 'depth_training') => {
