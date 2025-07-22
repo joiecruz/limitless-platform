@@ -10,6 +10,9 @@ import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import ReactPlayer from "react-player";
+import { ProgressDashboard } from "@/components/master-trainer/ProgressDashboard";
+import { ReportingInstructions } from "@/components/master-trainer/ReportingInstructions";
+import { TrainingReportForm } from "@/components/master-trainer/TrainingReportForm";
 
 export default function AIReadyASEAN() {
   const { hasMasterTrainerAccess, isLoading } = useMasterTrainerAccess();
@@ -17,6 +20,10 @@ export default function AIReadyASEAN() {
   const [activeTab, setActiveTab] = useState("welcome");
   const [searchQuery, setSearchQuery] = useState("");
   const [videoError, setVideoError] = useState(false);
+  
+  // Reporting state
+  const [reportingView, setReportingView] = useState<'dashboard' | 'instructions' | 'form'>('dashboard');
+  const [reportingSessionType, setReportingSessionType] = useState<'hour_of_code' | 'depth_training'>('hour_of_code');
 
   // FAQ data for filtering
   const faqData = [
@@ -103,11 +110,43 @@ export default function AIReadyASEAN() {
     faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Reporting helper functions
+  const handleStartReport = (type: 'hour_of_code' | 'depth_training') => {
+    setReportingSessionType(type);
+    setReportingView('instructions');
+  };
+
+  const handleShowForm = (type: 'hour_of_code' | 'depth_training') => {
+    setReportingSessionType(type);
+    setReportingView('form');
+  };
+
+  const handleBackToDashboard = () => {
+    setReportingView('dashboard');
+  };
+
+  const handleBackToInstructions = () => {
+    setReportingView('instructions');
+  };
+
+  const handleReportSubmitSuccess = () => {
+    setReportingView('dashboard');
+    // Reset to progress tab to show updated progress
+    setActiveTab('reporting');
+  };
+
   useEffect(() => {
     if (!isLoading && !hasMasterTrainerAccess) {
       navigate("/dashboard");
     }
   }, [hasMasterTrainerAccess, isLoading, navigate]);
+  
+  // Reset reporting view when tab changes
+  useEffect(() => {
+    if (activeTab !== 'reporting') {
+      setReportingView('dashboard');
+    }
+  }, [activeTab]);
 
   if (isLoading) {
     return (
@@ -643,23 +682,24 @@ export default function AIReadyASEAN() {
 
         {/* Reporting Tab */}
         <TabsContent value="reporting" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>📊 Reporting</CardTitle>
-              <CardDescription>Submit activity reports and track your progress</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-center py-16">
-                <div className="text-center space-y-4">
-                  <div className="text-6xl">🚧</div>
-                  <h3 className="text-xl font-semibold">Under Development</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    The reporting system is currently being developed. Please check back soon for updates.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {reportingView === 'dashboard' && (
+            <ProgressDashboard onStartReport={handleStartReport} />
+          )}
+          
+          {reportingView === 'instructions' && (
+            <ReportingInstructions 
+              onStartReport={handleShowForm}
+              onBack={handleBackToDashboard}
+            />
+          )}
+          
+          {reportingView === 'form' && (
+            <TrainingReportForm
+              sessionType={reportingSessionType}
+              onBack={handleBackToInstructions}
+              onSubmitSuccess={handleReportSubmitSuccess}
+            />
+          )}
         </TabsContent>
 
         {/* FAQs Tab */}

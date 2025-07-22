@@ -1034,6 +1034,39 @@ export type Database = {
         }
         Relationships: []
       }
+      master_trainer_targets: {
+        Row: {
+          created_at: string
+          depth_training_current: number
+          depth_training_target: number
+          hour_of_code_current: number
+          hour_of_code_target: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          depth_training_current?: number
+          depth_training_target?: number
+          hour_of_code_current?: number
+          hour_of_code_target?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          depth_training_current?: number
+          depth_training_target?: number
+          hour_of_code_current?: number
+          hour_of_code_target?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string
@@ -2325,6 +2358,69 @@ export type Database = {
         }
         Relationships: []
       }
+      training_session_reports: {
+        Row: {
+          admin_notes: string | null
+          affiliation_name: string
+          affiliation_type: Database["public"]["Enums"]["affiliation_type_enum"]
+          attendance_sheet_url: string | null
+          created_at: string
+          educator_count: number
+          id: string
+          parent_count: number
+          photos: string[] | null
+          session_type: Database["public"]["Enums"]["session_type_enum"]
+          status: Database["public"]["Enums"]["report_status_enum"]
+          total_participants: number
+          trainer_full_name: string
+          updated_at: string
+          user_id: string
+          workshop_date: string
+          workshop_location: string
+          youth_count: number
+        }
+        Insert: {
+          admin_notes?: string | null
+          affiliation_name: string
+          affiliation_type: Database["public"]["Enums"]["affiliation_type_enum"]
+          attendance_sheet_url?: string | null
+          created_at?: string
+          educator_count?: number
+          id?: string
+          parent_count?: number
+          photos?: string[] | null
+          session_type: Database["public"]["Enums"]["session_type_enum"]
+          status?: Database["public"]["Enums"]["report_status_enum"]
+          total_participants: number
+          trainer_full_name: string
+          updated_at?: string
+          user_id: string
+          workshop_date: string
+          workshop_location: string
+          youth_count?: number
+        }
+        Update: {
+          admin_notes?: string | null
+          affiliation_name?: string
+          affiliation_type?: Database["public"]["Enums"]["affiliation_type_enum"]
+          attendance_sheet_url?: string | null
+          created_at?: string
+          educator_count?: number
+          id?: string
+          parent_count?: number
+          photos?: string[] | null
+          session_type?: Database["public"]["Enums"]["session_type_enum"]
+          status?: Database["public"]["Enums"]["report_status_enum"]
+          total_participants?: number
+          trainer_full_name?: string
+          updated_at?: string
+          user_id?: string
+          workshop_date?: string
+          workshop_location?: string
+          youth_count?: number
+        }
+        Relationships: []
+      }
       user_course_access: {
         Row: {
           course_id: string
@@ -3021,7 +3117,9 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      affiliation_type_enum: "School" | "Community" | "Workplace" | "University"
+      report_status_enum: "submitted" | "approved" | "rejected"
+      session_type_enum: "hour_of_code" | "depth_training"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3148,6 +3246,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      affiliation_type_enum: ["School", "Community", "Workplace", "University"],
+      report_status_enum: ["submitted", "approved", "rejected"],
+      session_type_enum: ["hour_of_code", "depth_training"],
+    },
   },
 } as const
