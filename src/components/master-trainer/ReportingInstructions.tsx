@@ -18,7 +18,7 @@ export function ReportingInstructions({ onStartReport, onBack }: ReportingInstru
       
       <Card>
         <CardHeader>
-          <CardTitle>📋 Before You Start Reporting</CardTitle>
+          <CardTitle>📋 Submit Training Report</CardTitle>
           <CardDescription>
             Please prepare the following documentation before filling out the reporting form
           </CardDescription>
