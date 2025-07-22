@@ -70,46 +70,6 @@ export function ProgressDashboard({ onStartReport }: ProgressDashboardProps) {
         </Card>
       </div>
 
-      {/* Report Submission Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>📝 Submit Training Report</CardTitle>
-          <CardDescription>
-            Report your training sessions to track progress towards your targets
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Button
-              onClick={() => onStartReport('hour_of_code')}
-              className="h-auto p-4 justify-start"
-            >
-              <div className="text-left">
-                <div className="flex items-center mb-1">
-                  <ClipboardList className="h-4 w-4 mr-2" />
-                  <span className="font-medium">Hour of Code Session</span>
-                </div>
-                <p className="text-xs opacity-80">Report a completed Hour of Code session</p>
-              </div>
-            </Button>
-
-            <Button
-              onClick={() => onStartReport('depth_training')}
-              disabled
-              variant="outline"
-              className="h-auto p-4 justify-start opacity-50"
-            >
-              <div className="text-left">
-                <div className="flex items-center mb-1">
-                  <Users className="h-4 w-4 mr-2" />
-                  <span className="font-medium">12-Hour Training Session</span>
-                </div>
-                <p className="text-xs opacity-80">Coming soon - currently disabled</p>
-              </div>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
