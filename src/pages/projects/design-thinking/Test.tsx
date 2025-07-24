@@ -274,9 +274,6 @@ export default function Test() {
     }
   };
 
-  if (showDefine) {
-    return <Define />;
-  }
   if (showDecision) {
     return <Decision />;
   }
@@ -345,13 +342,15 @@ export default function Test() {
               Back
             </button>
           )}
-          <button
-            className="px-8 py-2 rounded-[3px] bg-[#393CA0] text-white font-medium disabled:opacity-50 w-[120px]"
-            onClick={handleNext}
-            disabled={!canGoNext}
-          >
-            Next
-          </button>
+          {activeStep < steps.length - 1 && (
+            <button
+              className="px-8 py-2 rounded-[3px] bg-[#393CA0] text-white font-medium disabled:opacity-50 w-[120px]"
+              onClick={handleNext}
+              disabled={!canGoNext}
+            >
+              Next
+            </button>
+          )}
         </div>
       </div>
       {/* Right: Document editor */}

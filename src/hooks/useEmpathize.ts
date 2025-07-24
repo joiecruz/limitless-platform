@@ -27,6 +27,18 @@ const initialData: EmpathizeData = {
   customerPersona: '',
 };
 
+// Helper to check if all required fields are filled
+function allFieldsFilled(data: EmpathizeData) {
+  console.log('Checking if all fields are filled:', data);
+  return [
+    data.userResearchMethod && Array.isArray(data.userResearchMethod) && data.userResearchMethod.length > 0,
+    data.userResearchPlan && data.userResearchPlan.trim() !== '',
+    data.userResearchNotes && data.userResearchNotes.trim() !== '',
+    data.userResearchInsights && data.userResearchInsights.trim() !== '',
+    data.customerPersona && data.customerPersona.trim() !== ''
+  ].every(Boolean);
+}
+
 export const useEmpathize = (projectIdProp: string | null, stepId: string) => {
   const [state, setState] = useState<EmpathizeState>({
     data: initialData,
@@ -159,6 +171,30 @@ export const useEmpathize = (projectIdProp: string | null, stepId: string) => {
         title: 'Saved',
         description: 'User research methods saved (via option checkbox).',
       });
+
+      console.log('Current metadata.isComplete?');
+      // --- Check and update isComplete in metadata ---
+      if (allFieldsFilled(state.data) && currentProjectId) {
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('metadata')
+          .eq('id', currentProjectId)
+          .single();
+        if (!projectError) {
+          let metadata = projectData?.metadata;
+          if (typeof metadata !== 'object' || metadata === null || Array.isArray(metadata)) {
+            metadata = {};
+          }
+          console.log('Current metadata.isComplete:', metadata.isComplete);
+          if (!metadata.isComplete) {
+            await supabase
+              .from('projects')
+              .update({ metadata: { ...metadata, isComplete: true } })
+              .eq('id', currentProjectId);
+          }
+        }
+      }
+      // --- End block ---
       return { data, projectId: currentProjectId };
     } catch (error) {
       setState(prev => ({ ...prev, isLoading: false }));

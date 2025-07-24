@@ -188,13 +188,16 @@ export default function MeasurementFrameworkTab({
           <WandSparkles className="mr-2 h-4 w-4" />
           {isGenerating ? 'Generating...' : (metrics && metrics.length > 0 ? 'Regenerate' : 'Generate')}
         </Button>
-        <Button
-          variant="outline"
-          onClick={handleAddNewMetric}
-          disabled={isLoading}
-        >
-          Add Metric
-        </Button>
+        {/* Only show Add Metric if metrics exist */}
+        {metrics && metrics.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={handleAddNewMetric}
+            disabled={isLoading}
+          >
+            Add Metric
+          </Button>
+        )}
       </div>
     </div>
   );

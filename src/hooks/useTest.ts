@@ -156,6 +156,33 @@ export const useTest = (projectIdProp: string | null) => {
         title: 'Success',
         description: 'Test data saved successfully',
       });
+      // --- Check and update isCompleteTest in metadata ---
+      if (
+        Array.isArray(state.data.userTestingMethod) && state.data.userTestingMethod.length > 0 &&
+        typeof state.data.userTestPlan === 'string' && state.data.userTestPlan.trim() !== '' &&
+        typeof state.data.userTestNotes === 'string' && state.data.userTestNotes.trim() !== '' &&
+        typeof state.data.userTestInsights === 'string' && state.data.userTestInsights.trim() !== '' &&
+        currentProjectId
+      ) {
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('metadata')
+          .eq('id', currentProjectId)
+          .single();
+        if (!projectError) {
+          let metadata = projectData?.metadata;
+          if (typeof metadata !== 'object' || metadata === null || Array.isArray(metadata)) {
+            metadata = {};
+          }
+          if (!metadata.isCompleteTest) {
+            await supabase
+              .from('projects')
+              .update({ metadata: { ...metadata, isCompleteTest: true } })
+              .eq('id', currentProjectId);
+          }
+        }
+      }
+      // --- End block ---
       return { data, projectId: currentProjectId };
     } catch (error) {
       setState(prev => ({ ...prev, isLoading: false }));

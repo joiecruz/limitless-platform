@@ -370,10 +370,6 @@ export default function Empathize() {
     }
   };
 
-  if (showDefine) {
-    return <Define />;
-  }
-
   return (
     <div className="flex flex-col md:flex-row w-full h-full gap-4 pl-6 pb-11">
       {/* Left: Stepper + Cards */}
@@ -432,13 +428,15 @@ export default function Empathize() {
               Back
             </button>
           )}
-          <button
-            className="px-8 py-2 rounded-[3px] bg-[#393CA0] text-white font-medium disabled:opacity-50 w-[120px]"
-            onClick={handleNext}
-            disabled={!canGoNext}
-          >
-            Next
-          </button>
+          {activeStep < steps.length - 1 && (
+            <button
+              className="px-8 py-2 rounded-[3px] bg-[#393CA0] text-white font-medium disabled:opacity-50 w-[120px]"
+              onClick={handleNext}
+              disabled={!canGoNext}
+            >
+              Next
+            </button>
+          )}
         </div>
       </div>
       {/* Right: Document editor */}

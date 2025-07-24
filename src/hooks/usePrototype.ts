@@ -32,6 +32,15 @@ const initialData: PrototypeData = {
 // Prototype stage_id for Design Thinking (replace with your actual Prototype stage UUID)
 const PROTOTYPE_STAGE_ID = '660e8400-e29b-41d4-a716-446655440004';
 
+// Helper to check if all required fields are filled
+function allFieldsFilled(data: PrototypeData) {
+  return [
+    Array.isArray(data.selectedPrototypeTypes) && data.selectedPrototypeTypes.length > 0,
+    typeof data.prototypeNotes === 'string' && data.prototypeNotes.trim() !== '',
+    Array.isArray(data.uploadedPrototypes) && data.uploadedPrototypes.length > 0
+  ].every(Boolean);
+}
+
 export const usePrototype = (projectIdProp: string | null) => {
   const [state, setState] = useState<PrototypeState>({
     data: initialData,
@@ -160,6 +169,27 @@ export const usePrototype = (projectIdProp: string | null) => {
         title: 'Success',
         description: 'Prototype data saved successfully',
       });
+      // --- Check and update isCompletePrototype in metadata ---
+      if (allFieldsFilled(state.data) && currentProjectId) {
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('metadata')
+          .eq('id', currentProjectId)
+          .single();
+        if (!projectError) {
+          let metadata = projectData?.metadata;
+          if (typeof metadata !== 'object' || metadata === null || Array.isArray(metadata)) {
+            metadata = {};
+          }
+          if (!metadata.isCompletePrototype) {
+            await supabase
+              .from('projects')
+              .update({ metadata: { ...metadata, isCompletePrototype: true } })
+              .eq('id', currentProjectId);
+          }
+        }
+      }
+      // --- End block ---
       return { data, projectId: currentProjectId };
     } catch (error) {
       setState(prev => ({ ...prev, isLoading: false }));

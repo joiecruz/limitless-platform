@@ -45,10 +45,28 @@ interface ProjectNavBarProps {
 
 export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
+  const [projectMeta, setProjectMeta] = useState<any>({});
+  const [hasIdeateNote, setHasIdeateNote] = useState(false);
+  const [prototypeIsComplete, setPrototypeIsComplete] = useState(false);
+  const [defineIsComplete, setDefineIsComplete] = useState(false);
   const navigate = useNavigate();
   const { projectId } = useParams();
 
   usePageTitle(selectedStep || 'Project');
+
+  useEffect(() => {
+    if (projectId) {
+      // Fetch project metadata
+      import('@/integrations/supabase/client').then(({ supabase }) => {
+        supabase
+          .from('projects')
+          .select('metadata')
+          .eq('id', projectId)
+          .single()
+          .then(({ data }) => setProjectMeta(data?.metadata || {}));
+      });
+    }
+  }, [projectId]);
 
   useEffect(() => {
     if (selectedStep === null) {
@@ -79,7 +97,18 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
         {designThinkingSteps.map((step) => {
           const isSelected = selectedStep === step.label;
           const isProjectBrief = step.label === "Project Brief";
-          const isDisabled = isNewProject && !isProjectBrief;
+          const isEmpathize = step.label === "Empathize";
+          let isDisabled = false;
+          if (isNewProject && !isProjectBrief) isDisabled = true;
+          if (!isProjectBrief && !isEmpathize) isDisabled = true;
+          if (step.label === "Define" && projectMeta.isComplete) isDisabled = false;
+          if (step.label === "Ideate" && projectMeta.isCompleteDefine) isDisabled = false;
+          if (step.label === "Prototype" && projectMeta.isCompleteIdeate) isDisabled = false;
+          if (step.label === "Test" && projectMeta.isCompletePrototype) isDisabled = false;
+          if (step.label === "Implement" && projectMeta.isCompleteTest) isDisabled = false;
+          if (step.label === "Measure" && projectMeta.isCompleteImplement) isDisabled = false;
+          // All other stages are locked for existing projects unless you later unlock them
+
           return (
             <button
               key={step.label}

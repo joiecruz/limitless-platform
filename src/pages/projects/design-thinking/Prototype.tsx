@@ -274,13 +274,6 @@ export default function Prototype() {
     }
   };
 
-  if (showDefine) {
-    return <Define />;
-  }
-  if (showTest) {
-    return <Test />;
-  }
-
   return (
     <div className="flex flex-col md:flex-row w-full h-full gap-4 pl-6 pb-11">
       {/* Left: Stepper + Cards */}
@@ -336,19 +329,21 @@ export default function Prototype() {
         <div className="flex justify-end mt-8 gap-2">
           {activeStep > 0 && (
             <button
-              className="px-8 py-2 rounded-[3px] bg-[#9095A1] text-white font-medium disabled:opacity-50 w-[120px]"
+              className="px-8 py-2 rounded-[3px] bg-[#9095A0] text-white font-medium disabled:opacity-50 w-[120px]"
               onClick={handleBack}
             >
               Back
             </button>
           )}
-          <button
-            className="px-8 py-2 rounded-[3px] bg-[#393CA0] text-white font-medium disabled:opacity-50 w-[120px]"
-            onClick={handleNext}
-            disabled={!canGoNext}
-          >
-            Next
-          </button>
+          {activeStep < steps.length - 1 && (
+            <button
+              className="px-8 py-2 rounded-[3px] bg-[#393CA0] text-white font-medium disabled:opacity-50 w-[120px]"
+              onClick={handleNext}
+              disabled={!canGoNext}
+            >
+              Next
+            </button>
+          )}
         </div>
       </div>
       {/* Right: Document editor or UploadPrototype */}

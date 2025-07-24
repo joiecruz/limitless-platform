@@ -248,6 +248,11 @@ export default function Define() {
   const handleQuestionsChange = (questions: HMWQuestion[]) => {
     setHowMightWeQuestions(questions);
     updateData({ howMightWe: questions });
+    // If any question is starred (stars === 5), set it as selectedChallenge
+    const starred = questions.find(q => q.stars === 5);
+    if (starred) {
+      updateData({ selectedChallenge: [starred] });
+    }
     saveDefine();
   };
 
@@ -331,13 +336,15 @@ export default function Define() {
               Back
             </button>
           )}
-          <button
-            className="px-8 py-2 rounded-[3px] bg-[#393CA0] text-white font-medium disabled:opacity-50 w-[120px]"
-            onClick={handleNext}
-            disabled={!canGoNext}
-          >
-            Next
-          </button>
+          {activeStep < steps.length - 1 && (
+            <button
+              className="px-8 py-2 rounded-[3px] bg-[#393CA0] text-white font-medium disabled:opacity-50 w-[120px]"
+              onClick={handleNext}
+              disabled={!canGoNext}
+            >
+              Next
+            </button>
+          )}
         </div>
       </div>
       {/* Right: Document editor or HowMightWe */}

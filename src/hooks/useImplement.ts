@@ -225,6 +225,28 @@ export const useImplement = (projectIdProp: string | null, stageId: string = IMP
         title: 'Success',
         description: 'Implement data saved successfully',
       });
+      // --- Check and update isCompleteImplement in metadata ---
+      const metrics = contentData.metrics || [];
+      if (Array.isArray(metrics) && metrics.length > 0 && currentProjectId) {
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('metadata')
+          .eq('id', currentProjectId)
+          .single();
+        if (!projectError) {
+          let metadata = projectData?.metadata;
+          if (typeof metadata !== 'object' || metadata === null || Array.isArray(metadata)) {
+            metadata = {};
+          }
+          if (!metadata.isCompleteImplement) {
+            await supabase
+              .from('projects')
+              .update({ metadata: { ...metadata, isCompleteImplement: true } })
+              .eq('id', currentProjectId);
+          }
+        }
+      }
+      // --- End block ---
       return { data, projectId: currentProjectId };
     } catch (error) {
       setState(prev => ({ ...prev, isLoading: false }));

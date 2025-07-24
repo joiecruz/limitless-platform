@@ -27,6 +27,16 @@ const initialData: DefineData = {
 // Define stage_id for Design Thinking (replace with your actual Define stage UUID)
 const DEFINE_STAGE_ID = '660e8400-e29b-41d4-a716-446655440003';
 
+// Helper to check if all required fields are filled
+function allFieldsFilled(data: DefineData) {
+  console.log('Checking if all fields are filled (Define):', data);
+  return [
+    data.mainInsights && (typeof data.mainInsights === 'string' ? data.mainInsights.trim() !== '' : Array.isArray(data.mainInsights) ? data.mainInsights.length > 0 : false),
+    data.howMightWe && (typeof data.howMightWe === 'string' ? data.howMightWe.trim() !== '' : Array.isArray(data.howMightWe) ? data.howMightWe.length > 0 : false),
+    data.selectedChallenge && (typeof data.selectedChallenge === 'string' ? data.selectedChallenge.trim() !== '' : Array.isArray(data.selectedChallenge) ? data.selectedChallenge.length > 0 : false)
+  ].every(Boolean);
+}
+
 export const useDefine = (projectIdProp: string | null) => {
   const [state, setState] = useState<DefineState>({
     data: initialData,
@@ -155,6 +165,29 @@ export const useDefine = (projectIdProp: string | null) => {
         title: 'Success',
         description: 'Define data saved successfully',
       });
+      console.log('Current metadata.isComplete (Define):');
+
+      // --- Check and update isCompleteDefine in metadata ---
+      if (allFieldsFilled(state.data) && currentProjectId) {
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('metadata')
+          .eq('id', currentProjectId)
+          .single();
+        if (!projectError) {
+          let metadata = projectData?.metadata;
+          if (typeof metadata !== 'object' || metadata === null || Array.isArray(metadata)) {
+            metadata = {};
+          }
+          if (!metadata.isCompleteDefine) {
+            await supabase
+              .from('projects')
+              .update({ metadata: { ...metadata, isCompleteDefine: true } })
+              .eq('id', currentProjectId);
+          }
+        }
+      }
+      // --- End block ---
       return { data, projectId: currentProjectId };
     } catch (error) {
       setState(prev => ({ ...prev, isLoading: false }));

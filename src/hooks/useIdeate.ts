@@ -172,6 +172,10 @@ export const useIdeate = (projectIdProp: string | null) => {
     const notes = [...getNotes(), newNote];
     updateData({ notes });
     await saveIdeate({ ...state.data, notes });
+    toast({
+      title: 'Sticky Note Added',
+      description: 'Done with ideation? Refresh the page to move on to Prototype stage.',
+    });
     return newNote;
   };
 
@@ -266,6 +270,28 @@ export const useIdeate = (projectIdProp: string | null) => {
           description: 'Ideate data saved successfully',
         });
       }
+      // --- Check and update isCompleteIdeate in metadata if at least 1 sticky note exists ---
+      const notes = contentData.notes || [];
+      if (Array.isArray(notes) && notes.length > 0 && currentProjectId) {
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('metadata')
+          .eq('id', currentProjectId)
+          .single();
+        if (!projectError) {
+          let metadata = projectData?.metadata;
+          if (typeof metadata !== 'object' || metadata === null || Array.isArray(metadata)) {
+            metadata = {};
+          }
+          if (!metadata.isCompleteIdeate) {
+            await supabase
+              .from('projects')
+              .update({ metadata: { ...metadata, isCompleteIdeate: true } })
+              .eq('id', currentProjectId);
+          }
+        }
+      }
+      // --- End block ---
       return { data, projectId: currentProjectId };
     } catch (error) {
       setState(prev => ({ ...prev, isLoading: false }));
