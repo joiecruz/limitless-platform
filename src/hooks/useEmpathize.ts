@@ -29,7 +29,6 @@ const initialData: EmpathizeData = {
 
 // Helper to check if all required fields are filled
 function allFieldsFilled(data: EmpathizeData) {
-  console.log('Checking if all fields are filled:', data);
   return [
     data.userResearchMethod && Array.isArray(data.userResearchMethod) && data.userResearchMethod.length > 0,
     data.userResearchPlan && data.userResearchPlan.trim() !== '',
@@ -171,8 +170,6 @@ export const useEmpathize = (projectIdProp: string | null, stepId: string) => {
         title: 'Saved',
         description: 'User research methods saved (via option checkbox).',
       });
-
-      console.log('Current metadata.isComplete?');
       // --- Check and update isComplete in metadata ---
       if (allFieldsFilled(state.data) && currentProjectId) {
         const { data: projectData, error: projectError } = await supabase
@@ -185,7 +182,6 @@ export const useEmpathize = (projectIdProp: string | null, stepId: string) => {
           if (typeof metadata !== 'object' || metadata === null || Array.isArray(metadata)) {
             metadata = {};
           }
-          console.log('Current metadata.isComplete:', metadata.isComplete);
           if (!metadata.isComplete) {
             await supabase
               .from('projects')

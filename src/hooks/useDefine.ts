@@ -165,7 +165,6 @@ export const useDefine = (projectIdProp: string | null) => {
         title: 'Success',
         description: 'Define data saved successfully',
       });
-      console.log('Current metadata.isComplete (Define):');
 
       // --- Check and update isCompleteDefine in metadata ---
       if (allFieldsFilled(state.data) && currentProjectId) {

@@ -54,8 +54,6 @@ export const useUserHasProject = (workspaceId: string | null) => {
   const { toast } = useToast();
 
   const checkUserHasProject = useCallback(async () => {
-    console.log('Checking if user has project');
-    console.log('workspaceId', workspaceId);
     // Check for any project in any workspace
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
