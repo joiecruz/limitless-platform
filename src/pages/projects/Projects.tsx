@@ -21,7 +21,6 @@ import { DesignChallenge, ChallengeStatus } from "@/types/designChallenge";
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserHasProject } from '@/hooks/useProjectBrief';
 
 export default function Projects() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -37,7 +36,6 @@ export default function Projects() {
   const { challenges, loading: challengesLoading, createChallenge, updateChallengeStatus, deleteChallenge } = useDesignChallenges(workspaceId);
   const { projects, loading: projectsLoading, createProject, deleteProject } = useProjects(workspaceId);
   const [searchValue, setSearchValue] = useState("");
-  const { checkUserHasProject } = useUserHasProject(workspaceId);
 
   // Fetch user role and ID when workspace changes
   useEffect(() => {
@@ -330,16 +328,7 @@ export default function Projects() {
                 onOpenChange={setIsCreateDialogOpen}
                 onCreateProject={handleCreateProject}
                 onCreateChallenge={handleCreateChallenge}
-                onStartDesignThinking={async () => {
-                  const hasProject = await checkUserHasProject();
-                  if (hasProject) {
-                    toast({
-                      title: "Project Exists",
-                      description: "Only one project is allowed per user.",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
+                onStartDesignThinking={() => {
                   setIsCreateDialogOpen(false);
                   setShowDesignThinkingPage(true);
                 }} 

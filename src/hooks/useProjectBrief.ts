@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -48,26 +48,6 @@ const initialData: ProjectBriefData = {
   endDate: '',
   teamMembers: [],
   designChallenge: ''
-};
-
-export const useUserHasProject = (workspaceId: string | null) => {
-  const { toast } = useToast();
-
-  const checkUserHasProject = useCallback(async () => {
-    console.log('Checking if user has project');
-    console.log('workspaceId', workspaceId);
-    // Check for any project in any workspace
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
-    const { data: existingProjects, error: existingError } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('owner_id', user.id);
-    if (existingError) throw existingError;
-    return existingProjects && existingProjects.length > 0;
-  }, [workspaceId]);
-
-  return { checkUserHasProject };
 };
 
 export const useProjectBrief = (workspaceId: string | null) => {
@@ -207,23 +187,6 @@ export const useProjectBrief = (workspaceId: string | null) => {
         if (error) throw error;
         projectData = data;
       } else {
-        // Check if user already has a project in this workspace
-        const { data: existingProjects, error: existingError } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('owner_id', user.id)
-          .eq('workspace_id', workspaceId);
-
-        if (existingError) throw existingError;
-        if (existingProjects && existingProjects.length > 0) {
-          toast({
-            title: "Project Exists",
-            description: "You already have a project in this workspace.",
-            variant: "destructive",
-          });
-          setState(prev => ({ ...prev, isLoading: false }));
-          return null;
-        }
         // Create new project
         // console.log('Creating new project');
         const { data, error } = await supabase
