@@ -119,18 +119,23 @@ export const useProjects = (workspaceId: string | null) => {
 
   const deleteProject = async (projectId: string) => {
     try {
-      const { error } = await supabase
+      await supabase.from('project_members').delete().eq('project_id', projectId);
+      await supabase.from('project_steps').delete().eq('project_id', projectId);
+      await supabase.from('project_step_content').delete().eq('project_id', projectId);
+      await supabase.from('ideas').delete().eq('project_id', projectId);
+      await supabase.from('stage_contents').delete().eq('project_id', projectId);
+
+      await supabase
         .from('projects')
         .delete()
         .eq('id', projectId);
-
-      if (error) throw error;
 
       setProjects(prev => prev.filter(project => project.id !== projectId));
       toast({
         title: "Success",
         description: "Project deleted successfully",
       });
+      // console.log('deleted project',);
     } catch (error) {
       console.error('Error deleting project:', error);
       toast({

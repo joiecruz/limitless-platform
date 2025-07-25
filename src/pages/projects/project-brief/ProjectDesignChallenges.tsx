@@ -20,6 +20,7 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
   const [selected, setSelected] = useState(0);
   const [loading, setLoading] = useState(true);
   const [challenges, setChallenges] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false); // <-- new state
   const { toast } = useToast();
 
   useEffect(() => {
@@ -38,14 +39,12 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
         `Innovation types: ${projectData.innovationTypes.join(', ')}`
       ].filter(Boolean).join('. ');
 
-      const prompt = `Based on this project brief: ${contextInfo}. Generate 3 distinct "How might we..." design challenge statements that are specific to this project. Each should be actionable, inspiring, and focused on different aspects of the problem. Return them as a JSON array of strings.`;
+      const prompt = `You are an expert innovation facilitator. Given the following project context:\n${contextInfo}.\nGenerate exactly 3 distinct, creative, and actionable 'How might we...' design challenge statements for this project.\n- Each statement must be a single sentence, no more than 20 words.\n- Each statement should focus on a different aspect: (1) the core problem, (2) the needs/aspirations of the target customers, (3) the desired outcomes or impact.\n- Where possible, connect to relevant SDGs or innovation types.\n- Do NOT repeat or summarize the project description or context.\n- Do NOT include quotation marks around the statements.\n- Make each statement specific, inspiring, and tailored to the project's unique context.\nReturn ONLY a JSON array of 3 strings, no explanations, no extra text.`;
 
       const { data, error } = await supabase.functions.invoke('generate-description', {
         body: { prompt }
       });
-      
-      if (error) throw error;
-      
+      // console.log('AI raw output:', data.generatedText);
       // Try to parse as JSON, fallback to splitting by lines
       let generatedChallenges;
       try {
@@ -53,19 +52,22 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
       } catch {
         generatedChallenges = data.generatedText
           .split('\n')
-          .filter((line: string) => line.trim().startsWith('How might we'))
-          .slice(0, 3);
+          .filter((line: string) => line.toLowerCase().includes('how might we'))
+          .map((line: string) => line.trim())
+          .filter(Boolean);
       }
-      
-      if (Array.isArray(generatedChallenges) && generatedChallenges.length > 0) {
-        setChallenges(generatedChallenges);
+      // After parsing generatedChallenges
+      if (Array.isArray(generatedChallenges)) {
+        const cleaned = generatedChallenges
+          .map((line: string) =>
+            line
+              .replace(/,+$/, '')           // Remove trailing commas
+              .trim()
+          )
+          .filter(Boolean);
+        setChallenges(cleaned);
       } else {
-        // Fallback challenges
-        setChallenges([
-          `How might we solve the core problem: ${projectData.problem}?`,
-          `How might we better serve ${projectData.customers} in achieving ${projectData.targetOutcomes}?`,
-          `How might we innovate ${projectData.name} to create meaningful impact?`
-        ]);
+        setChallenges([]);
       }
     } catch (error) {
       toast({
@@ -73,23 +75,19 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
         description: "Using fallback challenges. Please try again.",
         variant: "destructive",
       });
-      
-      // Fallback challenges
-      setChallenges([
-        `How might we solve the core problem: ${projectData.problem}?`,
-        `How might we better serve ${projectData.customers} in achieving ${projectData.targetOutcomes}?`,
-        `How might we innovate ${projectData.name} to create meaningful impact?`
-      ]);
+      setChallenges([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSubmit = () => {
+    setSubmitting(true);
     onSubmit(challenges[selected]);
+    // setSubmitting(false); // Don't set to false here, let parent unmount
   };
 
-  if (loading) {
+  if (submitting) {
     return <ProjectLoading />;
   }
 
@@ -111,17 +109,24 @@ export default function ProjectDesignChallenges({ projectData, onSubmit }: Proje
                 : "border-gray-200 bg-white hover:border-[#393CA0]"
             }`}
             onClick={() => setSelected(idx)}
+            disabled={loading}
           >
             {challenge}
           </button>
         ))}
       </div>
-      <button
-        className="mt-[8px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1"
-        onClick={handleSubmit}
-      >
-        Submit
-      </button>
+      {loading ? (
+        <div className="mt-[8px] text-gray-500 text-[15px] font-sans flex items-center justify-center gap-1">
+          Generating design challenges...
+        </div>
+      ) : (
+        <button
+          className="mt-[8px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1"
+          onClick={handleSubmit}
+        >
+          Submit
+        </button>
+      )}
     </div>
   );
 }

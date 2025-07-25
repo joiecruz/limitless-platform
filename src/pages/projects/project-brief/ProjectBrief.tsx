@@ -1,5 +1,5 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ProjectBriefProgressBar from "../../../components/projects/ProjectBriefProgressBar";
 import ProjectOverview, { ProjectOverviewRef } from "./ProjectOverview";
 import ProjectSuccessCriteria, { ProjectSuccessCriteriaRef } from "./ProjectSuccessCriteria";
@@ -11,15 +11,19 @@ import { useProjectBrief } from "@/hooks/useProjectBrief";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 
 export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
+  const { projectId } = useParams();
   const [currentStep, setCurrentStep] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);  
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [pendingSave, setPendingSave] = useState(false);
+
   const navigate = useNavigate();
   const overviewRef = useRef<ProjectOverviewRef>(null);
   const successCriteriaRef = useRef<ProjectSuccessCriteriaRef>(null);
   const timelineRef = useRef<ProjectTimelineRef>(null);
   const { toast } = useToast();
   const { currentWorkspace } = useContext(WorkspaceContext);
-  const { data, isLoading, saveProjectBrief, updateData } = useProjectBrief(currentWorkspace?.id || null);
+  const { data, isLoading, saveProjectBrief, updateData, refetch, loadProjectBrief } = useProjectBrief(currentWorkspace?.id || null);
 
   const handleStepChange = (newStep: number) => {
     setIsTransitioning(true);
@@ -46,6 +50,9 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         }
         currentStepData = overviewRef.current.getValues();
         updateData(currentStepData);
+        setPendingSave(true);
+        handleStepChange(Math.min(currentStep + 1, 5));
+        return;
       }
     }
     
@@ -62,6 +69,9 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         }
         currentStepData = successCriteriaRef.current.getValues();
         updateData(currentStepData);
+        setPendingSave(true);
+        handleStepChange(Math.min(currentStep + 1, 5));
+        return;
       }
     }
     
@@ -78,37 +88,41 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         }
         currentStepData = timelineRef.current.getValues();
         updateData(currentStepData);
+        setPendingSave(true);
+        handleStepChange(Math.min(currentStep + 1, 5));
+        return;
       }
     }
 
-    // Save to database before moving to next step
-    if (currentStep < 3) {
-      try {
-        await saveProjectBrief();
-      } catch (error) {
-        // Don't block progression if save fails, just warn
-        toast({
-          title: "Warning",
-          description: "Form data saved locally. Will sync when possible.",
-          variant: "default"
-        });
-      }
-    }
-
+    // If not handled above, just move to next step
     handleStepChange(Math.min(currentStep + 1, 5));
   };
 
   const handleBack = () => {
     if (currentStep === 0) {
       navigate("/dashboard/projects");
-    } else if (onBack) {
-      onBack();
+    } else {
+      setCurrentStep(currentStep - 1);
     }
   };
 
+  // Automatically reload saved content on mount or workspace change
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line
+  }, [currentWorkspace?.id]);
+
   // Load saved data into forms when step changes
   useEffect(() => {
-    if (overviewRef.current && data.name) {
+    // console.log('Current Step:', currentStep);
+    // console.log('ProjectBrief data:', data);
+    if (overviewRef.current) {
+      // console.log('Calling overviewRef.current.setValues with:', {
+      //   name: data.name,
+      //   description: data.description,
+      //   problem: data.problem,
+      //   customers: data.customers
+      // });
       overviewRef.current.setValues({
         name: data.name,
         description: data.description,
@@ -123,14 +137,38 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
         innovationTypes: data.innovationTypes
       });
     }
-    if (timelineRef.current && (data.startDate || data.teamMembers.length > 0)) {
+    if (timelineRef.current && (data.startDate || teamMembers.length > 0)) {
       timelineRef.current.setValues({
         startDate: data.startDate,
         endDate: data.endDate,
-        teamMembers: data.teamMembers
+        teamMembers: data.teamMembers,
       });
     }
-  }, [currentStep, data]);
+  }, [currentStep, data, teamMembers]);
+
+  useEffect(() => {
+    if (projectId) {
+      loadProjectBrief(projectId).then(() => {
+        // console.log('[ProjectBrief] Loaded project brief data:', data);
+      });
+    }
+    // eslint-disable-next-line
+  }, [projectId]);
+
+  // Update teamMembers state when data.teamMembers changes (from DB)
+  useEffect(() => {
+    if (data.teamMembers && Array.isArray(data.teamMembers)) {
+      setTeamMembers(data.teamMembers);
+    }
+  }, [data.teamMembers]);
+
+  // Save to database after state is updated
+  useEffect(() => {
+    if (pendingSave) {
+      saveProjectBrief().finally(() => setPendingSave(false));
+    }
+    // eslint-disable-next-line
+  }, [data]);
 
   return (
     <div className="w-full flex flex-col items-center justify-center mt-7 ml-5">
@@ -169,7 +207,9 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                 <h2 className="font-bold text-center font-sans text-[24px] mb-2 mt-5">Create an Innovation Project</h2>
             )}
           <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-            {currentStep === 0 && <ProjectOverview ref={overviewRef} />}
+            {currentStep === 0 && (
+              <ProjectOverview ref={overviewRef} />
+            )}
             {currentStep === 1 && (
               <ProjectSuccessCriteria 
                 ref={successCriteriaRef} 
@@ -179,7 +219,10 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                 projectCustomers={data.customers}
               />
             )}
-            {currentStep === 2 && <ProjectTimeline ref={timelineRef} />}
+            {currentStep === 2 && <ProjectTimeline ref={timelineRef} teamMembers={teamMembers} 
+            
+      setTeamMembers={setTeamMembers}
+      onTeamMembersChange={setTeamMembers} />}
             {currentStep === 3 && <ProjectSubmission onNext={() => handleStepChange(4)} />}
             {currentStep === 4 && (
               <ProjectDesignChallenge 
@@ -202,11 +245,6 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                       title: "Success",
                       description: "Design challenge saved successfully! Your project is now ready.",
                     });
-                    
-                    // Wait a moment then navigate back to projects
-                    setTimeout(() => {
-                      navigate("/dashboard/projects");
-                    }, 1500);
                   } catch (error) {
                     toast({
                       title: "Error",
@@ -218,26 +256,51 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
               />
             )}
           </div>
-          <div className="flex justify-end gap-4" style={{ width: '55vw' }}>
+          <div>
             {currentStep > 0 && currentStep < 3 && (
-              <button
-                type="button"
-                className="mt-5 bg-[#9095A1FF] text-white font-semibold py-2 rounded-[3px] text-[13px] transition-colors px-8 w-[115px] font-sans hover bg-[2565D6DFF] "
-                onClick={() => handleStepChange(Math.max(currentStep - 1, 0))}
-              >
-                Back
-              </button>
-            )}
-            {currentStep < 3 && (
+              <div className="flex justify-end gap-4" style={{ width: '55vw' }}>
                 <button
-              type="button"
-              className="mt-5 bg-[#393CA0FF] text-white font-semibold py-2 rounded-[3px] hover:bg-[#2C2E7AFF] text-[13px] transition-colors px-8 w-[115px] font-sans"
-              onClick={handleNext}
-            >
-              Next
-            </button>
+                  type="button"
+                  className="mt-5 bg-[#9095A1FF] text-white font-semibold py-2 rounded-[3px] text-[13px] transition-colors px-8 w-[115px] font-sans hover bg-[2565D6DFF] "
+                  onClick={() => handleStepChange(Math.max(currentStep - 1, 0))}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className="mt-5 bg-[#393CA0FF] text-white font-semibold py-2 rounded-[3px] hover:bg-[#2C2E7AFF] text-[13px] transition-colors px-8 w-[115px] font-sans"
+                  onClick={handleNext}
+                >
+                  Next
+                </button>
+              </div>
             )}
-            
+            {currentStep < 3 && currentStep === 0 && (
+              <div className="flex justify-end gap-4" style={{ width: '55vw' }}>
+                <button
+                  type="button"
+                  className="mt-5 bg-[#393CA0FF] text-white font-semibold py-2 rounded-[3px] hover:bg-[#2C2E7AFF] text-[13px] transition-colors px-8 w-[115px] font-sans"
+                  onClick={handleNext}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+            {currentStep === 3 && (
+              <div className="flex justify-center" style={{ width: '55vw' }}>
+                <button className="mt-[-33px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1" 
+                  onClick={() => handleStepChange(Math.min(currentStep + 1, 5))} >
+                  <img
+                    src="/projects-navbar-icons/sparkle.svg"
+                    alt=""
+                    width={15}
+                    height={15}
+                    style={{ marginRight: 2, marginLeft: -5, color: 'white' }}
+                  />
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

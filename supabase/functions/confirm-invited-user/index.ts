@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Starting confirm-invited-user function");
+  // console.log("Starting confirm-invited-user function");
   
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -29,7 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing user_id parameter");
     }
 
-    console.log("Confirming email for user:", user_id);
+    // console.log("Confirming email for user:", user_id);
 
     const { error } = await supabase.auth.admin.updateUserById(
       user_id,
@@ -41,7 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw error;
     }
 
-    console.log("Successfully confirmed email for user:", user_id);
+    // console.log("Successfully confirmed email for user:", user_id);
 
     return new Response(
       JSON.stringify({ message: "Email confirmed successfully" }),

@@ -1,6 +1,11 @@
 import React from "react";
 
-export default function SearchHeader() {
+interface SearchHeaderProps {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export default function SearchHeader({ value, onChange }: SearchHeaderProps) {
   return (
     <header className="w-full bg-white px-6 py-4 flex items-center border-b border-gray-300">
       <div className="flex items-center w-full max-w-md">
@@ -15,6 +20,8 @@ export default function SearchHeader() {
             type="text"
             placeholder="Search..."
             className="w-full bg-[#F6F7F9] rounded-[6px] pl-10 pr-4 py-2 text-[15px] placeholder-gray-400 focus:outline-none"
+            value={value}
+            onChange={onChange}
           />
         </div>
       </div>

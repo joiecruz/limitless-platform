@@ -1,15 +1,27 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useStepNavigation } from "@/components/projects/ProjectNavBar";
 
 export default function ProjectLoading() {
   const navigate = useNavigate();
+  const { projectId } = useParams();
+  let changeStep: ((step: string) => void) | undefined;
+  try {
+    changeStep = useStepNavigation().changeStep;
+  } catch {
+    changeStep = undefined;
+  }
 
   useEffect(() => {
+    if (projectId && changeStep) {
+      changeStep("Empathize");
+      return;
+    }
     const timer = setTimeout(() => {
       navigate("/dashboard/projects");
     }, 1000);
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [projectId, changeStep, navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] w-full">
@@ -29,7 +41,7 @@ export default function ProjectLoading() {
         ))}
       </div>
       <div className="text-[25px] text-[#23255A] font-medium text-center leading-snug">
-        We're setting up your<br />project workspace
+        Saving your<br />project...
       </div>
       <style>{`
         @keyframes loading-fade {

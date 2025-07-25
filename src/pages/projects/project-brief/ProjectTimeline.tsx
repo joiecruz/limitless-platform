@@ -2,6 +2,8 @@ import React, { useState, forwardRef, useImperativeHandle, useContext, useEffect
 import { useWorkspaceMembers } from "@/hooks/useWorkspaceMembers";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { useWorkspaceActiveMembers } from "@/hooks/useWorkspaceMembersView";
+import { toast } from "@/components/ui/use-toast";
 
 export interface ProjectTimelineRef {
   validate: () => boolean | string;
@@ -32,15 +34,15 @@ export interface ProjectTimelineRef {
 export default forwardRef<ProjectTimelineRef>((props, ref) => {
   const { currentWorkspace } = useContext(WorkspaceContext);
   const { data: workspaceMembers = [], isLoading } = useWorkspaceMembers(currentWorkspace?.id || "");
+  const { data: workspaceInvite = [] } = useWorkspaceActiveMembers(currentWorkspace?.id || "");
   
-  // Initialize with just the current user as owner
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [touched, setTouched] = useState(false);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [teamMembers, setTeamMembers] = useState([]);
 
   // Get current user and set as owner
   useEffect(() => {
@@ -68,6 +70,12 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
       getCurrentUser();
     }
   }, [workspaceMembers]);
+
+  // Debugging logs
+  // console.log('currentWorkspace', currentWorkspace);
+  // console.log('workspaceMembers', workspaceMembers);
+  // console.log('teamMembers', teamMembers);
+  // console.log('isLoading', isLoading);
 
   // Function to get permission based on role
   const getPermissionForRole = (role) => {
@@ -112,20 +120,23 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
     if (!newMemberEmail || !newMemberRole) return;
     
     // Check if member with this email already exists in workspace
-    const existingMember = workspaceMembers.find(m => m.profiles.email === newMemberEmail);
+    const existingMember = workspaceInvite.find(m => m.email === newMemberEmail);
     if (!existingMember) {
-      // This person is not in the workspace, can't add them
-      return;
+      // console.log("not in workspace")
+      return
     }
 
     // Check if already added to project
     const alreadyAdded = teamMembers.find(m => m.email === newMemberEmail);
-    if (alreadyAdded) return;
+    if (alreadyAdded) {
+      // console.log("added")
+      return
+    } 
 
     const newMember = {
       user_id: existingMember.user_id,
-      name: `${existingMember.profiles.first_name || ''} ${existingMember.profiles.last_name || ''}`.trim(),
-      email: existingMember.profiles.email,
+      name: `${existingMember.first_name || ''} ${existingMember.last_name || ''}`.trim(),
+      email: existingMember.email,
       role: newMemberRole,
       permission: getPermissionForRole(newMemberRole),
       image: "/sample-avatars/john.jpg"
@@ -134,6 +145,11 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
     setTeamMembers(prev => [...prev, newMember]);
     setNewMemberEmail("");
     setNewMemberRole("");
+
+    toast({
+      title: "Success",
+      description: "Member has been added to workspace.",
+    });
   };
 
   const removeMember = (index: number) => {
@@ -216,16 +232,17 @@ export default forwardRef<ProjectTimelineRef>((props, ref) => {
             style={{ marginBottom: 16 }}
           >
             <option value="">Select workspace member</option>
-            {workspaceMembers
+            {workspaceInvite
               .filter(member => 
                 member.user_id !== currentUser?.user_id && // Exclude current user (owner)
-                !teamMembers.find(tm => tm.email === member.profiles.email) // Exclude already added members
+                !teamMembers.find(tm => tm.email === member.email) 
               )
               .map((member) => (
-                <option key={member.user_id} value={member.profiles.email}>
-                  {`${member.profiles.first_name || ''} ${member.profiles.last_name || ''}`.trim()} ({member.profiles.email})
+                <option key={member.user_id} value={member.email}>
+                  {`${member.first_name || ''} ${member.last_name || ''}`.trim()} ({member.email})
                 </option>
               ))}
+           
           </select>
         </div>
         

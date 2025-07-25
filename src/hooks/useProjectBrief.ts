@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -50,6 +50,24 @@ const initialData: ProjectBriefData = {
   designChallenge: ''
 };
 
+export const useUserHasProject = (workspaceId: string | null) => {
+  const { toast } = useToast();
+
+  const checkUserHasProject = useCallback(async () => {
+    // Check for any project in any workspace
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+    const { data: existingProjects, error: existingError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('owner_id', user.id);
+    if (existingError) throw existingError;
+    return existingProjects && existingProjects.length > 0;
+  }, [workspaceId]);
+
+  return { checkUserHasProject };
+};
+
 export const useProjectBrief = (workspaceId: string | null) => {
   const [state, setState] = useState<ProjectBriefState>({
     data: initialData,
@@ -59,12 +77,16 @@ export const useProjectBrief = (workspaceId: string | null) => {
   });
   const { toast } = useToast();
 
-  const updateData = (updates: Partial<ProjectBriefData>) => {
-    setState(prev => ({
-      ...prev,
-      data: { ...prev.data, ...updates },
-      isDirty: true
-    }));
+  const updateData = (updates: Partial<ProjectBriefData>, callback?: () => void) => {
+    setState(prev => {
+      const newState = {
+        ...prev,
+        data: { ...prev.data, ...updates },
+        isDirty: true
+      };
+      if (callback) setTimeout(callback, 0); // call after state update
+      return newState;
+    });
   };
 
   const resetData = () => {
@@ -78,6 +100,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
 
   const loadProjectBrief = async (projectId: string) => {
     setState(prev => ({ ...prev, isLoading: true }));
+    // console.log('-----LOADING project brief for projectId:', projectId);
     
     try {
       const { data: project, error } = await supabase
@@ -96,7 +119,7 @@ export const useProjectBrief = (workspaceId: string | null) => {
         `)
         .eq('id', projectId)
         .single();
-
+      // console.log('Project data:', project);
       if (error) throw error;
 
       if (project) {
@@ -130,8 +153,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to load project brief",
+        title: "Access Denied",
+        description: "You need to be a project member to view or edit this project.",
         variant: "destructive",
       });
       setState(prev => ({ ...prev, isLoading: false }));
@@ -157,7 +180,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
         innovationTypes: state.data.innovationTypes,
         designChallenge: state.data.designChallenge,
         stage: state.data.designChallenge ? 'challenge_completed' : 'brief_completed',
-        methodology: 'design_thinking'
+        methodology: 'design_thinking',
+        teamMembers: state.data.teamMembers
       };
 
       let projectData;
@@ -169,8 +193,8 @@ export const useProjectBrief = (workspaceId: string | null) => {
           .update({
             name: state.data.name,
             description: state.data.description,
-            start_date: state.data.startDate || null,
-            end_date: state.data.endDate || null,
+            start_date: state.data.startDate ? state.data.startDate : null,
+            end_date: state.data.endDate ? state.data.endDate : null,
             metadata,
             updated_at: new Date().toISOString()
           })
@@ -181,7 +205,25 @@ export const useProjectBrief = (workspaceId: string | null) => {
         if (error) throw error;
         projectData = data;
       } else {
+        // Check if user already has a project in this workspace
+        const { data: existingProjects, error: existingError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('owner_id', user.id)
+          .eq('workspace_id', workspaceId);
+
+        if (existingError) throw existingError;
+        if (existingProjects && existingProjects.length > 0) {
+          toast({
+            title: "Project Exists",
+            description: "You already have a project in this workspace.",
+            variant: "destructive",
+          });
+          setState(prev => ({ ...prev, isLoading: false }));
+          return null;
+        }
         // Create new project
+        // console.log('Creating new project');
         const { data, error } = await supabase
           .from('projects')
           .insert({
@@ -189,8 +231,10 @@ export const useProjectBrief = (workspaceId: string | null) => {
             description: state.data.description,
             workspace_id: workspaceId,
             owner_id: user.id,
-            start_date: state.data.startDate || null,
-            end_date: state.data.endDate || null,
+            start_date: state.data.startDate ? state.data.startDate : null,
+            end_date: state.data.endDate ? state.data.endDate : null,
+            methodology_id: '550e8400-e29b-41d4-a716-446655440000',
+            current_stage_id: '660e8400-e29b-41d4-a716-446655440001',
             status: 'active',
             metadata
           })
@@ -201,6 +245,17 @@ export const useProjectBrief = (workspaceId: string | null) => {
         projectData = data;
 
         setState(prev => ({ ...prev, projectId: data.id }));
+
+        // Add owner to project_members as admin
+        await supabase
+          .from('project_members')
+          .insert({
+            project_id: data.id,
+            user_id: user.id,
+            workspace_id: workspaceId,
+            role: 'admin'
+          });
+        // console.log('OWNER INSERTED TO PROJECT_MEMBERS');
       }
 
       // Update team members
@@ -244,12 +299,28 @@ export const useProjectBrief = (workspaceId: string | null) => {
     }
   };
 
+  const refetch = async () => {
+    if (state.projectId) {
+      const prevData = state.data;
+      const prevString = JSON.stringify(prevData);
+      await loadProjectBrief(state.projectId);
+      const newString = JSON.stringify(state.data);
+      if (prevString !== newString) {
+        toast({
+          title: 'Project brief reloaded',
+          description: 'Latest saved content loaded from the database.',
+        });
+      }
+    }
+  };
+
   return {
     ...state,
     updateData,
     resetData,
     loadProjectBrief,
-    saveProjectBrief
+    saveProjectBrief,
+    refetch
   };
 };
 

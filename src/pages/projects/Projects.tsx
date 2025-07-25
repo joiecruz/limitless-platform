@@ -21,6 +21,7 @@ import { DesignChallenge, ChallengeStatus } from "@/types/designChallenge";
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserHasProject } from '@/hooks/useProjectBrief';
 
 export default function Projects() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -35,6 +36,8 @@ export default function Projects() {
   const workspaceId = currentWorkspace?.id || null;
   const { challenges, loading: challengesLoading, createChallenge, updateChallengeStatus, deleteChallenge } = useDesignChallenges(workspaceId);
   const { projects, loading: projectsLoading, createProject, deleteProject } = useProjects(workspaceId);
+  const [searchValue, setSearchValue] = useState("");
+  const { checkUserHasProject } = useUserHasProject(workspaceId);
 
   // Fetch user role and ID when workspace changes
   useEffect(() => {
@@ -88,7 +91,7 @@ export default function Projects() {
     
     if (isBriefCompleted) {
       // Navigate to empathize stage (next after project brief)
-      navigate(`/dashboard/projects/empathize/${project.id}`);
+      navigate(`/dashboard/projects/project-brief/${project.id}`);
     } else {
       // Resume project brief
       navigate(`/dashboard/projects/create-project?projectId=${project.id}`);
@@ -160,12 +163,21 @@ export default function Projects() {
     }
   };
 
-  const getInitials = (firstName: string | null, lastName: string | null, email: string) => {
-    if (firstName && lastName) {
-      return `${firstName[0]}${lastName[0]}`.toUpperCase();
-    }
-    return email[0].toUpperCase();
+  const getInitials = (firstName: string | null | undefined, lastName: string | null | undefined, email: string | null | undefined) => {
+    const first = (firstName && firstName[0]) ? firstName[0].toUpperCase() : '';
+    const last = (lastName && lastName[0]) ? lastName[0].toUpperCase() : '';
+    if (first || last) return `${first}${last}`;
+    if (email && email[0]) return email[0].toUpperCase();
+    return '?';
   };
+
+  // Filter projects by search value
+  const filteredProjects = projects.filter(project =>
+    (project.title || project.name || "").toLowerCase().includes(searchValue.toLowerCase())
+  );
+  const filteredChallenges = challenges.filter(challenge =>
+    (challenge.title || "").toLowerCase().includes(searchValue.toLowerCase())
+  );
 
   return (
     <Routes>
@@ -181,7 +193,7 @@ export default function Projects() {
         path="/"
         element={
           <>
-            <SearchHeader />
+            <SearchHeader value={searchValue} onChange={e => setSearchValue(e.target.value)} />
             <div className="container max-w-7xl px-8 py-8 animate-fade-in">
               <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold">Projects</h1>
@@ -197,15 +209,14 @@ export default function Projects() {
               ) : (
                 <>
                   {/* Combined Projects and Challenges */}
-                  {projects.length === 0 && challenges.length === 0 ? (
+                  {filteredProjects.length === 0 && filteredChallenges.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                       <p className="mb-4">No projects or challenges created yet</p>
-                      <CreateProjectButton onClick={handleOpenCreateDialog} />
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                       {/* Regular Projects */}
-                      {projects.map((project) => (
+                      {filteredProjects.map((project) => (
                         <div key={`project-${project.id}`}>
                           <ProjectCard 
                             id={project.id}
@@ -225,7 +236,7 @@ export default function Projects() {
                       ))}
 
                       {/* Design Challenges */}
-                      {challenges.map((challenge) => (
+                      {filteredChallenges.map((challenge) => (
                         <Card 
                           key={`challenge-${challenge.id}`}
                           className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
@@ -319,7 +330,16 @@ export default function Projects() {
                 onOpenChange={setIsCreateDialogOpen}
                 onCreateProject={handleCreateProject}
                 onCreateChallenge={handleCreateChallenge}
-                onStartDesignThinking={() => {
+                onStartDesignThinking={async () => {
+                  const hasProject = await checkUserHasProject();
+                  if (hasProject) {
+                    toast({
+                      title: "Project Exists",
+                      description: "Only one project is allowed per user.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
                   setIsCreateDialogOpen(false);
                   setShowDesignThinkingPage(true);
                 }} 

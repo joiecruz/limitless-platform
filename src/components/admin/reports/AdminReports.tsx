@@ -491,7 +491,7 @@ export default function AdminReports() {
                   <TableCell>{report.category || 'Other'}</TableCell>{' '}
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {report.profiles.avatar_url && (
+                      {report.profiles && report.profiles.avatar_url ? (
                         <img
                           src={report.profiles.avatar_url}
                           alt={`${report.profiles.first_name || ''} ${
@@ -499,14 +499,17 @@ export default function AdminReports() {
                           }`}
                           className="w-6 h-6 rounded-full"
                         />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500">
+                          {report.profiles ? `${(report.profiles.first_name?.[0] || '').toUpperCase()}${(report.profiles.last_name?.[0] || '').toUpperCase()}` || (report.profiles.email?.[0] || '?') : '?'}
+                        </div>
                       )}
                       <div>
                         <div>
-                          {report.profiles.first_name}{' '}
-                          {report.profiles.last_name}
+                          {report.profiles ? `${report.profiles.first_name || ''} ${report.profiles.last_name || ''}` : 'Unknown'}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {report.profiles.email}
+                          {report.profiles ? report.profiles.email : ''}
                         </div>
                       </div>
                     </div>
@@ -564,7 +567,7 @@ export default function AdminReports() {
             <div className="space-y-4 mt-2">
               <div className="bg-gray-50 p-4 rounded-md">
                 <div className="flex items-center gap-3">
-                  {selectedReport.profiles.avatar_url && (
+                  {selectedReport.profiles && selectedReport.profiles.avatar_url ? (
                     <img
                       src={selectedReport.profiles.avatar_url}
                       alt={`${selectedReport.profiles.first_name || ''} ${
@@ -572,14 +575,17 @@ export default function AdminReports() {
                       }`}
                       className="w-10 h-10 rounded-full"
                     />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500">
+                      {selectedReport.profiles ? `${(selectedReport.profiles.first_name?.[0] || '').toUpperCase()}${(selectedReport.profiles.last_name?.[0] || '').toUpperCase()}` || (selectedReport.profiles.email?.[0] || '?') : '?'}
+                    </div>
                   )}
                   <div>
                     <div className="font-medium">
-                      {selectedReport.profiles.first_name}{' '}
-                      {selectedReport.profiles.last_name}
+                      {selectedReport.profiles ? `${selectedReport.profiles.first_name || ''} ${selectedReport.profiles.last_name || ''}` : 'Unknown'}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {selectedReport.profiles.email}
+                      {selectedReport.profiles ? selectedReport.profiles.email : ''}
                     </div>
                   </div>
                 </div>
