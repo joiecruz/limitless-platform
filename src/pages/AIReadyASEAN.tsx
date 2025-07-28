@@ -541,6 +541,26 @@ export default function AIReadyASEAN() {
                     <CardContent className="flex items-center justify-between p-6">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-lg">📱</span>
+                          <h4 className="text-lg font-semibold">Social Media Card Template</h4>
+                        </div>
+                        <p className="text-muted-foreground">Social media cards for announcing your role as master trainers, as well as hour of code social media cards.</p>
+                      </div>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open('https://www.canva.com/design/DAGto9zb5uY/b5PnpjXb37RUkvwbM09vDg/view?utm_content=DAGto9zb5uY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
+                        className="ml-4"
+                      >
+                        <span className="mr-2">🎨</span>
+                        Access Templates
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
                           <span className="text-lg">🎨</span>
                           <h4 className="text-lg font-semibold">Hour of Code Event Banner (4x3) - No External Partners</h4>
                         </div>
