@@ -498,6 +498,15 @@ export const useImplement = (projectIdProp: string | null, stageId: string = IMP
       } else {
         // If no objectives exist, create one
         updatedMetrics.push({
+          indicator: 'New Objective',
+          target: 0,
+          unit: '',
+          due: new Date().toISOString().split('T')[0],
+          lastUpdated: {
+            value: 0,
+            date: new Date().toISOString()
+          },
+          progress: 0,
           objective: 'New Objective',
           keyResults: [newMetric]
         });

@@ -95,7 +95,7 @@ const DocumentEditor = forwardRef<{ getContents: () => string; setContents: (val
         if (file.name.endsWith('.docx')) {
           const reader = new FileReader();
           reader.onload = async (e) => {
-            const arrayBuffer = e.target?.result;
+            const arrayBuffer = e.target?.result as ArrayBuffer;
             const result = await mammoth.convertToHtml({ arrayBuffer });
             quillRef.current?.root && (quillRef.current.root.innerHTML = result.value);
           };

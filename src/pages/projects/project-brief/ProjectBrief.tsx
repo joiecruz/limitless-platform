@@ -219,10 +219,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
                 projectCustomers={data.customers}
               />
             )}
-            {currentStep === 2 && <ProjectTimeline ref={timelineRef} teamMembers={teamMembers} 
-            
-      setTeamMembers={setTeamMembers}
-      onTeamMembersChange={setTeamMembers} />}
+            {currentStep === 2 && <ProjectTimeline ref={timelineRef} />}
             {currentStep === 3 && <ProjectSubmission onNext={() => handleStepChange(4)} />}
             {currentStep === 4 && (
               <ProjectDesignChallenge 
