@@ -369,7 +369,7 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
 
       // Insert the report first to get the ID
       const { data: report, error: reportError } = await supabase
-        .from('training_session_reports')
+        .from('training_reports')
         .insert({
           user_id: user.id,
           session_type: sessionType,
@@ -384,8 +384,7 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
           total_participants: values.total_participants,
           youth_count: values.youth_count,
           parent_count: values.parent_count,
-          educator_count: values.educator_count,
-          status: 'submitted'
+          educator_count: values.educator_count
         })
         .select()
         .single();
@@ -397,9 +396,9 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
 
       // Update the report with file URLs
       const { error: updateError } = await supabase
-        .from('training_session_reports')
+        .from('training_reports')
         .update({
-          photos: uploadedPhotos,
+          photo_urls: uploadedPhotos,
           attendance_sheet_url: attendanceUrl,
         })
         .eq('id', report.id);

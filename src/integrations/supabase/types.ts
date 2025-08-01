@@ -2358,6 +2358,72 @@ export type Database = {
         }
         Relationships: []
       }
+      training_reports: {
+        Row: {
+          affiliation_name: string
+          affiliation_type: string
+          attendance_sheet_url: string | null
+          created_at: string
+          educator_count: number
+          id: string
+          lgu: string
+          parent_count: number
+          photo_urls: string[] | null
+          province: string
+          region: string
+          session_type: string
+          total_participants: number
+          trainer_full_name: string
+          updated_at: string
+          user_id: string
+          workshop_date: string
+          workshop_location: string
+          youth_count: number
+        }
+        Insert: {
+          affiliation_name: string
+          affiliation_type: string
+          attendance_sheet_url?: string | null
+          created_at?: string
+          educator_count: number
+          id?: string
+          lgu: string
+          parent_count: number
+          photo_urls?: string[] | null
+          province: string
+          region: string
+          session_type: string
+          total_participants: number
+          trainer_full_name: string
+          updated_at?: string
+          user_id: string
+          workshop_date: string
+          workshop_location: string
+          youth_count: number
+        }
+        Update: {
+          affiliation_name?: string
+          affiliation_type?: string
+          attendance_sheet_url?: string | null
+          created_at?: string
+          educator_count?: number
+          id?: string
+          lgu?: string
+          parent_count?: number
+          photo_urls?: string[] | null
+          province?: string
+          region?: string
+          session_type?: string
+          total_participants?: number
+          trainer_full_name?: string
+          updated_at?: string
+          user_id?: string
+          workshop_date?: string
+          workshop_location?: string
+          youth_count?: number
+        }
+        Relationships: []
+      }
       training_session_reports: {
         Row: {
           admin_notes: string | null
