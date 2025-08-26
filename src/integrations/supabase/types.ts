@@ -2956,6 +2956,21 @@ export type Database = {
       }
     }
     Views: {
+      course_enrollment_counts: {
+        Row: {
+          course_id: string | null
+          enrollment_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_members_info: {
         Row: {
           email: string | null
@@ -3159,6 +3174,10 @@ export type Database = {
       delete_user_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      get_course_enrollment_count: {
+        Args: { course_id_param: string }
+        Returns: number
       }
       is_current_user_admin_or_superadmin: {
         Args: Record<PropertyKey, never>
