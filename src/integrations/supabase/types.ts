@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -3150,9 +3150,9 @@ export type Database = {
       }
       create_workspace_with_owner: {
         Args: {
+          owner_id: string
           workspace_name: string
           workspace_slug: string
-          owner_id: string
         }
         Returns: Json
       }
@@ -3173,17 +3173,17 @@ export type Database = {
         Returns: boolean
       }
       is_workspace_admin_or_owner: {
-        Args: { workspace_id: string; user_id: string }
+        Args: { user_id: string; workspace_id: string }
         Returns: boolean
       }
       is_workspace_member: {
         Args:
-          | { workspace_id: string; user_id: string }
+          | { user_id: string; workspace_id: string }
           | { workspace_id_param: string }
         Returns: boolean
       }
       is_workspace_member_secure: {
-        Args: { workspace_id: string; user_id: string }
+        Args: { user_id: string; workspace_id: string }
         Returns: boolean
       }
       refresh_workspace_members_materialized: {
