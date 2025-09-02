@@ -3187,6 +3187,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_current_user_superadmin_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_workspace_admin: {
         Args: { workspace_id: string }
         Returns: boolean
