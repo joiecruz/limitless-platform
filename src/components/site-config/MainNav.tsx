@@ -65,6 +65,27 @@ export function MainNav() {
             <Link to="/services" className="text-gray-700 hover:text-[#393CA0]">Services</Link>
             <Link to="/courses" className="text-gray-700 hover:text-[#393CA0]">Courses</Link>
             <Link to="/tools" className="text-gray-700 hover:text-[#393CA0]">Tools</Link>
+            
+            {/* Programs Dropdown */}
+            <div className="relative group">
+              <button className="text-gray-700 hover:text-[#393CA0] flex items-center">
+                Programs
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <Link to="/programs/limitlessgov" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0]">
+                  LimitlessGov
+                </Link>
+                <Link to="/programs/ai-ready-asean" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0]">
+                  AI Ready ASEAN
+                </Link>
+                <Link to="/programs/asean-digital-literacy" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0]">
+                  ASEAN Digital Literacy Programme
+                </Link>
+              </div>
+            </div>
           </nav>
           <div className="flex items-center space-x-4">
             {session ? (

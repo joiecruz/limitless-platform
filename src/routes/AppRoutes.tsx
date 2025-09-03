@@ -15,6 +15,10 @@ import CoursesLanding from '@/pages/landing/Courses';
 import CourseDetail from '@/pages/landing/CourseDetail';
 import ToolsLanding from '@/pages/landing/Tools';
 import ToolDetail from '@/pages/landing/ToolDetail';
+import Programs from '@/pages/programs/Programs';
+import LimitlessGov from '@/pages/programs/LimitlessGov';
+import AIReadyASEANProgram from '@/pages/programs/AIReadyASEAN';
+import ASEANDigitalLiteracy from '@/pages/programs/ASEANDigitalLiteracy';
 import Blog from '@/pages/landing/Blog';
 import BlogPost from '@/pages/BlogPost';
 import CaseStudies from '@/pages/landing/CaseStudies';
@@ -97,6 +101,10 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/courses/:courseId" element={<CourseDetail />} />
           <Route path="/tools" element={<ToolsLanding />} />
           <Route path="/tools/:id" element={<ToolDetail />} />
+          <Route path="/programs" element={<Programs />} />
+          <Route path="/programs/limitlessgov" element={<LimitlessGov />} />
+          <Route path="/programs/ai-ready-asean" element={<AIReadyASEANProgram />} />
+          <Route path="/programs/asean-digital-literacy" element={<ASEANDigitalLiteracy />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/case-studies" element={<CaseStudies />} />
