@@ -26,11 +26,8 @@ const ChallengeCollaboration = () => {
   const workspaceId = currentWorkspace?.id || null;
   const { stickyNotes, createStickyNote, updateStickyNotePosition, deleteStickyNote } = useStickyNotes(challengeId || null);
   
-  // Use existing hooks for authentication and get role from localStorage
+  // Use existing hooks for authentication
   const { data: currentUser } = useUserSession();
-  const userRole = localStorage.getItem('workspace_role');
-  
-  const canDeleteAny = userRole === 'admin' || userRole === 'owner';
 
 
   useEffect(() => {
@@ -159,19 +156,15 @@ const ChallengeCollaboration = () => {
       {/* Collaboration Area */}
       <div className="relative w-full h-[calc(100vh-200px)] overflow-auto bg-gray-50">
         <div className="absolute inset-0 min-w-[2000px] min-h-[1500px]">
-          {stickyNotes.map((note) => {
-            const canDelete = canDeleteAny || note.created_by === currentUser?.id;
-            
-            return (
-              <StickyNoteComponent
-                key={note.id}
-                note={note}
-                onPositionChange={(x, y) => updateStickyNotePosition(note.id, x, y)}
-                onDelete={() => deleteStickyNote(note.id)}
-                canDelete={canDelete}
-              />
-            );
-          })}
+          {stickyNotes.map((note) => (
+            <StickyNoteComponent
+              key={note.id}
+              note={note}
+              onPositionChange={(x, y) => updateStickyNotePosition(note.id, x, y)}
+              onDelete={() => deleteStickyNote(note.id)}
+              canDelete={true} // Server-side RLS handles authorization
+            />
+          ))}
           
           {stickyNotes.length === 0 && (
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
