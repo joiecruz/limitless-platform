@@ -2546,6 +2546,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       workflow_phase_steps: {
         Row: {
           created_at: string
@@ -3171,6 +3195,10 @@ export type Database = {
         }
         Returns: Json
       }
+      current_user_has_role: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Returns: boolean
+      }
       delete_user_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -3179,7 +3207,22 @@ export type Database = {
         Args: { course_id_param: string }
         Returns: number
       }
+      get_user_highest_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_current_user_admin_or_superadmin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_current_user_admin_or_superadmin_v2: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
@@ -3188,6 +3231,10 @@ export type Database = {
         Returns: boolean
       }
       is_current_user_superadmin_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_current_user_superadmin_v2: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
@@ -3216,6 +3263,7 @@ export type Database = {
     }
     Enums: {
       affiliation_type_enum: "School" | "Community" | "Workplace" | "University"
+      app_role: "superadmin" | "admin" | "moderator" | "user"
       report_status_enum: "submitted" | "approved" | "rejected"
       session_type_enum: "hour_of_code" | "depth_training"
     }
@@ -3346,6 +3394,7 @@ export const Constants = {
   public: {
     Enums: {
       affiliation_type_enum: ["School", "Community", "Workplace", "University"],
+      app_role: ["superadmin", "admin", "moderator", "user"],
       report_status_enum: ["submitted", "approved", "rejected"],
       session_type_enum: ["hour_of_code", "depth_training"],
     },
