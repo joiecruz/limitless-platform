@@ -3252,6 +3252,10 @@ export type Database = {
           | { workspace_id_param: string }
         Returns: boolean
       }
+      is_workspace_member_for_view: {
+        Args: { workspace_id_param: string }
+        Returns: boolean
+      }
       is_workspace_member_secure: {
         Args: { user_id: string; workspace_id: string }
         Returns: boolean
