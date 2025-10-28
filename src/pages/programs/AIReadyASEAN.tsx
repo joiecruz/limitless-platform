@@ -34,11 +34,11 @@ export default function AIReadyASEAN() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             <div>
               <div className="text-5xl md:text-6xl font-bold text-white mb-2">320K</div>
-              <div className="text-white/80 text-sm">Filipinos to be Empowered</div>
+              <div className="text-white/80 text-sm">Hour of Code</div>
             </div>
             <div>
               <div className="text-5xl md:text-6xl font-bold text-white mb-2">48K</div>
-              <div className="text-white/80 text-sm">Trained Learners</div>
+              <div className="text-white/80 text-sm">12-Hour In-Depth AI Training</div>
             </div>
             <div>
               <div className="text-5xl md:text-6xl font-bold text-white mb-2">80+</div>
