@@ -51,9 +51,11 @@ export default function AIMASEAN() {
       {/* Hero Narrative */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <p className="text-xl text-foreground leading-relaxed">
-          A dynamic image showing small business owners in action—using laptops, mobile devices, or working 
-          with digital tools—set against the ASEAN map. This represents the future where Filipino MSMEs are 
-          equipped with AI skills to compete and thrive in the digital economy.
+          In the Philippines, 99.5% of all businesses are micro, small, and medium enterprises (MSMEs). 
+          These businesses are the backbone of our economy, yet many still lack access to the digital tools 
+          and AI skills needed to compete in today's rapidly evolving marketplace. As artificial intelligence 
+          reshapes industries worldwide, Filipino MSMEs must embrace this transformation—not just to survive, 
+          but to thrive, innovate, and lead in the digital economy.
         </p>
       </div>
 
