@@ -12,69 +12,54 @@ export default function AIReadyASEAN() {
       <MainNav />
       
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-        <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg overflow-hidden mb-8 relative">
-          <img 
-            src={heroImage} 
-            alt="AI Ready ASEAN Program" 
-            className="w-full h-full object-cover absolute inset-0"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/40" />
-          <div className="relative w-full h-full flex items-center justify-center">
-            <div className="text-center p-8">
-              <h1 className="text-5xl font-bold text-white mb-4">
-                AI Ready ASEAN
-              </h1>
-              <p className="text-xl text-white/90">
-                Empowering the Future of ASEAN, One AI Skill at a Time
-              </p>
+      <div className="relative h-screen min-h-[600px] max-h-[800px]">
+        <img 
+          src={heroImage} 
+          alt="AI Ready ASEAN Program" 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/40" />
+        <div className="relative h-full flex flex-col items-start justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-6xl md:text-7xl font-bold text-white mb-4">
+            AI Ready ASEAN
+          </h1>
+          <p className="text-2xl text-white/90 mb-12">
+            Empowering the Future of ASEAN, One AI Skill at a Time
+          </p>
+          
+          {/* Target Impact Label */}
+          <p className="text-xs text-white/60 uppercase tracking-wider mb-4">Target Impact</p>
+          
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+            <div>
+              <div className="text-5xl md:text-6xl font-bold text-white mb-2">320K</div>
+              <div className="text-white/80 text-sm">Filipinos to be Empowered</div>
+            </div>
+            <div>
+              <div className="text-5xl md:text-6xl font-bold text-white mb-2">48K</div>
+              <div className="text-white/80 text-sm">Trained Learners</div>
+            </div>
+            <div>
+              <div className="text-5xl md:text-6xl font-bold text-white mb-2">80+</div>
+              <div className="text-white/80 text-sm">Master Trainers</div>
+            </div>
+            <div>
+              <div className="text-5xl md:text-6xl font-bold text-white mb-2">5.5M+</div>
+              <div className="text-white/80 text-sm">People Reached (ASEAN)</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Hero Narrative */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <p className="text-xl text-foreground leading-relaxed mb-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <p className="text-xl text-foreground leading-relaxed">
           Imagine a future where every Filipino, from students and teachers to parents and community leaders, 
           understands how to use Artificial Intelligence (AI) to learn, create, and solve problems responsibly. 
           That is the vision of AI Ready ASEAN, a regional movement led by the ASEAN Foundation, supported by 
           Google.org, and implemented locally by Limitless Lab.
         </p>
-      </div>
-
-      {/* Quick Highlights */}
-      <div className="bg-secondary/30 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-foreground mb-8 text-center">Impact at a Glance</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-card p-6 rounded-lg border">
-              <div className="text-4xl mb-2">📊</div>
-              <div className="text-2xl font-bold text-foreground mb-1">5.5M+</div>
-              <div className="text-muted-foreground">People reached across ASEAN</div>
-            </div>
-            <div className="bg-card p-6 rounded-lg border">
-              <div className="text-4xl mb-2">🇵🇭</div>
-              <div className="text-2xl font-bold text-foreground mb-1">320,000</div>
-              <div className="text-muted-foreground">Filipinos to be empowered by 2026</div>
-            </div>
-            <div className="bg-card p-6 rounded-lg border">
-              <div className="text-4xl mb-2">🎓</div>
-              <div className="text-2xl font-bold text-foreground mb-1">48,000</div>
-              <div className="text-muted-foreground">Trained learners</div>
-            </div>
-            <div className="bg-card p-6 rounded-lg border">
-              <div className="text-4xl mb-2">🤝</div>
-              <div className="text-2xl font-bold text-foreground mb-1">Google.org</div>
-              <div className="text-muted-foreground">Program supporter</div>
-            </div>
-            <div className="bg-card p-6 rounded-lg border">
-              <div className="text-4xl mb-2">🧑‍🏫</div>
-              <div className="text-2xl font-bold text-foreground mb-1">80+</div>
-              <div className="text-muted-foreground">Master Trainers nationwide</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* About Section */}
