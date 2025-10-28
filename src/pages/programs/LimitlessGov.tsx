@@ -1,12 +1,17 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { MainNav } from "@/components/site-config/MainNav";
+import { CTASection } from "@/components/site-config/CTASection";
+import { Footer } from "@/components/site-config/Footer";
 
 export default function LimitlessGov() {
   return (
     <div className="min-h-screen bg-background">
+      <MainNav />
+      
       {/* Cover Image Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
         <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg overflow-hidden mb-8">
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center p-8">
@@ -53,6 +58,9 @@ export default function LimitlessGov() {
           </div>
         </div>
       </div>
+      
+      <CTASection />
+      <Footer />
     </div>
   );
 }
