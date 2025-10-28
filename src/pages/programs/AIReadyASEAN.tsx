@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { MainNav } from "@/components/site-config/MainNav";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Footer } from "@/components/site-config/Footer";
+import heroImage from "@/assets/ai-ready-asean-hero.jpg";
 
 export default function AIReadyASEAN() {
   return (
@@ -12,13 +13,19 @@ export default function AIReadyASEAN() {
       
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-        <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg overflow-hidden mb-8">
-          <div className="w-full h-full flex items-center justify-center">
+        <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg overflow-hidden mb-8 relative">
+          <img 
+            src={heroImage} 
+            alt="AI Ready ASEAN Program" 
+            className="w-full h-full object-cover absolute inset-0"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/40" />
+          <div className="relative w-full h-full flex items-center justify-center">
             <div className="text-center p-8">
-              <h1 className="text-5xl font-bold text-foreground mb-4">
+              <h1 className="text-5xl font-bold text-white mb-4">
                 AI Ready ASEAN
               </h1>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-xl text-white/90">
                 Empowering the Future of ASEAN, One AI Skill at a Time
               </p>
             </div>
@@ -201,9 +208,9 @@ export default function AIReadyASEAN() {
         <h2 className="text-3xl font-bold text-foreground mb-6">🤝 Partners and Supporters</h2>
         <p className="text-lg text-muted-foreground mb-6">This program is made possible by:</p>
         <div className="space-y-4">
-          <div className="bg-card p-4 rounded-lg border">
+          <div className="bg-card p-6 rounded-lg border border-primary/20">
             <h3 className="text-xl font-semibold text-foreground mb-2">ASEAN Foundation</h3>
-            <p className="text-muted-foreground">Regional lead driving AI literacy across Southeast Asia</p>
+            <p className="text-muted-foreground font-medium">Program Initiator - Leading AI literacy across Southeast Asia</p>
           </div>
           <div className="bg-card p-4 rounded-lg border">
             <h3 className="text-xl font-semibold text-foreground mb-2">Google.org</h3>
@@ -211,7 +218,11 @@ export default function AIReadyASEAN() {
           </div>
           <div className="bg-card p-4 rounded-lg border">
             <h3 className="text-xl font-semibold text-foreground mb-2">Limitless Lab</h3>
-            <p className="text-muted-foreground">Philippine Local Implementing Partner working with schools and communities nationwide</p>
+            <p className="text-muted-foreground">Local Implementing Partner (LIP) in the Philippines, working with schools and communities nationwide</p>
+          </div>
+          <div className="bg-card p-4 rounded-lg border">
+            <h3 className="text-xl font-semibold text-foreground mb-2">Department of Education (DepEd)</h3>
+            <p className="text-muted-foreground">Partner supporting AI education integration in Philippine schools</p>
           </div>
         </div>
         <p className="text-lg text-muted-foreground mt-6 font-medium">
@@ -243,76 +254,26 @@ export default function AIReadyASEAN() {
         </div>
       </div>
 
-      {/* Resources */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-foreground mb-6">📚 Resources and Outputs</h2>
-        <p className="text-lg text-muted-foreground mb-6">
-          We are creating resources to make AI learning easy and fun:
-        </p>
-        <ul className="space-y-3">
-          <li className="flex items-start">
-            <span className="text-primary mr-3 mt-1">•</span>
-            <span className="text-lg text-muted-foreground"><strong>AI Ready ASEAN Course Guide</strong> – Simple lessons on AI and real-life applications</span>
-          </li>
-          <li className="flex items-start">
-            <span className="text-primary mr-3 mt-1">•</span>
-            <span className="text-lg text-muted-foreground"><strong>Hour of Code Guide</strong> – A step-by-step toolkit for schools to run AI-themed Hour of Code events</span>
-          </li>
-          <li className="flex items-start">
-            <span className="text-primary mr-3 mt-1">•</span>
-            <span className="text-lg text-muted-foreground"><strong>Facilitator Toolkits and Templates</strong> – Ready-to-use materials for teachers and trainers</span>
-          </li>
-          <li className="flex items-start">
-            <span className="text-primary mr-3 mt-1">•</span>
-            <span className="text-lg text-muted-foreground"><strong>Videos and Stories</strong> – Inspiring moments from classrooms and communities across the Philippines</span>
-          </li>
-        </ul>
-      </div>
 
       {/* Get Involved */}
       <div className="bg-primary/5 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-foreground mb-6 text-center">🚀 Get Involved</h2>
           <p className="text-lg text-muted-foreground mb-8 text-center">
-            There are many ways to be part of AI Ready ASEAN:
+            Join the AI Ready ASEAN movement and help bring AI literacy to your school community
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-card p-6 rounded-lg border">
-              <div className="text-3xl mb-3">🏫</div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Schools</h3>
-              <p className="text-muted-foreground">Host an Hour of Code or AI learning event</p>
-            </div>
-            <div className="bg-card p-6 rounded-lg border">
-              <div className="text-3xl mb-3">👩‍🏫</div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Teachers</h3>
-              <p className="text-muted-foreground">Apply to become a Master Trainer and train your community</p>
-            </div>
-            <div className="bg-card p-6 rounded-lg border">
-              <div className="text-3xl mb-3">👨‍👩‍👧</div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Parents and Students</h3>
-              <p className="text-muted-foreground">Join our free AI learning sessions</p>
-            </div>
-            <div className="bg-card p-6 rounded-lg border">
-              <div className="text-3xl mb-3">🤝</div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Organizations</h3>
-              <p className="text-muted-foreground">Partner with us to bring AI literacy to more people</p>
-            </div>
+          <div className="max-w-md mx-auto bg-card p-8 rounded-lg border text-center mb-8">
+            <div className="text-5xl mb-4">🏫</div>
+            <h3 className="text-2xl font-semibold text-foreground mb-3">Partner Schools</h3>
+            <p className="text-muted-foreground mb-6">
+              Become a Partner School and host AI Ready ASEAN programs, Hour of Code events, and training sessions for your students and teachers.
+            </p>
           </div>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex justify-center">
             <Link to="/contact">
               <Button size="lg">
-                Join Hour of Code
+                Apply as a Partner School
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link to="/contact">
-              <Button size="lg" variant="outline">
-                Apply as Master Trainer
-              </Button>
-            </Link>
-            <Link to="/contact">
-              <Button size="lg" variant="outline">
-                Partner with Us
               </Button>
             </Link>
           </div>
