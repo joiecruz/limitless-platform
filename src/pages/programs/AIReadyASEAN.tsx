@@ -230,31 +230,6 @@ export default function AIReadyASEAN() {
         </p>
       </div>
 
-      {/* Impact Stories */}
-      <div className="bg-muted/50 py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-foreground mb-6">💬 Impact and Stories</h2>
-          <p className="text-lg text-muted-foreground mb-6">
-            Across ASEAN, AI Ready ASEAN will reach over 5.5 million people.
-          </p>
-          <p className="text-lg text-muted-foreground mb-8">
-            In the Philippines, thousands of students and teachers have already begun their AI learning journey.
-          </p>
-          <div className="bg-card p-8 rounded-lg border-l-4 border-primary">
-            <p className="text-lg text-muted-foreground italic mb-4">
-              "I used to think AI was only for tech experts. Now I know I can use it for my school 
-              projects and even help my community."
-            </p>
-            <p className="text-muted-foreground font-medium">— Maria, High School Student, Cebu City</p>
-          </div>
-          <p className="text-lg text-muted-foreground mt-6">
-            These stories remind us that AI education is not about machines but about people and their 
-            potential to make a difference.
-          </p>
-        </div>
-      </div>
-
-
       {/* Get Involved */}
       <div className="bg-primary/5 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -262,20 +237,33 @@ export default function AIReadyASEAN() {
           <p className="text-lg text-muted-foreground mb-8 text-center">
             Join the AI Ready ASEAN movement and help bring AI literacy to your school community
           </p>
-          <div className="max-w-md mx-auto bg-card p-8 rounded-lg border text-center mb-8">
-            <div className="text-5xl mb-4">🏫</div>
-            <h3 className="text-2xl font-semibold text-foreground mb-3">Partner Schools</h3>
-            <p className="text-muted-foreground mb-6">
-              Become a Partner School and host AI Ready ASEAN programs, Hour of Code events, and training sessions for your students and teachers.
-            </p>
-          </div>
-          <div className="flex justify-center">
-            <Link to="/contact">
-              <Button size="lg">
-                Apply as a Partner School
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div className="bg-card p-8 rounded-lg border text-center">
+              <div className="text-5xl mb-4">🎓</div>
+              <h3 className="text-2xl font-semibold text-foreground mb-3">Students</h3>
+              <p className="text-muted-foreground mb-6">
+                Join the Hour of Code Challenge and start your AI learning journey today!
+              </p>
+              <a href="https://www.facebook.com/share/p/1Jnz1B467V/" target="_blank" rel="noopener noreferrer">
+                <Button size="lg" className="w-full">
+                  Join the Hour of Code Challenge
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </a>
+            </div>
+            <div className="bg-card p-8 rounded-lg border text-center">
+              <div className="text-5xl mb-4">🏫</div>
+              <h3 className="text-2xl font-semibold text-foreground mb-3">Partner Schools</h3>
+              <p className="text-muted-foreground mb-6">
+                Become a Partner School and host AI Ready ASEAN programs, Hour of Code events, and training sessions.
+              </p>
+              <Link to="/contact">
+                <Button size="lg" className="w-full">
+                  Apply as a Partner School
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
