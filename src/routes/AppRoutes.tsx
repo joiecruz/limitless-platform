@@ -18,6 +18,7 @@ import ToolDetail from '@/pages/landing/ToolDetail';
 import Programs from '@/pages/programs/Programs';
 import LimitlessGov from '@/pages/programs/LimitlessGov';
 import AIReadyASEANProgram from '@/pages/programs/AIReadyASEAN';
+import AIMASEAN from '@/pages/programs/AIMASEAN';
 import ASEANDigitalLiteracy from '@/pages/programs/ASEANDigitalLiteracy';
 import Blog from '@/pages/landing/Blog';
 import BlogPost from '@/pages/BlogPost';
@@ -104,6 +105,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/programs" element={<Programs />} />
           <Route path="/programs/limitlessgov" element={<LimitlessGov />} />
           <Route path="/programs/ai-ready-asean" element={<AIReadyASEANProgram />} />
+          <Route path="/programs/aim-asean" element={<AIMASEAN />} />
           <Route path="/programs/asean-digital-literacy" element={<ASEANDigitalLiteracy />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
