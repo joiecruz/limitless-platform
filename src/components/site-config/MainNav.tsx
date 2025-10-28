@@ -84,9 +84,6 @@ export function MainNav() {
                 <Link to="/programs/aim-asean" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0]">
                   AIM ASEAN
                 </Link>
-                <Link to="/programs/asean-digital-literacy" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0]">
-                  ASEAN Digital Literacy Programme
-                </Link>
               </div>
             </div>
           </nav>
