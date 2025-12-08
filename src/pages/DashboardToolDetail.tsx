@@ -1,15 +1,13 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tool } from "@/types/tool";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, ArrowLeft, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
-import { Eye } from "lucide-react";
+import { SafeHTML } from "@/components/common/SafeHTML";
 
 export default function DashboardToolDetail() {
   const { id } = useParams();
@@ -196,9 +194,9 @@ export default function DashboardToolDetail() {
         {tool.how_to_use && (
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold text-gray-900">How to Use</h2>
-            <div
+            <SafeHTML
+              html={tool.how_to_use}
               className="text-gray-600 leading-relaxed prose"
-              dangerouslySetInnerHTML={{ __html: tool.how_to_use }}
             />
           </div>
         )}
@@ -207,9 +205,9 @@ export default function DashboardToolDetail() {
         {tool.when_to_use && (
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold text-gray-900">When to Use</h2>
-            <div
+            <SafeHTML
+              html={tool.when_to_use}
               className="text-gray-600 leading-relaxed prose"
-              dangerouslySetInnerHTML={{ __html: tool.when_to_use }}
             />
           </div>
         )}

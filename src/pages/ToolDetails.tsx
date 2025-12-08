@@ -10,6 +10,7 @@ import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
+import { SafeHTML } from "@/components/common/SafeHTML";
 
 const fetchTool = async (toolId: string) => {
   const { data, error } = await supabase
@@ -211,9 +212,9 @@ export default function ToolDetails() {
           {tool.how_to_use && (
             <div>
               <h2 className="text-2xl font-semibold mb-4">How to Use</h2>
-              <div
+              <SafeHTML
+                html={tool.how_to_use}
                 className="prose max-w-none text-gray-600"
-                dangerouslySetInnerHTML={{ __html: tool.how_to_use }}
               />
             </div>
           )}
@@ -221,9 +222,9 @@ export default function ToolDetails() {
           {tool.when_to_use && (
             <div>
               <h2 className="text-2xl font-semibold mb-4">When to Use</h2>
-              <div
+              <SafeHTML
+                html={tool.when_to_use}
                 className="prose max-w-none text-gray-600"
-                dangerouslySetInnerHTML={{ __html: tool.when_to_use }}
               />
             </div>
           )}

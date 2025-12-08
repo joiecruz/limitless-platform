@@ -52,14 +52,19 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Unauthorized");
     }
 
-    // Check if user is admin or superadmin
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('is_superadmin, is_admin')
-      .eq('id', user.id)
-      .single();
+    // Check if user is admin or superadmin using user_roles table (secure approach)
+    const { data: userRoles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .in('role', ['admin', 'superadmin']);
 
-    if (profileError || !profile || (!profile.is_superadmin && !profile.is_admin)) {
+    if (rolesError) {
+      console.error("Error checking user roles:", rolesError);
+      throw new Error("Failed to verify permissions");
+    }
+
+    if (!userRoles || userRoles.length === 0) {
       throw new Error("Forbidden: Only admins and superadmins can access all workspaces");
     }
 
@@ -88,6 +93,8 @@ const handler = async (req: Request): Promise<Response> => {
       member_count: workspace.workspace_members[0]?.count || 0
     }));
 
+    console.log(`Admin ${user.id} retrieved ${formattedWorkspaces.length} workspaces`);
+
     return new Response(
       JSON.stringify(formattedWorkspaces),
       {
@@ -98,11 +105,12 @@ const handler = async (req: Request): Promise<Response> => {
         status: 200
       }
     );
-  } catch (error: any) {
-    console.error("Error in get-admin-workspaces function:", error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "An error occurred";
+    console.error("Error in get-admin-workspaces function:", errorMessage);
 
     return new Response(
-      JSON.stringify({ error: error.message || "An error occurred" }),
+      JSON.stringify({ error: errorMessage }),
       {
         headers: {
           ...corsHeaders,
