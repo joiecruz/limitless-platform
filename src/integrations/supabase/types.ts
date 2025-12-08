@@ -3183,10 +3183,7 @@ export type Database = {
         Args: { workspace_id_param: string }
         Returns: boolean
       }
-      cleanup_expired_invitations: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_expired_invitations: { Args: never; Returns: undefined }
       create_workspace_with_owner: {
         Args: {
           owner_id: string
@@ -3199,10 +3196,7 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
-      delete_user_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      delete_user_data: { Args: never; Returns: undefined }
       get_course_enrollment_count: {
         Args: { course_id_param: string }
         Returns: number
@@ -3218,40 +3212,19 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_current_user_admin_or_superadmin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_current_user_admin_or_superadmin_v2: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_current_user_superadmin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_current_user_superadmin_safe: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_current_user_superadmin_v2: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_workspace_admin: {
-        Args: { workspace_id: string }
-        Returns: boolean
-      }
+      is_current_user_admin_or_superadmin: { Args: never; Returns: boolean }
+      is_current_user_admin_or_superadmin_v2: { Args: never; Returns: boolean }
+      is_current_user_superadmin: { Args: never; Returns: boolean }
+      is_current_user_superadmin_safe: { Args: never; Returns: boolean }
+      is_current_user_superadmin_v2: { Args: never; Returns: boolean }
+      is_workspace_admin: { Args: { workspace_id: string }; Returns: boolean }
       is_workspace_admin_or_owner: {
         Args: { user_id: string; workspace_id: string }
         Returns: boolean
       }
-      is_workspace_member: {
-        Args:
-          | { user_id: string; workspace_id: string }
-          | { workspace_id_param: string }
-        Returns: boolean
-      }
+      is_workspace_member:
+        | { Args: { user_id: string; workspace_id: string }; Returns: boolean }
+        | { Args: { workspace_id_param: string }; Returns: boolean }
       is_workspace_member_for_view: {
         Args: { workspace_id_param: string }
         Returns: boolean
@@ -3261,7 +3234,7 @@ export type Database = {
         Returns: boolean
       }
       refresh_workspace_members_materialized: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: undefined
       }
     }
