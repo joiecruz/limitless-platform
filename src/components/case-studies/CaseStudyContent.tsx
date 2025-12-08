@@ -1,3 +1,5 @@
+import { SafeHTML } from '@/components/common/SafeHTML';
+
 interface CaseStudyContentProps {
   problem?: string;
   approach?: string;
@@ -11,9 +13,9 @@ export function CaseStudyContent({ problem, approach, impact }: CaseStudyContent
         {problem && (
           <div>
             <h2 className="text-4xl font-bold text-[#393CA0] mb-8">The opportunity</h2>
-            <div 
+            <SafeHTML
+              html={problem}
               className="text-gray-600 text-lg leading-relaxed max-w-3xl prose prose-lg"
-              dangerouslySetInnerHTML={{ __html: problem }}
             />
           </div>
         )}
@@ -21,9 +23,9 @@ export function CaseStudyContent({ problem, approach, impact }: CaseStudyContent
         {approach && (
           <div>
             <h2 className="text-4xl font-bold text-[#393CA0] mb-8">Our approach</h2>
-            <div 
+            <SafeHTML
+              html={approach}
               className="text-gray-600 text-lg leading-relaxed max-w-3xl prose prose-lg"
-              dangerouslySetInnerHTML={{ __html: approach }}
             />
           </div>
         )}
@@ -31,9 +33,9 @@ export function CaseStudyContent({ problem, approach, impact }: CaseStudyContent
         {impact && (
           <div>
             <h2 className="text-4xl font-bold text-[#393CA0] mb-8">Impact</h2>
-            <div 
+            <SafeHTML
+              html={impact}
               className="text-gray-600 text-lg leading-relaxed max-w-3xl prose prose-lg"
-              dangerouslySetInnerHTML={{ __html: impact }}
             />
           </div>
         )}

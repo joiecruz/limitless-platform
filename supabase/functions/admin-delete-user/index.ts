@@ -44,31 +44,43 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Invalid authentication");
     }
 
-    // Check if requesting user is admin/superadmin
-    const { data: adminProfile, error: adminError } = await serviceSupabase
-      .from('profiles')
-      .select('is_admin, is_superadmin')
-      .eq('id', user.id)
-      .single();
+    // Check if requesting user is admin/superadmin using user_roles table (secure approach)
+    const { data: userRoles, error: rolesError } = await serviceSupabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .in('role', ['admin', 'superadmin']);
 
-    if (adminError || (!adminProfile?.is_admin && !adminProfile?.is_superadmin)) {
+    if (rolesError) {
+      console.error("Error checking user roles:", rolesError);
+      throw new Error("Failed to verify permissions");
+    }
+
+    if (!userRoles || userRoles.length === 0) {
       throw new Error("Insufficient permissions - admin access required");
     }
 
-    // Get the user to be deleted to check if they're a superadmin
-    const { data: targetProfile, error: targetError } = await serviceSupabase
-      .from('profiles')
-      .select('is_superadmin, email')
-      .eq('id', userId)
-      .single();
+    // Check if target user is a superadmin using user_roles table
+    const { data: targetRoles, error: targetRolesError } = await serviceSupabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'superadmin');
 
-    if (targetError) {
-      throw new Error("User not found");
+    if (targetRolesError) {
+      console.error("Error checking target user roles:", targetRolesError);
     }
 
-    if (targetProfile.is_superadmin) {
+    if (targetRoles && targetRoles.length > 0) {
       throw new Error("Cannot delete superadmin users");
     }
+
+    // Get user email for logging
+    const { data: targetProfile } = await serviceSupabase
+      .from('profiles')
+      .select('email')
+      .eq('id', userId)
+      .single();
 
     // Delete user from auth.users (this will cascade to profiles due to foreign key)
     const { error: deleteError } = await serviceSupabase.auth.admin.deleteUser(userId);
@@ -77,10 +89,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(`Failed to delete user: ${deleteError.message}`);
     }
 
+    console.log(`User ${targetProfile?.email || userId} deleted by admin ${user.id}`);
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: `User ${targetProfile.email} deleted successfully`
+        message: `User deleted successfully`
       }),
       {
         headers: {
@@ -90,11 +104,12 @@ const handler = async (req: Request): Promise<Response> => {
         status: 200
       }
     );
-  } catch (error: any) {
-    console.error("Error in admin-delete-user function:", error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "An error occurred";
+    console.error("Error in admin-delete-user function:", errorMessage);
 
     return new Response(
-      JSON.stringify({ error: error.message || "An error occurred" }),
+      JSON.stringify({ error: errorMessage }),
       {
         headers: {
           ...corsHeaders,

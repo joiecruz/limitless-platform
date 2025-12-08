@@ -1,10 +1,10 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { SafeHTML } from "@/components/common/SafeHTML";
 
 export default function Terms() {
   usePageTitle("Terms of Service | Limitless Lab");
@@ -57,13 +57,11 @@ export default function Terms() {
           <h1 className="text-4xl font-bold text-gray-900 mb-8">Terms of Service</h1>
           
           {page && page.content && typeof page.content === 'object' && 'html' in page.content ? (
-            <div 
+            <SafeHTML
+              html={typeof page.content.html === 'string' ? 
+                page.content.html.replace(/\n/g, '<br>') : 
+                'Content not available'}
               className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ 
-                __html: typeof page.content.html === 'string' ? 
-                  page.content.html.replace(/\n/g, '<br>') : 
-                  'Content not available' 
-              }}
             />
           ) : (
             <div className="prose prose-lg max-w-none">
