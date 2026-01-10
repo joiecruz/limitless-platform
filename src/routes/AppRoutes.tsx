@@ -36,7 +36,7 @@ import CreateProject from "@/pages/CreateProject";
 import Courses from "@/pages/Courses";
 import Tools from "@/pages/Tools";
 import ToolDetails from "@/pages/ToolDetails";
-import Community from "@/pages/Community";
+
 import AIReadyASEAN from "@/pages/AIReadyASEAN";
 import HourOfCode from "@/pages/HourOfCode";
 import Settings from "@/pages/Settings";
@@ -139,7 +139,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         />
         <Route path="/dashboard/tools" element={<Tools />} />
         <Route path="/dashboard/tools/:id" element={<ToolDetails />} />
-        <Route path="/dashboard/community" element={<Community />} />
+        
         <Route path="/dashboard/ai-ready-asean" element={<AIReadyASEAN />} />
         <Route path="/dashboard/ai-ready-asean/hour-of-code" element={<HourOfCode />} />
         

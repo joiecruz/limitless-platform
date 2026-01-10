@@ -1,4 +1,4 @@
-import { Home, BookOpen, Users, Settings, Download, Briefcase, Lightbulb, GraduationCap } from "lucide-react";
+import { Home, BookOpen, Settings, Download, Briefcase, GraduationCap } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMasterTrainerAccess } from "@/hooks/useMasterTrainerAccess";
 
@@ -7,7 +7,6 @@ export const navigation = [
   { name: "Projects", href: "/dashboard/projects", icon: Briefcase },
   { name: "Courses", href: "/dashboard/courses", icon: BookOpen },
   { name: "Tools", href: "/dashboard/tools", icon: Download },
-  { name: "Community", href: "/dashboard/community", icon: Users },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
@@ -20,13 +19,13 @@ export function NavigationLinks() {
   const navigate = useNavigate();
   const { hasMasterTrainerAccess } = useMasterTrainerAccess();
 
-  // Insert AI Ready ASEAN after Community if user has access
+  // Add AI Ready ASEAN after Tools if user has access
   const getNavigationItems = () => {
     const items = [...navigation];
     if (hasMasterTrainerAccess) {
-      const communityIndex = items.findIndex(item => item.name === "Community");
-      if (communityIndex !== -1) {
-        items.splice(communityIndex + 1, 0, ...masterTrainerNavigation);
+      const toolsIndex = items.findIndex(item => item.name === "Tools");
+      if (toolsIndex !== -1) {
+        items.splice(toolsIndex + 1, 0, ...masterTrainerNavigation);
       }
     }
     return items;
