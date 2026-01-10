@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/admin/blog/RichTextEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LessonSectionsEditor, LessonSection } from "../components/LessonSectionsEditor";
+import { Json } from "@/integrations/supabase/types";
 
 interface CourseLessonsProps {
   courseId: string;
@@ -30,6 +32,7 @@ interface LessonFormData {
   body_content: string;
   order: number;
   duration: number;
+  sections: LessonSection[];
 }
 
 const CourseLessons = ({ courseId }: CourseLessonsProps) => {
@@ -43,6 +46,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
     body_content: "",
     order: 0,
     duration: 0,
+    sections: [],
   });
   const [activeTab, setActiveTab] = useState("basic");
 
@@ -79,6 +83,20 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
       return;
     }
     
+    // Parse sections from JSON or default to empty array
+    let sections: LessonSection[] = [];
+    if (data.sections) {
+      try {
+        if (Array.isArray(data.sections)) {
+          sections = data.sections as unknown as LessonSection[];
+        } else if (typeof data.sections === 'string') {
+          sections = JSON.parse(data.sections);
+        }
+      } catch {
+        sections = [];
+      }
+    }
+    
     setFormData({
       title: data.title,
       description: data.description || "",
@@ -86,6 +104,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
       body_content: data.body_content || "",
       order: data.order,
       duration: data.duration || 0,
+      sections,
     });
     
     setIsDialogOpen(true);
@@ -100,6 +119,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
       body_content: "",
       order: (lessons?.length || 0) + 1,
       duration: 0,
+      sections: [],
     });
     setActiveTab("basic");
     setIsDialogOpen(true);
@@ -107,10 +127,24 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
 
   const handleSubmit = async () => {
     try {
+      const sectionsData = formData.sections.length > 0 
+        ? (formData.sections as unknown as Json) 
+        : null;
+      
+      const dataToSave = {
+        title: formData.title,
+        description: formData.description,
+        video_url: formData.video_url,
+        body_content: formData.body_content,
+        order: formData.order,
+        duration: formData.duration,
+        sections: sectionsData,
+      };
+
       if (selectedLesson) {
         const { error } = await supabase
           .from("lessons")
-          .update(formData)
+          .update(dataToSave)
           .eq("id", selectedLesson.id);
 
         if (error) throw error;
@@ -121,7 +155,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
       } else {
         const { error } = await supabase
           .from("lessons")
-          .insert([{ ...formData, course_id: courseId }]);
+          .insert([{ ...dataToSave, course_id: courseId }]);
 
         if (error) throw error;
         toast({
@@ -132,7 +166,6 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
       setIsDialogOpen(false);
       refetch();
     } catch (error) {
-      
       toast({
         title: "Error",
         description: "Failed to save lesson",
@@ -165,31 +198,44 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
             <TableHead>Order</TableHead>
             <TableHead>Title</TableHead>
             <TableHead>Duration</TableHead>
+            <TableHead>Sections</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {lessons?.map((lesson) => (
-            <TableRow key={lesson.id}>
-              <TableCell>{lesson.order}</TableCell>
-              <TableCell>{lesson.title}</TableCell>
-              <TableCell>{lesson.duration || "N/A"}</TableCell>
-              <TableCell>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleEditLesson(lesson)}
-                >
-                  Edit
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {lessons?.map((lesson) => {
+            const sectionCount = lesson.sections ? (Array.isArray(lesson.sections) ? lesson.sections.length : 0) : 0;
+            return (
+              <TableRow key={lesson.id}>
+                <TableCell>{lesson.order}</TableCell>
+                <TableCell>{lesson.title}</TableCell>
+                <TableCell>{lesson.duration || "N/A"}</TableCell>
+                <TableCell>
+                  {sectionCount > 0 ? (
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                      {sectionCount} section{sectionCount !== 1 ? "s" : ""}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">None</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleEditLesson(lesson)}
+                  >
+                    Edit
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedLesson ? "Edit Lesson" : "Add New Lesson"}
@@ -197,9 +243,10 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
           </DialogHeader>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-2 w-full">
+            <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="basic">Basic Info</TabsTrigger>
               <TabsTrigger value="content">Lesson Content</TabsTrigger>
+              <TabsTrigger value="sections">Sections</TabsTrigger>
             </TabsList>
             
             <TabsContent value="basic" className="space-y-4 pt-4">
@@ -258,6 +305,14 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
                   className="min-h-[400px]"
                 />
               </div>
+            </TabsContent>
+            
+            <TabsContent value="sections" className="space-y-4 pt-4">
+              <LessonSectionsEditor
+                sections={formData.sections}
+                onChange={(sections) => setFormData({ ...formData, sections })}
+                lessonId={selectedLesson?.id}
+              />
             </TabsContent>
           </Tabs>
           

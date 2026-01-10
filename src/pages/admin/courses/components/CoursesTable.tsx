@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Lock, Unlock } from "lucide-react";
+import { DeleteCourseDialog } from "./DeleteCourseDialog";
 
 interface Course {
   id: string;
@@ -21,9 +22,10 @@ interface CoursesTableProps {
   courses: Course[];
   onToggleLock: (courseId: string, currentLockState: boolean) => Promise<void>;
   onManageCourse: (courseId: string) => void;
+  onDeleteCourse: (courseId: string) => Promise<void>;
 }
 
-export function CoursesTable({ courses, onToggleLock, onManageCourse }: CoursesTableProps) {
+export function CoursesTable({ courses, onToggleLock, onManageCourse, onDeleteCourse }: CoursesTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -39,7 +41,7 @@ export function CoursesTable({ courses, onToggleLock, onManageCourse }: CoursesT
         {courses?.map((course) => (
           <TableRow key={course.id}>
             <TableCell>{course.title}</TableCell>
-            <TableCell>{course.description}</TableCell>
+            <TableCell className="max-w-xs truncate">{course.description}</TableCell>
             <TableCell>{course.enrollee_count}</TableCell>
             <TableCell>
               {course.locked ? (
@@ -64,6 +66,10 @@ export function CoursesTable({ courses, onToggleLock, onManageCourse }: CoursesT
                 >
                   Manage
                 </Button>
+                <DeleteCourseDialog
+                  courseTitle={course.title}
+                  onConfirm={() => onDeleteCourse(course.id)}
+                />
               </div>
             </TableCell>
           </TableRow>

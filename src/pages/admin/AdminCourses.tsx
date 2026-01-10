@@ -8,7 +8,7 @@ import { CreateCourseDialog } from "./courses/components/CreateCourseDialog";
 
 export default function AdminCourses() {
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const { courses, isLoadingCourses, handleToggleLock } = useCourseOperations();
+  const { courses, isLoadingCourses, handleToggleLock, handleDeleteCourse } = useCourseOperations();
 
   if (selectedCourseId) {
     return (
@@ -40,6 +40,7 @@ export default function AdminCourses() {
         courses={courses || []}
         onToggleLock={handleToggleLock}
         onManageCourse={setSelectedCourseId}
+        onDeleteCourse={handleDeleteCourse}
       />
     </div>
   );
