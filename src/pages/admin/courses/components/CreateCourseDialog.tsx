@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { CourseCoverImageInput } from "./CourseCoverImageInput";
 
 export function CreateCourseDialog() {
   const [open, setOpen] = useState(false);
@@ -29,6 +30,7 @@ export function CreateCourseDialog() {
   const [description, setDescription] = useState("");
   const [format, setFormat] = useState("Online");
   const [price, setPrice] = useState("0");
+  const [imageUrl, setImageUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -50,6 +52,7 @@ export function CreateCourseDialog() {
         description: description.trim() || null,
         format,
         price: parseFloat(price) || 0,
+        image_url: imageUrl.trim() || null,
         locked: true, // New courses start locked
       });
 
@@ -65,6 +68,7 @@ export function CreateCourseDialog() {
       setDescription("");
       setFormat("Online");
       setPrice("0");
+      setImageUrl("");
       setOpen(false);
 
       // Refresh courses list
@@ -89,7 +93,7 @@ export function CreateCourseDialog() {
           Create Course
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Course</DialogTitle>
           <DialogDescription>
@@ -117,6 +121,11 @@ export function CreateCourseDialog() {
               rows={3}
             />
           </div>
+
+          <CourseCoverImageInput 
+            value={imageUrl} 
+            onChange={setImageUrl} 
+          />
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Format</label>
