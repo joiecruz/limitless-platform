@@ -153,6 +153,7 @@ const Lesson = () => {
               <LessonContent
                 videoUrl={lesson.video_url}
                 bodyContent={lesson.body_content}
+                sections={lesson.sections as any}
               />
 
               <div className="px-2 md:px-6">

@@ -772,6 +772,7 @@ export type Database = {
           id: string
           order: number
           release_date: string | null
+          sections: Json | null
           title: string
           updated_at: string | null
           video_url: string | null
@@ -785,6 +786,7 @@ export type Database = {
           id?: string
           order: number
           release_date?: string | null
+          sections?: Json | null
           title: string
           updated_at?: string | null
           video_url?: string | null
@@ -798,6 +800,7 @@ export type Database = {
           id?: string
           order?: number
           release_date?: string | null
+          sections?: Json | null
           title?: string
           updated_at?: string | null
           video_url?: string | null

@@ -51,10 +51,50 @@ export const useCourseOperations = () => {
         description: `Course ${currentLockState ? "unlocked" : "locked"} successfully`,
       });
     } catch (error: any) {
-      
       toast({
         title: "Error",
         description: error.message || "Failed to update course status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    try {
+      // First delete related enrollments
+      const { error: enrollmentError } = await supabase
+        .from("enrollments")
+        .delete()
+        .eq("course_id", courseId);
+
+      if (enrollmentError) throw enrollmentError;
+
+      // Delete related lessons
+      const { error: lessonsError } = await supabase
+        .from("lessons")
+        .delete()
+        .eq("course_id", courseId);
+
+      if (lessonsError) throw lessonsError;
+
+      // Delete the course
+      const { error } = await supabase
+        .from("courses")
+        .delete()
+        .eq("id", courseId);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["admin-courses"] });
+
+      toast({
+        title: "Success",
+        description: "Course deleted successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete course",
         variant: "destructive",
       });
     }
@@ -64,5 +104,6 @@ export const useCourseOperations = () => {
     courses,
     isLoadingCourses,
     handleToggleLock,
+    handleDeleteCourse,
   };
 };
