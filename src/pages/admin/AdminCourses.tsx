@@ -4,6 +4,7 @@ import CourseDetails from "./courses/CourseDetails";
 import { LoadingPage } from "@/components/common/LoadingPage";
 import { useCourseOperations } from "./courses/hooks/useCourseOperations";
 import { CoursesTable } from "./courses/components/CoursesTable";
+import { CreateCourseDialog } from "./courses/components/CreateCourseDialog";
 
 export default function AdminCourses() {
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export default function AdminCourses() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Courses</h1>
-        <Button>Create Course</Button>
+        <CreateCourseDialog />
       </div>
 
       <CoursesTable
