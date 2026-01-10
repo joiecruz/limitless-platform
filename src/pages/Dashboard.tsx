@@ -166,13 +166,6 @@ export default function Dashboard() {
       link: "/dashboard/tools"
     },
     {
-      title: "Engage with fellow innovators",
-      description: "Join the Limitless Lab community and find potential collaborators",
-      image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Community_QuickLinks.png",
-      action: "Join community",
-      link: "/dashboard/community"
-    },
-    {
       title: "Create your innovation project",
       description: "Be guided step-by-step on creating and implementing your idea",
       image: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Projects_QuickLinks.png",
