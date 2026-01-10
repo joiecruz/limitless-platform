@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,11 +17,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { RichTextEditor } from "@/components/admin/blog/RichTextEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LessonSectionsEditor, LessonSection } from "../components/LessonSectionsEditor";
-import { Json } from "@/integrations/supabase/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CourseLessonsProps {
   courseId: string;
+}
+
+interface CourseSection {
+  id: string;
+  title: string;
+  order_index: number;
 }
 
 interface LessonFormData {
@@ -32,7 +42,7 @@ interface LessonFormData {
   body_content: string;
   order: number;
   duration: number;
-  sections: LessonSection[];
+  section_id: string | null;
 }
 
 const CourseLessons = ({ courseId }: CourseLessonsProps) => {
@@ -46,7 +56,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
     body_content: "",
     order: 0,
     duration: 0,
-    sections: [],
+    section_id: null,
   });
   const [activeTab, setActiveTab] = useState("basic");
 
@@ -64,10 +74,29 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
     },
   });
 
+  const { data: sections = [] } = useQuery({
+    queryKey: ["course-sections", courseId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("course_sections")
+        .select("*")
+        .eq("course_id", courseId)
+        .order("order_index");
+
+      if (error) throw error;
+      return data as CourseSection[];
+    },
+  });
+
+  const getSectionTitle = (sectionId: string | null) => {
+    if (!sectionId) return null;
+    const section = sections.find((s) => s.id === sectionId);
+    return section?.title || null;
+  };
+
   const handleEditLesson = async (lesson: any) => {
     setSelectedLesson(lesson);
     
-    // Fetch the full lesson data including body_content
     const { data, error } = await supabase
       .from("lessons")
       .select("*")
@@ -83,20 +112,6 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
       return;
     }
     
-    // Parse sections from JSON or default to empty array
-    let sections: LessonSection[] = [];
-    if (data.sections) {
-      try {
-        if (Array.isArray(data.sections)) {
-          sections = data.sections as unknown as LessonSection[];
-        } else if (typeof data.sections === 'string') {
-          sections = JSON.parse(data.sections);
-        }
-      } catch {
-        sections = [];
-      }
-    }
-    
     setFormData({
       title: data.title,
       description: data.description || "",
@@ -104,7 +119,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
       body_content: data.body_content || "",
       order: data.order,
       duration: data.duration || 0,
-      sections,
+      section_id: data.section_id || null,
     });
     
     setIsDialogOpen(true);
@@ -119,7 +134,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
       body_content: "",
       order: (lessons?.length || 0) + 1,
       duration: 0,
-      sections: [],
+      section_id: null,
     });
     setActiveTab("basic");
     setIsDialogOpen(true);
@@ -127,10 +142,6 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
 
   const handleSubmit = async () => {
     try {
-      const sectionsData = formData.sections.length > 0 
-        ? (formData.sections as unknown as Json) 
-        : null;
-      
       const dataToSave = {
         title: formData.title,
         description: formData.description,
@@ -138,7 +149,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
         body_content: formData.body_content,
         order: formData.order,
         duration: formData.duration,
-        sections: sectionsData,
+        section_id: formData.section_id,
       };
 
       if (selectedLesson) {
@@ -197,28 +208,28 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
           <TableRow>
             <TableHead>Order</TableHead>
             <TableHead>Title</TableHead>
+            <TableHead>Section</TableHead>
             <TableHead>Duration</TableHead>
-            <TableHead>Sections</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {lessons?.map((lesson) => {
-            const sectionCount = lesson.sections ? (Array.isArray(lesson.sections) ? lesson.sections.length : 0) : 0;
+            const sectionTitle = getSectionTitle(lesson.section_id);
             return (
               <TableRow key={lesson.id}>
                 <TableCell>{lesson.order}</TableCell>
                 <TableCell>{lesson.title}</TableCell>
-                <TableCell>{lesson.duration || "N/A"}</TableCell>
                 <TableCell>
-                  {sectionCount > 0 ? (
+                  {sectionTitle ? (
                     <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                      {sectionCount} section{sectionCount !== 1 ? "s" : ""}
+                      {sectionTitle}
                     </span>
                   ) : (
                     <span className="text-muted-foreground text-xs">None</span>
                   )}
                 </TableCell>
+                <TableCell>{lesson.duration ? `${lesson.duration} min` : "N/A"}</TableCell>
                 <TableCell>
                   <Button 
                     variant="outline" 
@@ -243,10 +254,9 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
           </DialogHeader>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-2 w-full">
               <TabsTrigger value="basic">Basic Info</TabsTrigger>
               <TabsTrigger value="content">Lesson Content</TabsTrigger>
-              <TabsTrigger value="sections">Sections</TabsTrigger>
             </TabsList>
             
             <TabsContent value="basic" className="space-y-4 pt-4">
@@ -266,6 +276,28 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
                   placeholder="Lesson description"
                   rows={3}
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Section (Optional)</label>
+                <Select
+                  value={formData.section_id || "none"}
+                  onValueChange={(value) => setFormData({ ...formData, section_id: value === "none" ? null : value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Section</SelectItem>
+                    {sections.map((section) => (
+                      <SelectItem key={section.id} value={section.id}>
+                        {section.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Assign this lesson to a section/module. Create sections in the "Sections" tab first.
+                </p>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Video URL</label>
@@ -305,14 +337,6 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
                   className="min-h-[400px]"
                 />
               </div>
-            </TabsContent>
-            
-            <TabsContent value="sections" className="space-y-4 pt-4">
-              <LessonSectionsEditor
-                sections={formData.sections}
-                onChange={(sections) => setFormData({ ...formData, sections })}
-                lessonId={selectedLesson?.id}
-              />
             </TabsContent>
           </Tabs>
           
