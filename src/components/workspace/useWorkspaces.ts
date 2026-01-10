@@ -33,7 +33,8 @@ export function useWorkspaces() {
           throw error;
         }
           
-        return data || [];
+        // Edge function now returns { workspaces: [...] }
+        return data?.workspaces || [];
       } catch (error: any) {
         
         toast({
