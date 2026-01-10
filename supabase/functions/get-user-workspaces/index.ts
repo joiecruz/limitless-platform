@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     return new Response(
-      JSON.stringify(formattedWorkspaces),
+      JSON.stringify({ workspaces: formattedWorkspaces }),
       { 
         headers: { 
           ...corsHeaders, 
