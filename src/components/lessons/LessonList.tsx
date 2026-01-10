@@ -43,7 +43,7 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
     },
   });
 
-  const isLessonLocked = (releaseDate: string) => {
+  const isReleaseDateLocked = (releaseDate: string) => {
     return new Date(releaseDate) > new Date();
   };
 
@@ -51,15 +51,50 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
     return completedLessons.includes(lessonId);
   };
 
+  // Get all lessons sorted by order for ladderized progression
+  const sortedLessons = [...lessons].sort((a, b) => a.order - b.order);
+
+  // Check if a lesson is locked based on ladderized progression
+  const isLessonLocked = (lesson: Lesson) => {
+    // First check release date
+    if (isReleaseDateLocked(lesson.release_date)) {
+      return { locked: true, reason: 'release_date' as const, releaseDate: lesson.release_date };
+    }
+    
+    // First lesson is always unlocked (if release date has passed)
+    const lessonIndex = sortedLessons.findIndex((l) => l.id === lesson.id);
+    if (lessonIndex === 0) {
+      return { locked: false, reason: null };
+    }
+    
+    // Check if all previous lessons are completed
+    for (let i = 0; i < lessonIndex; i++) {
+      if (!isLessonCompleted(sortedLessons[i].id)) {
+        return { locked: true, reason: 'progression' as const, previousLesson: sortedLessons[i].title };
+      }
+    }
+    
+    return { locked: false, reason: null };
+  };
+
   const handleLessonClick = (lesson: Lesson) => {
-    if (isLessonLocked(lesson.release_date)) {
-      toast({
-        title: "Lesson Locked",
-        description: `This lesson will be available on ${format(
-          new Date(lesson.release_date),
-          "MMMM dd, yyyy"
-        )}`,
-      });
+    const lockStatus = isLessonLocked(lesson);
+    
+    if (lockStatus.locked) {
+      if (lockStatus.reason === 'release_date') {
+        toast({
+          title: "Lesson Locked",
+          description: `This lesson will be available on ${format(
+            new Date(lockStatus.releaseDate!),
+            "MMMM dd, yyyy"
+          )}`,
+        });
+      } else {
+        toast({
+          title: "Complete Previous Lesson",
+          description: `Please complete "${lockStatus.previousLesson}" first to unlock this lesson.`,
+        });
+      }
       return;
     }
 
@@ -70,8 +105,9 @@ const LessonList: React.FC<LessonListProps> = ({ lessons, courseId }) => {
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Course content</h2>
       <div className="space-y-2">
-        {lessons.map((lesson) => {
-          const locked = isLessonLocked(lesson.release_date);
+        {sortedLessons.map((lesson) => {
+          const lockStatus = isLessonLocked(lesson);
+          const locked = lockStatus.locked;
           const completed = isLessonCompleted(lesson.id);
           return (
             <button
