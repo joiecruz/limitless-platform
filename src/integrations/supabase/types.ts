@@ -3223,8 +3223,8 @@ export type Database = {
         Returns: boolean
       }
       is_workspace_member:
-        | { Args: { workspace_id_param: string }; Returns: boolean }
         | { Args: { user_id: string; workspace_id: string }; Returns: boolean }
+        | { Args: { workspace_id_param: string }; Returns: boolean }
       is_workspace_member_for_view: {
         Args: { workspace_id_param: string }
         Returns: boolean
