@@ -328,6 +328,44 @@ export type Database = {
           },
         ]
       }
+      course_sections: {
+        Row: {
+          course_id: string
+          created_at: string
+          description: string | null
+          id: string
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_index?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_sections_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           booking_link: string | null
@@ -772,6 +810,7 @@ export type Database = {
           id: string
           order: number
           release_date: string | null
+          section_id: string | null
           sections: Json | null
           title: string
           updated_at: string | null
@@ -786,6 +825,7 @@ export type Database = {
           id?: string
           order: number
           release_date?: string | null
+          section_id?: string | null
           sections?: Json | null
           title: string
           updated_at?: string | null
@@ -800,6 +840,7 @@ export type Database = {
           id?: string
           order?: number
           release_date?: string | null
+          section_id?: string | null
           sections?: Json | null
           title?: string
           updated_at?: string | null
@@ -811,6 +852,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "course_sections"
             referencedColumns: ["id"]
           },
         ]

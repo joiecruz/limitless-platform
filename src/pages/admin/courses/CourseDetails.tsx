@@ -1,9 +1,9 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import CourseAbout from "./tabs/CourseAbout";
+import CourseSections from "./tabs/CourseSections";
 import CourseLessons from "./tabs/CourseLessons";
 import CourseUsers from "./tabs/CourseUsers";
 import CourseWorkspaces from "./tabs/CourseWorkspaces";
@@ -48,6 +48,7 @@ const CourseDetails = ({ courseId }: CourseDetailsProps) => {
       <Tabs defaultValue="about" className="w-full">
         <TabsList>
           <TabsTrigger value="about">About</TabsTrigger>
+          <TabsTrigger value="sections">Sections</TabsTrigger>
           <TabsTrigger value="lessons">Lessons</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="workspaces">Workspaces</TabsTrigger>
@@ -55,6 +56,10 @@ const CourseDetails = ({ courseId }: CourseDetailsProps) => {
 
         <TabsContent value="about">
           <CourseAbout course={course} />
+        </TabsContent>
+        
+        <TabsContent value="sections">
+          <CourseSections courseId={courseId} />
         </TabsContent>
         
         <TabsContent value="lessons">

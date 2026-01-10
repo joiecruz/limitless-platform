@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import CourseHeader from "@/components/lessons/CourseHeader";
 import CourseProgress from "@/components/lessons/CourseProgress";
-import LessonList from "@/components/lessons/LessonList";
+import SectionedLessonList from "@/components/lessons/SectionedLessonList";
 
 interface Lesson {
   id: string;
@@ -14,6 +14,7 @@ interface Lesson {
   release_date: string;
   order: number;
   duration: number | null;
+  section_id: string | null;
 }
 
 const Lessons = () => {
@@ -33,7 +34,6 @@ const Lessons = () => {
         .single();
 
       if (error) {
-        
         toast({
           title: "Error",
           description: "Failed to load course details. Please try again later.",
@@ -60,7 +60,6 @@ const Lessons = () => {
         .order("order");
 
       if (error) {
-        
         toast({
           title: "Error",
           description: "Failed to load lessons. Please try again later.",
@@ -91,7 +90,6 @@ const Lessons = () => {
         .single();
 
       if (error && error.code !== "PGRST116") {
-        
         toast({
           title: "Error",
           description: "Failed to load enrollment details. Please try again later.",
@@ -123,7 +121,7 @@ const Lessons = () => {
 
       <div className="space-y-8">
         <CourseProgress progress={enrollment?.progress || 0} />
-        <LessonList lessons={lessons} courseId={courseId!} />
+        <SectionedLessonList lessons={lessons} courseId={courseId!} />
       </div>
     </div>
   );
