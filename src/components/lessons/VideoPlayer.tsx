@@ -34,10 +34,10 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   if (youtubeVideoId) {
     console.log("[VideoPlayer] YouTube video ID:", youtubeVideoId);
     return (
-      <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
+      <div className="relative aspect-video bg-black md:rounded-lg overflow-hidden mb-4 md:mb-8">
         <iframe
           className="absolute inset-0 w-full h-full"
-          src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1`}
+          src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1&playsinline=1`}
           title="Video player"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
@@ -48,10 +48,11 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
 
   // Fallback to native video element for direct video files
   return (
-    <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
+    <div className="relative aspect-video bg-black md:rounded-lg overflow-hidden mb-4 md:mb-8">
       <video
         src={videoUrl}
         controls
+        playsInline
         className="absolute inset-0 w-full h-full object-contain"
       >
         Your browser does not support the video tag.

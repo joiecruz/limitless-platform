@@ -11,7 +11,7 @@ const LessonContent = ({ videoUrl, bodyContent }: LessonContentProps) => {
   return (
     <>
       {videoUrl && (
-        <div className="px-6">
+        <div className="md:px-6">
           <VideoPlayer videoUrl={videoUrl} />
         </div>
       )}
