@@ -153,7 +153,8 @@ const Lesson = () => {
           isOpen ? 'md:ml-80' : 'ml-0'
         }`}>
           <div className="w-full">
-            <div className="w-full max-w-4xl mx-auto py-4 md:py-8 px-4 md:px-0">
+            {/* Video section - full width on mobile, no gaps */}
+            <div className="md:max-w-4xl md:mx-auto md:py-8 md:px-0">
               {/* Desktop header - hidden on mobile */}
               <div className="hidden md:block">
                 <LessonHeader
@@ -169,7 +170,7 @@ const Lesson = () => {
                 bodyContent={lesson.body_content}
               />
 
-              <div className="px-2 md:px-6">
+              <div className="px-4 md:px-6">
                 <LessonNavigation
                   previousLesson={previousLesson}
                   nextLesson={nextLesson}
