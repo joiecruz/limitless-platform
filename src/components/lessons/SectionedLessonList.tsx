@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, Video, CheckCircle, ChevronDown, FolderOpen } from "lucide-react";
+import { Lock, Video, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -212,22 +212,17 @@ const SectionedLessonList: React.FC<SectionedLessonListProps> = ({ lessons, cour
             className="border rounded-xl bg-card shadow-sm overflow-hidden"
           >
             <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-accent/30 transition-colors">
-              <div className="flex items-center gap-3 text-left">
-                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                  <FolderOpen className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <div className="font-semibold text-foreground">{section.title}</div>
-                  {section.description && (
-                    <p className="text-sm text-muted-foreground mt-0.5">{section.description}</p>
+              <div className="text-left">
+                <div className="text-lg font-semibold text-foreground">{section.title}</div>
+                {section.description && (
+                  <p className="text-sm text-muted-foreground mt-0.5">{section.description}</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {section.lessons.length} lesson{section.lessons.length !== 1 ? "s" : ""}
+                  {section.lessons.length > 0 && (
+                    <> • {section.lessons.filter((l) => isLessonCompleted(l.id)).length} completed</>
                   )}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {section.lessons.length} lesson{section.lessons.length !== 1 ? "s" : ""}
-                    {section.lessons.length > 0 && (
-                      <> • {section.lessons.filter((l) => isLessonCompleted(l.id)).length} completed</>
-                    )}
-                  </p>
-                </div>
+                </p>
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
