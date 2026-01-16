@@ -31,13 +31,22 @@ export function NavigationLinks() {
     return items;
   };
 
+  const isActive = (href: string) => {
+    // Exact match for Dashboard to prevent it from matching all /dashboard/* routes
+    if (href === "/dashboard") {
+      return location.pathname === "/dashboard";
+    }
+    // For other routes, match exact or child routes
+    return location.pathname === href || location.pathname.startsWith(href + "/");
+  };
+
   return (
     <nav className="space-y-1 px-3 mb-6">
       {getNavigationItems().map((item) => (
         <a
           key={item.name}
           href={item.href}
-          className={`nav-item ${location.pathname === item.href || location.pathname.startsWith(item.href + "/") ? "active" : ""}`}
+          className={`nav-item ${isActive(item.href) ? "active" : ""}`}
           onClick={(e) => {
             e.preventDefault();
             navigate(item.href);
