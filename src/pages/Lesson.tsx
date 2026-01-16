@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +7,7 @@ import LessonSidebar from "@/components/lessons/LessonSidebar";
 import LessonHeader from "@/components/lessons/LessonHeader";
 import LessonContent from "@/components/lessons/LessonContent";
 import LessonNavigation from "@/components/lessons/LessonNavigation";
+import MobileLessonHeader from "@/components/lessons/MobileLessonHeader";
 
 const Lesson = () => {
   const { courseId, lessonId } = useParams<{
@@ -129,7 +129,18 @@ const Lesson = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile header with hamburger menu */}
+      <MobileLessonHeader
+        lessons={lessons}
+        currentLessonId={lessonId!}
+        courseId={courseId!}
+        currentIndex={currentIndex}
+        totalLessons={totalLessons}
+        lessonTitle={lesson.title}
+      />
+
       <div className="flex flex-col md:flex-row">
+        {/* Desktop sidebar - hidden on mobile */}
         <LessonSidebar
           lessons={lessons}
           currentLessonId={lessonId}
@@ -143,12 +154,15 @@ const Lesson = () => {
         }`}>
           <div className="w-full">
             <div className="w-full max-w-4xl mx-auto py-4 md:py-8 px-4 md:px-0">
-              <LessonHeader
-                title={lesson.title}
-                description={lesson.description}
-                currentIndex={currentIndex}
-                totalLessons={totalLessons}
-              />
+              {/* Desktop header - hidden on mobile */}
+              <div className="hidden md:block">
+                <LessonHeader
+                  title={lesson.title}
+                  description={lesson.description}
+                  currentIndex={currentIndex}
+                  totalLessons={totalLessons}
+                />
+              </div>
               
               <LessonContent
                 videoUrl={lesson.video_url}
