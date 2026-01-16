@@ -1,13 +1,24 @@
-import ReactPlayer from "react-player";
-
 interface VideoPlayerProps {
   videoUrl: string;
 }
 
+// Extract YouTube video ID from various URL formats
+const getYouTubeVideoId = (url: string): string | null => {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /^([a-zA-Z0-9_-]{11})$/, // Direct video ID
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+};
+
 const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   console.log("[VideoPlayer] Received videoUrl:", videoUrl);
   
-  // Check if it's a valid URL
   if (!videoUrl) {
     console.log("[VideoPlayer] No video URL provided");
     return (
@@ -17,45 +28,34 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
     );
   }
 
-  // ReactPlayer handles YouTube, Vimeo, and many other video sources automatically
-  const canPlay = ReactPlayer.canPlay(videoUrl);
-  console.log("[VideoPlayer] ReactPlayer.canPlay:", canPlay);
-
-  if (!canPlay) {
-    // Fallback to native video element for direct video files
+  // Check if it's a YouTube URL
+  const youtubeVideoId = getYouTubeVideoId(videoUrl);
+  
+  if (youtubeVideoId) {
+    console.log("[VideoPlayer] YouTube video ID:", youtubeVideoId);
     return (
       <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
-        <video
-          src={videoUrl}
-          controls
-          className="absolute inset-0 w-full h-full object-contain"
-        >
-          Your browser does not support the video tag.
-        </video>
+        <iframe
+          className="absolute inset-0 w-full h-full"
+          src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1`}
+          title="Video player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
       </div>
     );
   }
 
-  // Responsive wrapper pattern for ReactPlayer
+  // Fallback to native video element for direct video files
   return (
-    <div className="relative pt-[56.25%] mb-8 rounded-lg overflow-hidden bg-black">
-      <ReactPlayer
-        className="absolute top-0 left-0"
-        url={videoUrl}
-        width="100%"
-        height="100%"
+    <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
+      <video
+        src={videoUrl}
         controls
-        onReady={() => console.log("[VideoPlayer] Player ready")}
-        onError={(e) => console.error("[VideoPlayer] Error:", e)}
-        config={{
-          youtube: {
-            playerVars: {
-              modestbranding: 1,
-              rel: 0,
-            },
-          },
-        }}
-      />
+        className="absolute inset-0 w-full h-full object-contain"
+      >
+        Your browser does not support the video tag.
+      </video>
     </div>
   );
 };
