@@ -72,6 +72,28 @@ const Lesson = () => {
     enabled: !!courseId,
   });
 
+  // Fetch course sections
+  const { data: sections = [] } = useQuery({
+    queryKey: ["course-sections", courseId],
+    queryFn: async () => {
+      if (!courseId) throw new Error("Course ID is required");
+
+      const { data, error } = await supabase
+        .from("course_sections")
+        .select("*")
+        .eq("course_id", courseId)
+        .order("order_index");
+
+      if (error) {
+        console.error("Failed to load sections:", error);
+        return [];
+      }
+
+      return data;
+    },
+    enabled: !!courseId,
+  });
+
   const currentIndex = lessons.findIndex((l) => l.id === lessonId);
   const totalLessons = lessons.length;
   const nextLesson = lessons[currentIndex + 1];
@@ -132,6 +154,7 @@ const Lesson = () => {
       {/* Mobile header with hamburger menu */}
       <MobileLessonHeader
         lessons={lessons}
+        sections={sections}
         currentLessonId={lessonId!}
         courseId={courseId!}
         currentIndex={currentIndex}
@@ -143,6 +166,7 @@ const Lesson = () => {
         {/* Desktop sidebar - hidden on mobile */}
         <LessonSidebar
           lessons={lessons}
+          sections={sections}
           currentLessonId={lessonId}
           courseId={courseId!}
           isOpen={isOpen}

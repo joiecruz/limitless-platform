@@ -15,10 +15,18 @@ interface Lesson {
   title: string;
   duration: number | null;
   release_date: string;
+  section_id: string | null;
+}
+
+interface Section {
+  id: string;
+  title: string;
+  order_index: number;
 }
 
 interface MobileLessonHeaderProps {
   lessons: Lesson[];
+  sections: Section[];
   currentLessonId: string;
   courseId: string;
   currentIndex: number;
@@ -28,6 +36,7 @@ interface MobileLessonHeaderProps {
 
 const MobileLessonHeader = ({
   lessons,
+  sections,
   currentLessonId,
   courseId,
   currentIndex,
@@ -35,6 +44,13 @@ const MobileLessonHeader = ({
   lessonTitle,
 }: MobileLessonHeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Group lessons by section
+  const getLessonsForSection = (sectionId: string) => {
+    return lessons.filter((lesson) => lesson.section_id === sectionId);
+  };
+
+  const unsectionedLessons = lessons.filter((lesson) => !lesson.section_id);
 
   return (
     <div className="sticky top-0 z-20 bg-background border-b md:hidden">
@@ -61,14 +77,63 @@ const MobileLessonHeader = ({
                 <SheetTitle className="text-left mt-2">Lessons</SheetTitle>
               </SheetHeader>
               <div className="overflow-y-auto h-[calc(100vh-120px)]">
-                {lessons.map((lesson) => {
+                {/* Render sections with their lessons */}
+                {sections.map((section) => {
+                  const sectionLessons = getLessonsForSection(section.id);
+                  if (sectionLessons.length === 0) return null;
+
+                  return (
+                    <div key={section.id}>
+                      {/* Section divider */}
+                      <div className="px-4 py-3 bg-muted border-y border-border">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {section.title}
+                        </span>
+                      </div>
+                      {/* Section lessons */}
+                      {sectionLessons.map((lesson) => {
+                        const isLocked = new Date(lesson.release_date) > new Date();
+                        return (
+                          <Link
+                            key={lesson.id}
+                            to={isLocked ? "#" : `/dashboard/courses/${courseId}/lessons/${lesson.id}`}
+                            onClick={() => !isLocked && setIsOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-3 text-sm border-b border-border/50 ${
+                              lesson.id === currentLessonId
+                                ? "bg-primary/10 text-primary"
+                                : "text-muted-foreground hover:bg-muted"
+                            } ${isLocked ? "opacity-50 cursor-not-allowed" : ""}`}
+                          >
+                            {isLocked && <Lock className="w-4 h-4 flex-shrink-0" />}
+                            <span className="flex-1 line-clamp-2">{lesson.title}</span>
+                            {lesson.duration && (
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                {lesson.duration}m
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+
+                {/* Unsectioned lessons */}
+                {unsectionedLessons.length > 0 && sections.length > 0 && (
+                  <div className="px-4 py-3 bg-muted border-y border-border">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Other Lessons
+                    </span>
+                  </div>
+                )}
+                {unsectionedLessons.map((lesson) => {
                   const isLocked = new Date(lesson.release_date) > new Date();
                   return (
                     <Link
                       key={lesson.id}
                       to={isLocked ? "#" : `/dashboard/courses/${courseId}/lessons/${lesson.id}`}
                       onClick={() => !isLocked && setIsOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 text-sm border-b ${
+                      className={`flex items-center gap-3 px-4 py-3 text-sm border-b border-border/50 ${
                         lesson.id === currentLessonId
                           ? "bg-primary/10 text-primary"
                           : "text-muted-foreground hover:bg-muted"
