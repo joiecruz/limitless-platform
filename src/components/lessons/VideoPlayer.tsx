@@ -1,5 +1,3 @@
-import { Settings, Cast, Maximize2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import ReactPlayer from "react-player";
 
 interface VideoPlayerProps {
@@ -7,17 +5,26 @@ interface VideoPlayerProps {
 }
 
 const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
-  const isYouTubeUrl = videoUrl?.includes("youtube.com") || videoUrl?.includes("youtu.be");
+  // Check if it's a valid URL
+  if (!videoUrl) {
+    return (
+      <div className="relative aspect-video bg-muted rounded-lg overflow-hidden mb-8 flex items-center justify-center">
+        <p className="text-muted-foreground">No video available</p>
+      </div>
+    );
+  }
+
+  // ReactPlayer handles YouTube, Vimeo, and many other video sources automatically
+  const isExternalVideo = ReactPlayer.canPlay(videoUrl);
 
   return (
     <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
-      {isYouTubeUrl ? (
+      {isExternalVideo ? (
         <ReactPlayer
           url={videoUrl}
           width="100%"
           height="100%"
           controls
-          playing
           config={{
             youtube: {
               playerVars: {
@@ -36,29 +43,6 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
           Your browser does not support the video tag.
         </video>
       )}
-      {/* <div className="absolute bottom-4 right-4 flex gap-2">
-        <Button
-          size="icon"
-          variant="ghost"
-          className="bg-black/50 text-white hover:bg-black/70"
-        >
-          <Settings className="w-4 h-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="bg-black/50 text-white hover:bg-black/70"
-        >
-          <Cast className="w-4 h-4" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="bg-black/50 text-white hover:bg-black/70"
-        >
-          <Maximize2 className="w-4 h-4" />
-        </Button>
-      </div> */}
     </div>
   );
 };
