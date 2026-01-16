@@ -20,20 +20,23 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   return (
     <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-8">
       {isExternalVideo ? (
-        <ReactPlayer
-          url={videoUrl}
-          width="100%"
-          height="100%"
-          controls
-          config={{
-            youtube: {
-              playerVars: {
-                modestbranding: 1,
-                rel: 0,
+        <div className="absolute inset-0">
+          <ReactPlayer
+            url={videoUrl}
+            width="100%"
+            height="100%"
+            controls
+            style={{ position: 'absolute', top: 0, left: 0 }}
+            config={{
+              youtube: {
+                playerVars: {
+                  modestbranding: 1,
+                  rel: 0,
+                },
               },
-            },
-          }}
-        />
+            }}
+          />
+        </div>
       ) : (
         <video
           src={videoUrl}
