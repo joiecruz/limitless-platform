@@ -30,7 +30,8 @@ const Courses = () => {
       const { data: coursesData, error } = await supabase
         .from('courses')
         .select('*')
-        .in('format', ['Online', 'Hybrid']); // Filter for Online and Hybrid courses only
+        .in('format', ['Online', 'Hybrid'])
+        .order('created_at', { ascending: false }); // Sort by most recent first
 
       if (error) {
         
