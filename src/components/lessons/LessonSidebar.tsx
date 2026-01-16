@@ -30,7 +30,7 @@ const LessonSidebar = ({
   onOpenChange,
 }: LessonSidebarProps) => {
   return (
-    <div className="relative">
+    <div className="relative hidden md:block">
       <div
         className={`fixed top-0 left-0 h-screen transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-80"
@@ -78,11 +78,11 @@ const LessonSidebar = ({
           </CollapsibleContent>
         </Collapsible>
       </div>
-      {/* Fixed toggle button that stays visible */}
+      {/* Fixed toggle button that stays visible - hidden on mobile */}
       <Button
         variant="ghost"
         size="icon"
-        className={`fixed top-4 transition-all duration-300 z-50 ${
+        className={`fixed top-4 transition-all duration-300 z-50 hidden md:flex ${
           isOpen ? "left-72" : "left-4"
         }`}
         onClick={() => onOpenChange(!isOpen)}
