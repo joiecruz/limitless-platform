@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -16,6 +16,7 @@ const Lesson = () => {
   }>();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(true);
 
   // Fetch lesson details
@@ -111,16 +112,42 @@ const Lesson = () => {
         return;
       }
 
-      // Update enrollment progress
+      // Get current enrollment to get completed_lessons
+      const { data: enrollment, error: fetchError } = await supabase
+        .from("enrollments")
+        .select("id, completed_lessons")
+        .eq("user_id", session.user.id)
+        .eq("course_id", courseId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Get completed lessons or initialize empty array
+      const completedLessons: string[] = enrollment?.completed_lessons || [];
+
+      // Add current lesson if not already completed
+      if (lessonId && !completedLessons.includes(lessonId)) {
+        completedLessons.push(lessonId);
+      }
+
+      // Calculate progress based on completed lessons
+      const progress = Math.round((completedLessons.length / totalLessons) * 100);
+
+      // Update enrollment with completed lessons and progress
       const { error: updateError } = await supabase
         .from("enrollments")
         .update({
-          progress: Math.round(((currentIndex + 1) / totalLessons) * 100),
+          completed_lessons: completedLessons,
+          progress: progress,
         })
         .eq("user_id", session.user.id)
         .eq("course_id", courseId);
 
       if (updateError) throw updateError;
+
+      // Invalidate queries to refresh data in real-time
+      await queryClient.invalidateQueries({ queryKey: ["enrollment", courseId] });
+      await queryClient.invalidateQueries({ queryKey: ["completedLessons", courseId] });
 
       toast({
         title: "Progress saved",
@@ -132,7 +159,7 @@ const Lesson = () => {
         navigate(`/dashboard/courses/${courseId}/lessons/${nextLesson.id}`);
       }
     } catch (error) {
-      
+      console.error("Error updating progress:", error);
       toast({
         title: "Error",
         description: "Failed to update progress. Please try again later.",
