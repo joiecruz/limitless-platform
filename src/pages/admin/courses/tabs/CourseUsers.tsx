@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import EnrolledUsersTable from "./components/EnrolledUsersTable";
 import UsersWithAccessTable from "./components/UsersWithAccessTable";
+import GrantAccessDialog from "@/components/admin/courses/GrantAccessDialog";
 
 interface CourseUsersProps {
   courseId: string;
@@ -188,12 +188,13 @@ const CourseUsers = ({ courseId }: CourseUsersProps) => {
 
       {/* Users with Access Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Users with Individual Access</CardTitle>
+          <GrantAccessDialog courseId={courseId} onAccessGranted={refetchAccess} />
         </CardHeader>
         <CardContent>
           <UsersWithAccessTable 
-            usersWithAccess={usersWithAccess} 
+            usersWithAccess={usersWithAccess}
             courseId={courseId} 
             onAccessRevoked={refetchAccess}
           />

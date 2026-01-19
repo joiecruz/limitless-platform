@@ -17,7 +17,7 @@ export function AdminSidebar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <aside className="h-full bg-white border-r flex flex-col overflow-y-auto">
+    <aside className="h-full bg-white border-r flex flex-col">
       <div className="hidden md:flex items-center px-6 py-4">
         <img
           src="/limitless-logo.svg"
@@ -25,7 +25,7 @@ export function AdminSidebar() {
           className="h-12 w-auto"
         />
       </div>
-      <nav className="px-4 mt-6 flex-1 overflow-y-auto">
+      <nav className="px-4 mt-6 flex-1 overflow-y-auto min-h-0">
         <div className="space-y-1">
           <Link
             to="/admin"
@@ -96,13 +96,13 @@ export function AdminSidebar() {
           </div>
         </div>
       </nav>
-      <div className="mt-auto border-t">
+      <div className="flex-shrink-0 border-t bg-white">
         <Link to="/dashboard" className="nav-item">
           <ArrowLeft className="h-5 w-5" />
           Go back to User Dashboard
         </Link>
+        <UserProfile />
       </div>
-      <UserProfile />
     </aside>
   );
 }
