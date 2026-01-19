@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useNavigationHandlers = (courseId: string, onComplete: () => void) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleComplete = async () => {
     try {
@@ -31,7 +33,7 @@ export const useNavigationHandlers = (courseId: string, onComplete: () => void) 
         .single();
 
       if (fetchError) {
-        
+        console.error("Error fetching enrollment:", fetchError);
         return;
       }
 
@@ -43,7 +45,16 @@ export const useNavigationHandlers = (courseId: string, onComplete: () => void) 
         completedLessons.push(currentLessonId);
       }
 
-      // Update enrollment with new completed lesson
+      // Get total lessons count for progress calculation
+      const { data: lessonsData } = await supabase
+        .from("lessons")
+        .select("id")
+        .eq("course_id", courseId);
+
+      const totalLessons = lessonsData?.length || 1;
+      const progress = Math.round((completedLessons.length / totalLessons) * 100);
+
+      // Update enrollment with new completed lesson and progress
       const { error: updateError } = await supabase
         .from("enrollments")
         .upsert({
@@ -51,14 +62,19 @@ export const useNavigationHandlers = (courseId: string, onComplete: () => void) 
           user_id: session.user.id,
           course_id: courseId,
           completed_lessons: completedLessons,
+          progress: progress,
         })
         .select()
         .single();
 
       if (updateError) {
-        
+        console.error("Error updating enrollment:", updateError);
         throw updateError;
       }
+
+      // Invalidate queries to refresh data in real-time
+      await queryClient.invalidateQueries({ queryKey: ["enrollment", courseId] });
+      await queryClient.invalidateQueries({ queryKey: ["completedLessons", courseId] });
 
       onComplete();
 
@@ -68,7 +84,7 @@ export const useNavigationHandlers = (courseId: string, onComplete: () => void) 
       });
 
     } catch (error) {
-      
+      console.error("Error in handleComplete:", error);
       toast({
         title: "Error",
         description: "Failed to update progress. Please try again later.",
