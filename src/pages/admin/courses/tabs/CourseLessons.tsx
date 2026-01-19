@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -185,6 +185,49 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
     }
   };
 
+  const handleMoveLesson = async (lessonId: string, direction: "up" | "down") => {
+    if (!lessons) return;
+
+    const sortedLessons = [...lessons].sort((a, b) => a.order - b.order);
+    const currentIndex = sortedLessons.findIndex((l) => l.id === lessonId);
+
+    if (
+      (direction === "up" && currentIndex === 0) ||
+      (direction === "down" && currentIndex === sortedLessons.length - 1)
+    ) {
+      return;
+    }
+
+    const swapIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    const currentLesson = sortedLessons[currentIndex];
+    const swapLesson = sortedLessons[swapIndex];
+
+    try {
+      // Swap the order values
+      await supabase
+        .from("lessons")
+        .update({ order: swapLesson.order })
+        .eq("id", currentLesson.id);
+
+      await supabase
+        .from("lessons")
+        .update({ order: currentLesson.order })
+        .eq("id", swapLesson.id);
+
+      refetch();
+      toast({
+        title: "Success",
+        description: "Lesson order updated",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reorder lesson",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-48">
@@ -231,13 +274,33 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
                 </TableCell>
                 <TableCell>{lesson.duration ? `${lesson.duration} min` : "N/A"}</TableCell>
                 <TableCell>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleEditLesson(lesson)}
-                  >
-                    Edit
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleMoveLesson(lesson.id, "up")}
+                      disabled={lessons?.indexOf(lesson) === 0}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleMoveLesson(lesson.id, "down")}
+                      disabled={lessons?.indexOf(lesson) === (lessons?.length || 0) - 1}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditLesson(lesson)}
+                    >
+                      Edit
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             );
