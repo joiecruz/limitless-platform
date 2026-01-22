@@ -11,7 +11,7 @@ const LessonBodyContent = ({ content }: LessonBodyContentProps) => {
   const autoLinkUrls = (text: string): string => {
     // Match URLs not already wrapped in anchor tags
     const urlRegex = /(?<!href=["'])(https?:\/\/[^\s<>"]+)/g;
-    return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+    return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">$1</a>');
   };
 
   // Replace empty <p></p> tags with spacer divs to preserve intentional spacing
