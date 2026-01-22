@@ -2,20 +2,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
-// DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT IMPORTS BELOW TO RE-ENABLE
-// import { useState } from "react";
-// import { Trash2 } from "lucide-react";
-// import {
-//   AlertDialog,
-//   AlertDialogAction,
-//   AlertDialogCancel,
-//   AlertDialogContent,
-//   AlertDialogDescription,
-//   AlertDialogFooter,
-//   AlertDialogHeader,
-//   AlertDialogTitle,
-//   AlertDialogTrigger,
-// } from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { Trash2, AlertTriangle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Separator } from "@/components/ui/separator";
 
 interface WorkspaceFormProps {
   defaultValues: {
@@ -26,10 +26,9 @@ interface WorkspaceFormProps {
   currentUserId?: string;
   userRole?: string;
   workspaceId?: string;
-  // DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
-  // onDelete?: () => Promise<void>;
-  // isDeleting?: boolean;
-  // hasMultipleWorkspaces?: boolean;
+  onDelete?: () => Promise<void>;
+  isDeleting?: boolean;
+  hasMultipleWorkspaces?: boolean;
 }
 
 export function WorkspaceForm({
@@ -39,18 +38,16 @@ export function WorkspaceForm({
   currentUserId,
   userRole,
   workspaceId,
-  // DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
-  // onDelete,
-  // isDeleting = false,
-  // hasMultipleWorkspaces = false
+  onDelete,
+  isDeleting = false,
+  hasMultipleWorkspaces = false
 }: WorkspaceFormProps) {
   const { register, handleSubmit, formState: { errors }, watch } = useForm({
     defaultValues
   });
 
-  // DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
-  // const [confirmationText, setConfirmationText] = useState("");
-  // const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Watch the current value of the name field
   const currentName = watch("name");
@@ -58,26 +55,24 @@ export function WorkspaceForm({
   const isOwner = userRole === 'owner';
   const isAdmin = userRole === 'admin';
   const canEditWorkspace = isOwner || isAdmin;
-  // DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
-  // const canDelete = isOwner && onDelete && workspaceId && hasMultipleWorkspaces;
-  // const isConfirmationValid = confirmationText === defaultValues.name;
+  const canDelete = isOwner && onDelete && workspaceId && hasMultipleWorkspaces;
+  const isConfirmationValid = confirmationText === defaultValues.name;
 
   // Check if there are actual changes
   const hasChanges = currentName !== defaultValues.name;
 
-  // DELETE FUNCTIONALITY TEMPORARILY DISABLED - UNCOMMENT BELOW TO RE-ENABLE
-  // const handleDeleteConfirm = async () => {
-  //   if (onDelete && isConfirmationValid) {
-  //     await onDelete();
-  //     setIsDeleteDialogOpen(false);
-  //     setConfirmationText("");
-  //   }
-  // };
+  const handleDeleteConfirm = async () => {
+    if (onDelete && isConfirmationValid) {
+      await onDelete();
+      setIsDeleteDialogOpen(false);
+      setConfirmationText("");
+    }
+  };
 
-  // const handleDeleteDialogClose = () => {
-  //   setIsDeleteDialogOpen(false);
-  //   setConfirmationText("");
-  // };
+  const handleDeleteDialogClose = () => {
+    setIsDeleteDialogOpen(false);
+    setConfirmationText("");
+  };
 
   const getButtonText = () => {
     if (isLoading) return "Saving...";
@@ -117,17 +112,87 @@ export function WorkspaceForm({
         )}
       </form>
 
-      {/*
-      DELETE FUNCTIONALITY TEMPORARILY DISABLED
+      {isOwner && (
+        <>
+          <Separator className="my-8" />
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <h3 className="text-lg font-medium text-destructive">Danger Zone</h3>
+            </div>
+            
+            <div className="border border-destructive/50 rounded-lg p-4 space-y-4">
+              <div>
+                <h4 className="font-medium">Delete this workspace</h4>
+                <p className="text-sm text-muted-foreground">
+                  Once you delete a workspace, there is no going back. This will permanently delete the workspace and all associated data including projects, channels, messages, and members.
+                </p>
+              </div>
 
-      The delete workspace functionality has been temporarily removed.
-      To re-enable:
-      1. Uncomment the imports at the top (useState, Trash2, AlertDialog components)
-      2. Uncomment the interface props (onDelete, isDeleting, hasMultipleWorkspaces)
-      3. Uncomment the destructured props in the function signature
-      4. Uncomment the delete-related state and logic
-      5. Add back the "Danger Zone" section here
-      */}
+              {!hasMultipleWorkspaces && (
+                <p className="text-sm text-amber-600 dark:text-amber-500">
+                  You cannot delete your only workspace. Create another workspace first before deleting this one.
+                </p>
+              )}
+
+              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    disabled={!canDelete || isDeleting}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {isDeleting ? "Deleting..." : "Delete Workspace"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-3">
+                      <p>
+                        This action cannot be undone. This will permanently delete the workspace 
+                        <strong className="text-foreground"> "{defaultValues.name}"</strong> and all of its data:
+                      </p>
+                      <ul className="list-disc list-inside text-sm space-y-1">
+                        <li>All projects and their content</li>
+                        <li>All channels and messages</li>
+                        <li>All workspace members will lose access</li>
+                        <li>All design challenges and sticky notes</li>
+                      </ul>
+                      <div className="pt-2">
+                        <Label htmlFor="confirm-delete" className="text-foreground">
+                          Type <strong>{defaultValues.name}</strong> to confirm:
+                        </Label>
+                        <Input
+                          id="confirm-delete"
+                          value={confirmationText}
+                          onChange={(e) => setConfirmationText(e.target.value)}
+                          placeholder="Enter workspace name"
+                          className="mt-2"
+                        />
+                      </div>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={handleDeleteDialogClose}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteConfirm}
+                      disabled={!isConfirmationValid || isDeleting}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isDeleting ? "Deleting..." : "Delete Workspace"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
