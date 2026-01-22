@@ -7,8 +7,15 @@ interface LessonBodyContentProps {
 const LessonBodyContent = ({ content }: LessonBodyContentProps) => {
   if (!content) return null;
 
+  // Auto-link plain URLs that aren't already inside anchor tags
+  const autoLinkUrls = (text: string): string => {
+    // Match URLs not already wrapped in anchor tags
+    const urlRegex = /(?<!href=["'])(https?:\/\/[^\s<>"]+)/g;
+    return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+  };
+
   // Replace empty <p></p> tags with spacer divs to preserve intentional spacing
-  const processedContent = content
+  const processedContent = autoLinkUrls(content)
     .replace(/<p><\/p>/g, '<div style="height: 1rem;"></div>')
     .replace(/<p>\s*<\/p>/g, '<div style="height: 1rem;"></div>');
 
