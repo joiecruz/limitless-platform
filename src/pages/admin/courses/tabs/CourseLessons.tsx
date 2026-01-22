@@ -10,7 +10,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { Loader2, Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,6 +69,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
     section_id: null,
   });
   const [activeTab, setActiveTab] = useState("basic");
+  const [lessonToDelete, setLessonToDelete] = useState<any>(null);
 
   const { data: lessons, isLoading, refetch } = useQuery({
     queryKey: ["course-lessons", courseId],
@@ -228,6 +239,33 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
     }
   };
 
+  const handleDeleteLesson = async () => {
+    if (!lessonToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("lessons")
+        .delete()
+        .eq("id", lessonToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Lesson deleted successfully",
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete lesson",
+        variant: "destructive",
+      });
+    } finally {
+      setLessonToDelete(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-48">
@@ -299,6 +337,14 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
                       onClick={() => handleEditLesson(lesson)}
                     >
                       Edit
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => setLessonToDelete(lesson)}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>
@@ -410,6 +456,26 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!lessonToDelete} onOpenChange={() => setLessonToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Lesson</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{lessonToDelete?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteLesson}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
