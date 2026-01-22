@@ -29,6 +29,8 @@ interface WorkspaceFormProps {
   onDelete?: () => Promise<void>;
   isDeleting?: boolean;
   hasMultipleWorkspaces?: boolean;
+  isLoadingWorkspaces?: boolean;
+  workspaceCount?: number;
 }
 
 export function WorkspaceForm({
@@ -40,7 +42,9 @@ export function WorkspaceForm({
   workspaceId,
   onDelete,
   isDeleting = false,
-  hasMultipleWorkspaces = false
+  hasMultipleWorkspaces = false,
+  isLoadingWorkspaces = false,
+  workspaceCount = 0
 }: WorkspaceFormProps) {
   const { register, handleSubmit, formState: { errors }, watch } = useForm({
     defaultValues
@@ -130,9 +134,15 @@ export function WorkspaceForm({
                 </p>
               </div>
 
-              {!hasMultipleWorkspaces && (
+              {!hasMultipleWorkspaces && !isLoadingWorkspaces && (
                 <p className="text-sm text-amber-600 dark:text-amber-500">
                   You cannot delete your only workspace. Create another workspace first before deleting this one.
+                </p>
+              )}
+
+              {isLoadingWorkspaces && (
+                <p className="text-sm text-muted-foreground">
+                  Checking workspace count...
                 </p>
               )}
 

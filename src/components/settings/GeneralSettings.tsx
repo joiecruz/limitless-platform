@@ -14,7 +14,7 @@ export function GeneralSettings() {
   const { updateWorkspace, isLoading } = useWorkspaceUpdate(currentWorkspace, setCurrentWorkspace);
   const { handleDeleteWorkspace } = useWorkspaceDelete();
   const { data: userRole } = useWorkspaceRole(currentWorkspace?.id);
-  const { data: userWorkspaces, refetch: refetchWorkspaces } = useWorkspaces();
+  const { data: userWorkspaces, isLoading: isLoadingWorkspaces, refetch: refetchWorkspaces } = useWorkspaces();
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
@@ -41,8 +41,8 @@ export function GeneralSettings() {
       const success = await handleDeleteWorkspace(currentWorkspace.id);
       if (success) {
         // Refetch workspaces and navigate to first available
-        await refetchWorkspaces();
-        const remainingWorkspaces = userWorkspaces?.filter(w => w.id !== currentWorkspace.id);
+        const { data: refreshedWorkspaces } = await refetchWorkspaces();
+        const remainingWorkspaces = refreshedWorkspaces?.filter(w => w.id !== currentWorkspace.id);
         if (remainingWorkspaces && remainingWorkspaces.length > 0) {
           setCurrentWorkspace(remainingWorkspaces[0]);
         }
@@ -55,8 +55,8 @@ export function GeneralSettings() {
     }
   };
 
-  // Check if user has multiple workspaces
-  const hasMultipleWorkspaces = userWorkspaces && userWorkspaces.length > 1;
+  // Check if user has multiple workspaces - ensure we have loaded the data
+  const hasMultipleWorkspaces = !isLoadingWorkspaces && userWorkspaces && userWorkspaces.length > 1;
   const canDelete = hasMultipleWorkspaces;
 
   if (!currentWorkspace) {
@@ -89,6 +89,8 @@ export function GeneralSettings() {
         onDelete={canDelete ? handleDelete : undefined}
         isDeleting={isDeleting}
         hasMultipleWorkspaces={hasMultipleWorkspaces}
+        isLoadingWorkspaces={isLoadingWorkspaces}
+        workspaceCount={userWorkspaces?.length || 0}
       />
     </div>
   );
