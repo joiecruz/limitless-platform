@@ -19,7 +19,7 @@ const LessonNavigation = ({
   const { handleComplete, handleNavigation } = useNavigationHandlers(courseId, onComplete);
 
   return (
-    <div className="flex items-center justify-between pt-8 border-t">
+    <div className="flex items-center justify-between pt-12 mt-8 border-t">
       <div>
         {previousLesson && (
           <NavigationButton
