@@ -89,6 +89,10 @@ export default {
         "scroll-right": {
           "0%": { transform: "translateX(calc(-100% - 3rem))" },
           "100%": { transform: "translateX(0)" }
+        },
+        "spin-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" }
         }
       },
       animation: {
@@ -96,6 +100,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "scroll-left": "scroll-left 40s linear infinite",
         "scroll-right": "scroll-right 40s linear infinite",
+        "spin-slow": "spin-slow 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite",
       },
     },
   },
