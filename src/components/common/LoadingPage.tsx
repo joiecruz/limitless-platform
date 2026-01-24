@@ -1,9 +1,9 @@
-import { FaviconSpinner } from "./FaviconSpinner";
+import { LoadingQuotes } from "./LoadingQuotes";
 
 export function LoadingPage() {
   return (
     <div className="min-h-[50vh] flex items-center justify-center">
-      <FaviconSpinner size="lg" />
+      <LoadingQuotes />
     </div>
   );
 }

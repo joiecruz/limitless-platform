@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import CourseHeader from "@/components/lessons/CourseHeader";
 import CourseProgress from "@/components/lessons/CourseProgress";
 import SectionedLessonList from "@/components/lessons/SectionedLessonList";
+import { LoadingPage } from "@/components/common/LoadingPage";
 
 interface Lesson {
   id: string;
@@ -104,7 +105,7 @@ const Lessons = () => {
 
   // Loading states
   if (courseLoading || lessonsLoading || enrollmentLoading) {
-    return <div>Loading...</div>;
+    return <LoadingPage />;
   }
 
   // Course not found

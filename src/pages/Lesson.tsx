@@ -8,6 +8,7 @@ import LessonHeader from "@/components/lessons/LessonHeader";
 import LessonContent from "@/components/lessons/LessonContent";
 import LessonNavigation from "@/components/lessons/LessonNavigation";
 import MobileLessonHeader from "@/components/lessons/MobileLessonHeader";
+import { LoadingPage } from "@/components/common/LoadingPage";
 
 const Lesson = () => {
   const { courseId, lessonId } = useParams<{
@@ -169,7 +170,7 @@ const Lesson = () => {
   };
 
   if (lessonLoading) {
-    return <div>Loading...</div>;
+    return <LoadingPage />;
   }
 
   if (!lesson) {
