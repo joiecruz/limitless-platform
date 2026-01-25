@@ -98,7 +98,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/product" element={<Product />} />
           <Route path="/services" element={<Services />} />
           <Route path="/courses" element={<CoursesLanding />} />
-          <Route path="/courses/:courseId" element={<CourseDetail />} />
+          <Route path="/courses/:courseSlug" element={<CourseDetail />} />
           <Route path="/tools" element={<ToolsLanding />} />
           <Route path="/tools/:id" element={<ToolDetail />} />
           <Route path="/programs" element={<Programs />} />

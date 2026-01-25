@@ -8,83 +8,71 @@ import { Clock, Users, BookOpen, Lock, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useEffect } from "react";
+import { trackFBViewContent, trackFBLead } from "@/components/common/FacebookPixel";
+
 export default function CourseDetail() {
-  const {
-    courseId
-  } = useParams<{
-    courseId: string;
-  }>();
-  const {
-    toast
-  } = useToast();
+  const { courseSlug } = useParams<{ courseSlug: string }>();
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const {
-    data: course,
-    isLoading
-  } = useQuery({
-    queryKey: ["public-course", courseId],
+
+  const { data: course, isLoading } = useQuery({
+    queryKey: ["public-course", courseSlug],
     queryFn: async () => {
-      if (!courseId) throw new Error("Course ID is required");
-      const {
-        data,
-        error
-      } = await supabase.from("courses").select("*").eq("id", courseId).single();
+      if (!courseSlug) throw new Error("Course slug is required");
+      
+      // Try to find by slug first, then fallback to ID for backwards compatibility
+      let query = supabase.from("courses").select("*");
+      
+      // Check if it looks like a UUID (for backwards compatibility)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(courseSlug);
+      
+      if (isUUID) {
+        query = query.eq("id", courseSlug);
+      } else {
+        query = query.eq("slug", courseSlug);
+      }
+      
+      const { data, error } = await query.single();
+      
       if (error) {
         throw error;
       }
       return data;
     },
-    enabled: !!courseId
+    enabled: !!courseSlug
   });
 
+  // Get the course ID for fetching related data
+  const courseId = course?.id;
+
   // Fetch lessons with better error handling
-  const {
-    data: lessons = [],
-    isLoading: lessonsLoading
-  } = useQuery({
+  const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
     queryKey: ["course-lessons", courseId],
     queryFn: async () => {
-      if (!courseId) {
-        return [];
-      }
-      const {
-        data,
-        error
-      } = await supabase.from("lessons").select("id, title, description, duration, order").eq("course_id", courseId).order("order");
-      if (error) {
-        // Don't throw, return empty array to show empty state
-        return [];
-      }
+      if (!courseId) return [];
+      const { data, error } = await supabase
+        .from("lessons")
+        .select("id, title, description, duration, order")
+        .eq("course_id", courseId)
+        .order("order");
+      if (error) return [];
       return data || [];
     },
     enabled: !!courseId
   });
 
   // Fetch real-time counts using secure function that bypasses RLS
-  const {
-    data: courseCounts,
-    isLoading: countsLoading
-  } = useQuery({
+  const { data: courseCounts, isLoading: countsLoading } = useQuery({
     queryKey: ["course-counts", courseId],
     queryFn: async () => {
-      if (!courseId) return {
-        lesson_count: 0,
-        enrollee_count: 0,
-        total_duration: 0
-      };
-      const {
-        data,
-        error
-      } = await supabase.rpc('get_course_counts', {
-        course_id_param: courseId
-      }).single();
+      if (!courseId) return { lesson_count: 0, enrollee_count: 0, total_duration: 0 };
+      const { data, error } = await supabase
+        .rpc('get_course_counts', { course_id_param: courseId })
+        .single();
       if (error) {
         console.error('Error fetching course counts:', error);
-        return {
-          lesson_count: 0,
-          enrollee_count: 0,
-          total_duration: 0
-        };
+        return { lesson_count: 0, enrollee_count: 0, total_duration: 0 };
       }
       return {
         lesson_count: Number(data?.lesson_count) || 0,
@@ -99,9 +87,21 @@ export default function CourseDetail() {
   const enrollmentCount = courseCounts?.enrollee_count || 0;
   const totalHours = Math.ceil((courseCounts?.total_duration || 0) / 60);
 
-  // LimitlessBiz course ID for special handling
-  const LIMITLESS_BIZ_COURSE_ID = "e0ac8d90-bdba-4a50-a3bd-148c0903d43f";
-  const isLimitlessBizCourse = courseId === LIMITLESS_BIZ_COURSE_ID;
+  // LimitlessBiz course slug for special handling
+  const LIMITLESS_BIZ_SLUG = "limitlessbiz";
+  const isLimitlessBizCourse = course?.slug === LIMITLESS_BIZ_SLUG || courseId === "e0ac8d90-bdba-4a50-a3bd-148c0903d43f";
+
+  // Track Facebook Pixel ViewContent event when course loads
+  useEffect(() => {
+    if (course) {
+      trackFBViewContent({
+        content_name: course.title,
+        content_category: 'Course',
+        value: course.price || 0,
+        currency: 'USD'
+      });
+    }
+  }, [course]);
 
   // Check if user is authenticated
   const {
@@ -170,7 +170,7 @@ export default function CourseDetail() {
       </div>;
   }
   return <div className="min-h-screen bg-white">
-      <OpenGraphTags title={`${course.title} | Limitless Lab`} description={course.description} imageUrl={course.image_url || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"} url={`${window.location.origin}/courses/${courseId}`} type="website" />
+      <OpenGraphTags title={`${course.title} | Limitless Lab`} description={course.description} imageUrl={course.image_url || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"} url={`${window.location.origin}/courses/${course.slug || courseSlug}`} type="website" />
 
       <MainNav />
 
@@ -233,22 +233,29 @@ export default function CourseDetail() {
                 </div>}
 
               {/* Google Form CTA for LimitlessBiz */}
-              <div className="mb-16">
-                <div className="w-full max-w-3xl mx-auto text-center p-12 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-2xl border border-primary/20">
-                  <h2 className="text-3xl font-bold text-foreground mb-4">Enroll your MSME for FREE now!</h2>
-                  <p className="text-muted-foreground mb-8 text-lg max-w-xl mx-auto">
+              <div className="mb-16 px-4 sm:px-0">
+                <div className="w-full max-w-3xl mx-auto text-center p-6 sm:p-8 md:p-12 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-2xl border border-primary/20">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">Enroll your MSME for FREE now!</h2>
+                  <p className="text-muted-foreground mb-6 sm:mb-8 text-base sm:text-lg max-w-xl mx-auto">
                     Complete the enrollment form to register your business for this free program. It only takes a few minutes!
                   </p>
                   <a 
                     href="https://docs.google.com/forms/d/e/1FAIpQLSe8RogsleAHAkr1qVLgaUEGGGaD2WDMMWsbIIqBE6KEeyNZJg/viewform" 
                     target="_blank" 
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      // Track Facebook Pixel Lead event when user clicks to enroll
+                      trackFBLead({
+                        content_name: course?.title,
+                        content_category: 'Course Enrollment'
+                      });
+                    }}
                   >
-                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all">
+                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 sm:px-12 py-4 sm:py-6 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all w-full sm:w-auto">
                       Open Enrollment Form →
                     </Button>
                   </a>
-                  <p className="text-sm text-muted-foreground mt-4">Opens in a new tab</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4">Opens in a new tab</p>
                 </div>
               </div>
             </> : <>

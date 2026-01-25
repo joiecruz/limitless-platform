@@ -381,6 +381,7 @@ export type Database = {
           locked: boolean | null
           long_description: string | null
           price: number | null
+          slug: string
           title: string
           updated_at: string
           who_is_this_for: string | null
@@ -399,6 +400,7 @@ export type Database = {
           locked?: boolean | null
           long_description?: string | null
           price?: number | null
+          slug: string
           title: string
           updated_at?: string
           who_is_this_for?: string | null
@@ -417,6 +419,7 @@ export type Database = {
           locked?: boolean | null
           long_description?: string | null
           price?: number | null
+          slug?: string
           title?: string
           updated_at?: string
           who_is_this_for?: string | null
@@ -3307,6 +3310,7 @@ export type Database = {
         Returns: boolean
       }
       delete_user_data: { Args: never; Returns: undefined }
+      generate_course_slug: { Args: { title: string }; Returns: string }
       get_course_counts: {
         Args: { course_id_param: string }
         Returns: {

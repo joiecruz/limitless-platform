@@ -160,7 +160,7 @@ export default function Courses() {
 
                   <div className="flex gap-2">
                     <Button 
-                      onClick={() => navigate(`/courses/${course.id}`)}
+                      onClick={() => navigate(`/courses/${(course as any).slug || course.id}`)}
                       className="flex-1 bg-[#393CA0] hover:bg-[#393CA0]/90"
                     >
                       View Details
