@@ -145,7 +145,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (resendApiKey) {
         const resend = new Resend(resendApiKey);
-        const signupUrl = "https://app.limitlesslab.org/signup";
+        const signupUrl = "https://limitless-platform.lovable.app/signup";
 
         // Use custom template or defaults
         const subject = emailTemplate?.subject || `Welcome to ${courseName}: Your Learning Journey Starts Here!`;
@@ -175,7 +175,7 @@ const handler = async (req: Request): Promise<Response> => {
                           <!-- Header with Logo -->
                           <tr>
                             <td style="background: linear-gradient(135deg, #393CA0 0%, #5B5FC7 100%); padding: 30px 40px; text-align: center;">
-                              <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/limitless-logo-white.png" alt="Limitless Lab" style="height: 50px; margin-bottom: 15px;">
+                              <img src="https://limitless-platform.lovable.app/lovable-uploads/7fc7cd72-8cf0-4c22-b044-a9127b588f6d.png" alt="Limitless Lab" style="height: 50px; margin-bottom: 15px;">
                               <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">${heading}</h1>
                             </td>
                           </tr>
@@ -204,7 +204,7 @@ const handler = async (req: Request): Promise<Response> => {
                               </table>
 
                               <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 20px 0 0 0; text-align: center;">
-                                Already have an account? <a href="https://app.limitlesslab.org/signin" style="color: #393CA0; text-decoration: underline;">Sign in here</a>
+                                Already have an account? <a href="https://limitless-platform.lovable.app/signin" style="color: #393CA0; text-decoration: underline;">Sign in here</a>
                               </p>
                             </td>
                           </tr>
