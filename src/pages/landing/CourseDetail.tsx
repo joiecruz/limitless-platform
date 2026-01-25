@@ -69,29 +69,22 @@ export default function CourseDetail() {
     enabled: !!courseId,
   });
 
-  // Fetch real-time enrollment count
+  // Fetch real-time enrollment count using secure function that bypasses RLS
   const { data: enrollmentCount = 0, isLoading: enrollmentLoading } = useQuery({
     queryKey: ["course-enrollment-count", courseId],
     queryFn: async () => {
-      if (!courseId) {
-        
-        return 0;
-      }
+      if (!courseId) return 0;
 
-      
-
-      const { count, error } = await supabase
-        .from("enrollments")
-        .select("*", { count: "exact", head: true })
-        .eq("course_id", courseId);
+      const { data, error } = await supabase
+        .rpc('get_course_counts', { course_id_param: courseId })
+        .single();
 
       if (error) {
-        
+        console.error('Error fetching enrollment count:', error);
         return 0;
       }
 
-      
-      return count || 0;
+      return Number(data?.enrollee_count) || 0;
     },
     enabled: !!courseId,
     refetchOnWindowFocus: true,
