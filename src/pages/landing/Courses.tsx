@@ -29,7 +29,8 @@ export default function Courses() {
       const { data: coursesData, error } = await supabase
         .from('courses')
         .select('*')
-        .in('format', ['Online', 'Hybrid']);
+        .in('format', ['Online', 'Hybrid'])
+        .order('created_at', { ascending: false });
 
       if (error) {
         
