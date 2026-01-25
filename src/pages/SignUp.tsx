@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -130,6 +130,16 @@ export default function Register() {
             >
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              By continuing, you acknowledge that you understand and agree to the{" "}
+              <Link to="/terms" className="underline hover:text-primary">
+                Terms & Conditions
+              </Link>{" "}
+              and{" "}
+              <Link to="/privacy" className="underline hover:text-primary">
+                Privacy Policy
+              </Link>
+            </p>
             <p className="text-center text-sm text-gray-600">
               Already have an account?{" "}
               <Button
