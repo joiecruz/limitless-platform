@@ -132,11 +132,11 @@ export default function Register() {
             </Button>
             <p className="text-center text-xs text-muted-foreground">
               By continuing, you acknowledge that you understand and agree to the{" "}
-              <Link to="/terms" className="underline hover:text-primary">
+              <Link to="/terms-of-service" className="underline hover:text-primary">
                 Terms & Conditions
               </Link>{" "}
               and{" "}
-              <Link to="/privacy" className="underline hover:text-primary">
+              <Link to="/privacy-policy" className="underline hover:text-primary">
                 Privacy Policy
               </Link>
             </p>
