@@ -157,6 +157,53 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
         }
       }
 
+      // Check for pending course enrollments and auto-enroll user
+      const { data: pendingEnrollments, error: pendingError } = await supabase
+        .from('pending_course_enrollments')
+        .select('id, course_id, metadata')
+        .eq('email', user.email)
+        .is('processed_at', null);
+
+      if (!pendingError && pendingEnrollments && pendingEnrollments.length > 0) {
+        console.log('Found pending course enrollments:', pendingEnrollments.length);
+        
+        for (const pending of pendingEnrollments) {
+          // Check if user already has course access
+          const { data: existingAccess } = await supabase
+            .from('user_course_access')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('course_id', pending.course_id)
+            .maybeSingle();
+
+          if (!existingAccess) {
+            // Grant course access
+            const { error: accessError } = await supabase
+              .from('user_course_access')
+              .insert({
+                user_id: user.id,
+                course_id: pending.course_id
+              });
+
+            if (accessError) {
+              console.error('Error granting course access:', accessError);
+            } else {
+              console.log('Granted course access for course:', pending.course_id);
+            }
+          }
+
+          // Mark pending enrollment as processed
+          const { error: updateError } = await supabase
+            .from('pending_course_enrollments')
+            .update({ processed_at: new Date().toISOString() })
+            .eq('id', pending.id);
+
+          if (updateError) {
+            console.error('Error updating pending enrollment:', updateError);
+          }
+        }
+      }
+
       // Track onboarding completion event
       const { error: eventError } = await supabase
         .from('events')
@@ -166,7 +213,8 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
           event_data: {
             goals: Array.isArray(data.goals) ? data.goals : [data.goals],
             referral_source: data.referralSource,
-            has_workspace: !!data.workspaceName
+            has_workspace: !!data.workspaceName,
+            auto_enrolled_courses: pendingEnrollments?.map(p => p.course_id) || []
           }
         });
 
