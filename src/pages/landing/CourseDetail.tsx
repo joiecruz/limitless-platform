@@ -73,7 +73,7 @@ export default function CourseDetail() {
   const { data: courseCounts, isLoading: countsLoading } = useQuery({
     queryKey: ["course-counts", courseId],
     queryFn: async () => {
-      if (!courseId) return { lesson_count: 0, enrollee_count: 0 };
+      if (!courseId) return { lesson_count: 0, enrollee_count: 0, total_duration: 0 };
 
       const { data, error } = await supabase
         .rpc('get_course_counts', { course_id_param: courseId })
@@ -81,12 +81,13 @@ export default function CourseDetail() {
 
       if (error) {
         console.error('Error fetching course counts:', error);
-        return { lesson_count: 0, enrollee_count: 0 };
+        return { lesson_count: 0, enrollee_count: 0, total_duration: 0 };
       }
 
       return {
         lesson_count: Number(data?.lesson_count) || 0,
         enrollee_count: Number(data?.enrollee_count) || 0,
+        total_duration: Number(data?.total_duration) || 0,
       };
     },
     enabled: !!courseId,
@@ -95,6 +96,11 @@ export default function CourseDetail() {
 
   const lessonCount = courseCounts?.lesson_count || 0;
   const enrollmentCount = courseCounts?.enrollee_count || 0;
+  const totalHours = Math.ceil((courseCounts?.total_duration || 0) / 60);
+
+  // LimitlessBiz course ID for special handling
+  const LIMITLESS_BIZ_COURSE_ID = "e0ac8d90-bdba-4a50-a3bd-148c0903d43f";
+  const isLimitlessBizCourse = courseId === LIMITLESS_BIZ_COURSE_ID;
 
   // Check if user is authenticated
   const { data: session } = useQuery({
@@ -109,9 +115,7 @@ export default function CourseDetail() {
   // Set the page title
   usePageTitle(course ? `${course.title} | Limitless Lab` : "Course | Limitless Lab");
 
-  // Calculate totals from actual lesson data (duration only - count comes from RPC)
-  const totalDuration = lessons.reduce((acc, lesson) => acc + (lesson.duration || 0), 0);
-  const totalHours = Math.ceil(totalDuration / 60);
+  // Note: totalHours is now calculated from RPC data above
 
   
 
@@ -234,92 +238,141 @@ export default function CourseDetail() {
             </p>
           </div>
 
-          {/* Enroll Button */}
-          <div className="text-center mb-16">
-            <Button 
-              size="lg"
-              onClick={handleEnrollClick}
-              className="bg-[#393CA0] hover:bg-[#393CA0]/90 text-white px-8"
-            >
-              {ctaText}
-            </Button>
-          </div>
-
-          {/* What You'll Learn - Using Learning Outcomes */}
-          {learningOutcomes.length > 0 && (
-            <div className="mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What You'll Learn</h2>
-              <div className="bg-gray-50 rounded-lg p-8">
-                <ul className="space-y-4 max-w-3xl mx-auto">
-                  {learningOutcomes.map((outcome, index) => {
-                    const shouldShowCheck = !outcome.toLowerCase().startsWith('by the end');
-                    return (
-                      <li key={index} className="flex items-start gap-3">
-                        {shouldShowCheck && (
-                          <CheckCircle className="h-6 w-6 text-[#393CA0] mt-0.5 flex-shrink-0" />
-                        )}
-                        <span className={`text-lg text-gray-700 ${!shouldShowCheck ? 'ml-9' : ''}`}>
-                          {outcome}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {/* Course Curriculum - Always show lessons with proper styling */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Course Curriculum</h2>
-            {lessonCount > 0 ? (
-              <div className="space-y-4 max-w-3xl mx-auto">
-                {lessons.map((lesson, index) => (
-                  <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6 opacity-75">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="bg-gray-400 text-white text-sm font-semibold px-2 py-1 rounded">
-                            {index + 1}
-                          </span>
-                          <h3 className="text-lg font-semibold text-gray-600">{lesson.title}</h3>
-                          <Lock className="h-4 w-4 text-gray-400" />
-                        </div>
-                        {lesson.description && (
-                          <p className="text-gray-500 mb-3">{lesson.description}</p>
-                        )}
-                      </div>
-                      {lesson.duration && (
-                        <div className="flex items-center gap-1 text-sm text-gray-400 ml-4">
-                          <Clock className="h-4 w-4" />
-                          <span>{lesson.duration} min</span>
-                        </div>
-                      )}
-                    </div>
+          {/* For LimitlessBiz: Show Google Form, hide enroll button, curriculum, and CTA */}
+          {isLimitlessBizCourse ? (
+            <>
+              {/* What You'll Learn - Using Learning Outcomes */}
+              {learningOutcomes.length > 0 && (
+                <div className="mb-16">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What You'll Learn</h2>
+                  <div className="bg-gray-50 rounded-lg p-8">
+                    <ul className="space-y-4 max-w-3xl mx-auto">
+                      {learningOutcomes.map((outcome, index) => {
+                        const shouldShowCheck = !outcome.toLowerCase().startsWith('by the end');
+                        return (
+                          <li key={index} className="flex items-start gap-3">
+                            {shouldShowCheck && (
+                              <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
+                            )}
+                            <span className={`text-lg text-gray-700 ${!shouldShowCheck ? 'ml-9' : ''}`}>
+                              {outcome}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Course curriculum is being prepared. Check back soon!</p>
-              </div>
-            )}
-          </div>
+                </div>
+              )}
 
-          {/* Call to Action */}
-          <div className="bg-[#393CA0] rounded-lg p-8 text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h2>
-            <p className="text-gray-100 mb-6">
-              Join {enrollmentCount} other learners and start your journey today.
-            </p>
-            <Button 
-              size="lg"
-              onClick={handleEnrollClick}
-              className="bg-white text-[#393CA0] hover:bg-gray-100 px-8"
-            >
-              {ctaText}
-            </Button>
-          </div>
+              {/* Google Form Embed for LimitlessBiz */}
+              <div className="mb-16">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Express Your Interest</h2>
+                <div className="w-full max-w-3xl mx-auto">
+                  <iframe
+                    src="https://docs.google.com/forms/d/e/1FAIpQLSeHUkZRvXNEoF-yzvcyK_QL_r8KkUK2VJg-_SxlhRuVqtBvAA/viewform?embedded=true"
+                    width="100%"
+                    height="800"
+                    frameBorder="0"
+                    marginHeight={0}
+                    marginWidth={0}
+                    className="rounded-lg"
+                  >
+                    Loading…
+                  </iframe>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Enroll Button */}
+              <div className="text-center mb-16">
+                <Button 
+                  size="lg"
+                  onClick={handleEnrollClick}
+                  className="bg-primary hover:bg-primary/90 text-white px-8"
+                >
+                  {ctaText}
+                </Button>
+              </div>
+
+              {/* What You'll Learn - Using Learning Outcomes */}
+              {learningOutcomes.length > 0 && (
+                <div className="mb-16">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What You'll Learn</h2>
+                  <div className="bg-gray-50 rounded-lg p-8">
+                    <ul className="space-y-4 max-w-3xl mx-auto">
+                      {learningOutcomes.map((outcome, index) => {
+                        const shouldShowCheck = !outcome.toLowerCase().startsWith('by the end');
+                        return (
+                          <li key={index} className="flex items-start gap-3">
+                            {shouldShowCheck && (
+                              <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
+                            )}
+                            <span className={`text-lg text-gray-700 ${!shouldShowCheck ? 'ml-9' : ''}`}>
+                              {outcome}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Course Curriculum - Always show lessons with proper styling */}
+              <div className="mb-16">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Course Curriculum</h2>
+                {lessonCount > 0 ? (
+                  <div className="space-y-4 max-w-3xl mx-auto">
+                    {lessons.map((lesson, index) => (
+                      <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6 opacity-75">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="bg-gray-400 text-white text-sm font-semibold px-2 py-1 rounded">
+                                {index + 1}
+                              </span>
+                              <h3 className="text-lg font-semibold text-gray-600">{lesson.title}</h3>
+                              <Lock className="h-4 w-4 text-gray-400" />
+                            </div>
+                            {lesson.description && (
+                              <p className="text-gray-500 mb-3">{lesson.description}</p>
+                            )}
+                          </div>
+                          {lesson.duration && (
+                            <div className="flex items-center gap-1 text-sm text-gray-400 ml-4">
+                              <Clock className="h-4 w-4" />
+                              <span>{lesson.duration} min</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Course curriculum is being prepared. Check back soon!</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Call to Action */}
+              <div className="bg-primary rounded-lg p-8 text-center">
+                <h2 className="text-2xl font-bold text-white mb-4">Ready to Get Started?</h2>
+                <p className="text-gray-100 mb-6">
+                  Join {enrollmentCount} other learners and start your journey today.
+                </p>
+                <Button 
+                  size="lg"
+                  onClick={handleEnrollClick}
+                  className="bg-white text-primary hover:bg-gray-100 px-8"
+                >
+                  {ctaText}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
