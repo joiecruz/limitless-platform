@@ -47,14 +47,15 @@ export function CreateCourseDialog() {
 
     setIsSaving(true);
     try {
-      const { error } = await supabase.from("courses").insert({
+      const { error } = await supabase.from("courses").insert([{
         title: title.trim(),
+        slug: title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
         description: description.trim() || null,
         format,
         price: parseFloat(price) || 0,
         image_url: imageUrl.trim() || null,
         locked: true, // New courses start locked
-      });
+      }]);
 
       if (error) throw error;
 
