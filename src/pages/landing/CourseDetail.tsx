@@ -236,9 +236,30 @@ export default function CourseDetail() {
               <div className="mb-16">
                 <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Enroll your MSME for FREE now!</h2>
                 <div className="w-full max-w-3xl mx-auto">
-                  <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeHUkZRvXNEoF-yzvcyK_QL_r8KkUK2VJg-_SxlhRuVqtBvAA/viewform?embedded=true" width="100%" height="800" frameBorder="0" marginHeight={0} marginWidth={0} className="rounded-lg">
+                  <iframe 
+                    src="https://docs.google.com/forms/d/e/1FAIpQLSeHUkZRvXNEoF-yzvcyK_QL_r8KkUK2VJg-_SxlhRuVqtBvAA/viewform?embedded=true" 
+                    width="100%" 
+                    height="800" 
+                    title="LimitlessBiz Enrollment Form"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                    className="rounded-lg border-0"
+                    style={{ border: 'none' }}
+                  >
                     Loading…
                   </iframe>
+                  <div className="text-center mt-4">
+                    <p className="text-sm text-muted-foreground mb-2">Having trouble seeing the form?</p>
+                    <a 
+                      href="https://forms.gle/CLq8VU9QeV54sp5P9" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline text-sm"
+                    >
+                      Open form in new tab
+                    </a>
+                  </div>
                 </div>
               </div>
             </> : <>
