@@ -235,28 +235,29 @@ export default function CourseDetail() {
               {/* Google Form Embed for LimitlessBiz */}
               <div className="mb-16">
                 <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Enroll your MSME for FREE now!</h2>
-                <div className="w-full max-w-3xl mx-auto">
+                <div className="w-full max-w-3xl mx-auto overflow-hidden rounded-lg border border-border">
                   <iframe 
                     src="https://docs.google.com/forms/d/e/1FAIpQLSe8RogsleAHAkr1qVLgaUEGGGaD2WDMMWsbIIqBE6KEeyNZJg/viewform?embedded=true" 
                     width="100%" 
-                    height="4065" 
+                    height="900"
                     title="LimitlessBiz Enrollment Form"
-                    style={{ border: 'none' }}
+                    sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                    referrerPolicy="no-referrer-when-downgrade"
                   >
                     Loading…
                   </iframe>
-                  <div className="text-center mt-6 p-6 bg-muted rounded-lg">
-                    <p className="text-muted-foreground mb-4">If the form above doesn't load, click the button below:</p>
-                    <a 
-                      href="https://docs.google.com/forms/d/e/1FAIpQLSe8RogsleAHAkr1qVLgaUEGGGaD2WDMMWsbIIqBE6KEeyNZJg/viewform" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
-                      <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
-                        Open Enrollment Form
-                      </Button>
-                    </a>
-                  </div>
+                </div>
+                <div className="text-center mt-6 p-6 bg-muted rounded-lg max-w-3xl mx-auto">
+                  <p className="text-muted-foreground mb-4">If the form above doesn't load, click the button below:</p>
+                  <a 
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSe8RogsleAHAkr1qVLgaUEGGGaD2WDMMWsbIIqBE6KEeyNZJg/viewform" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
+                      Open Enrollment Form
+                    </Button>
+                  </a>
                 </div>
               </div>
             </> : <>
