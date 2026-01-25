@@ -8,32 +8,36 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface EmailTemplate {
+  subject?: string;
+  heading?: string;
+  intro?: string;
+  description?: string;
+}
+
 interface CourseInviteRequest {
   emails: string[];
   courseId: string;
   courseName: string;
   sendEmail: boolean;
+  emailTemplate?: EmailTemplate;
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Verify authorization
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       throw new Error("No authorization header");
     }
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify the user is an admin
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     
@@ -41,7 +45,6 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Unauthorized");
     }
 
-    // Check if user is admin or superadmin
     const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
       .select("is_admin, is_superadmin")
@@ -52,8 +55,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Unauthorized: Admin access required");
     }
 
-    // Parse request body
-    const { emails, courseId, courseName, sendEmail }: CourseInviteRequest = await req.json();
+    const { emails, courseId, courseName, sendEmail, emailTemplate }: CourseInviteRequest = await req.json();
 
     if (!emails || !Array.isArray(emails) || emails.length === 0) {
       throw new Error("No emails provided");
@@ -63,7 +65,6 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Course ID is required");
     }
 
-    // Process emails - clean and deduplicate
     const cleanEmails = [...new Set(
       emails
         .map(e => e.trim().toLowerCase())
@@ -74,7 +75,6 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("No valid emails provided");
     }
 
-    // Check for existing pending enrollments
     const { data: existingEnrollments } = await supabaseClient
       .from("pending_course_enrollments")
       .select("email")
@@ -84,7 +84,6 @@ const handler = async (req: Request): Promise<Response> => {
     const existingEmails = new Set(existingEnrollments?.map(e => e.email) || []);
     const newEmails = cleanEmails.filter(e => !existingEmails.has(e));
 
-    // Also check for users already enrolled in the course
     const { data: existingUsers } = await supabaseClient
       .from("profiles")
       .select("email")
@@ -94,7 +93,6 @@ const handler = async (req: Request): Promise<Response> => {
     
     let alreadyEnrolledEmails: string[] = [];
     if (userEmailsToCheck.length > 0) {
-      // Get user IDs for these emails
       const { data: userProfiles } = await supabaseClient
         .from("profiles")
         .select("id, email")
@@ -103,7 +101,6 @@ const handler = async (req: Request): Promise<Response> => {
       if (userProfiles && userProfiles.length > 0) {
         const userIds = userProfiles.map(p => p.id);
         
-        // Check user_course_access for these users
         const { data: courseAccess } = await supabaseClient
           .from("user_course_access")
           .select("user_id")
@@ -117,10 +114,8 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Filter out already enrolled emails
     const emailsToInvite = newEmails.filter(e => !alreadyEnrolledEmails.includes(e));
 
-    // Insert pending enrollments
     const enrollmentsToInsert = emailsToInvite.map(email => ({
       email,
       course_id: courseId,
@@ -143,7 +138,6 @@ const handler = async (req: Request): Promise<Response> => {
       insertedCount = inserted?.length || 0;
     }
 
-    // Send emails if requested
     let emailsSent = 0;
     if (sendEmail && emailsToInvite.length > 0) {
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -153,12 +147,18 @@ const handler = async (req: Request): Promise<Response> => {
         const resend = new Resend(resendApiKey);
         const signupUrl = "https://app.limitlesslab.org/signup";
 
+        // Use custom template or defaults
+        const subject = emailTemplate?.subject || `Welcome to ${courseName}: Your Learning Journey Starts Here!`;
+        const heading = emailTemplate?.heading || `Welcome to ${courseName}!`;
+        const intro = emailTemplate?.intro || "Congratulations! You've been invited to join our exclusive training program designed to help you succeed.";
+        const description = emailTemplate?.description || "This course will equip you with practical skills to transform your work, enhance productivity, and unlock new opportunities.";
+
         for (const email of emailsToInvite) {
           try {
             await resend.emails.send({
               from: `Limitless Lab <${fromEmail}>`,
               to: [email],
-              subject: `Welcome to ${courseName || "LimitlessBiz"}: Your AI-Powered MSME Journey Starts Here!`,
+              subject: subject,
               html: `
                 <!DOCTYPE html>
                 <html>
@@ -176,23 +176,7 @@ const handler = async (req: Request): Promise<Response> => {
                           <tr>
                             <td style="background: linear-gradient(135deg, #393CA0 0%, #5B5FC7 100%); padding: 30px 40px; text-align: center;">
                               <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/limitless-logo-white.png" alt="Limitless Lab" style="height: 50px; margin-bottom: 15px;">
-                              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">Welcome to ${courseName || "LimitlessBiz"}!</h1>
-                            </td>
-                          </tr>
-
-                          <!-- Partner Logos -->
-                          <tr>
-                            <td style="padding: 25px 40px; background-color: #f8fafc; text-align: center;">
-                              <p style="margin: 0 0 15px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">In partnership with</p>
-                              <table role="presentation" style="width: 100%; border-collapse: collapse;">
-                                <tr>
-                                  <td align="center">
-                                    <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/aim-asean/aim-logo.png" alt="AIM" style="height: 40px; margin: 0 15px;">
-                                    <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/aim-asean/google-org.png" alt="Google.org" style="height: 35px; margin: 0 15px;">
-                                    <img src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/aim-asean/asean-foundation-logo.png" alt="ASEAN Foundation" style="height: 40px; margin: 0 15px;">
-                                  </td>
-                                </tr>
-                              </table>
+                              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">${heading}</h1>
                             </td>
                           </tr>
 
@@ -200,22 +184,12 @@ const handler = async (req: Request): Promise<Response> => {
                           <tr>
                             <td style="padding: 40px;">
                               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                                Congratulations! You've been invited to join our exclusive AI training program designed specifically for Micro, Small, and Medium Enterprises (MSMEs) in Southeast Asia.
+                                ${intro}
                               </p>
                               
                               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                                <strong>${courseName || "LimitlessBiz"}</strong> will equip you with practical AI skills to transform your business operations, enhance productivity, and unlock new growth opportunities.
+                                <strong>${courseName}</strong> — ${description}
                               </p>
-
-                              <div style="background-color: #f0f9ff; border-left: 4px solid #393CA0; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
-                                <p style="color: #1e40af; font-size: 14px; margin: 0 0 10px 0; font-weight: 600;">What you'll learn:</p>
-                                <ul style="color: #374151; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                                  <li>AI fundamentals for business applications</li>
-                                  <li>Practical AI tools for daily operations</li>
-                                  <li>Strategies to boost productivity with AI</li>
-                                  <li>Real-world case studies from ASEAN MSMEs</li>
-                                </ul>
-                              </div>
 
                               <!-- CTA Button -->
                               <table role="presentation" style="width: 100%; border-collapse: collapse;">

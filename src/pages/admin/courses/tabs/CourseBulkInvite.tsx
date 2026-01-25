@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, UserCheck, UserPlus, Users, RefreshCw } from "lucide-react";
+import { Loader2, Mail, UserCheck, UserPlus, Users, RefreshCw, Settings2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -18,44 +19,46 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { format } from "date-fns";
 
-const LIMITLESSBIZ_COURSE_ID = "e0ac8d90-bdba-4a50-a3bd-148c0903d43f";
+interface CourseBulkInviteProps {
+  courseId: string;
+  courseName: string;
+}
 
-export default function AdminLimitlessBizEnrollments() {
+const DEFAULT_EMAIL_SUBJECT = "Welcome to {courseName}: Your Learning Journey Starts Here!";
+const DEFAULT_EMAIL_HEADING = "Welcome to {courseName}!";
+const DEFAULT_EMAIL_INTRO = "Congratulations! You've been invited to join our exclusive training program designed to help you succeed.";
+const DEFAULT_EMAIL_DESCRIPTION = "This course will equip you with practical skills to transform your work, enhance productivity, and unlock new opportunities.";
+
+export default function CourseBulkInvite({ courseId, courseName }: CourseBulkInviteProps) {
   const [emailInput, setEmailInput] = useState("");
   const [sendEmails, setSendEmails] = useState(true);
+  const [showEmailSettings, setShowEmailSettings] = useState(false);
+  const [emailSubject, setEmailSubject] = useState(DEFAULT_EMAIL_SUBJECT.replace("{courseName}", courseName));
+  const [emailHeading, setEmailHeading] = useState(DEFAULT_EMAIL_HEADING.replace("{courseName}", courseName));
+  const [emailIntro, setEmailIntro] = useState(DEFAULT_EMAIL_INTRO);
+  const [emailDescription, setEmailDescription] = useState(DEFAULT_EMAIL_DESCRIPTION);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch pending enrollments
+  // Fetch pending enrollments for this course
   const { data: enrollments, isLoading: loadingEnrollments } = useQuery({
-    queryKey: ["limitlessbiz-enrollments"],
+    queryKey: ["course-bulk-enrollments", courseId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pending_course_enrollments")
         .select(`
           *,
-          course:courses(title),
           inviter:profiles!pending_course_enrollments_invited_by_fkey(first_name, last_name)
         `)
-        .eq("course_id", LIMITLESSBIZ_COURSE_ID)
+        .eq("course_id", courseId)
         .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Fetch course info
-  const { data: course } = useQuery({
-    queryKey: ["limitlessbiz-course"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("courses")
-        .select("id, title")
-        .eq("id", LIMITLESSBIZ_COURSE_ID)
-        .single();
 
       if (error) throw error;
       return data;
@@ -71,9 +74,15 @@ export default function AdminLimitlessBizEnrollments() {
       const response = await supabase.functions.invoke("send-course-invite", {
         body: {
           emails,
-          courseId: LIMITLESSBIZ_COURSE_ID,
-          courseName: course?.title || "LimitlessBiz: AI for MSME Advancement",
+          courseId,
+          courseName,
           sendEmail,
+          emailTemplate: sendEmail ? {
+            subject: emailSubject,
+            heading: emailHeading,
+            intro: emailIntro,
+            description: emailDescription,
+          } : undefined,
         },
       });
 
@@ -81,7 +90,7 @@ export default function AdminLimitlessBizEnrollments() {
       return response.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["limitlessbiz-enrollments"] });
+      queryClient.invalidateQueries({ queryKey: ["course-bulk-enrollments", courseId] });
       setEmailInput("");
       toast({
         title: "Invitations Sent",
@@ -106,9 +115,15 @@ export default function AdminLimitlessBizEnrollments() {
       const response = await supabase.functions.invoke("send-course-invite", {
         body: {
           emails: [email],
-          courseId: LIMITLESSBIZ_COURSE_ID,
-          courseName: course?.title || "LimitlessBiz: AI for MSME Advancement",
+          courseId,
+          courseName,
           sendEmail: true,
+          emailTemplate: {
+            subject: emailSubject,
+            heading: emailHeading,
+            intro: emailIntro,
+            description: emailDescription,
+          },
         },
       });
 
@@ -131,7 +146,6 @@ export default function AdminLimitlessBizEnrollments() {
   });
 
   const handleBulkInvite = () => {
-    // Parse emails from input (handle comma, newline, and space separated)
     const emails = emailInput
       .split(/[\n,\s]+/)
       .map((e) => e.trim().toLowerCase())
@@ -156,64 +170,57 @@ export default function AdminLimitlessBizEnrollments() {
   const conversionRate = totalCount > 0 ? ((enrolledCount / totalCount) * 100).toFixed(1) : "0";
 
   return (
-    <div className="container mx-auto py-6 px-4 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">LimitlessBiz Enrollments</h1>
-        <p className="text-gray-600 mt-1">
-          Manage MSME learner invitations for the LimitlessBiz: AI for MSME Advancement course
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-full">
-                <Users className="h-6 w-6 text-blue-600" />
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-full">
+                <Users className="h-4 w-4 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Invited</p>
-                <p className="text-2xl font-bold">{totalCount}</p>
+                <p className="text-xs text-muted-foreground">Total Invited</p>
+                <p className="text-xl font-bold">{totalCount}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-amber-100 rounded-full">
-                <UserPlus className="h-6 w-6 text-amber-600" />
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 rounded-full">
+                <UserPlus className="h-4 w-4 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Pending Signup</p>
-                <p className="text-2xl font-bold">{pendingCount}</p>
+                <p className="text-xs text-muted-foreground">Pending</p>
+                <p className="text-xl font-bold">{pendingCount}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-full">
-                <UserCheck className="h-6 w-6 text-green-600" />
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-full">
+                <UserCheck className="h-4 w-4 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Enrolled</p>
-                <p className="text-2xl font-bold">{enrolledCount}</p>
+                <p className="text-xs text-muted-foreground">Enrolled</p>
+                <p className="text-xl font-bold">{enrolledCount}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 rounded-full">
-                <Mail className="h-6 w-6 text-purple-600" />
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-full">
+                <Mail className="h-4 w-4 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Conversion Rate</p>
-                <p className="text-2xl font-bold">{conversionRate}%</p>
+                <p className="text-xs text-muted-foreground">Conversion</p>
+                <p className="text-xl font-bold">{conversionRate}%</p>
               </div>
             </div>
           </CardContent>
@@ -223,11 +230,10 @@ export default function AdminLimitlessBizEnrollments() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bulk Invite Form */}
         <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Bulk Invite MSMEs</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Bulk Invite Learners</CardTitle>
             <CardDescription>
-              Paste email addresses from your Google Form registrants. One email per line or
-              comma-separated.
+              Paste email addresses (one per line or comma-separated)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -235,9 +241,10 @@ export default function AdminLimitlessBizEnrollments() {
               placeholder="email1@example.com&#10;email2@example.com&#10;email3@example.com"
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
-              rows={10}
+              rows={8}
               className="font-mono text-sm"
             />
+            
             <div className="flex items-center space-x-2">
               <Switch
                 id="send-emails"
@@ -246,6 +253,63 @@ export default function AdminLimitlessBizEnrollments() {
               />
               <Label htmlFor="send-emails">Send invitation emails</Label>
             </div>
+
+            {/* Email Template Settings */}
+            {sendEmails && (
+              <Collapsible open={showEmailSettings} onOpenChange={setShowEmailSettings}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground">
+                    <Settings2 className="h-4 w-4 mr-2" />
+                    {showEmailSettings ? "Hide" : "Customize"} email template
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-3 pt-3">
+                  <div>
+                    <Label htmlFor="email-subject" className="text-xs">Subject Line</Label>
+                    <Input
+                      id="email-subject"
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                      placeholder="Email subject..."
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email-heading" className="text-xs">Email Heading</Label>
+                    <Input
+                      id="email-heading"
+                      value={emailHeading}
+                      onChange={(e) => setEmailHeading(e.target.value)}
+                      placeholder="Welcome heading..."
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email-intro" className="text-xs">Introduction</Label>
+                    <Textarea
+                      id="email-intro"
+                      value={emailIntro}
+                      onChange={(e) => setEmailIntro(e.target.value)}
+                      placeholder="Introduction paragraph..."
+                      rows={2}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email-description" className="text-xs">Course Description</Label>
+                    <Textarea
+                      id="email-description"
+                      value={emailDescription}
+                      onChange={(e) => setEmailDescription(e.target.value)}
+                      placeholder="Course description..."
+                      rows={2}
+                      className="mt-1"
+                    />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
             <Button
               onClick={handleBulkInvite}
               disabled={bulkInviteMutation.isPending || !emailInput.trim()}
@@ -268,9 +332,9 @@ export default function AdminLimitlessBizEnrollments() {
 
         {/* Enrollments Table */}
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Enrollment Status</CardTitle>
-            <CardDescription>Track invited MSMEs and their enrollment status</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Invitation Status</CardTitle>
+            <CardDescription>Track invited learners and their enrollment status</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all">
@@ -282,7 +346,7 @@ export default function AdminLimitlessBizEnrollments() {
 
               {loadingEnrollments ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : (
                 <>
@@ -326,14 +390,14 @@ interface EnrollmentTableProps {
 function EnrollmentTable({ enrollments, onResend, isResending }: EnrollmentTableProps) {
   if (enrollments.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        No enrollments found in this category.
+      <div className="text-center py-8 text-muted-foreground">
+        No invitations found in this category.
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border max-h-[500px] overflow-auto">
+    <div className="rounded-md border max-h-[400px] overflow-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -350,19 +414,19 @@ function EnrollmentTable({ enrollments, onResend, isResending }: EnrollmentTable
               <TableCell className="font-medium">{enrollment.email}</TableCell>
               <TableCell>
                 {enrollment.processed_at ? (
-                  <Badge variant="default" className="bg-green-100 text-green-800">
+                  <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
                     Enrolled
                   </Badge>
                 ) : (
-                  <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                  <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100">
                     Pending
                   </Badge>
                 )}
               </TableCell>
-              <TableCell className="text-gray-500">
+              <TableCell className="text-muted-foreground text-sm">
                 {format(new Date(enrollment.created_at), "MMM d, yyyy")}
               </TableCell>
-              <TableCell className="text-gray-500">
+              <TableCell className="text-muted-foreground text-sm">
                 {enrollment.processed_at
                   ? format(new Date(enrollment.processed_at), "MMM d, yyyy")
                   : "—"}
