@@ -3307,6 +3307,13 @@ export type Database = {
         Returns: boolean
       }
       delete_user_data: { Args: never; Returns: undefined }
+      get_course_counts: {
+        Args: { course_id_param: string }
+        Returns: {
+          enrollee_count: number
+          lesson_count: number
+        }[]
+      }
       get_course_enrollment_count: {
         Args: { course_id_param: string }
         Returns: number
