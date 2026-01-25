@@ -69,26 +69,32 @@ export default function CourseDetail() {
     enabled: !!courseId,
   });
 
-  // Fetch real-time enrollment count using secure function that bypasses RLS
-  const { data: enrollmentCount = 0, isLoading: enrollmentLoading } = useQuery({
-    queryKey: ["course-enrollment-count", courseId],
+  // Fetch real-time counts using secure function that bypasses RLS
+  const { data: courseCounts, isLoading: countsLoading } = useQuery({
+    queryKey: ["course-counts", courseId],
     queryFn: async () => {
-      if (!courseId) return 0;
+      if (!courseId) return { lesson_count: 0, enrollee_count: 0 };
 
       const { data, error } = await supabase
         .rpc('get_course_counts', { course_id_param: courseId })
         .single();
 
       if (error) {
-        console.error('Error fetching enrollment count:', error);
-        return 0;
+        console.error('Error fetching course counts:', error);
+        return { lesson_count: 0, enrollee_count: 0 };
       }
 
-      return Number(data?.enrollee_count) || 0;
+      return {
+        lesson_count: Number(data?.lesson_count) || 0,
+        enrollee_count: Number(data?.enrollee_count) || 0,
+      };
     },
     enabled: !!courseId,
     refetchOnWindowFocus: true,
   });
+
+  const lessonCount = courseCounts?.lesson_count || 0;
+  const enrollmentCount = courseCounts?.enrollee_count || 0;
 
   // Check if user is authenticated
   const { data: session } = useQuery({
@@ -103,10 +109,9 @@ export default function CourseDetail() {
   // Set the page title
   usePageTitle(course ? `${course.title} | Limitless Lab` : "Course | Limitless Lab");
 
-  // Calculate totals from actual lesson data
+  // Calculate totals from actual lesson data (duration only - count comes from RPC)
   const totalDuration = lessons.reduce((acc, lesson) => acc + (lesson.duration || 0), 0);
   const totalHours = Math.ceil(totalDuration / 60);
-  const lessonCount = lessons.length;
 
   
 
@@ -146,12 +151,12 @@ export default function CourseDetail() {
       ? (session ? "Inquire" : "Sign Up to Inquire")
       : (session ? "Enroll Now" : "Sign Up to Enroll");
 
-  if (isLoading || lessonsLoading || enrollmentLoading) {
+  if (isLoading || lessonsLoading || countsLoading) {
     return (
       <div className="min-h-screen bg-white">
         <MainNav />
         <div className="flex items-center justify-center min-h-[60vh] pt-32">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#393CA0]"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
         <Footer />
       </div>
