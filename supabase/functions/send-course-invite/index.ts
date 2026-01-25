@@ -35,15 +35,24 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
-
+    
+    // Create a client with the user's token to validate their identity
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    const supabaseUserClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+    
+    const { data: { user }, error: userError } = await supabaseUserClient.auth.getUser();
     
     if (userError || !user) {
+      console.error("User auth error:", userError);
       throw new Error("Unauthorized");
     }
+    
+    // Use service role client for admin operations
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
