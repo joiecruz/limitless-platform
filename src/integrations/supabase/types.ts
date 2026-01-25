@@ -3312,6 +3312,7 @@ export type Database = {
         Returns: {
           enrollee_count: number
           lesson_count: number
+          total_duration: number
         }[]
       }
       get_course_enrollment_count: {
