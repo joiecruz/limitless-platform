@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
-
+import { CourseAccessGrantedDialog } from "@/components/dashboard/CourseAccessGrantedDialog";
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -244,6 +244,9 @@ export default function Dashboard() {
         onOpenChange={handleOnboardingClose}
         isIncompleteProfile={isIncompleteProfile}
       />
+
+      {/* Course Access Granted Dialog */}
+      <CourseAccessGrantedDialog />
     </div>
   );
 }
