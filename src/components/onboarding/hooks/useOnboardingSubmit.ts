@@ -189,6 +189,8 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
               console.error('Error granting course access:', accessError);
             } else {
               console.log('Granted course access for course:', pending.course_id);
+              // Store the course ID to show welcome dialog on dashboard
+              localStorage.setItem('granted_course_access', pending.course_id);
             }
           }
 
