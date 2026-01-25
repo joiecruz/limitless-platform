@@ -65,6 +65,7 @@ import AdminSettings from '@/pages/admin/AdminSettings';
 import AdminMasterTrainers from '@/pages/admin/AdminMasterTrainers';
 import EditCaseStudy from '@/pages/admin/case-studies/EditCaseStudy';
 import AdminReports from '@/components/admin/reports/AdminReports';
+import AdminLimitlessBizEnrollments from '@/pages/admin/AdminLimitlessBizEnrollments';
 import Empathize from '@/pages/projects/design-thinking/Empathize';
 import { ProjectNavBar } from '@/components/projects/ProjectNavBar';
 
@@ -184,6 +185,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/master-trainers" element={<AdminMasterTrainers />} />
         <Route path="/admin/reports" element={<AdminReports />} />
+        <Route path="/admin/limitlessbiz-enrollments" element={<AdminLimitlessBizEnrollments />} />
       </Route>
 
       {/* 404 catch-all route */}

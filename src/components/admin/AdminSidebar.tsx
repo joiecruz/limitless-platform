@@ -9,6 +9,7 @@ import {
   Database,
   AlertCircle,
   GraduationCap,
+  UserPlus,
 } from 'lucide-react';
 import { UserProfile } from '@/components/layout/UserProfile';
 
@@ -70,6 +71,13 @@ export function AdminSidebar() {
           >
             <AlertCircle className="h-5 w-5" />
             Reports
+          </Link>
+          <Link
+            to="/admin/limitlessbiz-enrollments"
+            className={`nav-item ${isActive('/admin/limitlessbiz-enrollments') ? 'active' : ''}`}
+          >
+            <UserPlus className="h-5 w-5" />
+            LimitlessBiz Invites
           </Link>
 
           {/* Website section */}

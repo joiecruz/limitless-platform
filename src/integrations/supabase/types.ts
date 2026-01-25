@@ -1364,6 +1364,65 @@ export type Database = {
           },
         ]
       }
+      pending_course_enrollments: {
+        Row: {
+          course_id: string
+          created_at: string
+          email: string
+          id: string
+          invited_by: string | null
+          metadata: Json | null
+          processed_at: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          email: string
+          id?: string
+          invited_by?: string | null
+          metadata?: Json | null
+          processed_at?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          invited_by?: string | null
+          metadata?: Json | null
+          processed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_course_enrollments_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_course_enrollments_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "workspace_members_materialized"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "pending_course_enrollments_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "workspace_members_with_invitations"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
