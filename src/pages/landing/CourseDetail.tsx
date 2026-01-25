@@ -8,92 +8,93 @@ import { Clock, Users, BookOpen, Lock, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
-
 export default function CourseDetail() {
-  const { courseId } = useParams<{ courseId: string }>();
-  const { toast } = useToast();
+  const {
+    courseId
+  } = useParams<{
+    courseId: string;
+  }>();
+  const {
+    toast
+  } = useToast();
   const navigate = useNavigate();
-
-  
-
-  const { data: course, isLoading } = useQuery({
+  const {
+    data: course,
+    isLoading
+  } = useQuery({
     queryKey: ["public-course", courseId],
     queryFn: async () => {
       if (!courseId) throw new Error("Course ID is required");
-
-      
-
-      const { data, error } = await supabase
-        .from("courses")
-        .select("*")
-        .eq("id", courseId)
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from("courses").select("*").eq("id", courseId).single();
       if (error) {
-        
         throw error;
       }
-
-      
       return data;
     },
-    enabled: !!courseId,
+    enabled: !!courseId
   });
 
   // Fetch lessons with better error handling
-  const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
+  const {
+    data: lessons = [],
+    isLoading: lessonsLoading
+  } = useQuery({
     queryKey: ["course-lessons", courseId],
     queryFn: async () => {
       if (!courseId) {
-        
         return [];
       }
-
-      
-
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("id, title, description, duration, order")
-        .eq("course_id", courseId)
-        .order("order");
-
+      const {
+        data,
+        error
+      } = await supabase.from("lessons").select("id, title, description, duration, order").eq("course_id", courseId).order("order");
       if (error) {
-        
         // Don't throw, return empty array to show empty state
         return [];
       }
-
-      
       return data || [];
     },
-    enabled: !!courseId,
+    enabled: !!courseId
   });
 
   // Fetch real-time counts using secure function that bypasses RLS
-  const { data: courseCounts, isLoading: countsLoading } = useQuery({
+  const {
+    data: courseCounts,
+    isLoading: countsLoading
+  } = useQuery({
     queryKey: ["course-counts", courseId],
     queryFn: async () => {
-      if (!courseId) return { lesson_count: 0, enrollee_count: 0, total_duration: 0 };
-
-      const { data, error } = await supabase
-        .rpc('get_course_counts', { course_id_param: courseId })
-        .single();
-
+      if (!courseId) return {
+        lesson_count: 0,
+        enrollee_count: 0,
+        total_duration: 0
+      };
+      const {
+        data,
+        error
+      } = await supabase.rpc('get_course_counts', {
+        course_id_param: courseId
+      }).single();
       if (error) {
         console.error('Error fetching course counts:', error);
-        return { lesson_count: 0, enrollee_count: 0, total_duration: 0 };
+        return {
+          lesson_count: 0,
+          enrollee_count: 0,
+          total_duration: 0
+        };
       }
-
       return {
         lesson_count: Number(data?.lesson_count) || 0,
         enrollee_count: Number(data?.enrollee_count) || 0,
-        total_duration: Number(data?.total_duration) || 0,
+        total_duration: Number(data?.total_duration) || 0
       };
     },
     enabled: !!courseId,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: true
   });
-
   const lessonCount = courseCounts?.lesson_count || 0;
   const enrollmentCount = courseCounts?.enrollee_count || 0;
   const totalHours = Math.ceil((courseCounts?.total_duration || 0) / 60);
@@ -103,13 +104,19 @@ export default function CourseDetail() {
   const isLimitlessBizCourse = courseId === LIMITLESS_BIZ_COURSE_ID;
 
   // Check if user is authenticated
-  const { data: session } = useQuery({
+  const {
+    data: session
+  } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       return session;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000
   });
 
   // Set the page title
@@ -117,59 +124,41 @@ export default function CourseDetail() {
 
   // Note: totalHours is now calculated from RPC data above
 
-  
-
   const handleEnrollClick = () => {
     // For in-person courses with booking link, redirect to booking
     if (course?.format?.toLowerCase() === 'in-person' && course?.booking_link) {
       window.open(course.booking_link, '_blank');
       return;
     }
-
     if (!session) {
       // Redirect to signup if not authenticated
       navigate('/signup');
       return;
     }
-
     toast({
       title: "Enrollment Coming Soon",
-      description: "Course enrollment will be available soon. Sign up for our newsletter to be notified!",
+      description: "Course enrollment will be available soon. Sign up for our newsletter to be notified!"
     });
   };
 
   // Parse learning outcomes - handle both array and string formats
-  const learningOutcomes = course?.learning_outcomes 
-    ? Array.isArray(course.learning_outcomes) 
-      ? course.learning_outcomes 
-      : course.learning_outcomes.split('\n').filter(outcome => outcome.trim())
-    : [];
+  const learningOutcomes = course?.learning_outcomes ? Array.isArray(course.learning_outcomes) ? course.learning_outcomes : course.learning_outcomes.split('\n').filter(outcome => outcome.trim()) : [];
 
   // Check if course is locked and online for CTA text
   const isLockedOnlineCourse = course?.locked && course?.format?.toLowerCase() === 'online';
   const isInPersonCourse = course?.format?.toLowerCase() === 'in-person';
-  
-  const ctaText = isInPersonCourse 
-    ? "Book a Session"
-    : isLockedOnlineCourse 
-      ? (session ? "Inquire" : "Sign Up to Inquire")
-      : (session ? "Enroll Now" : "Sign Up to Enroll");
-
+  const ctaText = isInPersonCourse ? "Book a Session" : isLockedOnlineCourse ? session ? "Inquire" : "Sign Up to Inquire" : session ? "Enroll Now" : "Sign Up to Enroll";
   if (isLoading || lessonsLoading || countsLoading) {
-    return (
-      <div className="min-h-screen bg-white">
+    return <div className="min-h-screen bg-white">
         <MainNav />
         <div className="flex items-center justify-center min-h-[60vh] pt-32">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
   if (!course) {
-    return (
-      <div className="min-h-screen bg-white">
+    return <div className="min-h-screen bg-white">
         <MainNav />
         <div className="flex items-center justify-center min-h-[60vh] pt-32">
           <div className="text-center">
@@ -178,19 +167,10 @@ export default function CourseDetail() {
           </div>
         </div>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-white">
-      <OpenGraphTags
-        title={`${course.title} | Limitless Lab`}
-        description={course.description}
-        imageUrl={course.image_url || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"}
-        url={`${window.location.origin}/courses/${courseId}`}
-        type="website"
-      />
+  return <div className="min-h-screen bg-white">
+      <OpenGraphTags title={`${course.title} | Limitless Lab`} description={course.description} imageUrl={course.image_url || "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"} url={`${window.location.origin}/courses/${courseId}`} type="website" />
 
       <MainNav />
 
@@ -205,15 +185,9 @@ export default function CourseDetail() {
           </div>
 
           {/* Course Image */}
-          {course.image_url && (
-            <div className="mb-12 flex justify-center">
-              <img
-                src={course.image_url}
-                alt={course.title}
-                className="w-full max-w-2xl rounded-lg shadow-lg"
-              />
-            </div>
-          )}
+          {course.image_url && <div className="mb-12 flex justify-center">
+              <img src={course.image_url} alt={course.title} className="w-full max-w-2xl rounded-lg shadow-lg" />
+            </div>}
 
           {/* Course Stats - Using real-time data */}
           <div className="flex flex-wrap justify-center gap-8 mb-12">
@@ -239,94 +213,65 @@ export default function CourseDetail() {
           </div>
 
           {/* For LimitlessBiz: Show Google Form, hide enroll button, curriculum, and CTA */}
-          {isLimitlessBizCourse ? (
-            <>
+          {isLimitlessBizCourse ? <>
               {/* What You'll Learn - Using Learning Outcomes */}
-              {learningOutcomes.length > 0 && (
-                <div className="mb-16">
+              {learningOutcomes.length > 0 && <div className="mb-16">
                   <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What You'll Learn</h2>
                   <div className="bg-gray-50 rounded-lg p-8">
                     <ul className="space-y-4 max-w-3xl mx-auto">
                       {learningOutcomes.map((outcome, index) => {
-                        const shouldShowCheck = !outcome.toLowerCase().startsWith('by the end');
-                        return (
-                          <li key={index} className="flex items-start gap-3">
-                            {shouldShowCheck && (
-                              <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
-                            )}
+                  const shouldShowCheck = !outcome.toLowerCase().startsWith('by the end');
+                  return <li key={index} className="flex items-start gap-3">
+                            {shouldShowCheck && <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />}
                             <span className={`text-lg text-gray-700 ${!shouldShowCheck ? 'ml-9' : ''}`}>
                               {outcome}
                             </span>
-                          </li>
-                        );
-                      })}
+                          </li>;
+                })}
                     </ul>
                   </div>
-                </div>
-              )}
+                </div>}
 
               {/* Google Form Embed for LimitlessBiz */}
               <div className="mb-16">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Express Your Interest</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Enroll your MSME for FREE now!</h2>
                 <div className="w-full max-w-3xl mx-auto">
-                  <iframe
-                    src="https://docs.google.com/forms/d/e/1FAIpQLSeHUkZRvXNEoF-yzvcyK_QL_r8KkUK2VJg-_SxlhRuVqtBvAA/viewform?embedded=true"
-                    width="100%"
-                    height="800"
-                    frameBorder="0"
-                    marginHeight={0}
-                    marginWidth={0}
-                    className="rounded-lg"
-                  >
+                  <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeHUkZRvXNEoF-yzvcyK_QL_r8KkUK2VJg-_SxlhRuVqtBvAA/viewform?embedded=true" width="100%" height="800" frameBorder="0" marginHeight={0} marginWidth={0} className="rounded-lg">
                     Loading…
                   </iframe>
                 </div>
               </div>
-            </>
-          ) : (
-            <>
+            </> : <>
               {/* Enroll Button */}
               <div className="text-center mb-16">
-                <Button 
-                  size="lg"
-                  onClick={handleEnrollClick}
-                  className="bg-primary hover:bg-primary/90 text-white px-8"
-                >
+                <Button size="lg" onClick={handleEnrollClick} className="bg-primary hover:bg-primary/90 text-white px-8">
                   {ctaText}
                 </Button>
               </div>
 
               {/* What You'll Learn - Using Learning Outcomes */}
-              {learningOutcomes.length > 0 && (
-                <div className="mb-16">
+              {learningOutcomes.length > 0 && <div className="mb-16">
                   <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What You'll Learn</h2>
                   <div className="bg-gray-50 rounded-lg p-8">
                     <ul className="space-y-4 max-w-3xl mx-auto">
                       {learningOutcomes.map((outcome, index) => {
-                        const shouldShowCheck = !outcome.toLowerCase().startsWith('by the end');
-                        return (
-                          <li key={index} className="flex items-start gap-3">
-                            {shouldShowCheck && (
-                              <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
-                            )}
+                  const shouldShowCheck = !outcome.toLowerCase().startsWith('by the end');
+                  return <li key={index} className="flex items-start gap-3">
+                            {shouldShowCheck && <CheckCircle className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />}
                             <span className={`text-lg text-gray-700 ${!shouldShowCheck ? 'ml-9' : ''}`}>
                               {outcome}
                             </span>
-                          </li>
-                        );
-                      })}
+                          </li>;
+                })}
                     </ul>
                   </div>
-                </div>
-              )}
+                </div>}
 
               {/* Course Curriculum - Always show lessons with proper styling */}
               <div className="mb-16">
                 <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Course Curriculum</h2>
-                {lessonCount > 0 ? (
-                  <div className="space-y-4 max-w-3xl mx-auto">
-                    {lessons.map((lesson, index) => (
-                      <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6 opacity-75">
+                {lessonCount > 0 ? <div className="space-y-4 max-w-3xl mx-auto">
+                    {lessons.map((lesson, index) => <div key={lesson.id} className="bg-white border border-gray-200 rounded-lg p-6 opacity-75">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
@@ -336,25 +281,17 @@ export default function CourseDetail() {
                               <h3 className="text-lg font-semibold text-gray-600">{lesson.title}</h3>
                               <Lock className="h-4 w-4 text-gray-400" />
                             </div>
-                            {lesson.description && (
-                              <p className="text-gray-500 mb-3">{lesson.description}</p>
-                            )}
+                            {lesson.description && <p className="text-gray-500 mb-3">{lesson.description}</p>}
                           </div>
-                          {lesson.duration && (
-                            <div className="flex items-center gap-1 text-sm text-gray-400 ml-4">
+                          {lesson.duration && <div className="flex items-center gap-1 text-sm text-gray-400 ml-4">
                               <Clock className="h-4 w-4" />
                               <span>{lesson.duration} min</span>
-                            </div>
-                          )}
+                            </div>}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
+                      </div>)}
+                  </div> : <div className="text-center py-8">
                     <p className="text-gray-500">Course curriculum is being prepared. Check back soon!</p>
-                  </div>
-                )}
+                  </div>}
               </div>
 
               {/* Call to Action */}
@@ -363,20 +300,14 @@ export default function CourseDetail() {
                 <p className="text-gray-100 mb-6">
                   Join {enrollmentCount} other learners and start your journey today.
                 </p>
-                <Button 
-                  size="lg"
-                  onClick={handleEnrollClick}
-                  className="bg-white text-primary hover:bg-gray-100 px-8"
-                >
+                <Button size="lg" onClick={handleEnrollClick} className="bg-white text-primary hover:bg-gray-100 px-8">
                   {ctaText}
                 </Button>
               </div>
-            </>
-          )}
+            </>}
         </div>
       </div>
 
       <Footer />
-    </div>
-  );
+    </div>;
 }
