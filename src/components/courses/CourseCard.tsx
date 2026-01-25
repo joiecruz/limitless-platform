@@ -70,24 +70,22 @@ const CourseCard = ({ course, enrollment, onEnroll, isEnrolling }: CourseCardPro
     },
   });
 
-  // Fetch actual counts - this will be the source of truth
+  // Fetch actual counts using the secure function that bypasses RLS
   const { data: actualCounts } = useQuery({
     queryKey: ["course-counts", course.id],
     queryFn: async () => {
-      const [enrollmentsResult, lessonsResult] = await Promise.all([
-        supabase
-          .from('enrollments')
-          .select('id', { count: 'exact', head: true })
-          .eq('course_id', course.id),
-        supabase
-          .from('lessons')
-          .select('id', { count: 'exact', head: true })
-          .eq('course_id', course.id)
-      ]);
+      const { data, error } = await supabase
+        .rpc('get_course_counts', { course_id_param: course.id })
+        .single();
+
+      if (error) {
+        console.error('Error fetching course counts:', error);
+        return { enrolleeCount: 0, lessonCount: 0 };
+      }
 
       return {
-        enrolleeCount: enrollmentsResult.count || 0,
-        lessonCount: lessonsResult.count || 0
+        enrolleeCount: Number(data?.enrollee_count) || 0,
+        lessonCount: Number(data?.lesson_count) || 0
       };
     },
     staleTime: 1000 * 60, // Cache for 1 minute

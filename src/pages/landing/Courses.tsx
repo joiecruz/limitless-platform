@@ -43,44 +43,26 @@ export default function Courses() {
 
       
 
-      // Get real-time counts for each course
+      // Get real-time counts for each course using the secure function
       const coursesWithCounts = await Promise.all(
         coursesData.map(async (course) => {
-          
-          
-          // Fetch enrollment count
-          const { count: enrollmentCount, error: enrollmentError } = await supabase
-            .from("enrollments")
-            .select("*", { count: "exact", head: true })
-            .eq("course_id", course.id);
+          // Use the SECURITY DEFINER function that bypasses RLS for counts
+          const { data: counts, error: countsError } = await supabase
+            .rpc('get_course_counts', { course_id_param: course.id })
+            .single();
 
-          if (enrollmentError) {
-            
+          if (countsError) {
+            console.error(`Error fetching counts for course ${course.id}:`, countsError);
           }
 
-          // Fetch lesson count
-          const { count: lessonCount, error: lessonError } = await supabase
-            .from("lessons")
-            .select("*", { count: "exact", head: true })
-            .eq("course_id", course.id);
-
-          if (lessonError) {
-            
-          }
-
-          const courseWithCounts = {
+          return {
             ...course,
-            enrollee_count: enrollmentCount || 0,
-            lesson_count: lessonCount || 0
+            enrollee_count: counts?.enrollee_count || 0,
+            lesson_count: counts?.lesson_count || 0
           };
-
-          
-
-          return courseWithCounts;
         })
       );
 
-      
       return coursesWithCounts;
     },
     staleTime: 1000 * 60, // Cache for 1 minute
