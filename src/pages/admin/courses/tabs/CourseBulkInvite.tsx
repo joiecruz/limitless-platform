@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, UserCheck, UserPlus, Users, RefreshCw, Settings2 } from "lucide-react";
+import { Loader2, Mail, UserCheck, UserPlus, Users, RefreshCw, Settings2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -24,6 +24,17 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 
 interface CourseBulkInviteProps {
@@ -140,6 +151,32 @@ export default function CourseBulkInvite({ courseId, courseName }: CourseBulkInv
       toast({
         title: "Error",
         description: error.message || "Failed to resend email",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete invitation mutation
+  const deleteInvitationMutation = useMutation({
+    mutationFn: async (enrollmentId: string) => {
+      const { error } = await supabase
+        .from("pending_course_enrollments")
+        .delete()
+        .eq("id", enrollmentId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course-bulk-enrollments", courseId] });
+      toast({
+        title: "Invitation Deleted",
+        description: "The invitation has been removed.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete invitation",
         variant: "destructive",
       });
     },
@@ -354,21 +391,27 @@ export default function CourseBulkInvite({ courseId, courseName }: CourseBulkInv
                     <EnrollmentTable
                       enrollments={enrollments || []}
                       onResend={(email) => resendEmailMutation.mutate(email)}
+                      onDelete={(id) => deleteInvitationMutation.mutate(id)}
                       isResending={resendEmailMutation.isPending}
+                      isDeleting={deleteInvitationMutation.isPending}
                     />
                   </TabsContent>
                   <TabsContent value="pending">
                     <EnrollmentTable
                       enrollments={enrollments?.filter((e) => !e.processed_at) || []}
                       onResend={(email) => resendEmailMutation.mutate(email)}
+                      onDelete={(id) => deleteInvitationMutation.mutate(id)}
                       isResending={resendEmailMutation.isPending}
+                      isDeleting={deleteInvitationMutation.isPending}
                     />
                   </TabsContent>
                   <TabsContent value="enrolled">
                     <EnrollmentTable
                       enrollments={enrollments?.filter((e) => e.processed_at) || []}
                       onResend={(email) => resendEmailMutation.mutate(email)}
+                      onDelete={(id) => deleteInvitationMutation.mutate(id)}
                       isResending={resendEmailMutation.isPending}
+                      isDeleting={deleteInvitationMutation.isPending}
                     />
                   </TabsContent>
                 </>
@@ -384,10 +427,12 @@ export default function CourseBulkInvite({ courseId, courseName }: CourseBulkInv
 interface EnrollmentTableProps {
   enrollments: any[];
   onResend: (email: string) => void;
+  onDelete: (id: string) => void;
   isResending: boolean;
+  isDeleting: boolean;
 }
 
-function EnrollmentTable({ enrollments, onResend, isResending }: EnrollmentTableProps) {
+function EnrollmentTable({ enrollments, onResend, onDelete, isResending, isDeleting }: EnrollmentTableProps) {
   if (enrollments.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -432,17 +477,48 @@ function EnrollmentTable({ enrollments, onResend, isResending }: EnrollmentTable
                   : "—"}
               </TableCell>
               <TableCell className="text-right">
-                {!enrollment.processed_at && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onResend(enrollment.email)}
-                    disabled={isResending}
-                  >
-                    <RefreshCw className="h-4 w-4 mr-1" />
-                    Resend
-                  </Button>
-                )}
+                <div className="flex items-center justify-end gap-1">
+                  {!enrollment.processed_at && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onResend(enrollment.email)}
+                      disabled={isResending}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Resend
+                    </Button>
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Invitation</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete the invitation for {enrollment.email}? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => onDelete(enrollment.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </TableCell>
             </TableRow>
           ))}
