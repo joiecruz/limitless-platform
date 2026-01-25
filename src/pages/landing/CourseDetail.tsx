@@ -245,6 +245,18 @@ export default function CourseDetail() {
                   >
                     Loading…
                   </iframe>
+                  <div className="text-center mt-6 p-6 bg-muted rounded-lg">
+                    <p className="text-muted-foreground mb-4">If the form above doesn't load, click the button below:</p>
+                    <a 
+                      href="https://docs.google.com/forms/d/e/1FAIpQLSe8RogsleAHAkr1qVLgaUEGGGaD2WDMMWsbIIqBE6KEeyNZJg/viewform" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
+                        Open Enrollment Form
+                      </Button>
+                    </a>
+                  </div>
                 </div>
               </div>
             </> : <>
