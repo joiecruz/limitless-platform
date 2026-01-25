@@ -232,32 +232,23 @@ export default function CourseDetail() {
                   </div>
                 </div>}
 
-              {/* Google Form Embed for LimitlessBiz */}
+              {/* Google Form CTA for LimitlessBiz */}
               <div className="mb-16">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Enroll your MSME for FREE now!</h2>
-                <div className="w-full max-w-3xl mx-auto overflow-hidden rounded-lg border border-border">
-                  <iframe 
-                    src="https://docs.google.com/forms/d/e/1FAIpQLSe8RogsleAHAkr1qVLgaUEGGGaD2WDMMWsbIIqBE6KEeyNZJg/viewform?embedded=true" 
-                    width="100%" 
-                    height="900"
-                    title="LimitlessBiz Enrollment Form"
-                    sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  >
-                    Loading…
-                  </iframe>
-                </div>
-                <div className="text-center mt-6 p-6 bg-muted rounded-lg max-w-3xl mx-auto">
-                  <p className="text-muted-foreground mb-4">If the form above doesn't load, click the button below:</p>
+                <div className="w-full max-w-3xl mx-auto text-center p-12 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-2xl border border-primary/20">
+                  <h2 className="text-3xl font-bold text-foreground mb-4">Enroll your MSME for FREE now!</h2>
+                  <p className="text-muted-foreground mb-8 text-lg max-w-xl mx-auto">
+                    Complete the enrollment form to register your business for this free program. It only takes a few minutes!
+                  </p>
                   <a 
                     href="https://docs.google.com/forms/d/e/1FAIpQLSe8RogsleAHAkr1qVLgaUEGGGaD2WDMMWsbIIqBE6KEeyNZJg/viewform" 
                     target="_blank" 
                     rel="noopener noreferrer"
                   >
-                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
-                      Open Enrollment Form
+                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all">
+                      Open Enrollment Form →
                     </Button>
                   </a>
+                  <p className="text-sm text-muted-foreground mt-4">Opens in a new tab</p>
                 </div>
               </div>
             </> : <>
