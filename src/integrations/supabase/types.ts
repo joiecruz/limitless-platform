@@ -1309,6 +1309,33 @@ export type Database = {
           },
         ]
       }
+      otp_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          used: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          used?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          used?: boolean | null
+        }
+        Relationships: []
+      }
       pages: {
         Row: {
           content: Json
@@ -3297,6 +3324,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_invitations: { Args: never; Returns: undefined }
+      cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       create_workspace_with_owner: {
         Args: {
           owner_id: string
