@@ -15,7 +15,6 @@ import { GraduationCap, ArrowRight } from "lucide-react";
 interface CourseInfo {
   id: string;
   title: string;
-  slug: string;
 }
 
 export function CourseAccessGrantedDialog() {
@@ -37,7 +36,7 @@ export function CourseAccessGrantedDialog() {
         // Fetch course details
         const { data: courseData, error } = await supabase
           .from('courses')
-          .select('id, title, slug')
+          .select('id, title')
           .eq('id', grantedCourseId)
           .maybeSingle();
 
@@ -58,11 +57,40 @@ export function CourseAccessGrantedDialog() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleGoToCourse = () => {
-    setOpen(false);
-    if (course) {
-      navigate(`/dashboard/courses/${course.slug}`);
+  const handleGoToCourse = async () => {
+    if (!course) return;
+
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        // Check if already enrolled
+        const { data: existingEnrollment } = await supabase
+          .from('enrollments')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('course_id', course.id)
+          .maybeSingle();
+
+        // If not enrolled, create enrollment
+        if (!existingEnrollment) {
+          await supabase
+            .from('enrollments')
+            .insert({
+              course_id: course.id,
+              user_id: user.id,
+              progress: 0
+            });
+        }
+      }
+    } catch (err) {
+      console.error('Error enrolling user:', err);
+      // Continue navigation even if enrollment fails
     }
+
+    setOpen(false);
+    navigate(`/dashboard/courses/${course.id}/lessons`);
   };
 
   const handleClose = () => {
