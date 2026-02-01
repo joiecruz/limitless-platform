@@ -12,24 +12,12 @@ const GOALS = [
   "Network with like-minded innovators"
 ];
 
-const REFERRAL_SOURCES = [
-  "Google Search",
-  "Social Media",
-  "Friend or Colleague",
-  "Professional Network",
-  "Online Advertisement",
-  "Blog or Article",
-  "Conference or Event",
-  "Other"
-];
-
 interface SignupStep4Props extends SignupStepProps {
-  onGoalsSet: (goals: string[], referralSource: string) => void;
+  onGoalsSet: (goals: string[]) => void;
 }
 
 export function SignupStep4({ data, onBack, onGoalsSet }: SignupStep4Props) {
   const [selectedGoals, setSelectedGoals] = useState<string[]>(data.goals || []);
-  const [selectedSource, setSelectedSource] = useState<string>(data.referralSource || "");
 
   const toggleGoal = (goal: string) => {
     setSelectedGoals(prev => 
@@ -39,16 +27,16 @@ export function SignupStep4({ data, onBack, onGoalsSet }: SignupStep4Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onGoalsSet(selectedGoals, selectedSource);
+    onGoalsSet(selectedGoals);
   };
 
-  const isValid = selectedGoals.length > 0 && selectedSource !== "";
+  const isValid = selectedGoals.length > 0;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          How do you want to use Limitless Lab?
+          How do you plan to use Limitless Lab?
         </h2>
         <p className="text-muted-foreground">
           Select your goals (at least one)
@@ -75,33 +63,6 @@ export function SignupStep4({ data, onBack, onGoalsSet }: SignupStep4Props) {
             </button>
           );
         })}
-      </div>
-
-      <div className="space-y-3 pt-2">
-        <p className="text-sm font-medium text-foreground">
-          How did you hear about Limitless Lab?
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {REFERRAL_SOURCES.map((source) => {
-            const isSelected = selectedSource === source;
-            return (
-              <button
-                key={source}
-                type="button"
-                onClick={() => setSelectedSource(source)}
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors",
-                  isSelected 
-                    ? "border-primary bg-primary/5 text-foreground" 
-                    : "border-border hover:bg-muted/50 text-foreground"
-                )}
-              >
-                {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
-                <span className="text-sm font-normal">{source}</span>
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       <div className="flex gap-3 pt-2">
