@@ -7,14 +7,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { SignupStepProps } from "./types";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 interface SignupStep1Props extends SignupStepProps {
   onEmailVerified: (email: string) => void;
 }
 
 export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
-  const [email, setEmail] = useState(data.email);
+  const [searchParams] = useSearchParams();
+  const emailFromUrl = searchParams.get("email") || "";
+  const [email, setEmail] = useState(data.email || emailFromUrl);
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [loading, setLoading] = useState(false);
