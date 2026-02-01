@@ -27,7 +27,7 @@ const CourseActions = ({
         disabled
       >
         <Lock className="h-4 w-4" />
-        Coming Soon
+        Exclusive
       </button>
     );
   }
