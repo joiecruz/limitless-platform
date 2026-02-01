@@ -1,16 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
-import { useEffect } from "react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CourseAccessGrantedDialog } from "@/components/dashboard/CourseAccessGrantedDialog";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   // Query to get user profile data
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -35,6 +36,7 @@ export default function Dashboard() {
         navigate("/signin", { replace: true });
         return;
       }
+      setIsAuthChecking(false);
     };
 
     checkAuth();
@@ -70,6 +72,14 @@ export default function Dashboard() {
     }
     return '';
   };
+
+  if (isAuthChecking || isProfileLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in pt-20 pb-10 px-4 sm:px-6 lg:px-8">

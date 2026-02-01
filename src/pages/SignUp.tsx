@@ -9,6 +9,7 @@ import { SignupStep2 } from "@/components/signup/SignupStep2";
 import { SignupStep3 } from "@/components/signup/SignupStep3";
 import { SignupStep4 } from "@/components/signup/SignupStep4";
 import { SignupStep5 } from "@/components/signup/SignupStep5";
+import { SignupStep6 } from "@/components/signup/SignupStep6";
 import { SignupFormData } from "@/components/signup/types";
 
 export default function Register() {
@@ -45,9 +46,14 @@ export default function Register() {
     setCurrentStep(4);
   };
 
-  const handleGoalsSet = (goals: string[], referralSource: string) => {
-    setFormData(prev => ({ ...prev, goals, referralSource }));
+  const handleGoalsSet = (goals: string[]) => {
+    setFormData(prev => ({ ...prev, goals }));
     setCurrentStep(5);
+  };
+
+  const handleReferralSet = (referralSource: string) => {
+    setFormData(prev => ({ ...prev, referralSource }));
+    setCurrentStep(6);
   };
 
   const handleComplete = async (workspaceName: string) => {
@@ -193,6 +199,15 @@ export default function Register() {
             data={formData}
             onNext={() => {}}
             onBack={handleBack}
+            onReferralSet={handleReferralSet}
+          />
+        );
+      case 6:
+        return (
+          <SignupStep6
+            data={formData}
+            onNext={() => {}}
+            onBack={handleBack}
             onComplete={handleComplete}
             loading={loading}
           />
@@ -205,7 +220,7 @@ export default function Register() {
   return (
     <SignupLayout 
       currentStep={currentStep} 
-      totalSteps={5}
+      totalSteps={6}
       showProgress={currentStep > 1}
     >
       {renderStep()}
