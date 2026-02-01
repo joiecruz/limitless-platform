@@ -1,66 +1,135 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { PasswordRequirements } from "@/components/signup/steps/PasswordRequirements";
-import { QuotesCarousel } from "@/components/signup/QuotesCarousel";
-import { AuthLogo } from "@/components/auth/AuthLogo";
-import { EmailOtpVerification } from "@/components/signup/EmailOtpVerification";
+import { useQueryClient } from "@tanstack/react-query";
+import { SignupLayout } from "@/components/signup/SignupLayout";
+import { SignupStep1 } from "@/components/signup/SignupStep1";
+import { SignupStep2 } from "@/components/signup/SignupStep2";
+import { SignupStep3 } from "@/components/signup/SignupStep3";
+import { SignupStep4 } from "@/components/signup/SignupStep4";
+import { SignupFormData } from "@/components/signup/types";
 
 export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [showOtpVerification, setShowOtpVerification] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState("");
+  const [formData, setFormData] = useState<SignupFormData>({
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    companyName: "",
+    role: "",
+    goals: [],
+  });
+  
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Query to check if user is authenticated
-  const { data: session } = useQuery({
-    queryKey: ['session'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      return session;
-    }
-  });
-
-  const handleLogoClick = () => {
-    if (session) {
-      navigate('/dashboard');
-    } else {
-      navigate('/');
-    }
+  const handleEmailVerified = (email: string) => {
+    setFormData(prev => ({ ...prev, email }));
+    setCurrentStep(2);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handlePasswordSet = (firstName: string, lastName: string, password: string) => {
+    setFormData(prev => ({ ...prev, firstName, lastName, password }));
+    setCurrentStep(3);
+  };
+
+  const handleCompanyInfoSet = (companyName: string, role: string) => {
+    setFormData(prev => ({ ...prev, companyName, role }));
+    setCurrentStep(4);
+  };
+
+  const handleComplete = async (goals: string[]) => {
     setLoading(true);
-
+    const updatedFormData = { ...formData, goals };
+    
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      // Store the email and show OTP verification step
-      setPendingEmail(email);
-      setShowOtpVerification(true);
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      toast({
-        title: "Verification code sent!",
-        description: "Please check your email for the 6-digit code.",
+      if (userError || !user) {
+        throw new Error("User not found");
+      }
+
+      // Update profile with all collected data
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          email: user.email || updatedFormData.email,
+          first_name: updatedFormData.firstName,
+          last_name: updatedFormData.lastName,
+          role: updatedFormData.role,
+          company_size: updatedFormData.companyName, // Using company_size field to store company name
+          goals: goals.join(', '),
+        });
+
+      if (profileError) throw profileError;
+
+      // Create workspace with company name
+      if (updatedFormData.companyName) {
+        const slug = updatedFormData.companyName.toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_-]+/g, '-')
+          .replace(/^-+|-+$/g, '') +
+          '-' + Date.now();
+
+        const { error: workspaceError } = await supabase
+          .rpc('create_workspace_with_owner', {
+            workspace_name: updatedFormData.companyName.trim(),
+            workspace_slug: slug,
+            owner_id: user.id
+          });
+
+        if (workspaceError) {
+          console.error('Workspace creation error:', workspaceError);
+          // Don't throw - workspace creation is non-critical
+        }
+      }
+
+      // Track signup completion event
+      await supabase
+        .from('events')
+        .insert({
+          user_id: user.id,
+          event_type: 'signup_completed',
+          event_data: {
+            goals: goals,
+            role: updatedFormData.role,
+            has_workspace: !!updatedFormData.companyName,
+          }
+        });
+
+      // Call systeme.io integration (non-blocking)
+      supabase.functions.invoke('handle-systeme-signup', {
+        body: { user_id: user.id }
+      }).catch(err => {
+        console.error('Systeme.io integration error:', err);
       });
+
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['user-workspaces'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+
+      // Mark onboarding as completed
+      localStorage.setItem('onboardingCompleted', Date.now().toString());
+      localStorage.setItem('dashboard-visited', 'true');
+
+      toast({
+        title: "Welcome to Limitless Lab!",
+        description: "Your account has been set up successfully.",
+      });
+
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
+      console.error('Signup completion error:', error);
       toast({
         title: "Error",
-        description: error.message || "An error occurred during registration",
+        description: error.message || "Failed to complete setup. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -68,122 +137,60 @@ export default function Register() {
     }
   };
 
-  const handleVerificationSuccess = () => {
-    navigate("/dashboard", { replace: true });
+  const handleBack = () => {
+    setCurrentStep(prev => Math.max(1, prev - 1));
   };
 
-  const handleBackToSignup = () => {
-    setShowOtpVerification(false);
-    setPendingEmail("");
-    setEmail("");
-    setPassword("");
-  };
-
-  // Check if form is valid
-  const isFormValid = () => {
-    return email.trim() !== "" &&
-           /\S+@\S+\.\S+/.test(email) &&
-           password.length >= 8 &&
-           /[a-z]/.test(password) &&
-           /[A-Z]/.test(password) &&
-           /\d/.test(password) &&
-           /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <SignupStep1
+            data={formData}
+            onNext={() => {}}
+            onEmailVerified={handleEmailVerified}
+          />
+        );
+      case 2:
+        return (
+          <SignupStep2
+            data={formData}
+            onNext={() => {}}
+            onBack={handleBack}
+            onPasswordSet={handlePasswordSet}
+          />
+        );
+      case 3:
+        return (
+          <SignupStep3
+            data={formData}
+            onNext={() => {}}
+            onBack={handleBack}
+            onCompanyInfoSet={handleCompanyInfoSet}
+          />
+        );
+      case 4:
+        return (
+          <SignupStep4
+            data={formData}
+            onNext={() => {}}
+            onBack={handleBack}
+            onComplete={handleComplete}
+            loading={loading}
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Register Form or OTP Verification */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 bg-background">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <div onClick={handleLogoClick} className="cursor-pointer">
-              <AuthLogo />
-            </div>
-          </div>
-
-          {showOtpVerification ? (
-            <EmailOtpVerification 
-              email={pendingEmail}
-              onVerificationSuccess={handleVerificationSuccess}
-              onBack={handleBackToSignup}
-            />
-          ) : (
-            <>
-              <div className="text-center">
-                <h2 className="text-3xl font-bold tracking-tight text-foreground">
-                  Create your account
-                </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Join Limitless Lab and start your innovation journey
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="email">Work Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@company.com"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="mt-1"
-                  />
-                  <PasswordRequirements password={password} />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={loading || !isFormValid()}
-                  variant={isFormValid() ? "default" : "secondary"}
-                >
-                  {loading ? "Creating Account..." : "Create Account"}
-                </Button>
-                <p className="text-center text-xs text-muted-foreground">
-                  By continuing, you acknowledge that you understand and agree to the{" "}
-                  <Link to="/terms-of-service" className="underline hover:text-primary">
-                    Terms & Conditions
-                  </Link>{" "}
-                  and{" "}
-                  <Link to="/privacy-policy" className="underline hover:text-primary">
-                    Privacy Policy
-                  </Link>
-                </p>
-                <p className="text-center text-sm text-muted-foreground">
-                  Already have an account?{" "}
-                  <Button
-                    variant="link"
-                    className="p-0 h-auto font-semibold text-primary hover:text-primary/80"
-                    onClick={() => navigate("/signin")}
-                  >
-                    Sign in
-                  </Button>
-                </p>
-              </form>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Right Side - Quotes */}
-      <div className="hidden lg:flex lg:flex-1 bg-primary/5">
-        <QuotesCarousel />
-      </div>
-    </div>
+    <SignupLayout 
+      currentStep={currentStep} 
+      totalSteps={4}
+      showProgress={currentStep > 1}
+    >
+      {renderStep()}
+    </SignupLayout>
   );
 }
