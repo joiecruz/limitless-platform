@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 import { SignupStepProps } from "./types";
+import { cn } from "@/lib/utils";
 
 const GOALS = [
   "Collaborate with teams and stakeholders on innovation projects",
@@ -21,9 +20,9 @@ interface SignupStep4Props extends SignupStepProps {
 export function SignupStep4({ data, onBack, onComplete, loading }: SignupStep4Props) {
   const [selectedGoals, setSelectedGoals] = useState<string[]>(data.goals || []);
 
-  const handleGoalChange = (goal: string, checked: boolean) => {
+  const toggleGoal = (goal: string) => {
     setSelectedGoals(prev => 
-      checked ? [...prev, goal] : prev.filter(g => g !== goal)
+      prev.includes(goal) ? prev.filter(g => g !== goal) : [...prev, goal]
     );
   };
 
@@ -46,29 +45,25 @@ export function SignupStep4({ data, onBack, onComplete, loading }: SignupStep4Pr
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {GOALS.map((goal) => (
-          <div 
-            key={goal} 
-            className="inline-flex rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors cursor-pointer [&:has(:checked)]:border-primary [&:has(:checked)]:bg-primary/5"
-            onClick={() => handleGoalChange(goal, !selectedGoals.includes(goal))}
-          >
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id={goal}
-                name={goal}
-                checked={selectedGoals.includes(goal)}
-                onCheckedChange={(checked) => handleGoalChange(goal, checked as boolean)}
-                className="hidden"
-              />
-              <Label 
-                htmlFor={goal} 
-                className="leading-tight cursor-pointer text-sm font-normal text-foreground"
-              >
-                {goal}
-              </Label>
-            </div>
-          </div>
-        ))}
+        {GOALS.map((goal) => {
+          const isSelected = selectedGoals.includes(goal);
+          return (
+            <button
+              key={goal}
+              type="button"
+              onClick={() => toggleGoal(goal)}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-lg border p-3 transition-colors text-left",
+                isSelected 
+                  ? "border-primary bg-primary/5 text-foreground" 
+                  : "border-border hover:bg-muted/50 text-foreground"
+              )}
+            >
+              {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+              <span className="text-sm font-normal">{goal}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex gap-3 pt-2">
