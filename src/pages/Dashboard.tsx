@@ -121,9 +121,18 @@ export default function Dashboard() {
         
     
 
-    // Check if user has never been onboarded (no name AND no workspaces)
+    // Check if user has completed the new signup flow (has name, role, and goals)
     const hasName = profile?.first_name && profile?.last_name;
     const hasWorkspaces = userWorkspaces && userWorkspaces.length > 0;
+    const hasCompletedSignupFlow = hasName && profile?.role && profile?.goals;
+
+    // If user completed the new signup flow, they don't need onboarding
+    if (hasCompletedSignupFlow) {
+      localStorage.setItem('dashboard-visited', 'true');
+      setShowOnboarding(false);
+      setIsIncompleteProfile(false);
+      return;
+    }
 
     // Show onboarding for:
     // 1. Truly new users (no name AND no workspaces) - full onboarding
@@ -133,16 +142,9 @@ export default function Dashboard() {
 
     const showOnboardingModal = needsOnboarding || needsWorkspaceCreation;
 
-    
-    
-    
-    
-    
-
     // If user has both name and workspaces, mark them as having visited dashboard
     if (hasName && hasWorkspaces) {
       localStorage.setItem('dashboard-visited', 'true');
-      
     }
 
     setShowOnboarding(showOnboardingModal);
