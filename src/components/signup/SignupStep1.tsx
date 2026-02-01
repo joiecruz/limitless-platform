@@ -25,14 +25,20 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
   const isValidEmail = /\S+@\S+\.\S+/.test(email);
 
   const sendOtpCode = async (emailAddress: string) => {
-    // Use signInWithOtp to send a 6-digit code (not a magic link)
-    const { error } = await supabase.auth.signInWithOtp({
-      email: emailAddress,
-      options: {
-        shouldCreateUser: true,
-      },
+    // Use custom edge function to send OTP via Resend
+    const response = await supabase.functions.invoke('send-otp', {
+      body: { email: emailAddress },
     });
-    return { error };
+    
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to send verification code');
+    }
+    
+    if (response.data?.error) {
+      throw new Error(response.data.error);
+    }
+    
+    return { success: true };
   };
 
   const handleSendCode = async (e: React.FormEvent) => {
@@ -41,9 +47,7 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
     setLoading(true);
     try {
-      const { error } = await sendOtpCode(email);
-
-      if (error) throw error;
+      await sendOtpCode(email);
 
       setShowOtpInput(true);
       toast({
@@ -73,13 +77,22 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: verificationCode,
-        type: 'email',
+      // Use custom edge function to verify OTP
+      const response = await supabase.functions.invoke('verify-otp', {
+        body: { email, code: verificationCode },
       });
 
-      if (error) throw error;
+      if (response.error) {
+        throw new Error(response.error.message || 'Verification failed');
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      if (!response.data?.success) {
+        throw new Error('Invalid or expired verification code');
+      }
 
       toast({
         title: "Email verified!",
@@ -104,9 +117,7 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
     setResendLoading(true);
     try {
-      const { error } = await sendOtpCode(email);
-
-      if (error) throw error;
+      await sendOtpCode(email);
 
       toast({
         title: "Code sent!",
@@ -134,8 +145,7 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
     }
   };
 
-  const handleChangeEmail = async () => {
-    await supabase.auth.signOut();
+  const handleChangeEmail = () => {
     setShowOtpInput(false);
     setVerificationCode("");
     setEmail("");
