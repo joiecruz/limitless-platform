@@ -1,98 +1,129 @@
 
-# Fix: Get 6-Digit OTP Code Instead of Magic Link
+# Fix: "Auth Session Missing" After OTP Verification
 
-## Root Cause (The Real Problem)
+## Problem Identified
 
-Supabase's `signInWithOtp({ email })` function uses the **"Magic Link" email template** which is configured to send a clickable button/link by default. The "OTP Length: 6 digits" setting you saw in the dashboard only applies to **phone/SMS authentication**, not email.
+The custom OTP verification flow only validates the 6-digit code against the database - it does **not** create a Supabase authentication session. When the user proceeds to Step 2, the code tries to call `supabase.auth.updateUser({ password })`, which requires an authenticated user session that doesn't exist.
 
-The email template in Supabase contains `{{ .ConfirmationURL }}` (a link) but not `{{ .Token }}` (the 6-digit code).
-
----
-
-## Solution Options
-
-### Option A: Modify Supabase Email Template (Recommended - No Code Changes)
-
-This is a configuration change in your Supabase dashboard:
-
-1. Go to **Supabase Dashboard** > **Authentication** > **Email Templates**
-2. Select the **"Magic Link"** template
-3. Edit the template to include the OTP token code
-
-**Replace the template with something like:**
-```html
-<h2>Your verification code</h2>
-<p>Enter this code to verify your email:</p>
-<h1 style="font-size: 32px; letter-spacing: 8px; text-align: center;">{{ .Token }}</h1>
-<p>This code expires in 60 minutes.</p>
-<p>If you didn't request this, you can safely ignore this email.</p>
+**Current Flow (Broken):**
+```text
+Step 1: Email + OTP verified (custom edge function) --> No Supabase session created
+Step 2: Calls supabase.auth.updateUser() --> ERROR: Auth session missing!
 ```
 
-The `{{ .Token }}` variable contains the 6-digit OTP code that will work with your current frontend code.
-
 ---
 
-### Option B: Use Custom Edge Function with Resend (More Control)
+## Solution
 
-If you want full control over the email content and don't want to modify Supabase templates:
+After successfully verifying the OTP code, we need to **create the Supabase user account** and establish an authenticated session before proceeding to Step 2.
 
-1. Create an edge function that generates and stores OTP codes
-2. Send custom emails via Resend (already configured)
-3. Verify codes against stored values
-
-**Files to create:**
-- `supabase/functions/send-otp/index.ts` - Generate OTP, store in DB, send via Resend
-- `supabase/functions/verify-otp/index.ts` - Verify the code
-
-**Database table needed:**
-```sql
-CREATE TABLE otp_codes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT NOT NULL,
-  code TEXT NOT NULL,
-  expires_at TIMESTAMPTZ NOT NULL,
-  used BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+**Fixed Flow:**
+```text
+Step 1: Email + OTP verified (custom edge function)
+        --> Create user with supabase.auth.signUp()
+        --> User session now exists
+Step 2: Calls supabase.auth.updateUser() --> SUCCESS
 ```
 
-**Frontend changes:**
-- Replace `supabase.auth.signInWithOtp()` with edge function calls
-- After OTP verified, use `supabase.auth.signUp()` to create the user
+---
+
+## Implementation Changes
+
+### 1. Update verify-otp Edge Function
+
+Modify the edge function to create the user in Supabase Auth after OTP verification:
+
+**File:** `supabase/functions/verify-otp/index.ts`
+
+- After marking OTP as used, create the user using Admin API
+- Generate a temporary password (will be changed in Step 2)
+- Sign in the user and return the session
+
+```typescript
+// After OTP verification succeeds, create the user
+const tempPassword = crypto.randomUUID(); // Temporary, will be changed in Step 2
+
+const { data: authData, error: signUpError } = await supabase.auth.admin.createUser({
+  email: email,
+  password: tempPassword,
+  email_confirm: true, // Already confirmed via OTP
+});
+
+if (signUpError) {
+  // If user already exists, sign them in instead
+  if (signUpError.message.includes('already registered')) {
+    // Handle existing user case
+  }
+}
+
+// Generate session for the user
+const { data: sessionData } = await supabase.auth.admin.generateLink({
+  type: 'magiclink',
+  email: email,
+});
+
+return new Response(JSON.stringify({ 
+  success: true, 
+  verified: true,
+  access_token: sessionData?.properties?.access_token,
+  refresh_token: sessionData?.properties?.refresh_token,
+}));
+```
+
+### 2. Update SignupStep1 Frontend
+
+After receiving the session tokens from verify-otp, set the session in the Supabase client:
+
+**File:** `src/components/signup/SignupStep1.tsx`
+
+```typescript
+// After successful OTP verification
+const response = await supabase.functions.invoke('verify-otp', {
+  body: { email, code: verificationCode },
+});
+
+if (response.data?.access_token) {
+  // Set the session in Supabase client
+  await supabase.auth.setSession({
+    access_token: response.data.access_token,
+    refresh_token: response.data.refresh_token,
+  });
+}
+
+onEmailVerified(email);
+```
 
 ---
 
-## Recommendation
+## Technical Details
 
-**Go with Option A** - It requires no code changes and will work immediately:
+### Why This Works
 
-1. Open: Supabase Dashboard > Authentication > Email Templates
-2. Edit the "Magic Link" template
-3. Add `{{ .Token }}` to display the 6-digit code
-4. Save the template
+1. **User Creation**: The edge function uses `supabase.auth.admin.createUser()` with the service role key to create users directly
+2. **Email Pre-confirmed**: Since we already verified the email via OTP, we set `email_confirm: true`
+3. **Session Established**: The access/refresh tokens returned allow the frontend to establish a valid session
+4. **Step 2 Works**: With a session in place, `updateUser({ password })` can now succeed
 
-Your current frontend code is already correctly set up to:
-- Send the OTP via `signInWithOtp`
-- Collect 6 digits via the `InputOTP` component
-- Verify via `verifyOtp({ type: 'email', token: code })`
+### Files to Modify
 
-The only missing piece is the email template showing the code instead of a link.
+| File | Changes |
+|------|---------|
+| `supabase/functions/verify-otp/index.ts` | Add user creation and session generation after OTP verification |
+| `src/components/signup/SignupStep1.tsx` | Handle session tokens from verify-otp response |
 
----
+### Edge Cases Handled
 
-## Quick Reference: Supabase Email Template Variables
-
-| Variable | Description |
-|----------|-------------|
-| `{{ .Token }}` | The 6-digit OTP code |
-| `{{ .ConfirmationURL }}` | The magic link URL |
-| `{{ .Email }}` | User's email address |
-| `{{ .SiteURL }}` | Your configured site URL |
+- **Existing User**: If email already registered, generate a sign-in link instead
+- **Session Refresh**: Tokens allow the frontend to maintain the session across page refreshes
+- **Password Update**: Temporary password is replaced in Step 2 when user sets their real password
 
 ---
 
-## Action Required
+## Summary
 
-Go to your Supabase dashboard and update the Magic Link email template to include `{{ .Token }}`.
+The fix connects the custom OTP verification to Supabase's authentication system by:
+1. Creating the user account after OTP verification
+2. Returning session tokens to the frontend
+3. Establishing the session before proceeding to password setup
 
-**Direct link:** https://supabase.com/dashboard/project/crllgygjuqpluvdpwayi/auth/templates
+This ensures a seamless flow where the user is authenticated immediately after email verification.
