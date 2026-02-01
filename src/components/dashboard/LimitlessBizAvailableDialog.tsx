@@ -71,7 +71,7 @@ export function LimitlessBizAvailableDialog() {
   const handleGoToCourse = () => {
     localStorage.setItem(STORAGE_KEY, "true");
     setOpen(false);
-    navigate(`/dashboard/courses/${LIMITLESSBIZ_SLUG}/lessons`);
+    navigate(`/dashboard/courses/${LIMITLESSBIZ_COURSE_ID}/lessons`);
   };
 
   const handleClose = () => {
