@@ -5,6 +5,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CourseAccessGrantedDialog } from "@/components/dashboard/CourseAccessGrantedDialog";
+import { LimitlessBizAvailableDialog } from "@/components/dashboard/LimitlessBizAvailableDialog";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -130,6 +131,9 @@ export default function Dashboard() {
 
       {/* Course Access Granted Dialog */}
       <CourseAccessGrantedDialog />
+      
+      {/* LimitlessBiz Course Available Dialog */}
+      <LimitlessBizAvailableDialog />
     </div>
   );
 }
