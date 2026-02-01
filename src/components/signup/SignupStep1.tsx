@@ -164,19 +164,17 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
               value={verificationCode}
               onChange={(value) => setVerificationCode(value)}
               maxLength={6}
-              render={({ slots }) => (
-                <InputOTPGroup className="gap-2 flex justify-center">
-                  {slots.map((slot, idx) => (
-                    <InputOTPSlot 
-                      key={idx} 
-                      {...slot} 
-                      index={idx} 
-                      className="w-12 h-12 text-lg border-border" 
-                    />
-                  ))}
-                </InputOTPGroup>
-              )}
-            />
+              className="justify-center"
+            >
+              <InputOTPGroup className="gap-2">
+                <InputOTPSlot index={0} className="w-12 h-12 text-lg border-border" />
+                <InputOTPSlot index={1} className="w-12 h-12 text-lg border-border" />
+                <InputOTPSlot index={2} className="w-12 h-12 text-lg border-border" />
+                <InputOTPSlot index={3} className="w-12 h-12 text-lg border-border" />
+                <InputOTPSlot index={4} className="w-12 h-12 text-lg border-border" />
+                <InputOTPSlot index={5} className="w-12 h-12 text-lg border-border" />
+              </InputOTPGroup>
+            </InputOTP>
           </div>
 
           <Button 
