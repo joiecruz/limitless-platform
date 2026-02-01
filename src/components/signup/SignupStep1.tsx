@@ -146,11 +146,6 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
           <h2 className="text-2xl font-bold tracking-tight text-foreground">
             Verify your email
           </h2>
-          <img 
-            src="/lovable-uploads/0dd5367c-3e22-4eff-a5b1-2604397dfba8.png" 
-            alt="Verification" 
-            className="mx-auto w-24 h-24 my-4"
-          />
           <p className="text-muted-foreground text-sm">
             Please enter the 6-digit code we sent to
           </p>
@@ -159,22 +154,23 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <p className="text-muted-foreground font-medium text-sm">Confirmation code</p>
-            <InputOTP
-              value={verificationCode}
-              onChange={(value) => setVerificationCode(value)}
-              maxLength={6}
-              className="justify-center"
-            >
-              <InputOTPGroup className="gap-2">
-                <InputOTPSlot index={0} className="w-12 h-12 text-lg border-border" />
-                <InputOTPSlot index={1} className="w-12 h-12 text-lg border-border" />
-                <InputOTPSlot index={2} className="w-12 h-12 text-lg border-border" />
-                <InputOTPSlot index={3} className="w-12 h-12 text-lg border-border" />
-                <InputOTPSlot index={4} className="w-12 h-12 text-lg border-border" />
-                <InputOTPSlot index={5} className="w-12 h-12 text-lg border-border" />
-              </InputOTPGroup>
-            </InputOTP>
+            <p className="text-muted-foreground font-medium text-sm text-center">Confirmation code</p>
+            <div className="flex justify-center">
+              <InputOTP
+                value={verificationCode}
+                onChange={(value) => setVerificationCode(value)}
+                maxLength={6}
+              >
+                <InputOTPGroup className="gap-2">
+                  <InputOTPSlot index={0} className="w-12 h-12 text-lg border-border" />
+                  <InputOTPSlot index={1} className="w-12 h-12 text-lg border-border" />
+                  <InputOTPSlot index={2} className="w-12 h-12 text-lg border-border" />
+                  <InputOTPSlot index={3} className="w-12 h-12 text-lg border-border" />
+                  <InputOTPSlot index={4} className="w-12 h-12 text-lg border-border" />
+                  <InputOTPSlot index={5} className="w-12 h-12 text-lg border-border" />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
           </div>
 
           <Button 
