@@ -94,6 +94,19 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
         throw new Error('Invalid or expired verification code');
       }
 
+      // Set the session from the tokens returned by verify-otp
+      if (response.data?.access_token && response.data?.refresh_token) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: response.data.access_token,
+          refresh_token: response.data.refresh_token,
+        });
+
+        if (sessionError) {
+          console.error("Error setting session:", sessionError);
+          throw new Error("Failed to establish session");
+        }
+      }
+
       toast({
         title: "Email verified!",
         description: "Let's continue setting up your account.",
