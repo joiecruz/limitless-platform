@@ -8,6 +8,7 @@ import { SignupStep1 } from "@/components/signup/SignupStep1";
 import { SignupStep2 } from "@/components/signup/SignupStep2";
 import { SignupStep3 } from "@/components/signup/SignupStep3";
 import { SignupStep4 } from "@/components/signup/SignupStep4";
+import { SignupStep5 } from "@/components/signup/SignupStep5";
 import { SignupFormData } from "@/components/signup/types";
 
 export default function Register() {
@@ -21,6 +22,8 @@ export default function Register() {
     companyName: "",
     role: "",
     goals: [],
+    referralSource: "",
+    workspaceName: "",
   });
   
   const navigate = useNavigate();
@@ -42,9 +45,14 @@ export default function Register() {
     setCurrentStep(4);
   };
 
-  const handleComplete = async (goals: string[]) => {
+  const handleGoalsSet = (goals: string[], referralSource: string) => {
+    setFormData(prev => ({ ...prev, goals, referralSource }));
+    setCurrentStep(5);
+  };
+
+  const handleComplete = async (workspaceName: string) => {
     setLoading(true);
-    const updatedFormData = { ...formData, goals };
+    const updatedFormData = { ...formData, workspaceName };
     
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -62,15 +70,16 @@ export default function Register() {
           first_name: updatedFormData.firstName,
           last_name: updatedFormData.lastName,
           role: updatedFormData.role,
-          company_size: updatedFormData.companyName, // Using company_size field to store company name
-          goals: goals.join(', '),
+          company_size: updatedFormData.companyName,
+          referral_source: updatedFormData.referralSource,
+          goals: updatedFormData.goals.join(', '),
         });
 
       if (profileError) throw profileError;
 
-      // Create workspace with company name
-      if (updatedFormData.companyName) {
-        const slug = updatedFormData.companyName.toLowerCase()
+      // Create workspace with the workspace name
+      if (workspaceName) {
+        const slug = workspaceName.toLowerCase()
           .trim()
           .replace(/[^\w\s-]/g, '')
           .replace(/[\s_-]+/g, '-')
@@ -79,14 +88,13 @@ export default function Register() {
 
         const { error: workspaceError } = await supabase
           .rpc('create_workspace_with_owner', {
-            workspace_name: updatedFormData.companyName.trim(),
+            workspace_name: workspaceName.trim(),
             workspace_slug: slug,
             owner_id: user.id
           });
 
         if (workspaceError) {
           console.error('Workspace creation error:', workspaceError);
-          // Don't throw - workspace creation is non-critical
         }
       }
 
@@ -97,9 +105,10 @@ export default function Register() {
           user_id: user.id,
           event_type: 'signup_completed',
           event_data: {
-            goals: goals,
+            goals: updatedFormData.goals,
             role: updatedFormData.role,
-            has_workspace: !!updatedFormData.companyName,
+            referral_source: updatedFormData.referralSource,
+            has_workspace: !!workspaceName,
           }
         });
 
@@ -175,6 +184,15 @@ export default function Register() {
             data={formData}
             onNext={() => {}}
             onBack={handleBack}
+            onGoalsSet={handleGoalsSet}
+          />
+        );
+      case 5:
+        return (
+          <SignupStep5
+            data={formData}
+            onNext={() => {}}
+            onBack={handleBack}
             onComplete={handleComplete}
             loading={loading}
           />
@@ -187,7 +205,7 @@ export default function Register() {
   return (
     <SignupLayout 
       currentStep={currentStep} 
-      totalSteps={4}
+      totalSteps={5}
       showProgress={currentStep > 1}
     >
       {renderStep()}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { SignupStepProps } from "./types";
 import { cn } from "@/lib/utils";
 
@@ -12,13 +12,24 @@ const GOALS = [
   "Network with like-minded innovators"
 ];
 
+const REFERRAL_SOURCES = [
+  "Google Search",
+  "Social Media",
+  "Friend or Colleague",
+  "Professional Network",
+  "Online Advertisement",
+  "Blog or Article",
+  "Conference or Event",
+  "Other"
+];
+
 interface SignupStep4Props extends SignupStepProps {
-  onComplete: (goals: string[]) => void;
-  loading?: boolean;
+  onGoalsSet: (goals: string[], referralSource: string) => void;
 }
 
-export function SignupStep4({ data, onBack, onComplete, loading }: SignupStep4Props) {
+export function SignupStep4({ data, onBack, onGoalsSet }: SignupStep4Props) {
   const [selectedGoals, setSelectedGoals] = useState<string[]>(data.goals || []);
+  const [selectedSource, setSelectedSource] = useState<string>(data.referralSource || "");
 
   const toggleGoal = (goal: string) => {
     setSelectedGoals(prev => 
@@ -28,10 +39,10 @@ export function SignupStep4({ data, onBack, onComplete, loading }: SignupStep4Pr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onComplete(selectedGoals);
+    onGoalsSet(selectedGoals, selectedSource);
   };
 
-  const isValid = selectedGoals.length > 0;
+  const isValid = selectedGoals.length > 0 && selectedSource !== "";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -66,6 +77,33 @@ export function SignupStep4({ data, onBack, onComplete, loading }: SignupStep4Pr
         })}
       </div>
 
+      <div className="space-y-3 pt-2">
+        <p className="text-sm font-medium text-foreground">
+          How did you hear about Limitless Lab?
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {REFERRAL_SOURCES.map((source) => {
+            const isSelected = selectedSource === source;
+            return (
+              <button
+                key={source}
+                type="button"
+                onClick={() => setSelectedSource(source)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors",
+                  isSelected 
+                    ? "border-primary bg-primary/5 text-foreground" 
+                    : "border-border hover:bg-muted/50 text-foreground"
+                )}
+              >
+                {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                <span className="text-sm font-normal">{source}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="flex gap-3 pt-2">
         {onBack && (
           <Button
@@ -80,17 +118,10 @@ export function SignupStep4({ data, onBack, onComplete, loading }: SignupStep4Pr
         <Button
           type="submit"
           className="flex-1"
-          disabled={loading || !isValid}
+          disabled={!isValid}
           variant={isValid ? "default" : "secondary"}
         >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Completing setup...
-            </>
-          ) : (
-            "Complete Setup"
-          )}
+          Continue
         </Button>
       </div>
     </form>

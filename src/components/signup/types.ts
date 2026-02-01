@@ -11,6 +11,8 @@ export interface SignupFormData {
   companyName: string;
   role: string;
   goals: string[];
+  referralSource: string;
+  workspaceName: string;
 }
 
 export interface SignupStepProps {
