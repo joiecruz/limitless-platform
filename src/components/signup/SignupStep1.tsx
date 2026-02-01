@@ -24,26 +24,31 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
   const isValidEmail = /\S+@\S+\.\S+/.test(email);
 
+  const sendOtpCode = async (emailAddress: string) => {
+    // Use signInWithOtp to send a 6-digit code (not a magic link)
+    const { error } = await supabase.auth.signInWithOtp({
+      email: emailAddress,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
+    return { error };
+  };
+
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidEmail) return;
 
     setLoading(true);
     try {
-      // Generate a temporary secure password for initial signup
-      const tempPassword = crypto.randomUUID() + "Aa1!";
-      
-      const { error } = await supabase.auth.signUp({
-        email,
-        password: tempPassword,
-      });
+      const { error } = await sendOtpCode(email);
 
       if (error) throw error;
 
       setShowOtpInput(true);
       toast({
         title: "Verification code sent!",
-        description: "Please check your email for the 4-digit code.",
+        description: "Please check your email for the 6-digit code.",
       });
     } catch (error: any) {
       toast({
@@ -57,10 +62,10 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
   };
 
   const handleVerifyCode = async () => {
-    if (verificationCode.length !== 4) {
+    if (verificationCode.length !== 6) {
       toast({
         title: "Invalid code",
-        description: "Please enter the 4-digit code from your email.",
+        description: "Please enter the 6-digit code from your email.",
         variant: "destructive",
       });
       return;
@@ -99,10 +104,7 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
     setResendLoading(true);
     try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email,
-      });
+      const { error } = await sendOtpCode(email);
 
       if (error) throw error;
 
@@ -147,7 +149,7 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
             Verify your email
           </h2>
           <p className="text-muted-foreground text-sm">
-            Please enter the 4-digit code we sent to
+            Please enter the 6-digit code we sent to
           </p>
           <p className="text-foreground font-medium">{email}</p>
         </div>
@@ -159,13 +161,15 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
               <InputOTP
                 value={verificationCode}
                 onChange={(value) => setVerificationCode(value)}
-                maxLength={4}
+                maxLength={6}
               >
-                <InputOTPGroup className="gap-3">
-                  <InputOTPSlot index={0} className="w-14 h-14 text-xl border-border" />
-                  <InputOTPSlot index={1} className="w-14 h-14 text-xl border-border" />
-                  <InputOTPSlot index={2} className="w-14 h-14 text-xl border-border" />
-                  <InputOTPSlot index={3} className="w-14 h-14 text-xl border-border" />
+                <InputOTPGroup className="gap-2">
+                  <InputOTPSlot index={0} className="w-12 h-12 text-xl border-border" />
+                  <InputOTPSlot index={1} className="w-12 h-12 text-xl border-border" />
+                  <InputOTPSlot index={2} className="w-12 h-12 text-xl border-border" />
+                  <InputOTPSlot index={3} className="w-12 h-12 text-xl border-border" />
+                  <InputOTPSlot index={4} className="w-12 h-12 text-xl border-border" />
+                  <InputOTPSlot index={5} className="w-12 h-12 text-xl border-border" />
                 </InputOTPGroup>
               </InputOTP>
             </div>
@@ -175,7 +179,7 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
             onClick={handleVerifyCode}
             className="w-full"
             size="lg"
-            disabled={loading || verificationCode.length !== 4}
+            disabled={loading || verificationCode.length !== 6}
           >
             {loading ? (
               <>
