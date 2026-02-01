@@ -1,107 +1,140 @@
 
-# Fix: White Screen After Signup Setup
+# Fix Course Invite Flow for New Signup Process
 
-## Problem Identified
+## Problem Summary
 
-After completing the signup process, the user sees a white screen because of a race condition between session state management at different levels of the application.
+The new 6-step signup flow (`SignUp.tsx`) does not handle course invitations that were working with the old onboarding modal. Two critical pieces are missing:
 
-### Root Cause Analysis
+1. **Pre-filling email from invite links** - Invite emails send users to `/signup?email=user@example.com` but the form ignores this parameter
+2. **Processing pending course enrollments** - After signup, users should automatically get access to courses they were pre-invited to
+
+---
+
+## Solution Overview
 
 ```text
-1. SignUp.tsx completes --> calls navigate("/dashboard")
-2. App.tsx session state is still null (onAuthStateChange hasn't fired/propagated)
-3. AppRoutes.tsx renders: {session && <DashboardLayout />}
-                           ^^^^^^^^
-                           This is NULL because session hasn't updated!
-4. RequireAuth correctly validates auth, but children is empty/null
-5. Result: Blank screen because DashboardLayout never renders
-```
+CURRENT FLOW (BROKEN):
+  Invite Email → /signup?email=user@example.com → User signs up → NO course access granted
 
-The issue is this line in `AppRoutes.tsx`:
-```tsx
-element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}
+FIXED FLOW:
+  Invite Email → /signup?email=user@example.com → Email pre-filled → User signs up → Course access granted automatically
 ```
-
-When `session` is `null` at the App level (which it remains until the auth state change propagates), the DashboardLayout never gets passed as children to RequireAuth, even though RequireAuth itself successfully validates the session.
 
 ---
 
-## Solution
+## Changes Required
 
-Remove the `session &&` conditional from the route elements. The `RequireAuth` component already handles authentication checking and redirects - we don't need an additional session check that creates this race condition.
+### 1. Pre-fill Email from URL Parameter
 
-### Changes Required
+**File:** `src/components/signup/SignupStep1.tsx`
 
-**File: `src/routes/AppRoutes.tsx`**
-
-Replace the conditional rendering with direct component rendering:
-
-| Before | After |
-|--------|-------|
-| `{session && <DashboardLayout />}` | `<DashboardLayout />` |
-| `{session && <Outlet />}` | `<Outlet />` |
-| `{session && <AdminLayout />}` | `<AdminLayout />` |
-
-The RequireAuth wrapper already:
-- Checks for valid session
-- Redirects to signin if not authenticated
-- Shows a loading state while checking
-
-So the double-check with `session &&` is redundant and causes race conditions.
-
----
-
-## Implementation Details
-
-### 1. Update Protected App Routes (Line 127-128)
+Read the `email` query parameter from the URL and pre-populate the email field:
 
 ```typescript
-// Before
-<Route
-  element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}
->
+import { useSearchParams } from "react-router-dom";
 
-// After
-<Route
-  element={<RequireAuth><DashboardLayout /></RequireAuth>}
->
+// Inside component:
+const [searchParams] = useSearchParams();
+const emailFromUrl = searchParams.get("email") || "";
+
+// Initialize state with URL param:
+const [email, setEmail] = useState(data.email || emailFromUrl);
 ```
 
-### 2. Update Lesson Routes (Line 154)
+This ensures invited users see their email already filled in when they land on the signup page.
+
+---
+
+### 2. Process Pending Course Enrollments After Signup
+
+**File:** `src/pages/SignUp.tsx`
+
+Add the missing enrollment logic to the `handleComplete` function. This should be added after the profile upsert and workspace creation:
 
 ```typescript
-// Before
-<Route element={<RequireAuth>{session && <Outlet />}</RequireAuth>}>
+// After workspace creation, check for pending course enrollments
+const { data: pendingEnrollments, error: pendingError } = await supabase
+  .from('pending_course_enrollments')
+  .select('id, course_id, metadata')
+  .eq('email', user.email)
+  .is('processed_at', null);
 
-// After
-<Route element={<RequireAuth><Outlet /></RequireAuth>}>
-```
+if (!pendingError && pendingEnrollments && pendingEnrollments.length > 0) {
+  console.log('Found pending course enrollments:', pendingEnrollments.length);
+  
+  for (const pending of pendingEnrollments) {
+    // Check if user already has course access
+    const { data: existingAccess } = await supabase
+      .from('user_course_access')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('course_id', pending.course_id)
+      .maybeSingle();
 
-### 3. Update Admin Routes (Line 166)
+    if (!existingAccess) {
+      // Grant course access
+      const { error: accessError } = await supabase
+        .from('user_course_access')
+        .insert({
+          user_id: user.id,
+          course_id: pending.course_id
+        });
 
-```typescript
-// Before
-<Route element={<RequireAuth>{session && <AdminLayout />}</RequireAuth>}>
+      if (accessError) {
+        console.error('Error granting course access:', accessError);
+      } else {
+        console.log('Granted course access for course:', pending.course_id);
+        // Store the course ID to show welcome dialog on dashboard
+        localStorage.setItem('granted_course_access', pending.course_id);
+      }
+    }
 
-// After
-<Route element={<RequireAuth><AdminLayout /></RequireAuth>}>
+    // Mark pending enrollment as processed
+    await supabase
+      .from('pending_course_enrollments')
+      .update({ processed_at: new Date().toISOString() })
+      .eq('id', pending.id);
+  }
+}
 ```
 
 ---
 
-## Why This Works
+## Technical Details
 
-1. **RequireAuth is the single source of truth** for authentication state
-2. It has its own loading state (`isChecking`) that shows LoadingPage while validating
-3. Once validated, it renders children - which will now always be the layout component
-4. The session prop from App.tsx is still useful for initial route redirects but should not gate component rendering
-
----
-
-## Technical Summary
+### Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/routes/AppRoutes.tsx` | Remove `session &&` conditionals from protected route elements (3 locations) |
+| `src/components/signup/SignupStep1.tsx` | Add `useSearchParams` hook to read email from URL and pre-fill the input field |
+| `src/pages/SignUp.tsx` | Add pending course enrollment processing logic in `handleComplete` function |
 
-This is a minimal, targeted fix that resolves the race condition without restructuring the auth system.
+### Data Flow
+
+```text
+1. Admin sends bulk invite → pending_course_enrollments record created
+2. User clicks email link → /signup?email=... 
+3. SignupStep1 reads ?email param → pre-fills email field
+4. User completes 6-step signup
+5. handleComplete runs:
+   a. Creates/updates profile
+   b. Creates workspace
+   c. NEW: Queries pending_course_enrollments for user's email
+   d. NEW: For each pending enrollment:
+      - Inserts into user_course_access
+      - Updates pending_course_enrollments.processed_at
+   e. Sets localStorage flag for welcome dialog
+6. User lands on dashboard → LimitlessBizAvailableDialog shows if applicable
+```
+
+---
+
+## Testing Recommendations
+
+After implementation:
+1. Create a test pending course enrollment for a new email
+2. Visit `/signup?email=test@example.com` and verify email is pre-filled
+3. Complete full signup flow
+4. Verify `user_course_access` record is created
+5. Verify `pending_course_enrollments.processed_at` is set
+6. Confirm course appears in user's dashboard with access
