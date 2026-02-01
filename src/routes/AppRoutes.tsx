@@ -125,7 +125,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
 
       {/* Protected app routes */}
       <Route
-        element={<RequireAuth>{session && <DashboardLayout />}</RequireAuth>}
+        element={<RequireAuth><DashboardLayout /></RequireAuth>}
       >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/projects/*" element={<Projects />} />
@@ -151,7 +151,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       </Route>
 
       {/* Lesson routes - separate from dashboard layout */}
-      <Route element={<RequireAuth>{session && <Outlet />}</RequireAuth>}>
+      <Route element={<RequireAuth><Outlet /></RequireAuth>}>
         <Route
           path="/dashboard/courses/:courseId/lessons/:lessonId"
           element={<Lesson />}
@@ -163,7 +163,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       </Route>
 
       {/* Protected admin routes */}
-      <Route element={<RequireAuth>{session && <AdminLayout />}</RequireAuth>}>
+      <Route element={<RequireAuth><AdminLayout /></RequireAuth>}>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/workspaces" element={<AdminWorkspaces />} />
