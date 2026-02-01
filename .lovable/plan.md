@@ -1,12 +1,11 @@
 
-# Fix Course Invite Flow for New Signup Process
+# Fix Course Access Granted Dialog Navigation
 
 ## Problem Summary
 
-The new 6-step signup flow (`SignUp.tsx`) does not handle course invitations that were working with the old onboarding modal. Two critical pieces are missing:
-
-1. **Pre-filling email from invite links** - Invite emails send users to `/signup?email=user@example.com` but the form ignores this parameter
-2. **Processing pending course enrollments** - After signup, users should automatically get access to courses they were pre-invited to
+The `CourseAccessGrantedDialog` component has two issues:
+1. **Wrong URL format**: Navigates to `/dashboard/courses/${course.slug}` instead of `/dashboard/courses/${course.id}/lessons`
+2. **Missing enrollment**: Users have `user_course_access` but need to also be added to `enrollments` table to actually start learning
 
 ---
 
@@ -14,127 +13,116 @@ The new 6-step signup flow (`SignUp.tsx`) does not handle course invitations tha
 
 ```text
 CURRENT FLOW (BROKEN):
-  Invite Email → /signup?email=user@example.com → User signs up → NO course access granted
+  "Go to Course" → /dashboard/courses/course-slug → "Course Not Found" error
 
 FIXED FLOW:
-  Invite Email → /signup?email=user@example.com → Email pre-filled → User signs up → Course access granted automatically
+  "Go to Course" → Auto-enroll user → /dashboard/courses/UUID/lessons → Lessons load correctly
 ```
 
 ---
 
-## Changes Required
+## Technical Changes
 
-### 1. Pre-fill Email from URL Parameter
+### File: `src/components/dashboard/CourseAccessGrantedDialog.tsx`
 
-**File:** `src/components/signup/SignupStep1.tsx`
+**Change 1: Fix Navigation URL**
 
-Read the `email` query parameter from the URL and pre-populate the email field:
+Update `handleGoToCourse` to use the course UUID and navigate directly to lessons:
 
 ```typescript
-import { useSearchParams } from "react-router-dom";
+// BEFORE (line 64):
+navigate(`/dashboard/courses/${course.slug}`);
 
-// Inside component:
-const [searchParams] = useSearchParams();
-const emailFromUrl = searchParams.get("email") || "";
-
-// Initialize state with URL param:
-const [email, setEmail] = useState(data.email || emailFromUrl);
+// AFTER:
+navigate(`/dashboard/courses/${course.id}/lessons`);
 ```
 
-This ensures invited users see their email already filled in when they land on the signup page.
+**Change 2: Auto-Enroll User**
 
----
-
-### 2. Process Pending Course Enrollments After Signup
-
-**File:** `src/pages/SignUp.tsx`
-
-Add the missing enrollment logic to the `handleComplete` function. This should be added after the profile upsert and workspace creation:
+Add enrollment logic when clicking "Go to Course" so users can immediately start learning:
 
 ```typescript
-// After workspace creation, check for pending course enrollments
-const { data: pendingEnrollments, error: pendingError } = await supabase
-  .from('pending_course_enrollments')
-  .select('id, course_id, metadata')
-  .eq('email', user.email)
-  .is('processed_at', null);
-
-if (!pendingError && pendingEnrollments && pendingEnrollments.length > 0) {
-  console.log('Found pending course enrollments:', pendingEnrollments.length);
+const handleGoToCourse = async () => {
+  if (!course) return;
   
-  for (const pending of pendingEnrollments) {
-    // Check if user already has course access
-    const { data: existingAccess } = await supabase
-      .from('user_course_access')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('course_id', pending.course_id)
-      .maybeSingle();
+  try {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      // Check if already enrolled
+      const { data: existingEnrollment } = await supabase
+        .from('enrollments')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('course_id', course.id)
+        .maybeSingle();
 
-    if (!existingAccess) {
-      // Grant course access
-      const { error: accessError } = await supabase
-        .from('user_course_access')
-        .insert({
-          user_id: user.id,
-          course_id: pending.course_id
-        });
-
-      if (accessError) {
-        console.error('Error granting course access:', accessError);
-      } else {
-        console.log('Granted course access for course:', pending.course_id);
-        // Store the course ID to show welcome dialog on dashboard
-        localStorage.setItem('granted_course_access', pending.course_id);
+      // If not enrolled, create enrollment
+      if (!existingEnrollment) {
+        await supabase
+          .from('enrollments')
+          .insert({
+            course_id: course.id,
+            user_id: user.id,
+            progress: 0
+          });
       }
     }
-
-    // Mark pending enrollment as processed
-    await supabase
-      .from('pending_course_enrollments')
-      .update({ processed_at: new Date().toISOString() })
-      .eq('id', pending.id);
+  } catch (err) {
+    console.error('Error enrolling user:', err);
+    // Continue navigation even if enrollment fails
   }
+
+  setOpen(false);
+  navigate(`/dashboard/courses/${course.id}/lessons`);
+};
+```
+
+**Change 3: Remove Unnecessary Slug from CourseInfo Interface**
+
+Since we no longer need the slug, simplify the interface and query:
+
+```typescript
+// BEFORE:
+interface CourseInfo {
+  id: string;
+  title: string;
+  slug: string;
 }
+
+// AFTER:
+interface CourseInfo {
+  id: string;
+  title: string;
+}
+
+// Update query to not select slug
+const { data: courseData, error } = await supabase
+  .from('courses')
+  .select('id, title')  // Remove 'slug'
+  .eq('id', grantedCourseId)
+  .maybeSingle();
 ```
 
 ---
 
-## Technical Details
+## Summary of Changes
 
-### Files to Modify
-
-| File | Change |
-|------|--------|
-| `src/components/signup/SignupStep1.tsx` | Add `useSearchParams` hook to read email from URL and pre-fill the input field |
-| `src/pages/SignUp.tsx` | Add pending course enrollment processing logic in `handleComplete` function |
-
-### Data Flow
-
-```text
-1. Admin sends bulk invite → pending_course_enrollments record created
-2. User clicks email link → /signup?email=... 
-3. SignupStep1 reads ?email param → pre-fills email field
-4. User completes 6-step signup
-5. handleComplete runs:
-   a. Creates/updates profile
-   b. Creates workspace
-   c. NEW: Queries pending_course_enrollments for user's email
-   d. NEW: For each pending enrollment:
-      - Inserts into user_course_access
-      - Updates pending_course_enrollments.processed_at
-   e. Sets localStorage flag for welcome dialog
-6. User lands on dashboard → LimitlessBizAvailableDialog shows if applicable
-```
+| Line(s) | Change |
+|---------|--------|
+| 15-19 | Remove `slug` from `CourseInfo` interface |
+| 40-42 | Update query to select only `id, title` |
+| 61-66 | Make `handleGoToCourse` async, add enrollment logic, fix navigation URL |
 
 ---
 
-## Testing Recommendations
+## Expected Behavior After Fix
 
-After implementation:
-1. Create a test pending course enrollment for a new email
-2. Visit `/signup?email=test@example.com` and verify email is pre-filled
-3. Complete full signup flow
-4. Verify `user_course_access` record is created
-5. Verify `pending_course_enrollments.processed_at` is set
-6. Confirm course appears in user's dashboard with access
+1. User signs up via course invite
+2. `user_course_access` is granted automatically
+3. Dashboard shows "Course Access Granted" dialog
+4. User clicks "Go to Course"
+5. System auto-enrolls user in `enrollments` table
+6. User is navigated to `/dashboard/courses/UUID/lessons`
+7. Lessons load correctly and user can start learning
