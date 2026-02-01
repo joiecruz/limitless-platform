@@ -2,19 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { CourseAccessGrantedDialog } from "@/components/dashboard/CourseAccessGrantedDialog";
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isIncompleteProfile, setIsIncompleteProfile] = useState(location.state?.isIncompleteProfile || false);
-  const [onboardingJustCompleted, setOnboardingJustCompleted] = useState(false);
 
   // Query to get user profile data
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profile } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -31,34 +27,11 @@ export default function Dashboard() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Query to get user workspaces using the proper function
-  const { data: userWorkspaces, isLoading: workspacesLoading } = useQuery({
-    queryKey: ["user-workspaces"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
-
-      const { data, error } = await supabase.functions.invoke('get-user-workspaces', {
-        body: { user_id: user.id }
-      });
-
-      if (error) {
-        
-        return [];
-      }
-
-      return data?.workspaces || [];
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      
 
       if (error || !session) {
-        
         navigate("/signin", { replace: true });
         return;
       }
@@ -66,91 +39,6 @@ export default function Dashboard() {
 
     checkAuth();
   }, [navigate]);
-
-  // Check for recent onboarding completion
-  useEffect(() => {
-    const checkOnboardingCompletion = () => {
-      const completionFlag = localStorage.getItem('onboardingCompleted');
-      if (completionFlag) {
-        const completionTime = parseInt(completionFlag);
-        const now = Date.now();
-
-        // If onboarding was completed within the last 10 seconds, set flag
-        if (now - completionTime < 10000) {
-          
-          setOnboardingJustCompleted(true);
-
-          // Clear the flag after 10 seconds
-          setTimeout(() => {
-            setOnboardingJustCompleted(false);
-            localStorage.removeItem('onboardingCompleted');
-          }, 10000);
-        } else {
-          // Clear old completion flag
-          localStorage.removeItem('onboardingCompleted');
-        }
-      }
-    };
-
-    checkOnboardingCompletion();
-  }, []);
-
-  // Check if onboarding is needed
-  useEffect(() => {
-    // Don't proceed if queries are still loading
-    if (profileLoading || workspacesLoading) {
-      
-      return;
-    }
-
-    // Don't show onboarding if it was just completed
-    if (onboardingJustCompleted) {
-      
-      setShowOnboarding(false);
-      return;
-    }
-
-    // Check if user has already been marked as onboarded (navigated around dashboard)
-    const hasNavigatedDashboard = localStorage.getItem('dashboard-visited');
-    if (hasNavigatedDashboard) {
-      
-      setShowOnboarding(false);
-      return;
-    }
-
-        
-    
-
-    // Check if user has completed the new signup flow (has name, role, and goals)
-    const hasName = profile?.first_name && profile?.last_name;
-    const hasWorkspaces = userWorkspaces && userWorkspaces.length > 0;
-    const hasCompletedSignupFlow = hasName && profile?.role && profile?.goals;
-
-    // If user completed the new signup flow, they don't need onboarding
-    if (hasCompletedSignupFlow) {
-      localStorage.setItem('dashboard-visited', 'true');
-      setShowOnboarding(false);
-      setIsIncompleteProfile(false);
-      return;
-    }
-
-    // Show onboarding for:
-    // 1. Truly new users (no name AND no workspaces) - full onboarding
-    // 2. Users with names but no workspaces - workspace creation step only
-    const needsOnboarding = !hasName && !hasWorkspaces; // Full onboarding
-    const needsWorkspaceCreation = hasName && !hasWorkspaces; // Workspace creation only
-
-    const showOnboardingModal = needsOnboarding || needsWorkspaceCreation;
-
-    // If user has both name and workspaces, mark them as having visited dashboard
-    if (hasName && hasWorkspaces) {
-      localStorage.setItem('dashboard-visited', 'true');
-    }
-
-    setShowOnboarding(showOnboardingModal);
-    setIsIncompleteProfile(!hasName);
-
-  }, [profile, profileLoading, userWorkspaces, workspacesLoading, onboardingJustCompleted]);
 
   const quickLinks = [
     {
@@ -181,16 +69,6 @@ export default function Dashboard() {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     }
     return '';
-  };
-
-  const handleOnboardingClose = (open: boolean) => {
-    setShowOnboarding(open);
-    if (!open) {
-      // Mark onboarding as completed when user closes it
-      localStorage.setItem('onboardingCompleted', Date.now().toString());
-      localStorage.setItem('dashboard-visited', 'true');
-      setOnboardingJustCompleted(true);
-    }
   };
 
   return (
@@ -239,13 +117,6 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
-
-      {/* Onboarding Modal */}
-      <OnboardingModal
-        open={showOnboarding}
-        onOpenChange={handleOnboardingClose}
-        isIncompleteProfile={isIncompleteProfile}
-      />
 
       {/* Course Access Granted Dialog */}
       <CourseAccessGrantedDialog />
