@@ -1,88 +1,98 @@
 
-# Fix: Email OTP Code Not Being Sent
+# Fix: Get 6-Digit OTP Code Instead of Magic Link
 
-## Root Cause
+## Root Cause (The Real Problem)
 
-The current code uses `supabase.auth.signUp()` which sends a **magic link** by default, not a 6-digit OTP code. This is why no code is being received.
+Supabase's `signInWithOtp({ email })` function uses the **"Magic Link" email template** which is configured to send a clickable button/link by default. The "OTP Length: 6 digits" setting you saw in the dashboard only applies to **phone/SMS authentication**, not email.
 
-To receive an OTP code via email, we need to use `supabase.auth.signInWithOtp()` instead.
+The email template in Supabase contains `{{ .ConfirmationURL }}` (a link) but not `{{ .Token }}` (the 6-digit code).
 
 ---
 
-## Solution
+## Solution Options
 
-Change the authentication approach to use `signInWithOtp` which properly sends a 6-digit verification code:
+### Option A: Modify Supabase Email Template (Recommended - No Code Changes)
 
-### Current (Not Working)
-```typescript
-// This sends a LINK, not a code
-await supabase.auth.signUp({
-  email,
-  password: tempPassword,
-});
+This is a configuration change in your Supabase dashboard:
+
+1. Go to **Supabase Dashboard** > **Authentication** > **Email Templates**
+2. Select the **"Magic Link"** template
+3. Edit the template to include the OTP token code
+
+**Replace the template with something like:**
+```html
+<h2>Your verification code</h2>
+<p>Enter this code to verify your email:</p>
+<h1 style="font-size: 32px; letter-spacing: 8px; text-align: center;">{{ .Token }}</h1>
+<p>This code expires in 60 minutes.</p>
+<p>If you didn't request this, you can safely ignore this email.</p>
 ```
 
-### Fixed Approach
-```typescript
-// This sends a 6-digit OTP code
-await supabase.auth.signInWithOtp({
-  email,
-  options: {
-    shouldCreateUser: true, // Creates user if doesn't exist
-  }
-});
+The `{{ .Token }}` variable contains the 6-digit OTP code that will work with your current frontend code.
+
+---
+
+### Option B: Use Custom Edge Function with Resend (More Control)
+
+If you want full control over the email content and don't want to modify Supabase templates:
+
+1. Create an edge function that generates and stores OTP codes
+2. Send custom emails via Resend (already configured)
+3. Verify codes against stored values
+
+**Files to create:**
+- `supabase/functions/send-otp/index.ts` - Generate OTP, store in DB, send via Resend
+- `supabase/functions/verify-otp/index.ts` - Verify the code
+
+**Database table needed:**
+```sql
+CREATE TABLE otp_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL,
+  code TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
----
-
-## Updated Flow
-
-```text
-SCREEN 1: Email + OTP
-├─ User enters email
-├─ Call signInWithOtp() → 6-digit code sent
-├─ User enters code
-└─ Call verifyOtp() → User authenticated
-
-SCREEN 2: Personal Info + Password
-├─ User enters name fields
-├─ User sets password
-└─ Call updateUser({ password }) → Password saved
-
-(Screens 3-4 remain unchanged)
-```
+**Frontend changes:**
+- Replace `supabase.auth.signInWithOtp()` with edge function calls
+- After OTP verified, use `supabase.auth.signUp()` to create the user
 
 ---
 
-## Changes Required
+## Recommendation
 
-### File: `src/components/signup/SignupStep1.tsx`
+**Go with Option A** - It requires no code changes and will work immediately:
 
-1. **Replace `signUp` with `signInWithOtp`**:
-   - Use `signInWithOtp({ email, options: { shouldCreateUser: true } })`
-   - This properly triggers the OTP email with a 6-digit code
+1. Open: Supabase Dashboard > Authentication > Email Templates
+2. Edit the "Magic Link" template
+3. Add `{{ .Token }}` to display the 6-digit code
+4. Save the template
 
-2. **Update OTP verification type**:
-   - Change from `type: 'email'` to `type: 'email'` (this stays the same, but works with signInWithOtp)
+Your current frontend code is already correctly set up to:
+- Send the OTP via `signInWithOtp`
+- Collect 6 digits via the `InputOTP` component
+- Verify via `verifyOtp({ type: 'email', token: code })`
 
-3. **Update to 6 digits**:
-   - Change `maxLength={4}` to `maxLength={6}`
-   - Add back slots 4 and 5 for the OTP input
-   - Update all validation checks from 4 to 6
-
-4. **Update resend function**:
-   - Change `resend({ type: 'signup' })` to call `signInWithOtp` again
+The only missing piece is the email template showing the code instead of a link.
 
 ---
 
-## Technical Summary
+## Quick Reference: Supabase Email Template Variables
 
-| Item | Before | After |
-|------|--------|-------|
-| Initial email action | `signUp()` with temp password | `signInWithOtp()` |
-| Email content | Magic link | 6-digit code |
-| OTP digits | 4 (wrong) | 6 (correct) |
-| User creation | During signUp | During signInWithOtp with `shouldCreateUser: true` |
-| Resend method | `resend({ type: 'signup' })` | `signInWithOtp()` again |
+| Variable | Description |
+|----------|-------------|
+| `{{ .Token }}` | The 6-digit OTP code |
+| `{{ .ConfirmationURL }}` | The magic link URL |
+| `{{ .Email }}` | User's email address |
+| `{{ .SiteURL }}` | Your configured site URL |
 
-This approach works seamlessly with Supabase's built-in email system without requiring custom SMTP configuration.
+---
+
+## Action Required
+
+Go to your Supabase dashboard and update the Magic Link email template to include `{{ .Token }}`.
+
+**Direct link:** https://supabase.com/dashboard/project/crllgygjuqpluvdpwayi/auth/templates
