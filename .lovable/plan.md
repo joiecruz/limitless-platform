@@ -1,128 +1,41 @@
 
-# Fix Course Access Granted Dialog Navigation
+# Fix jsPDF Security Vulnerability (CVE-2026-24133)
 
-## Problem Summary
+## Issue Summary
 
-The `CourseAccessGrantedDialog` component has two issues:
-1. **Wrong URL format**: Navigates to `/dashboard/courses/${course.slug}` instead of `/dashboard/courses/${course.id}/lessons`
-2. **Missing enrollment**: Users have `user_course_access` but need to also be added to `enrollments` table to actually start learning
+Your project has a **high severity (8.7/10)** security vulnerability in the `jspdf` package:
+
+- **Vulnerability**: Denial of Service via Unvalidated BMP Dimensions in BMPDecoder
+- **Current version**: ^4.0.0
+- **Patched version**: 4.1.0+
+- **Impact**: Malicious BMP files can cause memory exhaustion and application crashes
 
 ---
 
-## Solution Overview
+## Solution
 
-```text
-CURRENT FLOW (BROKEN):
-  "Go to Course" → /dashboard/courses/course-slug → "Course Not Found" error
-
-FIXED FLOW:
-  "Go to Course" → Auto-enroll user → /dashboard/courses/UUID/lessons → Lessons load correctly
-```
+Update the jsPDF dependency in `package.json` from `^4.0.0` to `^4.1.0`.
 
 ---
 
 ## Technical Changes
 
-### File: `src/components/dashboard/CourseAccessGrantedDialog.tsx`
+### File: `package.json`
 
-**Change 1: Fix Navigation URL**
+```text
+BEFORE (line 63):
+"jspdf": "^4.0.0",
 
-Update `handleGoToCourse` to use the course UUID and navigate directly to lessons:
-
-```typescript
-// BEFORE (line 64):
-navigate(`/dashboard/courses/${course.slug}`);
-
-// AFTER:
-navigate(`/dashboard/courses/${course.id}/lessons`);
-```
-
-**Change 2: Auto-Enroll User**
-
-Add enrollment logic when clicking "Go to Course" so users can immediately start learning:
-
-```typescript
-const handleGoToCourse = async () => {
-  if (!course) return;
-  
-  try {
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (user) {
-      // Check if already enrolled
-      const { data: existingEnrollment } = await supabase
-        .from('enrollments')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('course_id', course.id)
-        .maybeSingle();
-
-      // If not enrolled, create enrollment
-      if (!existingEnrollment) {
-        await supabase
-          .from('enrollments')
-          .insert({
-            course_id: course.id,
-            user_id: user.id,
-            progress: 0
-          });
-      }
-    }
-  } catch (err) {
-    console.error('Error enrolling user:', err);
-    // Continue navigation even if enrollment fails
-  }
-
-  setOpen(false);
-  navigate(`/dashboard/courses/${course.id}/lessons`);
-};
-```
-
-**Change 3: Remove Unnecessary Slug from CourseInfo Interface**
-
-Since we no longer need the slug, simplify the interface and query:
-
-```typescript
-// BEFORE:
-interface CourseInfo {
-  id: string;
-  title: string;
-  slug: string;
-}
-
-// AFTER:
-interface CourseInfo {
-  id: string;
-  title: string;
-}
-
-// Update query to not select slug
-const { data: courseData, error } = await supabase
-  .from('courses')
-  .select('id, title')  // Remove 'slug'
-  .eq('id', grantedCourseId)
-  .maybeSingle();
+AFTER:
+"jspdf": "^4.1.0",
 ```
 
 ---
 
-## Summary of Changes
+## Summary
 
-| Line(s) | Change |
-|---------|--------|
-| 15-19 | Remove `slug` from `CourseInfo` interface |
-| 40-42 | Update query to select only `id, title` |
-| 61-66 | Make `handleGoToCourse` async, add enrollment logic, fix navigation URL |
+| File | Change |
+|------|--------|
+| package.json | Update jspdf version from ^4.0.0 to ^4.1.0 |
 
----
-
-## Expected Behavior After Fix
-
-1. User signs up via course invite
-2. `user_course_access` is granted automatically
-3. Dashboard shows "Course Access Granted" dialog
-4. User clicks "Go to Course"
-5. System auto-enrolls user in `enrollments` table
-6. User is navigated to `/dashboard/courses/UUID/lessons`
-7. Lessons load correctly and user can start learning
+This is a straightforward version bump that patches the security vulnerability. No code changes are required since jsPDF is used internally by html2pdf.js in your project.
