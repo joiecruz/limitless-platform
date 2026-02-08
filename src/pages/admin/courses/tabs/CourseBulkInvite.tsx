@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, UserCheck, UserPlus, Users, RefreshCw, Settings2, Trash2 } from "lucide-react";
+import { Loader2, Mail, UserCheck, UserPlus, Users, RefreshCw, Settings2, Trash2, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -187,6 +187,45 @@ export default function CourseBulkInvite({ courseId, courseName }: CourseBulkInv
       toast({
         title: "Error",
         description: error.message || "Failed to resend email",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mass resend emails mutation
+  const massResendMutation = useMutation({
+    mutationFn: async (emails: string[]) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const response = await supabase.functions.invoke("send-course-invite", {
+        body: {
+          emails,
+          courseId,
+          courseName,
+          sendEmail: true,
+          emailTemplate: {
+            subject: emailSubject,
+            heading: emailHeading,
+            intro: emailIntro,
+            description: emailDescription,
+          },
+        },
+      });
+
+      if (response.error) throw response.error;
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Emails Resent",
+        description: `Successfully resent ${data.emailsSent} invitation emails to pending learners.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resend emails",
         variant: "destructive",
       });
     },
@@ -434,6 +473,52 @@ export default function CourseBulkInvite({ courseId, courseName }: CourseBulkInv
                     />
                   </TabsContent>
                   <TabsContent value="pending">
+                    {pendingCount > 0 && (
+                      <div className="flex justify-end mb-4">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              disabled={massResendMutation.isPending}
+                            >
+                              {massResendMutation.isPending ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Sending...
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="h-4 w-4 mr-2" />
+                                  Resend All ({pendingCount})
+                                </>
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Resend All Invitations?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will resend invitation emails to all {pendingCount} pending learners who haven't signed up yet. Are you sure you want to continue?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => {
+                                  const pendingEmails = enrollments
+                                    ?.filter((e) => !e.processed_at)
+                                    .map((e) => e.email) || [];
+                                  massResendMutation.mutate(pendingEmails);
+                                }}
+                              >
+                                Resend All
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    )}
                     <EnrollmentTable
                       enrollments={enrollments?.filter((e) => !e.processed_at) || []}
                       enrolledProfiles={enrolledProfiles || {}}
