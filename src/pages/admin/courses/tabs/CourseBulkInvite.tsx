@@ -165,6 +165,7 @@ export default function CourseBulkInvite({ courseId, courseName }: CourseBulkInv
           courseId,
           courseName,
           sendEmail: true,
+          resendOnly: true, // Skip insert logic, just send email
           emailTemplate: {
             subject: emailSubject,
             heading: emailHeading,
@@ -204,6 +205,7 @@ export default function CourseBulkInvite({ courseId, courseName }: CourseBulkInv
           courseId,
           courseName,
           sendEmail: true,
+          resendOnly: true, // Skip insert logic, just send emails
           emailTemplate: {
             subject: emailSubject,
             heading: emailHeading,

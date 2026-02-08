@@ -20,6 +20,7 @@ interface CourseInviteRequest {
   courseId: string;
   courseName: string;
   sendEmail: boolean;
+  resendOnly?: boolean; // When true, skip insert and just send emails to existing pending enrollments
   emailTemplate?: EmailTemplate;
 }
 
@@ -59,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Unauthorized: Admin access required");
     }
 
-    const { emails, courseId, courseName, sendEmail, emailTemplate }: CourseInviteRequest = await req.json();
+    const { emails, courseId, courseName, sendEmail, resendOnly, emailTemplate }: CourseInviteRequest = await req.json();
 
     if (!emails || !Array.isArray(emails) || emails.length === 0) {
       throw new Error("No emails provided");
@@ -79,71 +80,83 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("No valid emails provided");
     }
 
-    const { data: existingEnrollments } = await supabaseClient
-      .from("pending_course_enrollments")
-      .select("email")
-      .eq("course_id", courseId)
-      .in("email", cleanEmails);
-
-    const existingEmails = new Set(existingEnrollments?.map(e => e.email) || []);
-    const newEmails = cleanEmails.filter(e => !existingEmails.has(e));
-
-    const { data: existingUsers } = await supabaseClient
-      .from("profiles")
-      .select("email")
-      .in("email", newEmails);
-
-    const userEmailsToCheck = existingUsers?.map(u => u.email) || [];
-    
-    let alreadyEnrolledEmails: string[] = [];
-    if (userEmailsToCheck.length > 0) {
-      const { data: userProfiles } = await supabaseClient
-        .from("profiles")
-        .select("id, email")
-        .in("email", userEmailsToCheck);
-
-      if (userProfiles && userProfiles.length > 0) {
-        const userIds = userProfiles.map(p => p.id);
-        
-        const { data: courseAccess } = await supabaseClient
-          .from("user_course_access")
-          .select("user_id")
-          .eq("course_id", courseId)
-          .in("user_id", userIds);
-
-        const enrolledUserIds = new Set(courseAccess?.map(a => a.user_id) || []);
-        alreadyEnrolledEmails = userProfiles
-          .filter(p => enrolledUserIds.has(p.id))
-          .map(p => p.email);
-      }
-    }
-
-    const emailsToInvite = newEmails.filter(e => !alreadyEnrolledEmails.includes(e));
-
-    const enrollmentsToInsert = emailsToInvite.map(email => ({
-      email,
-      course_id: courseId,
-      invited_by: user.id,
-      metadata: { invited_at: new Date().toISOString() }
-    }));
-
     let insertedCount = 0;
-    if (enrollmentsToInsert.length > 0) {
-      const { data: inserted, error: insertError } = await supabaseClient
-        .from("pending_course_enrollments")
-        .insert(enrollmentsToInsert)
-        .select();
+    let emailsToSend: string[] = [];
+    let skippedDuplicate = 0;
+    let skippedAlreadyEnrolled = 0;
 
-      if (insertError) {
-        console.error("Insert error:", insertError);
-        throw new Error(`Failed to create pending enrollments: ${insertError.message}`);
+    if (resendOnly) {
+      // For resending, just use the provided emails directly (they're already pending)
+      emailsToSend = cleanEmails;
+    } else {
+      // Original logic for new invitations
+      const { data: existingEnrollments } = await supabaseClient
+        .from("pending_course_enrollments")
+        .select("email")
+        .eq("course_id", courseId)
+        .in("email", cleanEmails);
+
+      const existingEmails = new Set(existingEnrollments?.map(e => e.email) || []);
+      skippedDuplicate = existingEmails.size;
+      const newEmails = cleanEmails.filter(e => !existingEmails.has(e));
+
+      const { data: existingUsers } = await supabaseClient
+        .from("profiles")
+        .select("email")
+        .in("email", newEmails);
+
+      const userEmailsToCheck = existingUsers?.map(u => u.email) || [];
+      
+      let alreadyEnrolledEmails: string[] = [];
+      if (userEmailsToCheck.length > 0) {
+        const { data: userProfiles } = await supabaseClient
+          .from("profiles")
+          .select("id, email")
+          .in("email", userEmailsToCheck);
+
+        if (userProfiles && userProfiles.length > 0) {
+          const userIds = userProfiles.map(p => p.id);
+          
+          const { data: courseAccess } = await supabaseClient
+            .from("user_course_access")
+            .select("user_id")
+            .eq("course_id", courseId)
+            .in("user_id", userIds);
+
+          const enrolledUserIds = new Set(courseAccess?.map(a => a.user_id) || []);
+          alreadyEnrolledEmails = userProfiles
+            .filter(p => enrolledUserIds.has(p.id))
+            .map(p => p.email);
+        }
       }
 
-      insertedCount = inserted?.length || 0;
+      skippedAlreadyEnrolled = alreadyEnrolledEmails.length;
+      emailsToSend = newEmails.filter(e => !alreadyEnrolledEmails.includes(e));
+
+      const enrollmentsToInsert = emailsToSend.map(email => ({
+        email,
+        course_id: courseId,
+        invited_by: user.id,
+        metadata: { invited_at: new Date().toISOString() }
+      }));
+
+      if (enrollmentsToInsert.length > 0) {
+        const { data: inserted, error: insertError } = await supabaseClient
+          .from("pending_course_enrollments")
+          .insert(enrollmentsToInsert)
+          .select();
+
+        if (insertError) {
+          console.error("Insert error:", insertError);
+          throw new Error(`Failed to create pending enrollments: ${insertError.message}`);
+        }
+
+        insertedCount = inserted?.length || 0;
+      }
     }
 
     let emailsSent = 0;
-    if (sendEmail && emailsToInvite.length > 0) {
+    if (sendEmail && emailsToSend.length > 0) {
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
         const fromEmail = Deno.env.get("FROM_EMAIL") || "noreply@limitlesslab.org";
         const baseUrl = "https://limitlesslab.org";
@@ -255,8 +268,8 @@ const handler = async (req: Request): Promise<Response> => {
         success: true,
         inserted: insertedCount,
         emailsSent,
-        skippedDuplicate: existingEmails.size,
-        skippedAlreadyEnrolled: alreadyEnrolledEmails.length,
+        skippedDuplicate,
+        skippedAlreadyEnrolled,
         totalProcessed: cleanEmails.length,
       }),
       {
