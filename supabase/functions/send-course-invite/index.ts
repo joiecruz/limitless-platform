@@ -173,7 +173,7 @@ const handler = async (req: Request): Promise<Response> => {
         const intro = emailTemplate?.intro || "Congratulations! You've been invited to join our exclusive training program designed to help you succeed.";
         const description = emailTemplate?.description || "This course will equip you with practical skills to transform your work, enhance productivity, and unlock new opportunities.";
 
-        for (const email of emailsToInvite) {
+        for (const email of emailsToSend) {
           try {
             await resend.emails.send({
               from: `Limitless Lab <${fromEmail}>`,
