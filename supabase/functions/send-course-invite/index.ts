@@ -20,7 +20,7 @@ interface CourseInviteRequest {
   courseId: string;
   courseName: string;
   sendEmail: boolean;
-  resendOnly?: boolean; // When true, skip insert and just send emails to existing pending enrollments
+  resendOnly?: boolean;
   emailTemplate?: EmailTemplate;
 }
 
@@ -37,11 +37,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
-    // Use service role client for all operations
     const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Validate the user's token using the service role client
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     
@@ -81,46 +78,38 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     let insertedCount = 0;
-    let emailsToSend: string[] = [];
+    let emailsForNewUsers: string[] = [];
     let skippedDuplicate = 0;
     let skippedAlreadyEnrolled = 0;
     let newlyGrantedCount = 0;
     let existingUsersGranted: string[] = [];
 
     if (resendOnly) {
-      // For resending, just use the provided emails directly (they're already pending)
-      emailsToSend = cleanEmails;
+      // For resending, just send to all provided emails
+      emailsForNewUsers = cleanEmails;
     } else {
-      // Original logic for new invitations
+      // Check for existing pending enrollments
       const { data: existingEnrollments } = await supabaseClient
         .from("pending_course_enrollments")
         .select("email")
         .eq("course_id", courseId)
         .in("email", cleanEmails);
 
-      const existingEmails = new Set(existingEnrollments?.map(e => e.email) || []);
-      skippedDuplicate = existingEmails.size;
-      const newEmails = cleanEmails.filter(e => !existingEmails.has(e));
+      const existingPendingEmails = new Set(existingEnrollments?.map(e => e.email) || []);
 
-      // Check which new emails belong to existing users
+      // Check ALL emails against existing user profiles (both new and previously pending)
       const { data: existingUserProfiles } = await supabaseClient
         .from("profiles")
         .select("id, email")
-        .in("email", newEmails);
+        .in("email", cleanEmails);
 
       const existingUserMap = new Map((existingUserProfiles || []).map(p => [p.email, p.id]));
-      const existingUserEmails = new Set(existingUserMap.keys());
-      
-      // Split into existing users and truly new users
-      const emailsForNewUsers = newEmails.filter(e => !existingUserEmails.has(e));
-      const emailsForExistingUsers = newEmails.filter(e => existingUserEmails.has(e));
 
-      // For existing users, check who already has course access
-      let alreadyEnrolledEmails: string[] = [];
-      let newlyGrantedCount = 0;
+      // For all existing users, check who already has course access
+      const allExistingUserEmails = cleanEmails.filter(e => existingUserMap.has(e));
       
-      if (emailsForExistingUsers.length > 0) {
-        const userIds = emailsForExistingUsers.map(e => existingUserMap.get(e)!);
+      if (allExistingUserEmails.length > 0) {
+        const userIds = allExistingUserEmails.map(e => existingUserMap.get(e)!);
         
         const { data: courseAccess } = await supabaseClient
           .from("user_course_access")
@@ -131,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
         const enrolledUserIds = new Set(courseAccess?.map(a => a.user_id) || []);
         
         // Grant access to existing users who don't have it yet
-        const usersToGrant = emailsForExistingUsers
+        const usersToGrant = allExistingUserEmails
           .filter(e => !enrolledUserIds.has(existingUserMap.get(e)!));
         
         for (const email of usersToGrant) {
@@ -141,27 +130,36 @@ const handler = async (req: Request): Promise<Response> => {
             .insert({ user_id: userId, course_id: courseId });
           
           if (!accessError) {
-            // Also create enrollment record
             await supabaseClient
               .from("enrollments")
-              .insert({ user_id: userId, course_id: courseId, progress: 0 });
+              .upsert({ user_id: userId, course_id: courseId, progress: 0 },
+                { onConflict: 'user_id,course_id', ignoreDuplicates: true });
             newlyGrantedCount++;
+            existingUsersGranted.push(email);
           }
         }
 
-        alreadyEnrolledEmails = emailsForExistingUsers
+        // Mark pending enrollments for granted users as processed
+        if (usersToGrant.length > 0) {
+          await supabaseClient
+            .from("pending_course_enrollments")
+            .update({ processed_at: new Date().toISOString() })
+            .eq("course_id", courseId)
+            .in("email", usersToGrant);
+        }
+
+        const alreadyEnrolledEmails = allExistingUserEmails
           .filter(e => enrolledUserIds.has(existingUserMap.get(e)!));
+        skippedAlreadyEnrolled = alreadyEnrolledEmails.length;
       }
 
-      skippedAlreadyEnrolled = alreadyEnrolledEmails.length;
-      // Only create pending enrollments for truly new (non-existing) users
-      emailsToSend = emailsForNewUsers;
+      // Only truly new emails (no account, not already pending) get pending enrollment records
+      const newEmails = cleanEmails.filter(e => !existingPendingEmails.has(e) && !existingUserMap.has(e));
+      skippedDuplicate = [...existingPendingEmails].filter(e => !existingUserMap.has(e)).length;
       
-      // Also include existing users who were just granted access in the email list
-      const existingUsersGranted = emailsForExistingUsers
-        .filter(e => !alreadyEnrolledEmails.includes(e));
+      emailsForNewUsers = newEmails;
 
-      const enrollmentsToInsert = emailsToSend.map(email => ({
+      const enrollmentsToInsert = emailsForNewUsers.map(email => ({
         email,
         course_id: courseId,
         invited_by: user.id,
@@ -185,25 +183,22 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Combine new user emails + existing users who just got access for sending
     const allEmailsToSend = resendOnly 
-      ? emailsToSend 
-      : [...emailsToSend, ...(typeof existingUsersGranted !== 'undefined' ? existingUsersGranted : [])];
-    const existingUserEmailSet = new Set(
-      resendOnly ? [] : (typeof existingUsersGranted !== 'undefined' ? existingUsersGranted : [])
-    );
+      ? emailsForNewUsers 
+      : [...emailsForNewUsers, ...existingUsersGranted];
+    const existingUserEmailSet = new Set(existingUsersGranted);
 
     let emailsSent = 0;
     if (sendEmail && allEmailsToSend.length > 0) {
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
-        const fromEmail = Deno.env.get("FROM_EMAIL") || "noreply@limitlesslab.org";
-        const baseUrl = "https://limitlesslab.org";
+      const fromEmail = Deno.env.get("FROM_EMAIL") || "noreply@limitlesslab.org";
+      const baseUrl = "https://limitlesslab.org";
 
-        if (resendApiKey) {
+      if (resendApiKey) {
         const resend = new Resend(resendApiKey);
         const signupUrl = `${baseUrl}/signup`;
         const signinUrl = `${baseUrl}/signin`;
         const logoUrl = `${baseUrl}/images/ll-logo-email.png`;
 
-        // Use custom template or defaults
         const subject = emailTemplate?.subject || `Welcome to ${courseName}: Your Learning Journey Starts Here!`;
         const heading = emailTemplate?.heading || `Welcome to ${courseName}!`;
         const intro = emailTemplate?.intro || "Congratulations! You've been invited to join our exclusive training program designed to help you succeed.";
@@ -231,33 +226,24 @@ const handler = async (req: Request): Promise<Response> => {
                     <tr>
                       <td align="center" style="padding: 40px 20px;">
                         <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                          
-                          <!-- Header with Logo -->
                           <tr>
                             <td style="background-color: #ffffff; padding: 30px 40px; text-align: center;">
                               <img src="${logoUrl}" alt="Limitless Lab" style="height: 50px; margin-bottom: 15px;">
                             </td>
                           </tr>
-                          
-                          <!-- Heading Banner -->
                           <tr>
                             <td style="background: linear-gradient(135deg, #393CA0 0%, #5B5FC7 100%); padding: 30px 40px; text-align: center;">
                               <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">${heading}</h1>
                             </td>
                           </tr>
-
-                          <!-- Main Content -->
                           <tr>
                             <td style="padding: 40px;">
                               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
                                 ${intro}
                               </p>
-                              
                               <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
                                 <strong>${courseName}</strong> — ${description}
                               </p>
-
-                              <!-- CTA Button -->
                               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                                 <tr>
                                   <td align="center" style="padding: 20px 0;">
@@ -268,14 +254,11 @@ const handler = async (req: Request): Promise<Response> => {
                                   </td>
                                 </tr>
                               </table>
-
                               ${!isExistingUser ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 20px 0 0 0; text-align: center;">
                                 Already have an account? <a href="${signinUrl}" style="color: #393CA0; text-decoration: underline;">Sign in here</a>
                               </p>` : ''}
                             </td>
                           </tr>
-
-                          <!-- Footer -->
                           <tr>
                             <td style="background-color: #1f2937; padding: 30px 40px; text-align: center;">
                               <p style="color: #9ca3af; font-size: 12px; margin: 0 0 10px 0;">
@@ -310,6 +293,7 @@ const handler = async (req: Request): Promise<Response> => {
         emailsSent,
         skippedDuplicate,
         skippedAlreadyEnrolled,
+        newlyGrantedAccess: newlyGrantedCount,
         totalProcessed: cleanEmails.length,
       }),
       {
