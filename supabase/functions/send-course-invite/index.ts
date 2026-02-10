@@ -84,6 +84,8 @@ const handler = async (req: Request): Promise<Response> => {
     let emailsToSend: string[] = [];
     let skippedDuplicate = 0;
     let skippedAlreadyEnrolled = 0;
+    let newlyGrantedCount = 0;
+    let existingUsersGranted: string[] = [];
 
     if (resendOnly) {
       // For resending, just use the provided emails directly (they're already pending)
@@ -100,38 +102,64 @@ const handler = async (req: Request): Promise<Response> => {
       skippedDuplicate = existingEmails.size;
       const newEmails = cleanEmails.filter(e => !existingEmails.has(e));
 
-      const { data: existingUsers } = await supabaseClient
+      // Check which new emails belong to existing users
+      const { data: existingUserProfiles } = await supabaseClient
         .from("profiles")
-        .select("email")
+        .select("id, email")
         .in("email", newEmails);
 
-      const userEmailsToCheck = existingUsers?.map(u => u.email) || [];
+      const existingUserMap = new Map((existingUserProfiles || []).map(p => [p.email, p.id]));
+      const existingUserEmails = new Set(existingUserMap.keys());
       
+      // Split into existing users and truly new users
+      const emailsForNewUsers = newEmails.filter(e => !existingUserEmails.has(e));
+      const emailsForExistingUsers = newEmails.filter(e => existingUserEmails.has(e));
+
+      // For existing users, check who already has course access
       let alreadyEnrolledEmails: string[] = [];
-      if (userEmailsToCheck.length > 0) {
-        const { data: userProfiles } = await supabaseClient
-          .from("profiles")
-          .select("id, email")
-          .in("email", userEmailsToCheck);
+      let newlyGrantedCount = 0;
+      
+      if (emailsForExistingUsers.length > 0) {
+        const userIds = emailsForExistingUsers.map(e => existingUserMap.get(e)!);
+        
+        const { data: courseAccess } = await supabaseClient
+          .from("user_course_access")
+          .select("user_id")
+          .eq("course_id", courseId)
+          .in("user_id", userIds);
 
-        if (userProfiles && userProfiles.length > 0) {
-          const userIds = userProfiles.map(p => p.id);
-          
-          const { data: courseAccess } = await supabaseClient
+        const enrolledUserIds = new Set(courseAccess?.map(a => a.user_id) || []);
+        
+        // Grant access to existing users who don't have it yet
+        const usersToGrant = emailsForExistingUsers
+          .filter(e => !enrolledUserIds.has(existingUserMap.get(e)!));
+        
+        for (const email of usersToGrant) {
+          const userId = existingUserMap.get(email)!;
+          const { error: accessError } = await supabaseClient
             .from("user_course_access")
-            .select("user_id")
-            .eq("course_id", courseId)
-            .in("user_id", userIds);
-
-          const enrolledUserIds = new Set(courseAccess?.map(a => a.user_id) || []);
-          alreadyEnrolledEmails = userProfiles
-            .filter(p => enrolledUserIds.has(p.id))
-            .map(p => p.email);
+            .insert({ user_id: userId, course_id: courseId });
+          
+          if (!accessError) {
+            // Also create enrollment record
+            await supabaseClient
+              .from("enrollments")
+              .insert({ user_id: userId, course_id: courseId, progress: 0 });
+            newlyGrantedCount++;
+          }
         }
+
+        alreadyEnrolledEmails = emailsForExistingUsers
+          .filter(e => enrolledUserIds.has(existingUserMap.get(e)!));
       }
 
       skippedAlreadyEnrolled = alreadyEnrolledEmails.length;
-      emailsToSend = newEmails.filter(e => !alreadyEnrolledEmails.includes(e));
+      // Only create pending enrollments for truly new (non-existing) users
+      emailsToSend = emailsForNewUsers;
+      
+      // Also include existing users who were just granted access in the email list
+      const existingUsersGranted = emailsForExistingUsers
+        .filter(e => !alreadyEnrolledEmails.includes(e));
 
       const enrollmentsToInsert = emailsToSend.map(email => ({
         email,
@@ -155,8 +183,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Combine new user emails + existing users who just got access for sending
+    const allEmailsToSend = resendOnly 
+      ? emailsToSend 
+      : [...emailsToSend, ...(typeof existingUsersGranted !== 'undefined' ? existingUsersGranted : [])];
+    const existingUserEmailSet = new Set(
+      resendOnly ? [] : (typeof existingUsersGranted !== 'undefined' ? existingUsersGranted : [])
+    );
+
     let emailsSent = 0;
-    if (sendEmail && emailsToSend.length > 0) {
+    if (sendEmail && allEmailsToSend.length > 0) {
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
         const fromEmail = Deno.env.get("FROM_EMAIL") || "noreply@limitlesslab.org";
         const baseUrl = "https://limitlesslab.org";
@@ -173,7 +209,11 @@ const handler = async (req: Request): Promise<Response> => {
         const intro = emailTemplate?.intro || "Congratulations! You've been invited to join our exclusive training program designed to help you succeed.";
         const description = emailTemplate?.description || "This course will equip you with practical skills to transform your work, enhance productivity, and unlock new opportunities.";
 
-        for (const email of emailsToSend) {
+        for (const email of allEmailsToSend) {
+          const isExistingUser = existingUserEmailSet.has(email);
+          const ctaUrl = isExistingUser ? signinUrl : `${signupUrl}?email=${encodeURIComponent(email)}`;
+          const ctaText = isExistingUser ? "Sign In & Start Learning" : "Create Your Account & Start Learning";
+          
           try {
             await resend.emails.send({
               from: `Limitless Lab <${fromEmail}>`,
@@ -221,17 +261,17 @@ const handler = async (req: Request): Promise<Response> => {
                               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                                 <tr>
                                   <td align="center" style="padding: 20px 0;">
-                                    <a href="${signupUrl}?email=${encodeURIComponent(email)}" 
+                                    <a href="${ctaUrl}" 
                                        style="display: inline-block; background: linear-gradient(135deg, #393CA0 0%, #5B5FC7 100%); color: white; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 14px rgba(57, 60, 160, 0.4);">
-                                      Create Your Account & Start Learning
+                                      ${ctaText}
                                     </a>
                                   </td>
                                 </tr>
                               </table>
 
-                              <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 20px 0 0 0; text-align: center;">
+                              ${!isExistingUser ? `<p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 20px 0 0 0; text-align: center;">
                                 Already have an account? <a href="${signinUrl}" style="color: #393CA0; text-decoration: underline;">Sign in here</a>
-                              </p>
+                              </p>` : ''}
                             </td>
                           </tr>
 
