@@ -1453,6 +1453,48 @@ export type Database = {
           },
         ]
       }
+      platform_updates: {
+        Row: {
+          changes: Json | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          published: boolean | null
+          published_at: string | null
+          title: string
+          update_type: string | null
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          changes?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          published?: boolean | null
+          published_at?: string | null
+          title: string
+          update_type?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          changes?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          published?: boolean | null
+          published_at?: string | null
+          title?: string
+          update_type?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

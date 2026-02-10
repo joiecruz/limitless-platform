@@ -26,6 +26,7 @@ import CaseStudy from '@/pages/CaseStudy';
 import About from '@/pages/About';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
+import Updates from '@/pages/Updates';
 import NotFound from '@/pages/NotFound';
 import WorkshopDetail from '@/pages/landing/WorkshopDetail';
 
@@ -112,6 +113,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/about" element={<About />} />
           <Route path="/privacy-policy" element={<Privacy />} />
           <Route path="/terms-of-service" element={<Terms />} />
+          <Route path="/updates" element={<Updates />} />
           <Route path="/workshops/:courseId" element={<WorkshopDetail />} />
         </>
       )}
