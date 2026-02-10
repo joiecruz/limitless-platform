@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
 import { SignupStepProps } from "./types";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -22,9 +22,38 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [existingAccount, setExistingAccount] = useState(false);
   const { toast } = useToast();
 
   const isValidEmail = /\S+@\S+\.\S+/.test(email);
+
+  // Check if a pre-filled invite email already has an account
+  useEffect(() => {
+    if (emailFromUrl && /\S+@\S+\.\S+/.test(emailFromUrl)) {
+      supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", emailFromUrl.toLowerCase().trim())
+        .maybeSingle()
+        .then(({ data: profile }) => {
+          if (profile) setExistingAccount(true);
+        });
+    }
+  }, [emailFromUrl]);
+
+  // Also check on blur when user types an email
+  const handleEmailBlur = async () => {
+    if (!isValidEmail) {
+      setExistingAccount(false);
+      return;
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", email.toLowerCase().trim())
+      .maybeSingle();
+    setExistingAccount(!!profile);
+  };
 
   const sendOtpCode = async (emailAddress: string) => {
     // Use custom edge function to send OTP via Resend
@@ -262,11 +291,30 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
             type="email"
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setExistingAccount(false);
+            }}
+            onBlur={handleEmailBlur}
             placeholder="you@company.com"
             className="mt-1"
           />
         </div>
+
+        {existingAccount && (
+          <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium text-blue-900">You already have an account!</p>
+              <p className="text-blue-700 mt-0.5">
+                An account with this email already exists. Please{" "}
+                <Link to={`/signin`} className="font-semibold underline hover:text-blue-900">
+                  sign in instead
+                </Link>.
+              </p>
+            </div>
+          </div>
+        )}
 
         <Button
           type="submit"
