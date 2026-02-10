@@ -1,3 +1,6 @@
+import { useState, useRef } from 'react';
+import { AlertTriangle } from 'lucide-react';
+
 interface VideoPlayerProps {
   videoUrl: string;
 }
@@ -17,6 +20,9 @@ const getYouTubeVideoId = (url: string): string | null => {
 };
 
 const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
+  const [hasError, setHasError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   console.log("[VideoPlayer] Received videoUrl:", videoUrl);
   
   if (!videoUrl) {
@@ -46,15 +52,56 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
     );
   }
 
+  if (hasError) {
+    return (
+      <div className="relative aspect-video bg-muted md:rounded-lg overflow-hidden md:mb-8 flex flex-col items-center justify-center gap-3 px-4">
+        <AlertTriangle className="h-8 w-8 text-destructive" />
+        <p className="text-sm text-muted-foreground text-center">
+          This video couldn't be played. Try using{' '}
+          <a href="https://www.google.com/chrome/" target="_blank" rel="noopener noreferrer" className="underline font-medium">
+            Google Chrome
+          </a>{' '}
+          or{' '}
+          <a href="https://www.mozilla.org/firefox/" target="_blank" rel="noopener noreferrer" className="underline font-medium">
+            Firefox
+          </a>{' '}
+          for the best experience.
+        </p>
+        <a
+          href={videoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-medium text-primary underline"
+        >
+          Open video directly
+        </a>
+      </div>
+    );
+  }
+
+  // Determine MIME type from URL
+  const getMimeType = (url: string): string => {
+    const lower = url.toLowerCase().split('?')[0];
+    if (lower.endsWith('.webm')) return 'video/webm';
+    if (lower.endsWith('.ogg') || lower.endsWith('.ogv')) return 'video/ogg';
+    return 'video/mp4';
+  };
+
   // Fallback to native video element for direct video files
   return (
-    <div className="relative aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8">
+    <div className="aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8">
       <video
-        src={videoUrl}
+        ref={videoRef}
         controls
         playsInline
-        className="absolute inset-0 w-full h-full object-contain"
+        preload="metadata"
+        className="w-full h-full"
+        onError={() => {
+          console.error("[VideoPlayer] Video playback error for:", videoUrl);
+          setHasError(true);
+        }}
       >
+        <source src={videoUrl} type={getMimeType(videoUrl)} />
         Your browser does not support the video tag.
       </video>
     </div>
