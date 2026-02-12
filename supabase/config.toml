@@ -1,1 +1,4 @@
 project_id = "crllgygjuqpluvdpwayi"
+
+[functions.google-form-webhook]
+verify_jwt = false
