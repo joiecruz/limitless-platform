@@ -45,7 +45,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: course, error: courseError } = await supabaseClient
       .from("courses")
       .select("id, title")
-      .eq("slug", "limitlessbiz")
+      .eq("slug", "limitlessbiz-ai-for-msme-advancement")
       .single();
 
     if (courseError || !course) {
