@@ -10,8 +10,25 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
+// Simple in-memory rate limiter
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  
+  entry.count++;
+  return entry.count <= RATE_LIMIT_MAX;
+}
+
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -21,74 +38,94 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing Supabase credentials");
     }
 
-    // Create Supabase client with service role key
-    const supabase = createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY
-    );
+    // Rate limiting by IP
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") || "unknown";
 
-    // Parse request body to get token
-    const { token } = await req.json();
-
-    if (!token) {
-      throw new Error("No invitation token provided");
+    if (!checkRateLimit(clientIp)) {
+      console.warn(`Rate limit exceeded for IP: ${clientIp}`);
+      return new Response(
+        JSON.stringify({ error: "Too many verification attempts. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Get invitation using service role to bypass RLS
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { token } = await req.json();
+
+    if (!token || typeof token !== "string") {
+      return new Response(
+        JSON.stringify({ error: "No invitation token provided" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate token format (UUID)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(token)) {
+      console.warn(`Invalid token format from IP: ${clientIp}`);
+      return new Response(
+        JSON.stringify({ error: "Invalid invitation token." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Only select fields the client actually needs
     const { data: invitation, error: inviteError } = await supabase
       .from("workspace_invitations")
-      .select("*")
-      .eq('magic_link_token', token)
+      .select("id, email, workspace_id, role, status")
+      .eq("magic_link_token", token)
       .maybeSingle();
 
     if (inviteError) {
-      throw new Error(`Failed to verify invitation: ${inviteError.message}`);
+      console.error("Invitation lookup error:", inviteError.message);
+      return new Response(
+        JSON.stringify({ error: "Failed to verify invitation." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     if (!invitation) {
-      throw new Error("Invalid or expired invitation token.");
+      console.warn(`Invalid token verification attempt from IP: ${clientIp}`);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired invitation token." }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    if (invitation.status !== 'pending') {
-      throw new Error("This invitation has already been used or has expired.");
+    if (invitation.status !== "pending") {
+      return new Response(
+        JSON.stringify({ error: "This invitation has already been used or has expired." }),
+        { status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Check if user already exists with this email using service role
-    // Try to get user by checking the profiles table which should have the email
-    const { data: existingProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', invitation.email)
+    // Check if user already exists
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", invitation.email)
       .maybeSingle();
 
-    // User exists if we found a profile record
-    const userExists = !profileError && existingProfile;
-
+    // Return only the fields the client needs
     return new Response(
       JSON.stringify({
-        ...invitation,
-        userExists: !!userExists
+        id: invitation.id,
+        email: invitation.email,
+        workspace_id: invitation.workspace_id,
+        role: invitation.role,
+        status: invitation.status,
+        userExists: !!existingProfile,
       }),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json"
-        },
-        status: 200
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Error in verify-invitation function:", error);
 
     return new Response(
-      JSON.stringify({ error: error.message || "An error occurred" }),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json"
-        },
-        status: 500
-      }
+      JSON.stringify({ error: "An error occurred" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 };
