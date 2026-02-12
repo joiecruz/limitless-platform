@@ -4,6 +4,7 @@ import { MainNav } from "@/components/site-config/MainNav";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Footer } from "@/components/site-config/Footer";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import posterImage from "@/assets/limitlessbiz-poster.png";
 
 export default function LimitlessBiz() {
   usePageTitle("LimitlessBiz: AI for Business Owners Challenge | Limitless Lab");
@@ -13,32 +14,20 @@ export default function LimitlessBiz() {
       <MainNav />
 
       {/* Hero Section */}
-      <div className="relative min-h-[600px] max-h-[800px] h-screen bg-gradient-to-br from-primary via-primary/90 to-primary/70">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]" />
-        <div className="relative h-full flex flex-col items-start justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
-          <p className="text-sm uppercase tracking-widest text-white/70 mb-4">Challenge Mechanics</p>
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-4">
+      <div className="pt-28 pb-12 bg-background">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-sm uppercase tracking-widest text-muted-foreground mb-4">Challenge Mechanics</p>
+          <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-4">
             LimitlessBiz
           </h1>
-          <p className="text-2xl md:text-3xl text-white/90 mb-12 max-w-3xl font-light">
+          <p className="text-xl md:text-2xl text-muted-foreground mb-10 font-light">
             AI for Business Owners Challenge
           </p>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">₱55K+</div>
-              <div className="text-white/80 text-sm">Total Prizes</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">8</div>
-              <div className="text-white/80 text-sm">Winners</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">FREE</div>
-              <div className="text-white/80 text-sm">Course Enrollment</div>
-            </div>
-          </div>
+          <img
+            src={posterImage}
+            alt="LimitlessBiz AI for Business Owners Challenge poster"
+            className="w-full max-w-2xl mx-auto rounded-xl shadow-lg"
+          />
         </div>
       </div>
 
