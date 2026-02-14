@@ -274,7 +274,30 @@ export default function CourseBulkInvite({ courseId, courseName }: CourseBulkInv
       return;
     }
 
-    bulkInviteMutation.mutate({ emails, sendEmail: sendEmails });
+    // Filter out emails already in the enrollments list
+    const existingEmails = new Set(
+      (enrollments || []).map((e) => e.email.toLowerCase())
+    );
+    const newEmails = emails.filter((e) => !existingEmails.has(e));
+    const duplicateCount = emails.length - newEmails.length;
+
+    if (newEmails.length === 0) {
+      toast({
+        title: "All Duplicates",
+        description: `All ${duplicateCount} email(s) are already invited for this course.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (duplicateCount > 0) {
+      toast({
+        title: "Duplicates Removed",
+        description: `${duplicateCount} already-invited email(s) were removed. Sending ${newEmails.length} new invitation(s).`,
+      });
+    }
+
+    bulkInviteMutation.mutate({ emails: newEmails, sendEmail: sendEmails });
   };
 
   // Calculate stats
