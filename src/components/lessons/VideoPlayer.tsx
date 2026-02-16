@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -19,14 +20,45 @@ const getYouTubeVideoId = (url: string): string | null => {
   return null;
 };
 
+// Extract bucket and path from a Supabase signed URL
+const parseSupabaseSignedUrl = (url: string): { bucket: string; path: string } | null => {
+  const match = url.match(/\/storage\/v1\/object\/sign\/([^/?]+)\/(.+?)(?:\?|$)/);
+  if (!match) return null;
+  return { bucket: match[1], path: decodeURIComponent(match[2]) };
+};
+
 const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   const [hasError, setHasError] = useState(false);
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  console.log("[VideoPlayer] Received videoUrl:", videoUrl);
-  
+  // Resolve signed URLs on mount
+  useEffect(() => {
+    setHasError(false);
+    setResolvedUrl(null);
+
+    if (!videoUrl) return;
+
+    const parsed = parseSupabaseSignedUrl(videoUrl);
+    if (parsed) {
+      // Generate a fresh signed URL (valid for 1 year)
+      supabase.storage
+        .from(parsed.bucket)
+        .createSignedUrl(parsed.path, 60 * 60 * 24 * 365)
+        .then(({ data, error }) => {
+          if (error || !data?.signedUrl) {
+            console.error('[VideoPlayer] Failed to refresh signed URL:', error);
+            setResolvedUrl(videoUrl); // fallback to original
+          } else {
+            setResolvedUrl(data.signedUrl);
+          }
+        });
+    } else {
+      setResolvedUrl(videoUrl);
+    }
+  }, [videoUrl]);
+
   if (!videoUrl) {
-    console.log("[VideoPlayer] No video URL provided");
     return (
       <div className="relative aspect-video bg-muted rounded-lg overflow-hidden mb-8 flex items-center justify-center">
         <p className="text-muted-foreground">No video available</p>
@@ -38,7 +70,6 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   const youtubeVideoId = getYouTubeVideoId(videoUrl);
   
   if (youtubeVideoId) {
-    console.log("[VideoPlayer] YouTube video ID:", youtubeVideoId);
     return (
       <div className="relative aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8">
         <iframe
@@ -48,6 +79,14 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
         />
+      </div>
+    );
+  }
+
+  if (!resolvedUrl) {
+    return (
+      <div className="relative aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8 flex items-center justify-center">
+        <p className="text-muted-foreground">Loading video...</p>
       </div>
     );
   }
@@ -68,7 +107,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
           for the best experience.
         </p>
         <a
-          href={videoUrl}
+          href={resolvedUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="text-sm font-medium text-primary underline"
@@ -87,7 +126,6 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
     return 'video/mp4';
   };
 
-  // Fallback to native video element for direct video files
   return (
     <div className="aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8">
       <video
@@ -97,11 +135,11 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
         preload="metadata"
         className="w-full h-full"
         onError={() => {
-          console.error("[VideoPlayer] Video playback error for:", videoUrl);
+          console.error("[VideoPlayer] Video playback error for:", resolvedUrl);
           setHasError(true);
         }}
       >
-        <source src={videoUrl} type={getMimeType(videoUrl)} />
+        <source src={resolvedUrl} type={getMimeType(resolvedUrl)} />
         Your browser does not support the video tag.
       </video>
     </div>
