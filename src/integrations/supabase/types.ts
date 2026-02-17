@@ -497,6 +497,7 @@ export type Database = {
           course_id: string
           created_at: string
           id: string
+          last_reminder_sent_at: string | null
           progress: number | null
           updated_at: string
           user_id: string
@@ -506,6 +507,7 @@ export type Database = {
           course_id: string
           created_at?: string
           id?: string
+          last_reminder_sent_at?: string | null
           progress?: number | null
           updated_at?: string
           user_id: string
@@ -515,6 +517,7 @@ export type Database = {
           course_id?: string
           created_at?: string
           id?: string
+          last_reminder_sent_at?: string | null
           progress?: number | null
           updated_at?: string
           user_id?: string
