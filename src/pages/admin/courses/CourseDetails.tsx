@@ -8,6 +8,7 @@ import CourseLessons from "./tabs/CourseLessons";
 import CourseUsers from "./tabs/CourseUsers";
 import CourseWorkspaces from "./tabs/CourseWorkspaces";
 import CourseBulkInvite from "./tabs/CourseBulkInvite";
+import CourseReminders from "./tabs/CourseReminders";
 
 interface CourseDetailsProps {
   courseId: string;
@@ -54,6 +55,7 @@ const CourseDetails = ({ courseId }: CourseDetailsProps) => {
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="workspaces">Workspaces</TabsTrigger>
           <TabsTrigger value="bulk-invite">Bulk Invite</TabsTrigger>
+          <TabsTrigger value="reminders">Reminders</TabsTrigger>
         </TabsList>
 
         <TabsContent value="about">
@@ -78,6 +80,10 @@ const CourseDetails = ({ courseId }: CourseDetailsProps) => {
 
         <TabsContent value="bulk-invite">
           <CourseBulkInvite courseId={courseId} courseName={course.title} />
+        </TabsContent>
+
+        <TabsContent value="reminders">
+          <CourseReminders courseId={courseId} courseName={course.title} />
         </TabsContent>
       </Tabs>
     </div>
