@@ -7,7 +7,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -15,14 +14,11 @@ serve(async (req) => {
   try {
     const { projectName, projectDescription, projectProblem, projectCustomers, targetOutcomes } = await req.json()
 
-    // Get OpenAI API key from environment
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
-    
-    if (!openaiApiKey) {
-      throw new Error('OpenAI API key not configured')
+    const apiKey = Deno.env.get('LOVABLE_API_KEY')
+    if (!apiKey) {
+      throw new Error('LOVABLE_API_KEY is not configured')
     }
 
-    // Build dynamic prompt based on available project data
     let prompt = `Generate 5 innovative ideas for a project. Each idea should be practical, actionable, and specific to the project context.
 
 Requirements for each idea:
@@ -31,25 +27,11 @@ Requirements for each idea:
 
 Project Context:`;
 
-    if (projectName) {
-      prompt += `\n- Project Name: ${projectName}`
-    }
-    
-    if (projectDescription) {
-      prompt += `\n- Project Description: ${projectDescription}`
-    }
-    
-    if (projectProblem) {
-      prompt += `\n- Main Problem/Challenge: ${projectProblem}`
-    }
-    
-    if (projectCustomers) {
-      prompt += `\n- Target Customers/Users: ${projectCustomers}`
-    }
-    
-    if (targetOutcomes) {
-      prompt += `\n- Desired Outcomes: ${targetOutcomes}`
-    }
+    if (projectName) prompt += `\n- Project Name: ${projectName}`
+    if (projectDescription) prompt += `\n- Project Description: ${projectDescription}`
+    if (projectProblem) prompt += `\n- Main Problem/Challenge: ${projectProblem}`
+    if (projectCustomers) prompt += `\n- Target Customers/Users: ${projectCustomers}`
+    if (targetOutcomes) prompt += `\n- Desired Outcomes: ${targetOutcomes}`
 
     prompt += `\n\nGenerate ideas that are:
 1. Specific to this project's context and challenges
@@ -60,45 +42,46 @@ Project Context:`;
 
 Format the response as a JSON array with objects containing "title" and "description" fields.`
 
-    // Call OpenAI API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           {
             role: 'system',
             content: 'You are an expert innovation consultant who generates practical, actionable ideas for projects. Always respond with valid JSON arrays containing idea objects with "title" and "description" fields. Keep descriptions to maximum 2 sentences.'
           },
-          {
-            role: 'user',
-            content: prompt
-          }
+          { role: 'user', content: prompt }
         ],
         temperature: 0.7,
         max_tokens: 600,
       }),
     })
 
+    if (response.status === 429) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded, please try again later.' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    if (response.status === 402) {
+      return new Response(JSON.stringify({ error: 'AI credits exhausted, please add funds.' }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
+      throw new Error(`AI API error: ${response.status}`)
     }
 
     const data = await response.json()
     const content = data.choices[0]?.message?.content
 
     if (!content) {
-      throw new Error('No content received from OpenAI')
+      throw new Error('No content received from AI')
     }
 
-    // Parse the JSON response from OpenAI
     let ideas
     try {
-      // Extract JSON from the response (in case there's extra text)
       const jsonMatch = content.match(/\[[\s\S]*\]/)
       if (jsonMatch) {
         ideas = JSON.parse(jsonMatch[0])
@@ -106,11 +89,10 @@ Format the response as a JSON array with objects containing "title" and "descrip
         ideas = JSON.parse(content)
       }
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', content)
+      console.error('Failed to parse AI response:', content)
       throw new Error('Invalid response format from AI service')
     }
 
-    // Validate and clean the ideas
     if (!Array.isArray(ideas)) {
       throw new Error('AI response is not an array')
     }
@@ -121,62 +103,33 @@ Format the response as a JSON array with objects containing "title" and "descrip
         title: String(idea.title).substring(0, 40),
         description: String(idea.description).substring(0, 150)
       }))
-      .slice(0, 5) // Ensure max 5 ideas
+      .slice(0, 5)
 
-    // Fallback to default ideas if AI fails
     if (cleanedIdeas.length === 0) {
       cleanedIdeas.push(
-        {
-          title: "Customer Feedback Integration",
-          description: "Implement a comprehensive feedback system to gather insights from users and improve the product based on real user needs."
-        },
-        {
-          title: "Process Optimization",
-          description: "Streamline workflows and eliminate bottlenecks to improve efficiency and reduce time to market."
-        },
-        {
-          title: "Technology Enhancement",
-          description: "Upgrade systems and tools to leverage the latest technologies for better performance and user experience."
-        }
+        { title: "Customer Feedback Integration", description: "Implement a comprehensive feedback system to gather insights from users and improve the product based on real user needs." },
+        { title: "Process Optimization", description: "Streamline workflows and eliminate bottlenecks to improve efficiency and reduce time to market." },
+        { title: "Technology Enhancement", description: "Upgrade systems and tools to leverage the latest technologies for better performance and user experience." }
       )
     }
 
     return new Response(
       JSON.stringify({ ideas: cleanedIdeas }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 },
     )
 
   } catch (error) {
     console.error('Error generating ideas:', error)
     
-    // Return fallback ideas if everything fails
     const fallbackIdeas = [
-      {
-        title: "Customer Feedback Integration",
-        description: "Implement a comprehensive feedback system to gather insights from users and improve the product based on real user needs."
-      },
-      {
-        title: "Process Optimization", 
-        description: "Streamline workflows and eliminate bottlenecks to improve efficiency and reduce time to market."
-      },
-      {
-        title: "Technology Enhancement",
-        description: "Upgrade systems and tools to leverage the latest technologies for better performance and user experience."
-      }
+      { title: "Customer Feedback Integration", description: "Implement a comprehensive feedback system to gather insights from users and improve the product based on real user needs." },
+      { title: "Process Optimization", description: "Streamline workflows and eliminate bottlenecks to improve efficiency and reduce time to market." },
+      { title: "Technology Enhancement", description: "Upgrade systems and tools to leverage the latest technologies for better performance and user experience." }
     ]
 
     return new Response(
-      JSON.stringify({ 
-        ideas: fallbackIdeas,
-        error: error.message 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200, // Return 200 with fallback instead of error
-      },
+      JSON.stringify({ ideas: fallbackIdeas, error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 },
     )
   }
-}) 
+})

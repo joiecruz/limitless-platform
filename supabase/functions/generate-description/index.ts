@@ -1,6 +1,4 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,16 +6,14 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    
-    if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY is not set in environment');
+    const apiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!apiKey) {
+      throw new Error('LOVABLE_API_KEY is not set in environment');
     }
     
     const { prompt } = await req.json();
@@ -35,14 +31,14 @@ serve(async (req) => {
     what kind of ideas are being sought, and the broader context of the challenge.
     Do not use placeholders or generic text - make it specific to the "How Might We" question.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
@@ -52,10 +48,17 @@ serve(async (req) => {
       }),
     });
 
+    if (response.status === 429) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded, please try again later.' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    if (response.status === 402) {
+      return new Response(JSON.stringify({ error: 'AI credits exhausted, please add funds.' }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     const data = await response.json();
     
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Error calling OpenAI API');
+      throw new Error(data.error?.message || 'Error calling AI API');
     }
 
     const generatedText = data.choices[0].message.content;
@@ -67,7 +70,6 @@ serve(async (req) => {
     
   } catch (error) {
     console.error('Error generating description:', error);
-    
     return new Response(
       JSON.stringify({ error: error.message || 'Failed to generate description' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
