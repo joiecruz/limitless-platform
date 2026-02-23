@@ -77,17 +77,19 @@ export const useAdminAnalytics = (dateFilter: string = "7d") => {
           .gte('created_at', monthAgo)
       ]);
 
-      // Daily Active Users (users with messages today)
-      const { count: dau } = await supabase
-        .from('messages')
-        .select('user_id', { count: 'exact', head: true })
-        .gte('created_at', today);
+      // Daily Active Users (distinct users with sessions today)
+      const { data: dauData } = await supabase
+        .from('sessions')
+        .select('user_id')
+        .gte('started_at', today);
+      const dau = new Set(dauData?.map(s => s.user_id) || []).size;
 
-      // Weekly Active Users
-      const { count: wau } = await supabase
-        .from('messages')
-        .select('user_id', { count: 'exact', head: true })
-        .gte('created_at', weekAgo);
+      // Weekly Active Users (distinct users with sessions this week)
+      const { data: wauData } = await supabase
+        .from('sessions')
+        .select('user_id')
+        .gte('started_at', weekAgo);
+      const wau = new Set(wauData?.map(s => s.user_id) || []).size;
 
       // Activation Rate (users who created a workspace)
       const { count: activatedUsers } = await supabase
@@ -170,19 +172,19 @@ export const useAdminAnalytics = (dateFilter: string = "7d") => {
         day30Retention = (day30Retention / recentUsers.length) * 100;
       }
 
-      // Session Frequency (based on message frequency)
-      const { data: messagesData } = await supabase
-        .from('messages')
+      // Session Frequency (average sessions per user in last 7 days)
+      const { data: sessionData } = await supabase
+        .from('sessions')
         .select('user_id')
-        .gte('created_at', getDateFilter(7));
+        .gte('started_at', getDateFilter(7));
 
-      const userMessageCounts = messagesData?.reduce((acc, message) => {
-        acc[message.user_id] = (acc[message.user_id] || 0) + 1;
+      const userSessionCounts = sessionData?.reduce((acc, session) => {
+        acc[session.user_id] = (acc[session.user_id] || 0) + 1;
         return acc;
       }, {} as Record<string, number>) || {};
 
-      const sessionFrequency = Object.keys(userMessageCounts).length > 0
-        ? Object.values(userMessageCounts).reduce((a, b) => a + b, 0) / Object.keys(userMessageCounts).length
+      const sessionFrequency = Object.keys(userSessionCounts).length > 0
+        ? Object.values(userSessionCounts).reduce((a, b) => a + b, 0) / Object.keys(userSessionCounts).length
         : 0;
 
       // Most Active Users
@@ -233,8 +235,8 @@ export const useAdminAnalytics = (dateFilter: string = "7d") => {
           monthly: monthlySignups.count || 0
         },
         activeUsers: {
-          dau: dau || 0,
-          wau: wau || 0
+          dau,
+          wau
         },
         activationRate,
         topFeatures,

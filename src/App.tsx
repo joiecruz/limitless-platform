@@ -8,6 +8,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./routes/AppRoutes";
 import { useToast } from "@/hooks/use-toast";
+import { useSessionTracking } from "@/hooks/useSessionTracking";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { HelmetProvider } from "react-helmet-async";
 import { isApexDomain } from "./utils/domainHelpers";
@@ -33,6 +34,7 @@ const App = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  useSessionTracking();
 
   // Check if we're on the reset password page
   const isResetPasswordPage = window.location.pathname.includes('/reset-password');
