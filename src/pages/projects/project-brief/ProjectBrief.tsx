@@ -171,7 +171,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   }, [data]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center mt-7 px-4 sm:px-0 sm:ml-5">
+    <div className="w-full flex flex-col items-center justify-center mt-4 sm:mt-7 px-2 sm:px-4">
       {/* Top Row: Back Button and Progress Bar */}
       <div className="w-full flex items-center mb-8 relative" style={{ margin: '0 auto' }}>
         {currentStep == 0 && (
