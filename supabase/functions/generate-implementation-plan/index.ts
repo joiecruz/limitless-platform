@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,40 +18,22 @@ interface ImplementationPlan {
     }>;
   }>;
   timeline: string;
-  resources: Array<{
-    type: string;
-    description: string;
-    quantity: string;
-  }>;
-  risks: Array<{
-    risk: string;
-    impact: string;
-    mitigation: string;
-  }>;
+  resources: Array<{ type: string; description: string; quantity: string }>;
+  risks: Array<{ risk: string; impact: string; mitigation: string }>;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    
-    if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY is not set in environment');
+    const apiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!apiKey) {
+      throw new Error('LOVABLE_API_KEY is not set in environment');
     }
     
-    const { 
-      projectName, 
-      projectDescription, 
-      projectProblem, 
-      projectCustomers, 
-      targetOutcomes
-    } = await req.json();
-
-    // Log the received payload for debugging
+    const { projectName, projectDescription, projectProblem, projectCustomers, targetOutcomes } = await req.json();
     console.log('Received payload:', { projectName, projectDescription, projectProblem, projectCustomers, targetOutcomes });
     
     if (!projectName) {
@@ -74,14 +55,14 @@ serve(async (req) => {
 
     const userPrompt = `Based on this project: ${contextInfo}. Generate a detailed implementation plan with phases, tasks, resources, and risk assessment. Focus on creating a practical roadmap for executing this project successfully.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -91,23 +72,27 @@ serve(async (req) => {
       }),
     });
 
+    if (response.status === 429) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded, please try again later.' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    if (response.status === 402) {
+      return new Response(JSON.stringify({ error: 'AI credits exhausted, please add funds.' }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     const data = await response.json();
-    
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Error calling OpenAI API');
+      throw new Error(data.error?.message || 'Error calling AI API');
     }
 
     const generatedText = data.choices[0].message.content;
     
-    // Try to extract and parse as JSON
     let implementationPlan: ImplementationPlan;
     try {
-      // Use regex to extract the first JSON object in the response
       const match = generatedText.match(/\{[\s\S]*\}/);
       if (match) {
         implementationPlan = JSON.parse(match[0]);
       } else {
-        throw new Error('No valid JSON found in OpenAI response');
+        throw new Error('No valid JSON found in AI response');
       }
       if (!implementationPlan.phases || !Array.isArray(implementationPlan.phases)) {
         throw new Error('Invalid plan structure');
@@ -124,10 +109,9 @@ serve(async (req) => {
     
   } catch (error) {
     console.error('Error generating implementation plan:', error, error.stack);
-    
     return new Response(
       JSON.stringify({ error: error.message || 'Failed to generate implementation plan' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
-}); 
+});
