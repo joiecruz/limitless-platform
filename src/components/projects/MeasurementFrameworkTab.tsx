@@ -170,8 +170,8 @@ export default function MeasurementFrameworkTab({
 
   // Instructional box with generate/regenerate button
   const instructionBox = (
-    <div className="flex items-center bg-white border rounded-lg shadow-sm p-6 mb-6">
-      <div className="flex-1 mr-2">
+    <div className="flex flex-col sm:flex-row sm:items-center bg-white border rounded-lg shadow-sm p-6 mb-6">
+      <div className="flex-1 mr-0 sm:mr-2">
         <h2 className="text-md font-semibold mb-1">
           Set the key indicators that will determine the success of your project
         </h2>
@@ -179,21 +179,21 @@ export default function MeasurementFrameworkTab({
           Identify the key indicators that will guide your project to success by using the Objectives and Key Results (OKRs) framework. OKRs help you define clear, measurable goals that align with your broader project objectives.
         </p>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 mt-4 sm:mt-0 sm:ml-6 w-full sm:w-auto">
         <Button
-          className="bg-[#393CA0] hover:bg-[#393CA0]/90 text-white shadow-sm"
+          className="bg-[#393CA0] hover:bg-[#393CA0]/90 text-white shadow-sm flex-1 sm:flex-none"
           onClick={onGenerateMetrics}
           disabled={isGenerating || isLoading}
         >
           <WandSparkles className="mr-2 h-4 w-4" />
           {isGenerating ? 'Generating...' : (metrics && metrics.length > 0 ? 'Regenerate' : 'Generate')}
         </Button>
-        {/* Only show Add Metric if metrics exist */}
         {metrics && metrics.length > 0 && (
           <Button
             variant="outline"
             onClick={handleAddNewMetric}
             disabled={isLoading}
+            className="flex-1 sm:flex-none"
           >
             Add Metric
           </Button>

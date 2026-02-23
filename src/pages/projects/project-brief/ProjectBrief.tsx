@@ -171,7 +171,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
   }, [data]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center mt-7 ml-5">
+    <div className="w-full flex flex-col items-center justify-center mt-7 px-4 sm:px-0 sm:ml-5">
       {/* Top Row: Back Button and Progress Bar */}
       <div className="w-full flex items-center mb-8 relative" style={{ margin: '0 auto' }}>
         {currentStep == 0 && (
@@ -255,7 +255,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
           </div>
           <div>
             {currentStep > 0 && currentStep < 3 && (
-              <div className="flex justify-end gap-4" style={{ width: '55vw' }}>
+              <div className="flex justify-end gap-4 w-full" style={{ maxWidth: '55vw' }}>
                 <button
                   type="button"
                   className="mt-5 bg-[#9095A1FF] text-white font-semibold py-2 rounded-[3px] text-[13px] transition-colors px-8 w-[115px] font-sans hover bg-[2565D6DFF] "
@@ -273,7 +273,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
               </div>
             )}
             {currentStep < 3 && currentStep === 0 && (
-              <div className="flex justify-end gap-4" style={{ width: '55vw' }}>
+              <div className="flex justify-end gap-4 w-full" style={{ maxWidth: '55vw' }}>
                 <button
                   type="button"
                   className="mt-5 bg-[#393CA0FF] text-white font-semibold py-2 rounded-[3px] hover:bg-[#2C2E7AFF] text-[13px] transition-colors px-8 w-[115px] font-sans"
@@ -284,7 +284,7 @@ export default function ProjectBrief({ onBack }: { onBack?: () => void }) {
               </div>
             )}
             {currentStep === 3 && (
-              <div className="flex justify-center" style={{ width: '55vw' }}>
+              <div className="flex justify-center w-full" style={{ maxWidth: '55vw' }}>
                 <button className="mt-[-33px] bg-[#393CA0] hover:bg-[#2C2E7A] text-white font-semibold py-2 rounded-[6px] text-[15px] w-[150px] h-[40px] font-sans transition-colors flex items-center justify-center gap-1" 
                   onClick={() => handleStepChange(Math.min(currentStep + 1, 5))} >
                   <img
