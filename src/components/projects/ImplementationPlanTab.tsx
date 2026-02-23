@@ -42,7 +42,7 @@ export default function ImplementationPlanTab({
 }: ImplementationPlanTabProps) {
   // Instructional box with generate/regenerate button
   const instructionBox = (
-    <div className="flex items-center bg-white border rounded-lg p-6 mb-6 shadow-sm">
+    <div className="flex flex-col sm:flex-row sm:items-center bg-white border rounded-lg p-6 mb-6 shadow-sm">
       <div className="flex-1">
         <h2 className="text-md font-semibold mb-1">Implementation Plan</h2>
         <p className="text-gray-600 text-sm">
@@ -50,7 +50,7 @@ export default function ImplementationPlanTab({
         </p>
       </div>
       <Button 
-        className="ml-6 bg-[#393CA0] hover:bg-[#393CA0]/90 shadow-sm"
+        className="mt-4 sm:mt-0 sm:ml-6 w-full sm:w-auto bg-[#393CA0] hover:bg-[#393CA0]/90 shadow-sm"
         onClick={onGenerateImplementationPlan}
         disabled={isGenerating || isLoading}
       >

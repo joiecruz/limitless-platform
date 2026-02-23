@@ -91,8 +91,8 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
   return (
     <StepNavigationContext.Provider value={contextValue}>
       <nav
-        className="flex items-center justify-between bg-white font-sans text-[14px] pr-2"
-        style={{ lineHeight: '22px', height: 60 }}
+        className="flex items-center bg-white font-sans text-[14px] pr-2 overflow-x-auto scrollbar-hide"
+        style={{ lineHeight: '22px', height: 60, WebkitOverflowScrolling: 'touch' }}
       >
         {designThinkingSteps.map((step) => {
           const isSelected = selectedStep === step.label;
@@ -107,7 +107,6 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
           if (step.label === "Test" && projectMeta.isCompletePrototype) isDisabled = false;
           if (step.label === "Implement" && projectMeta.isCompleteTest) isDisabled = false;
           if (step.label === "Measure" && projectMeta.isCompleteImplement) isDisabled = false;
-          // All other stages are locked for existing projects unless you later unlock them
 
           return (
             <button
@@ -116,7 +115,7 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
                 if (!isDisabled) setSelectedStep(step.label);
               }}
               disabled={isDisabled}
-              className={`flex-1 bg-white py-0 px-0 h-full font-medium focus:outline-none flex items-center justify-center transition-colors ${isSelected ? 'text-[#393CA0FF]' : 'text-[#565D6D]'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#F4F4FB]'}`}
+              className={`flex-shrink-0 flex-1 min-w-[48px] sm:min-w-[100px] bg-white py-0 px-0 h-full font-medium focus:outline-none flex items-center justify-center transition-colors ${isSelected ? 'text-[#393CA0FF]' : 'text-[#565D6D]'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#F4F4FB]'}`}
               style={{
                 height: '100%',
                 padding: '26px 0',
@@ -125,8 +124,8 @@ export function ProjectNavBar({ onBackToProjects }: ProjectNavBarProps) {
                 fontWeight: 500,
               }}
             >
-              <img src={step.icon} alt="" width={20} height={20} style={{ marginRight: 8, opacity: isDisabled ? 0.5 : 1 }} />
-              {step.label}
+              <img src={step.icon} alt="" width={20} height={20} className="sm:mr-2" style={{ opacity: isDisabled ? 0.5 : 1 }} />
+              <span className="hidden sm:inline">{step.label}</span>
             </button>
           );
         })}

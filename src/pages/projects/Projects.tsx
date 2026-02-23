@@ -194,9 +194,9 @@ export default function Projects() {
         element={
           <>
             <SearchHeader value={searchValue} onChange={e => setSearchValue(e.target.value)} />
-            <div className="container max-w-7xl px-8 py-8 animate-fade-in">
+            <div className="container max-w-7xl px-4 sm:px-8 py-8 animate-fade-in">
               <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Projects</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold">Projects</h1>
                 <CreateProjectButton onClick={handleOpenCreateDialog} />
               </div>
 
