@@ -1,42 +1,69 @@
 
 
-# Fix Gen AI Modules: Switch from OpenAI to Lovable AI
+# Make the Projects Module Responsive
 
 ## Problem
+The projects module has several components that don't adapt well to mobile/tablet screens. Key issues include the 8-step navigation bar overflowing, fixed padding, and side-by-side layouts that don't stack on small screens.
 
-All 6 generative AI edge functions currently call the OpenAI API directly using `OPENAI_API_KEY`. This is likely failing or unreliable. Additionally, `generate-measure-debrief` is **entirely commented out** (non-functional).
+## Changes
 
-## Solution
+### 1. ProjectNavBar - Mobile Step Navigation
+**File:** `src/components/projects/ProjectNavBar.tsx`
 
-Rewrite all 6 edge functions to use the **Lovable AI Gateway** (`https://ai.gateway.lovable.dev/v1/chat/completions`) with the pre-configured `LOVABLE_API_KEY`. The `LOVABLE_API_KEY` is already available as a Supabase secret.
+The nav bar displays 8 steps horizontally with icons and labels. On mobile, this overflows.
 
-## Functions to Update
+- Add horizontal scroll with `overflow-x-auto` and hide the scrollbar
+- On small screens, hide step labels and show only icons (using a `hidden sm:inline` pattern)
+- Alternatively, replace with a dropdown/select menu on mobile using the `useIsMobile` hook
+- Recommended approach: horizontally scrollable strip with smaller touch targets on mobile
 
-| Edge Function | Current State | Change |
-|---|---|---|
-| `generate-description` | Uses OpenAI directly | Switch to Lovable AI |
-| `generate-ideas` | Uses OpenAI directly | Switch to Lovable AI |
-| `generate-metrics` | Uses OpenAI directly | Switch to Lovable AI |
-| `generate-implementation-plan` | Uses OpenAI directly | Switch to Lovable AI |
-| `generate-budget` | Uses OpenAI directly | Switch to Lovable AI |
-| `generate-measure-debrief` | Entirely commented out | Rewrite using Lovable AI |
+### 2. Projects List Page - Padding and Grid
+**File:** `src/pages/projects/Projects.tsx`
 
-## What Changes in Each Function
+- Change `px-8` to `px-4 sm:px-8` for mobile padding
+- Change heading `text-3xl` to `text-2xl sm:text-3xl`
+- The grid `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` is already responsive -- no change needed
 
-For each function, the core change is the same:
+### 3. Instruction Boxes - Stack on Mobile
+**Files:** `BudgetTab.tsx`, `ImplementationPlanTab.tsx`, `FilesTab.tsx`, `MeasurementFrameworkTab.tsx`
 
-1. Replace `OPENAI_API_KEY` with `LOVABLE_API_KEY`
-2. Replace `https://api.openai.com/v1/chat/completions` with `https://ai.gateway.lovable.dev/v1/chat/completions`
-3. Replace `gpt-4o-mini` model with `google/gemini-3-flash-preview`
-4. Update the `Authorization` header accordingly
-5. Keep all existing prompts, response parsing, and error handling intact
+All instruction boxes use `flex items-center` with a button beside the text. On mobile the button gets squished.
 
-For `generate-measure-debrief`: uncomment and rewrite the entire function with Lovable AI.
+- Change to `flex flex-col sm:flex-row sm:items-center` so they stack vertically on mobile
+- Change button margin from `ml-6` to `mt-4 sm:mt-0 sm:ml-6`
+- Make buttons full-width on mobile with `w-full sm:w-auto`
 
-## Technical Details
+### 4. ProjectBanner - Already Partially Responsive
+**File:** `src/components/projects/ProjectBanner.tsx`
 
-- **No frontend changes needed** -- the client code already calls these functions via `supabase.functions.invoke()`, which remains the same
-- **No new secrets needed** -- `LOVABLE_API_KEY` is already configured
-- **No database changes needed**
-- All 6 functions will be redeployed automatically
+- Already uses `flex-col md:flex-row` -- mostly fine
+- Adjust image container from `w-1/2 md:w-1/3` to `w-full md:w-1/3` on mobile
 
+### 5. ProjectBrief - Progress Bar and Forms
+**File:** `src/pages/projects/project-brief/ProjectBrief.tsx`
+
+- Ensure form inputs and progress bar adapt to narrower widths
+- Add responsive padding adjustments
+
+### 6. Design Thinking Pages (Empathize, Define, Ideate, etc.)
+- Ensure StepCard components and document editors respect mobile widths
+- Sticky notes grid in Ideate should be single-column on mobile (check current grid setup)
+
+## Summary of Files to Edit
+
+| File | Change |
+|---|---|
+| `ProjectNavBar.tsx` | Scrollable nav, icon-only on mobile |
+| `Projects.tsx` | Responsive padding |
+| `BudgetTab.tsx` | Stack instruction box on mobile |
+| `ImplementationPlanTab.tsx` | Stack instruction box on mobile |
+| `FilesTab.tsx` | Stack instruction box on mobile |
+| `MeasurementFrameworkTab.tsx` | Stack instruction box on mobile |
+| `ProjectBanner.tsx` | Fix image width on mobile |
+| `ProjectBrief.tsx` | Responsive padding |
+
+## Technical Notes
+
+- Uses the existing `useIsMobile` hook (breakpoint: 768px) where conditional rendering is needed
+- Most changes are Tailwind class adjustments (`sm:`, `md:` prefixes) -- minimal code impact
+- No new dependencies required
