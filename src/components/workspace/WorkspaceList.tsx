@@ -13,9 +13,13 @@ interface WorkspaceListProps {
 
 export function WorkspaceList({ workspaces, onSelect, onCreateNew, existingWorkspaceIds = [] }: WorkspaceListProps) {
   // Filter out workspaces that are already added
-  const availableWorkspaces = workspaces?.filter(
-    workspace => !existingWorkspaceIds.includes(workspace.id)
-  );
+const workspaceList: Workspace[] = Array.isArray(workspaces)
+  ? workspaces
+  : [];
+
+const availableWorkspaces = workspaceList.filter(
+  workspace => !existingWorkspaceIds.includes(workspace.id)
+);
 
   return (
     <>
