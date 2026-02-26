@@ -12,7 +12,7 @@ import MeasurePieChart from '@/components/projects/MeasurePieChart';
 import MeasureNumberVolume from '@/components/projects/MeasureNumberVolume';
 import MeasureProgressBar from '@/components/projects/MeasureProgressBar';
 import MeasureDebrief from '@/components/projects/MeasureDebrief';
-import html2pdf from 'html2pdf.js';
+import { jsPDF } from 'jspdf';
 import {
   Dialog,
   DialogContent,
@@ -221,7 +221,12 @@ export default function Measure({
         <div className="flex gap-3 flex-shrink-0">
           <Button variant="outline" className="flex items-center" onClick={() => {
             if (measureRef.current) {
-              html2pdf().from(measureRef.current).save('measure.pdf');
+              const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+              const text = measureRef.current.innerText || '';
+              const lines = doc.splitTextToSize(text, 180);
+              doc.setFontSize(11);
+              doc.text(lines, 15, 15);
+              doc.save('measure.pdf');
             }
           }}>
             <Download className="h-4 w-4 mr-2" /> Download

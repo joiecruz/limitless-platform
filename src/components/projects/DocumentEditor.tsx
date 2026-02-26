@@ -3,6 +3,7 @@ import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 import { toast } from "sonner";
+import DOMPurify from 'dompurify';
 // @ts-ignore
 import mammoth from 'mammoth';
 
@@ -21,7 +22,7 @@ const DocumentEditor = forwardRef<{ getContents: () => string; setContents: (val
   useImperativeHandle(ref, () => ({
     getContents: () => {
       if (quillRef.current) {
-        return quillRef.current.root.innerHTML;
+        return DOMPurify.sanitize(quillRef.current.root.innerHTML);
       }
       return '';
     },
@@ -115,8 +116,7 @@ const DocumentEditor = forwardRef<{ getContents: () => string; setContents: (val
   const handleSave = () => {
     if (quillRef.current) {
       const content = quillRef.current.getText();
-      const htmlContent = quillRef.current.root.innerHTML;
-      // console.log('DocumentEditor Save button - HTML content:', htmlContent);
+      const htmlContent = DOMPurify.sanitize(quillRef.current.root.innerHTML);
       localStorage.setItem('documentContent', content);
       localStorage.setItem('documentHTML', htmlContent);
       toast('Document saved successfully!');
