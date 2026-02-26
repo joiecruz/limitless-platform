@@ -98,7 +98,10 @@ const DocumentEditor = forwardRef<{ getContents: () => string; setContents: (val
           reader.onload = async (e) => {
             const arrayBuffer = e.target?.result as ArrayBuffer;
             const result = await mammoth.convertToHtml({ arrayBuffer });
-            quillRef.current?.root && (quillRef.current.root.innerHTML = result.value);
+            const sanitizedHTML = DOMPurify.sanitize(result.value);
+            if (quillRef.current?.root) {
+              quillRef.current.root.innerHTML = sanitizedHTML;
+            }
           };
           reader.readAsArrayBuffer(file);
         } else {
