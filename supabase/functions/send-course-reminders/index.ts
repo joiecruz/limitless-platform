@@ -41,13 +41,14 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get enrollments with progress < 100 that haven't been reminded in 7+ days
+    const reminderCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+    // Get enrollments with progress < 100 (recalculate first, then apply reminder cooldown)
     const { data: enrollments, error: enrollError } = await supabase
       .from("enrollments")
       .select("id, user_id, progress, completed_lessons, last_reminder_sent_at")
       .eq("course_id", LIMITLESSBIZ_COURSE_ID)
-      .lt("progress", 100)
-      .or("last_reminder_sent_at.is.null,last_reminder_sent_at.lt." + new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+      .lt("progress", 100);
 
     if (enrollError) {
       console.error("Error fetching enrollments:", enrollError);
@@ -56,15 +57,16 @@ serve(async (req: Request): Promise<Response> => {
 
     if (!enrollments || enrollments.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, sent_count: 0, skipped_count: 0, fixed_count: 0, message: "No users to remind" }),
+        JSON.stringify({ success: true, sent_count: 0, skipped_count: 0, fixed_count: 0, message: "No enrollments below 100%" }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
     // Recalculate actual progress for each enrollment and fix stale values
-    // Filter out users who have actually completed all lessons
+    // Keep only truly incomplete users who are eligible for reminder timing
     let fixedCount = 0;
-    const incompleteEnrollments = [];
+    let deferredCount = 0;
+    const remindableEnrollments = [];
 
     for (const enrollment of enrollments) {
       const completedLessons = enrollment.completed_lessons || [];
@@ -73,36 +75,45 @@ serve(async (req: Request): Promise<Response> => {
       const actualProgress = Math.round((validCompleted.length / totalLessons) * 100);
 
       if (actualProgress >= 100) {
-        // User actually finished — fix stale progress and skip reminder
+        // User actually finished — fix stale progress and never remind
         await supabase
           .from("enrollments")
           .update({ progress: 100 })
           .eq("id", enrollment.id);
         fixedCount++;
         console.log(`Fixed stale progress for enrollment ${enrollment.id}: ${enrollment.progress}% -> 100%`);
+        continue;
+      }
+
+      // Fix drifted progress for still-incomplete users
+      if (actualProgress !== enrollment.progress) {
+        const previousProgress = enrollment.progress;
+        await supabase
+          .from("enrollments")
+          .update({ progress: actualProgress })
+          .eq("id", enrollment.id);
+        enrollment.progress = actualProgress;
+        console.log(`Corrected progress for enrollment ${enrollment.id}: ${previousProgress}% -> ${actualProgress}%`);
+      }
+
+      // Enforce 7-day reminder throttle after progress recalculation
+      const reminderEligible = !enrollment.last_reminder_sent_at || (new Date(enrollment.last_reminder_sent_at).getTime() < reminderCutoff);
+      if (reminderEligible) {
+        remindableEnrollments.push(enrollment);
       } else {
-        // Also fix progress if it drifted
-        if (actualProgress !== enrollment.progress) {
-          await supabase
-            .from("enrollments")
-            .update({ progress: actualProgress })
-            .eq("id", enrollment.id);
-          enrollment.progress = actualProgress;
-          console.log(`Corrected progress for enrollment ${enrollment.id}: ${enrollment.progress}% -> ${actualProgress}%`);
-        }
-        incompleteEnrollments.push(enrollment);
+        deferredCount++;
       }
     }
 
-    if (incompleteEnrollments.length === 0) {
+    if (remindableEnrollments.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, sent_count: 0, skipped_count: 0, fixed_count: fixedCount, message: "All matched users already completed" }),
+        JSON.stringify({ success: true, sent_count: 0, skipped_count: 0, fixed_count: fixedCount, deferred_count: deferredCount, message: "No users currently eligible for reminder" }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Replace enrollments reference with only truly incomplete ones
-    const activeEnrollments = incompleteEnrollments;
+    // Only users who are truly incomplete and currently reminder-eligible
+    const activeEnrollments = remindableEnrollments;
 
     // Get user profiles for these enrollments
     const userIds = activeEnrollments.map(e => e.user_id);
