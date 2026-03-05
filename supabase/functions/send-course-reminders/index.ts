@@ -124,7 +124,7 @@ serve(async (req: Request): Promise<Response> => {
     let sentCount = 0;
     let skippedCount = 0;
 
-    for (const enrollment of enrollments) {
+    for (const enrollment of activeEnrollments) {
       const profile = profileMap.get(enrollment.user_id);
       if (!profile?.email) {
         skippedCount++;
