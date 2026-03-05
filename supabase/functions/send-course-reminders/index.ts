@@ -233,10 +233,10 @@ serve(async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log(`Reminders sent: ${sentCount}, skipped: ${skippedCount}`);
+    console.log(`Reminders sent: ${sentCount}, skipped: ${skippedCount}, fixed stale progress: ${fixedCount}`);
 
     return new Response(
-      JSON.stringify({ success: true, sent_count: sentCount, skipped_count: skippedCount }),
+      JSON.stringify({ success: true, sent_count: sentCount, skipped_count: skippedCount, fixed_count: fixedCount }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
