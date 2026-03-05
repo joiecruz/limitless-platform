@@ -132,7 +132,7 @@ serve(async (req: Request): Promise<Response> => {
       }
 
       const completedCount = enrollment.completed_lessons?.length || 0;
-      const lessonTotal = totalLessons || 28;
+      const lessonTotal = totalLessons;
       const progressPercent = enrollment.progress || 0;
       const firstName = profile.first_name || "Learner";
 
