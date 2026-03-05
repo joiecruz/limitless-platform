@@ -24,13 +24,24 @@ serve(async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const resend = new Resend(resendApiKey);
 
-    // Get total lesson count for the course
-    const { count: totalLessons } = await supabase
+    // Get all lesson IDs for the course
+    const { data: lessonRows, error: lessonError } = await supabase
       .from("lessons")
-      .select("id", { count: "exact", head: true })
+      .select("id")
       .eq("course_id", LIMITLESSBIZ_COURSE_ID);
 
-    // Get incomplete enrollments that haven't been reminded in 7+ days
+    if (lessonError) throw new Error(`Failed to fetch lessons: ${lessonError.message}`);
+    const allLessonIds = new Set((lessonRows || []).map(l => l.id));
+    const totalLessons = allLessonIds.size;
+
+    if (totalLessons === 0) {
+      return new Response(
+        JSON.stringify({ success: true, sent_count: 0, skipped_count: 0, message: "No lessons in course" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Get enrollments with progress < 100 that haven't been reminded in 7+ days
     const { data: enrollments, error: enrollError } = await supabase
       .from("enrollments")
       .select("id, user_id, progress, completed_lessons, last_reminder_sent_at")
@@ -45,13 +56,56 @@ serve(async (req: Request): Promise<Response> => {
 
     if (!enrollments || enrollments.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, sent_count: 0, skipped_count: 0, message: "No users to remind" }),
+        JSON.stringify({ success: true, sent_count: 0, skipped_count: 0, fixed_count: 0, message: "No users to remind" }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
+    // Recalculate actual progress for each enrollment and fix stale values
+    // Filter out users who have actually completed all lessons
+    let fixedCount = 0;
+    const incompleteEnrollments = [];
+
+    for (const enrollment of enrollments) {
+      const completedLessons = enrollment.completed_lessons || [];
+      // Only count lessons that still exist in the course
+      const validCompleted = completedLessons.filter((id: string) => allLessonIds.has(id));
+      const actualProgress = Math.round((validCompleted.length / totalLessons) * 100);
+
+      if (actualProgress >= 100) {
+        // User actually finished — fix stale progress and skip reminder
+        await supabase
+          .from("enrollments")
+          .update({ progress: 100 })
+          .eq("id", enrollment.id);
+        fixedCount++;
+        console.log(`Fixed stale progress for enrollment ${enrollment.id}: ${enrollment.progress}% -> 100%`);
+      } else {
+        // Also fix progress if it drifted
+        if (actualProgress !== enrollment.progress) {
+          await supabase
+            .from("enrollments")
+            .update({ progress: actualProgress })
+            .eq("id", enrollment.id);
+          enrollment.progress = actualProgress;
+          console.log(`Corrected progress for enrollment ${enrollment.id}: ${enrollment.progress}% -> ${actualProgress}%`);
+        }
+        incompleteEnrollments.push(enrollment);
+      }
+    }
+
+    if (incompleteEnrollments.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, sent_count: 0, skipped_count: 0, fixed_count: fixedCount, message: "All matched users already completed" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Replace enrollments reference with only truly incomplete ones
+    const activeEnrollments = incompleteEnrollments;
+
     // Get user profiles for these enrollments
-    const userIds = enrollments.map(e => e.user_id);
+    const userIds = activeEnrollments.map(e => e.user_id);
     const { data: profiles, error: profileError } = await supabase
       .from("profiles")
       .select("id, email, first_name")
@@ -70,7 +124,7 @@ serve(async (req: Request): Promise<Response> => {
     let sentCount = 0;
     let skippedCount = 0;
 
-    for (const enrollment of enrollments) {
+    for (const enrollment of activeEnrollments) {
       const profile = profileMap.get(enrollment.user_id);
       if (!profile?.email) {
         skippedCount++;
@@ -78,7 +132,7 @@ serve(async (req: Request): Promise<Response> => {
       }
 
       const completedCount = enrollment.completed_lessons?.length || 0;
-      const lessonTotal = totalLessons || 28;
+      const lessonTotal = totalLessons;
       const progressPercent = enrollment.progress || 0;
       const firstName = profile.first_name || "Learner";
 
@@ -179,10 +233,10 @@ serve(async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log(`Reminders sent: ${sentCount}, skipped: ${skippedCount}`);
+    console.log(`Reminders sent: ${sentCount}, skipped: ${skippedCount}, fixed stale progress: ${fixedCount}`);
 
     return new Response(
-      JSON.stringify({ success: true, sent_count: sentCount, skipped_count: skippedCount }),
+      JSON.stringify({ success: true, sent_count: sentCount, skipped_count: skippedCount, fixed_count: fixedCount }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
