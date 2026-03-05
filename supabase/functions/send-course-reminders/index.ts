@@ -105,7 +105,7 @@ serve(async (req: Request): Promise<Response> => {
     const activeEnrollments = incompleteEnrollments;
 
     // Get user profiles for these enrollments
-    const userIds = enrollments.map(e => e.user_id);
+    const userIds = activeEnrollments.map(e => e.user_id);
     const { data: profiles, error: profileError } = await supabase
       .from("profiles")
       .select("id, email, first_name")
