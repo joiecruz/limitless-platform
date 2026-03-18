@@ -29,8 +29,26 @@ const parseSupabaseSignedUrl = (url: string): { bucket: string; path: string } |
 
 const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   const [hasError, setHasError] = useState(false);
+  const [codecIssue, setCodecIssue] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Detect H.264 codec support
+  const checkH264Support = useCallback((): boolean => {
+    const video = document.createElement('video');
+    const canPlay = video.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+    return canPlay === 'probably' || canPlay === 'maybe';
+  }, []);
+
+  // Handle loadedmetadata — detect audio-only (video track failed to decode)
+  const handleLoadedMetadata = useCallback(() => {
+    const video = videoRef.current;
+    if (video && video.videoWidth === 0 && video.videoHeight === 0) {
+      console.warn('[VideoPlayer] Video track not decoded (videoWidth=0). Likely missing H.264 codec.');
+      setCodecIssue(true);
+      setHasError(true);
+    }
+  }, []);
 
   // Resolve signed URLs on mount
   useEffect(() => {
