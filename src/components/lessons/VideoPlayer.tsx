@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { AlertTriangle, Monitor } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface VideoPlayerProps {
@@ -29,8 +29,26 @@ const parseSupabaseSignedUrl = (url: string): { bucket: string; path: string } |
 
 const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   const [hasError, setHasError] = useState(false);
+  const [codecIssue, setCodecIssue] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Detect H.264 codec support
+  const checkH264Support = useCallback((): boolean => {
+    const video = document.createElement('video');
+    const canPlay = video.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+    return canPlay === 'probably' || canPlay === 'maybe';
+  }, []);
+
+  // Handle loadedmetadata — detect audio-only (video track failed to decode)
+  const handleLoadedMetadata = useCallback(() => {
+    const video = videoRef.current;
+    if (video && video.videoWidth === 0 && video.videoHeight === 0) {
+      console.warn('[VideoPlayer] Video track not decoded (videoWidth=0). Likely missing H.264 codec.');
+      setCodecIssue(true);
+      setHasError(true);
+    }
+  }, []);
 
   // Resolve signed URLs on mount
   useEffect(() => {
@@ -95,17 +113,46 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
     return (
       <div className="relative aspect-video bg-muted md:rounded-lg overflow-hidden md:mb-8 flex flex-col items-center justify-center gap-3 px-4">
         <AlertTriangle className="h-8 w-8 text-destructive" />
-        <p className="text-sm text-muted-foreground text-center">
-          This video couldn't be played. Try using{' '}
-          <a href="https://www.google.com/chrome/" target="_blank" rel="noopener noreferrer" className="underline font-medium">
-            Google Chrome
-          </a>{' '}
-          or{' '}
-          <a href="https://www.mozilla.org/firefox/" target="_blank" rel="noopener noreferrer" className="underline font-medium">
-            Firefox
-          </a>{' '}
-          for the best experience.
-        </p>
+        {codecIssue ? (
+          <>
+            <p className="text-sm text-muted-foreground text-center font-medium">
+              Your browser can't decode this video — likely due to missing H.264 codecs on your system.
+            </p>
+            <div className="bg-background/80 rounded-lg p-4 max-w-md text-left space-y-2">
+              <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Monitor className="h-4 w-4" /> Linux users — try one of these fixes:
+              </p>
+              <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
+                <li>
+                  Install codecs:{' '}
+                  <code className="bg-muted px-1 py-0.5 rounded text-[11px]">sudo apt install mint-meta-codecs</code>{' '}
+                  or{' '}
+                  <code className="bg-muted px-1 py-0.5 rounded text-[11px]">ubuntu-restricted-extras</code>
+                </li>
+                <li>
+                  Use{' '}
+                  <a href="https://www.google.com/chrome/" target="_blank" rel="noopener noreferrer" className="underline font-medium text-primary">
+                    Google Chrome
+                  </a>{' '}
+                  (includes built-in H.264 support)
+                </li>
+                <li>Open the video directly using the link below</li>
+              </ul>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center">
+            This video couldn't be played. Try using{' '}
+            <a href="https://www.google.com/chrome/" target="_blank" rel="noopener noreferrer" className="underline font-medium">
+              Google Chrome
+            </a>{' '}
+            or{' '}
+            <a href="https://www.mozilla.org/firefox/" target="_blank" rel="noopener noreferrer" className="underline font-medium">
+              Firefox
+            </a>{' '}
+            for the best experience.
+          </p>
+        )}
         <a
           href={resolvedUrl}
           target="_blank"
@@ -134,6 +181,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
         playsInline
         preload="metadata"
         className="w-full h-full"
+        onLoadedMetadata={handleLoadedMetadata}
         onError={() => {
           console.error("[VideoPlayer] Video playback error for:", resolvedUrl);
           setHasError(true);
