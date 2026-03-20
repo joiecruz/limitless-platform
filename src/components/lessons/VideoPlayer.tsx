@@ -105,7 +105,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   if (!resolvedUrl) {
     return (
       <div className="relative aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8 flex items-center justify-center">
-        <p className="text-muted-foreground">Loading video...</p>
+        <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
       </div>
     );
   }
