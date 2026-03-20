@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { AlertTriangle, Monitor } from 'lucide-react';
+import { AlertTriangle, Monitor, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface VideoPlayerProps {
@@ -31,6 +31,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   const [hasError, setHasError] = useState(false);
   const [codecIssue, setCodecIssue] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+  const [isBuffering, setIsBuffering] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Detect H.264 codec support
@@ -104,7 +105,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   if (!resolvedUrl) {
     return (
       <div className="relative aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8 flex items-center justify-center">
-        <p className="text-muted-foreground">Loading video...</p>
+        <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
       </div>
     );
   }
@@ -174,14 +175,22 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   };
 
   return (
-    <div className="aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8">
+    <div className="relative aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8">
+      {isBuffering && !hasError && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60">
+          <Loader2 className="h-10 w-10 text-white animate-spin" />
+        </div>
+      )}
       <video
         ref={videoRef}
         controls
         playsInline
-        preload="metadata"
+        preload="auto"
         className="w-full h-full"
         onLoadedMetadata={handleLoadedMetadata}
+        onCanPlay={() => setIsBuffering(false)}
+        onWaiting={() => setIsBuffering(true)}
+        onPlaying={() => setIsBuffering(false)}
         onError={() => {
           console.error("[VideoPlayer] Video playback error for:", resolvedUrl);
           setHasError(true);
