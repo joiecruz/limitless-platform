@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { AlertTriangle, Monitor } from 'lucide-react';
+import { AlertTriangle, Monitor, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface VideoPlayerProps {
