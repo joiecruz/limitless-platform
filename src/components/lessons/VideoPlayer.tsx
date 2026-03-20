@@ -175,14 +175,22 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   };
 
   return (
-    <div className="aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8">
+    <div className="relative aspect-video bg-black md:rounded-lg overflow-hidden md:mb-8">
+      {isBuffering && !hasError && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60">
+          <Loader2 className="h-10 w-10 text-white animate-spin" />
+        </div>
+      )}
       <video
         ref={videoRef}
         controls
         playsInline
-        preload="metadata"
+        preload="auto"
         className="w-full h-full"
         onLoadedMetadata={handleLoadedMetadata}
+        onCanPlay={() => setIsBuffering(false)}
+        onWaiting={() => setIsBuffering(true)}
+        onPlaying={() => setIsBuffering(false)}
         onError={() => {
           console.error("[VideoPlayer] Video playback error for:", resolvedUrl);
           setHasError(true);
