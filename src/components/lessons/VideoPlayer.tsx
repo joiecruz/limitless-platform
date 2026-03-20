@@ -31,6 +31,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
   const [hasError, setHasError] = useState(false);
   const [codecIssue, setCodecIssue] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+  const [isBuffering, setIsBuffering] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Detect H.264 codec support
