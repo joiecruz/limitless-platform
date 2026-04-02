@@ -1,26 +1,24 @@
 
 
-## Problem
+# Make Newsletter Subscribe Button Functional
 
-Users report video buffering during course playback. The `VideoPlayer` component currently uses `preload="metadata"`, which tells the browser to only fetch video metadata (duration, dimensions) upfront — not to buffer any actual video data. This means playback starts with almost no data buffered, causing frequent stalls especially on slower connections or when serving from Supabase Storage signed URLs.
+## What Changes
 
-Additionally, there is no visual buffering indicator — when the video stalls, users see a frozen frame with no feedback.
+**File:** `src/components/site-config/Footer.tsx`
 
-## Plan
+Add state management and a submit handler to call the external Supabase edge function at `https://bdzwxcdzwneufdwxwejm.supabase.co/functions/v1/subscribe`.
 
-### 1. Enable browser pre-buffering
+### Changes:
+1. Add `useState` for email input, loading state, and success/error feedback
+2. Add form `onSubmit` handler that POSTs to the subscribe endpoint with the email
+3. Show loading spinner on the button while submitting
+4. Show success toast on success, error toast on failure
+5. Clear the input and show a brief success message after subscribing
 
-Change `preload` from `"metadata"` to `"auto"`, allowing the browser to proactively download video data before the user presses play and to buffer ahead during playback.
-
-### 2. Add buffering/loading indicator
-
-Listen for the `waiting` event (fires when playback stalls due to insufficient data) and the `playing`/`canplay` events (fire when enough data is available). Show a spinner overlay on the video when the player is in a buffering state so users know the video is loading rather than broken.
-
-### 3. Show loading state before video is ready
-
-Listen for the `canplay` event to detect when the video has buffered enough to start. Show a loading spinner until that fires, replacing the current static "Loading video..." text with a proper overlay on the video element itself.
-
-### File to modify
-
-- **`src/components/lessons/VideoPlayer.tsx`** — Add `isBuffering` state, attach `waiting`/`playing`/`canplay` event handlers, render a spinner overlay when buffering, change `preload` to `"auto"`.
+### Technical Details
+- Use `useState` for `email`, `isLoading`, and `subscribeStatus`
+- Validate email is non-empty before submitting
+- Call `fetch()` directly to the other app's edge function URL (no Supabase client needed since it's a different project)
+- Use the existing `toast` from `@/hooks/use-toast` for feedback
+- Disable the button during loading, show `Loader2` spinner icon
 
