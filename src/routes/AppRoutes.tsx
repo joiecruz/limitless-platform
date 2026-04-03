@@ -29,6 +29,7 @@ import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Updates from '@/pages/Updates';
 import NotFound from '@/pages/NotFound';
+import DraftHome from '@/pages/DraftHome';
 import WorkshopDetail from '@/pages/landing/WorkshopDetail';
 
 // App pages
@@ -117,6 +118,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/terms-of-service" element={<Terms />} />
           <Route path="/updates" element={<Updates />} />
           <Route path="/workshops/:courseId" element={<WorkshopDetail />} />
+          <Route path="/draft-home" element={<DraftHome />} />
         </>
       )}
 
