@@ -29,6 +29,7 @@ import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Updates from '@/pages/Updates';
 import NotFound from '@/pages/NotFound';
+import DraftHome from '@/pages/DraftHome';
 import WorkshopDetail from '@/pages/landing/WorkshopDetail';
 
 // App pages
