@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Trash2, Search } from "lucide-react";
+import { Loader2, Trash2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,25 +23,63 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+
+const PAGE_SIZE = 25;
+
+interface AdminUserRow {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  is_admin: boolean | null;
+  is_superadmin: boolean | null;
+  created_at: string;
+}
 
 export default function AdminUsers() {
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: users, isLoading } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const debouncedSearch = useDebouncedValue(search.trim(), 400);
 
+  // Reset to first page when the search term changes.
+  if (page !== 0 && debouncedSearch !== "" && page * PAGE_SIZE > 0) {
+    // no-op; handled by including debouncedSearch in queryKey below.
+  }
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["admin-users", debouncedSearch, page],
+    queryFn: async () => {
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      let query = supabase
+        .from("profiles")
+        .select(
+          "id, email, first_name, last_name, is_admin, is_superadmin, created_at",
+          { count: "exact" }
+        )
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (debouncedSearch) {
+        const term = `%${debouncedSearch}%`;
+        query = query.or(
+          `email.ilike.${term},first_name.ilike.${term},last_name.ilike.${term}`
+        );
+      }
+
+      const { data, error, count } = await query;
       if (error) throw error;
-      return data;
+      return { rows: (data || []) as AdminUserRow[], total: count ?? 0 };
     },
+    staleTime: 30 * 1000,
+    placeholderData: keepPreviousData,
     meta: {
       onError: (error: Error) => {
         toast({
@@ -53,25 +91,14 @@ export default function AdminUsers() {
     },
   });
 
-  // Filter users based on search term
-  const filteredUsers = users?.filter(user => {
-    if (!search) return true;
+  const users = data?.rows ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-    const searchLower = search.toLowerCase();
-    const email = user.email?.toLowerCase() || '';
-    const firstName = user.first_name?.toLowerCase() || '';
-    const lastName = user.last_name?.toLowerCase() || '';
-    const fullName = `${firstName} ${lastName}`.trim();
-    const role = user.is_superadmin ? 'superadmin' : user.is_admin ? 'admin' : 'user';
-
-    return (
-      email.includes(searchLower) ||
-      firstName.includes(searchLower) ||
-      lastName.includes(searchLower) ||
-      fullName.includes(searchLower) ||
-      role.includes(searchLower)
-    );
-  });
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(0);
+  };
 
   const handleDeleteClick = (userId: string) => {
     setUserToDelete(userId);
@@ -82,7 +109,7 @@ export default function AdminUsers() {
 
     setIsDeleting(true);
     try {
-      const user = users?.find(u => u.id === userToDelete);
+      const user = users.find((u) => u.id === userToDelete);
 
       if (!user) {
         throw new Error("User not found");
@@ -97,21 +124,17 @@ export default function AdminUsers() {
         return;
       }
 
-      // Get current session for authentication
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
       if (sessionError || !session) {
         throw new Error("Authentication required");
       }
 
-      // Use edge function to delete user with proper permissions
-      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: {
-          userId: userToDelete
-        }
+        body: { userId: userToDelete },
       });
 
       if (error) {
@@ -122,14 +145,13 @@ export default function AdminUsers() {
         throw new Error(data?.error || "Failed to delete user");
       }
 
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
 
       toast({
         title: "Success",
         description: data.message || "User deleted successfully",
       });
     } catch (error: any) {
-      
       toast({
         title: "Error deleting user",
         description: error.message,
@@ -158,7 +180,7 @@ export default function AdminUsers() {
           <Input
             placeholder="Search users..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="w-64"
           />
         </div>
@@ -175,21 +197,21 @@ export default function AdminUsers() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredUsers?.length === 0 ? (
+          {users.length === 0 ? (
             <TableRow>
               <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                {search ? "No users found matching your search" : "No users found"}
+                {debouncedSearch ? "No users found matching your search" : "No users found"}
               </TableCell>
             </TableRow>
           ) : (
-            filteredUsers?.map((user) => (
+            users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   {user.first_name} {user.last_name}
                 </TableCell>
                 <TableCell>
-                  {user.is_superadmin ? 'Superadmin' : user.is_admin ? 'Admin' : 'User'}
+                  {user.is_superadmin ? "Superadmin" : user.is_admin ? "Admin" : "User"}
                 </TableCell>
                 <TableCell>
                   {new Date(user.created_at).toLocaleDateString()}
@@ -199,7 +221,7 @@ export default function AdminUsers() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDeleteClick(user.id)}
-                    disabled={user.is_superadmin}
+                    disabled={!!user.is_superadmin}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -209,6 +231,36 @@ export default function AdminUsers() {
           )}
         </TableBody>
       </Table>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between mt-4">
+        <p className="text-sm text-gray-500">
+          {total > 0
+            ? `Showing ${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, total)} of ${total}`
+            : ""}
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0 || isFetching}
+          >
+            <ChevronLeft className="h-4 w-4" /> Prev
+          </Button>
+          <span className="text-sm">
+            Page {page + 1} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page + 1 >= totalPages || isFetching}
+          >
+            Next <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
         <AlertDialogContent>
