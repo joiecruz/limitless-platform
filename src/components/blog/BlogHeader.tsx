@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { thumbUrl } from "@/lib/imageUrl";
 
 interface BlogHeaderProps {
   title: string;
@@ -29,9 +30,12 @@ export function BlogHeader({ title, coverImage }: BlogHeaderProps) {
       {coverImage && (
         <div className="aspect-video w-full mb-12 rounded-lg overflow-hidden">
           <img
-            src={coverImage}
+            src={thumbUrl(coverImage, { width: 1200 })}
             alt={title}
             className="w-full h-full object-cover"
+            loading="eager"
+            width={1200}
+            height={675}
           />
         </div>
       )}

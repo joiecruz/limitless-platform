@@ -1,3 +1,5 @@
+import { thumbUrl } from "@/lib/imageUrl";
+
 interface CaseStudyImagesProps {
   coverPhoto?: string;
   name: string;
@@ -12,9 +14,12 @@ export function CaseStudyImages({ coverPhoto, name, additionalPhoto1, additional
         <div className="w-full mb-12">
           <div className="aspect-video w-full rounded-lg overflow-hidden">
             <img
-              src={coverPhoto}
+              src={thumbUrl(coverPhoto, { width: 1200 })}
               alt={name}
               className="w-full h-full object-cover"
+              loading="eager"
+              width={1200}
+              height={675}
             />
           </div>
         </div>
@@ -24,18 +29,24 @@ export function CaseStudyImages({ coverPhoto, name, additionalPhoto1, additional
         {additionalPhoto1 && (
           <div className="aspect-video rounded-lg overflow-hidden">
             <img
-              src={additionalPhoto1}
+              src={thumbUrl(additionalPhoto1, { width: 800 })}
               alt="Additional case study photo 1"
               className="w-full h-full object-cover"
+              loading="lazy"
+              width={800}
+              height={450}
             />
           </div>
         )}
         {additionalPhoto2 && (
           <div className="aspect-video rounded-lg overflow-hidden">
             <img
-              src={additionalPhoto2}
+              src={thumbUrl(additionalPhoto2, { width: 800 })}
               alt="Additional case study photo 2"
               className="w-full h-full object-cover"
+              loading="lazy"
+              width={800}
+              height={450}
             />
           </div>
         )}
