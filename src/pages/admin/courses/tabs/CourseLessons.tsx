@@ -76,7 +76,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("lessons")
-        .select("*")
+        .select("id, title, description, duration, order, section_id, course_id")
         .eq("course_id", courseId)
         .order("order");
 
@@ -90,7 +90,7 @@ const CourseLessons = ({ courseId }: CourseLessonsProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("course_sections")
-        .select("*")
+        .select("id, title, description, order_index, course_id")
         .eq("course_id", courseId)
         .order("order_index");
 

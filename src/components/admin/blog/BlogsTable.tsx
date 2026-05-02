@@ -29,8 +29,9 @@ export default function BlogsTable() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('articles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, title, slug, published, created_at, updated_at')
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (error) {
         toast({

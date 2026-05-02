@@ -88,7 +88,7 @@ export default function Test() {
       try {
         const { data: project, error } = await supabase
           .from('projects')
-          .select('*')
+          .select('id, name, description, metadata')
           .eq('id', projectId)
           .single();
         if (error) throw error;

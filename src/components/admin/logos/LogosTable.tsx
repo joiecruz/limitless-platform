@@ -33,8 +33,9 @@ export function LogosTable() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("client_logos")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("id, name, image_url, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
 
       if (error) throw error;
       return data;

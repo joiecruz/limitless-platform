@@ -18,7 +18,7 @@ export default function AdminWorkspaceDetails() {
       if (!id) throw new Error('No workspace ID provided');
       const { data, error } = await supabase
         .from('workspaces')
-        .select('*')
+        .select('id, name, slug, created_at, updated_at')
         .eq('id', id)
         .single();
 

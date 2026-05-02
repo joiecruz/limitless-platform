@@ -7,30 +7,13 @@ import { Tool } from "@/types/tool";
 const fetchTools = async () => {
   const { data, error } = await supabase
     .from('innovation_tools')
-    .select('*');
+    .select('id, name, slug, cover_image, brief_description, category, type, price, downloads_count, created_at')
+    .order('created_at', { ascending: false })
+    .limit(100);
 
   if (error) throw error;
 
-  return data.map(tool => ({
-    id: tool.id,
-    name: tool.name,
-    slug: tool.slug,
-    cover_image: tool.cover_image,
-    brief_description: tool.brief_description,
-    category: tool.category,
-    long_description: tool.long_description,
-    use_case_1: tool.use_case_1,
-    use_case_2: tool.use_case_2,
-    use_case_3: tool.use_case_3,
-    how_to_use: tool.how_to_use,
-    when_to_use: tool.when_to_use,
-    type: tool.type,
-    price: tool.price,
-    download_url: tool.download_url,
-    downloads_count: tool.downloads_count,
-    created_at: tool.created_at,
-    updated_at: tool.updated_at
-  })) as Tool[];
+  return (data || []) as unknown as Tool[];
 };
 
 export default function Tools() {

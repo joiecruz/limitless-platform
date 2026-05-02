@@ -14,7 +14,7 @@ export default function Privacy() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pages")
-        .select("*")
+        .select("id, title, slug, content")
         .eq("slug", "privacy-policy")
         .eq("published", true)
         .single();

@@ -29,8 +29,9 @@ export default function AdminPages() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('pages')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, title, slug, published, created_at, updated_at, meta_description, content')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (error) {
         toast({

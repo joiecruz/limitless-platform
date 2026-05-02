@@ -67,8 +67,9 @@ export default function AdminMasterTrainers() {
     try {
       const { data: trainers, error } = await supabase
         .from('master_trainer_access')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, user_id, granted_by, created_at, updated_at')
+        .order('created_at', { ascending: false })
+        .limit(500);
 
       if (error) throw error;
 

@@ -11,8 +11,9 @@ export const useCourseOperations = () => {
     queryFn: async () => {
       const { data: coursesData, error: coursesError } = await supabase
         .from("courses")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("id, title, slug, description, image_url, format, locked, price, created_at, updated_at, lesson_count")
+        .order("created_at", { ascending: false })
+        .limit(200);
 
       if (coursesError) throw coursesError;
 

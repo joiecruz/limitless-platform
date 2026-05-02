@@ -26,7 +26,7 @@ export default function WorkshopDetail() {
 
       const { data, error } = await supabase
         .from("courses")
-        .select("*")
+        .select("id, title, description, image_url, booking_link, learning_outcomes, course_curriculum_text, who_is_this_for, format")
         .eq("id", courseId)
         .eq("format", "In-Person")
         .single();

@@ -59,8 +59,9 @@ export const useUserHasProject = (workspaceId: string | null) => {
     if (!user) return false;
     const { data: existingProjects, error: existingError } = await supabase
       .from('projects')
-      .select('*')
-      .eq('owner_id', user.id);
+      .select('id')
+      .eq('owner_id', user.id)
+      .limit(1);
     if (existingError) throw existingError;
     return existingProjects && existingProjects.length > 0;
   }, [workspaceId]);
@@ -208,9 +209,10 @@ export const useProjectBrief = (workspaceId: string | null) => {
         // Check if user already has a project in this workspace
         const { data: existingProjects, error: existingError } = await supabase
           .from('projects')
-          .select('*')
+          .select('id')
           .eq('owner_id', user.id)
-          .eq('workspace_id', workspaceId);
+          .eq('workspace_id', workspaceId)
+          .limit(1);
 
         if (existingError) throw existingError;
         if (existingProjects && existingProjects.length > 0) {

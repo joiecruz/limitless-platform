@@ -21,8 +21,9 @@ export function CaseStudiesTable() {
       
       const { data, error } = await supabase
         .from('case_studies')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, name, slug, client, created_at')
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (error) {
         

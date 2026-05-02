@@ -25,7 +25,7 @@ export default function AccountSettings() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, first_name, last_name, avatar_url')
         .eq('id', session.id)
         .single();
 
