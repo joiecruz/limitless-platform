@@ -10,6 +10,7 @@ import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useEffect } from "react";
 import { trackFBViewContent, trackFBLead } from "@/components/common/FacebookPixel";
+import { thumbUrl } from "@/lib/imageUrl";
 
 export default function CourseDetail() {
   const { courseSlug } = useParams<{ courseSlug: string }>();
