@@ -1,5 +1,6 @@
 import { useClientLogos } from "./hooks/useClientLogos";
 import { cn } from "@/lib/utils";
+import { thumbUrl } from "@/lib/imageUrl";
 
 interface InfiniteLogosProps {
   direction?: "left" | "right";
@@ -44,10 +45,11 @@ export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }:
               className="flex-shrink-0"
             >
               <img
-                src={logo.image_url}
+                src={thumbUrl(logo.image_url, { width: 240, resize: "contain" })}
                 alt={logo.name}
                 className="h-14 w-auto object-contain"
                 loading="lazy"
+                height={56}
               />
             </div>
           ))}
@@ -65,10 +67,11 @@ export function InfiniteLogos({ direction = "left", logoGroup = "rectangular" }:
               className="flex-shrink-0"
             >
               <img
-                src={logo.image_url}
+                src={thumbUrl(logo.image_url, { width: 240, resize: "contain" })}
                 alt={logo.name}
                 className="h-14 w-auto object-contain"
                 loading="lazy"
+                height={56}
               />
             </div>
           ))}
