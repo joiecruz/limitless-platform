@@ -31,7 +31,7 @@ export default function BlogPost() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('articles')
-        .select('id, title, slug, content, excerpt, cover_image, categories, published, created_at, updated_at, read_time, author_id')
+        .select('id, title, slug, content, excerpt, cover_image, categories, tags, published, created_at, updated_at')
         .eq('slug', slug)
         .eq('published', true)
         .single();
