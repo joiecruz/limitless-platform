@@ -3418,6 +3418,10 @@ export type Database = {
         Args: { user_id: string; workspace_id: string }
         Returns: boolean
       }
+      is_workspace_admin_or_owner_of: {
+        Args: { _workspace_id: string }
+        Returns: boolean
+      }
       is_workspace_member:
         | { Args: { user_id: string; workspace_id: string }; Returns: boolean }
         | { Args: { workspace_id_param: string }; Returns: boolean }
