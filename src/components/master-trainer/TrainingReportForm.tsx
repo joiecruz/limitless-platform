@@ -412,7 +412,7 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
       // First, get the current targets to add to existing count
       const { data: currentTargets } = await supabase
         .from('master_trainer_targets')
-        .select('*')
+        .select('hour_of_code_current, depth_training_current')
         .eq('user_id', user.id)
         .single();
       

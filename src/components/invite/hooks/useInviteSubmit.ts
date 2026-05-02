@@ -24,7 +24,7 @@ export function useInviteSubmit(token?: string | null) {
       // Get the invitation details first
       const { data: inviteData, error: inviteError } = await supabase
         .from("workspace_invitations")
-        .select("*")
+        .select("id, email, workspace_id, role, status, expires_at, magic_link_token")
         .eq("magic_link_token", token)
         .maybeSingle();
 

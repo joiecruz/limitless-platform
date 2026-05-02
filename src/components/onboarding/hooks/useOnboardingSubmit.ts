@@ -33,7 +33,7 @@ export const useOnboardingSubmit = (props: UseOnboardingSubmitProps = {}) => {
       // Check if profile already exists
       const { data: existingProfile } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id')
         .eq('id', user.id)
         .single();
 
