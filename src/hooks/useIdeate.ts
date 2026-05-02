@@ -74,8 +74,7 @@ export const useIdeate = (projectIdProp: string | null) => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
       const { data, error } = await supabase
-        .from('stage_contents')
-        .select('*')
+        .from('stage_contents').select('id, project_id, stage_id, content_data, created_at, updated_at, created_by, updated_by')
         .eq('project_id', projectId)
         .eq('stage_id', IDEATE_STAGE_ID)
         .maybeSingle();

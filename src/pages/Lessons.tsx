@@ -30,9 +30,9 @@ const Lessons = () => {
 
       const { data, error } = await supabase
         .from("courses")
-        .select("*")
+        .select("id, title, description, image_url, format")
         .eq("id", courseId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         toast({
@@ -56,7 +56,7 @@ const Lessons = () => {
 
       const { data, error } = await supabase
         .from("lessons")
-        .select("*")
+        .select("id, title, description, video_url, release_date, order, duration, section_id")
         .eq("course_id", courseId)
         .order("order");
 
@@ -85,10 +85,10 @@ const Lessons = () => {
 
       const { data, error } = await supabase
         .from("enrollments")
-        .select("*")
+        .select("id, course_id, user_id, progress")
         .eq("course_id", courseId)
         .eq("user_id", userSession.session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
         toast({

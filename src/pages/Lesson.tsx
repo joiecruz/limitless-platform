@@ -28,9 +28,9 @@ const Lesson = () => {
 
       const { data, error } = await supabase
         .from("lessons")
-        .select("*")
+        .select("id, title, description, video_url, body_content, release_date, order, duration, section_id, course_id")
         .eq("id", lessonId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         
@@ -55,7 +55,7 @@ const Lesson = () => {
 
       const { data, error } = await supabase
         .from("lessons")
-        .select("*")
+        .select("id, title, order, section_id, duration, release_date")
         .eq("course_id", courseId)
         .order("order");
 
@@ -82,7 +82,7 @@ const Lesson = () => {
 
       const { data, error } = await supabase
         .from("course_sections")
-        .select("*")
+        .select("id, title, order_index, course_id")
         .eq("course_id", courseId)
         .order("order_index");
 

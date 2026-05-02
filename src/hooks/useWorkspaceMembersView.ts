@@ -21,37 +21,47 @@ export interface WorkspaceMemberView {
   display_status: 'Active' | 'Pending' | 'Rejected';
 }
 
+const VIEW_COLUMNS =
+  "user_id, workspace_id, member_role, member_created_at, last_active, " +
+  "first_name, last_name, email, profile_id, " +
+  "invitation_id, invitation_role, invitation_status, invitation_created_at, " +
+  "accepted_at, invited_by, expires_at, display_status";
+
+async function ensureMembership(workspaceId: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("workspace_members")
+    .select("user_id")
+    .eq("workspace_id", workspaceId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (membershipError || !membership) {
+    throw new Error("Not a member of this workspace");
+  }
+}
+
 export function useWorkspaceMembersView(workspaceId: string) {
   return useQuery({
     queryKey: ["workspace-members-view", workspaceId],
     queryFn: async () => {
-      // First check if user is a member of this workspace
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      await ensureMembership(workspaceId);
 
-      const { data: membership, error: membershipError } = await supabase
-        .from("workspace_members")
-        .select("user_id")
-        .eq("workspace_id", workspaceId)
-        .eq("user_id", user.id)
-        .single();
-
-      if (membershipError || !membership) {
-        throw new Error("Not a member of this workspace");
-      }
-
-      // Fetch data from the unified view
       const { data, error } = await supabase
         .from("workspace_members_with_invitations")
-        .select("*")
+        .select(VIEW_COLUMNS)
         .eq("workspace_id", workspaceId)
-        .order("member_created_at", { ascending: false });
+        .order("member_created_at", { ascending: false })
+        .limit(500);
 
       if (error) throw error;
 
-      return data as WorkspaceMemberView[];
+      return data as unknown as WorkspaceMemberView[];
     },
     enabled: !!workspaceId,
+    staleTime: 60 * 1000,
   });
 }
 
@@ -60,34 +70,22 @@ export function useWorkspaceActiveMembers(workspaceId: string) {
   return useQuery({
     queryKey: ["workspace-active-members", workspaceId],
     queryFn: async () => {
-      // First check if user is a member of this workspace
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      await ensureMembership(workspaceId);
 
-      const { data: membership, error: membershipError } = await supabase
-        .from("workspace_members")
-        .select("user_id")
-        .eq("workspace_id", workspaceId)
-        .eq("user_id", user.id)
-        .single();
-
-      if (membershipError || !membership) {
-        throw new Error("Not a member of this workspace");
-      }
-
-      // Fetch only active members from the view
       const { data, error } = await supabase
         .from("workspace_members_with_invitations")
-        .select("*")
+        .select(VIEW_COLUMNS)
         .eq("workspace_id", workspaceId)
         .eq("display_status", "Active")
-        .order("member_created_at", { ascending: false });
+        .order("member_created_at", { ascending: false })
+        .limit(500);
 
       if (error) throw error;
 
-      return data as WorkspaceMemberView[];
+      return data as unknown as WorkspaceMemberView[];
     },
     enabled: !!workspaceId,
+    staleTime: 60 * 1000,
   });
 }
 
@@ -96,33 +94,21 @@ export function useWorkspacePendingInvitations(workspaceId: string) {
   return useQuery({
     queryKey: ["workspace-pending-invitations", workspaceId],
     queryFn: async () => {
-      // First check if user is a member of this workspace
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      await ensureMembership(workspaceId);
 
-      const { data: membership, error: membershipError } = await supabase
-        .from("workspace_members")
-        .select("user_id")
-        .eq("workspace_id", workspaceId)
-        .eq("user_id", user.id)
-        .single();
-
-      if (membershipError || !membership) {
-        throw new Error("Not a member of this workspace");
-      }
-
-      // Fetch pending invitations from the view
       const { data, error } = await supabase
         .from("workspace_members_with_invitations")
-        .select("*")
+        .select(VIEW_COLUMNS)
         .eq("workspace_id", workspaceId)
         .eq("display_status", "Pending")
-        .order("invitation_created_at", { ascending: false });
+        .order("invitation_created_at", { ascending: false })
+        .limit(200);
 
       if (error) throw error;
 
-      return data as WorkspaceMemberView[];
+      return data as unknown as WorkspaceMemberView[];
     },
     enabled: !!workspaceId,
+    staleTime: 60 * 1000,
   });
-} 
+}

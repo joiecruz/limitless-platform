@@ -29,12 +29,11 @@ const Courses = () => {
     queryFn: async () => {
       const { data: coursesData, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('id, title, description, image_url, format, locked, lesson_count')
         .in('format', ['Online', 'Hybrid'])
-        .order('created_at', { ascending: false }); // Sort by most recent first
+        .order('created_at', { ascending: false });
 
       if (error) {
-        
         toast({
           title: "Error",
           description: "Failed to load courses. Please try again later.",
@@ -43,17 +42,17 @@ const Courses = () => {
         return [];
       }
 
-      // Get real-time enrollment counts for all courses
+      // Get real-time enrollment counts for all courses (uses HEAD requests, no payload)
       const coursesWithCounts = await Promise.all(
-        coursesData.map(async (course) => {
+        (coursesData ?? []).map(async (course) => {
           const { count } = await supabase
             .from("enrollments")
-            .select("*", { count: "exact", head: true })
+            .select("id", { count: "exact", head: true })
             .eq("course_id", course.id);
 
           return {
             ...course,
-            enrollee_count: count || 0
+            enrollee_count: count || 0,
           };
         })
       );
