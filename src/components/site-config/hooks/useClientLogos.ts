@@ -8,8 +8,9 @@ export function useClientLogos() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_logos')
-        .select('*')
-        .order('created_at', { ascending: true });
+        .select('id, name, image_url')
+        .order('created_at', { ascending: true })
+        .limit(50);
 
       if (error) {
         

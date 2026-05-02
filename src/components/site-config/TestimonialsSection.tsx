@@ -25,17 +25,19 @@ export function TestimonialsSection() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('testimonials')
-        .select('*')
+        .select('id, name, role, body, photo_url, type')
         .eq('type', 'course')
-        .order('created_at', { ascending: false });
-      
+        .order('created_at', { ascending: false })
+        .limit(12);
+
       if (error) {
-        
         return [];
       }
-      
+
       return data as Testimonial[];
     },
+    staleTime: 30 * 60 * 1000, // 30 min — testimonials change rarely
+    gcTime: 60 * 60 * 1000,
   });
 
   if (!testimonials?.length) {
