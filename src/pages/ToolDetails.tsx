@@ -15,7 +15,7 @@ import { SafeHTML } from "@/components/common/SafeHTML";
 const fetchTool = async (toolId: string) => {
   const { data, error } = await supabase
     .from('innovation_tools')
-    .select('*')
+    .select('id, name, slug, brief_description, long_description, category, type, cover_image, download_url, downloads_count, use_case_1, use_case_2, use_case_3, how_to_use, when_to_use')
     .eq('id', toolId)
     .maybeSingle();
 

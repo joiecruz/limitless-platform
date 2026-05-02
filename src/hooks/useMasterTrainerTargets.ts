@@ -26,7 +26,7 @@ export function useMasterTrainerTargets() {
       // First try to get existing targets
       const { data: existingTargets, error: fetchError } = await supabase
         .from('master_trainer_targets')
-        .select('*')
+        .select('id, user_id, hour_of_code_target, depth_training_target, hour_of_code_current, depth_training_current, created_at, updated_at')
         .eq('user_id', user.id)
         .single();
 
