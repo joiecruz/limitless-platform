@@ -12,6 +12,11 @@ import { Suspense, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
+import { thumbUrl } from "@/lib/imageUrl";
+
+const HERO_IMAGE_RAW =
+  "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
+const HERO_IMAGE = thumbUrl(HERO_IMAGE_RAW, { width: 1600, quality: 75 });
 
 const rotatingTexts = [
   "design thinking",
@@ -30,7 +35,7 @@ export default function Index() {
   // Preload hero image
   useEffect(() => {
     const img = new Image();
-    img.src = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z";
+    img.src = HERO_IMAGE;
     img.onload = () => setHeroImageLoaded(true);
   }, []);
 
@@ -86,7 +91,7 @@ export default function Index() {
       <Helmet>
         <title>Limitless Lab: All-in-One Innovation Platform</title>
         <meta name="description" content="Transform your innovation journey with Limitless Lab's comprehensive platform for learning, tools, and community." />
-        <link rel="preload" href="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z" as="image" />
+        <link rel="preload" href={HERO_IMAGE} as="image" fetchPriority="high" />
       </Helmet>
       
       <MainNav />
@@ -132,10 +137,13 @@ export default function Index() {
               <div className="w-full aspect-[16/9] bg-gray-100 rounded-lg animate-pulse"></div>
             )}
             <img 
-              src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png?t=2024-12-29T12%3A51%3A15.539Z"
+              src={HERO_IMAGE}
               alt="Limitless Lab Platform"
               className={`w-full rounded-lg ${!heroImageLoaded ? 'invisible absolute' : 'visible'}`}
               loading="eager"
+              fetchPriority="high"
+              width={1600}
+              height={900}
             />
           </div>
         </div>

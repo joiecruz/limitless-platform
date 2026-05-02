@@ -10,6 +10,7 @@ import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useEffect } from "react";
 import { trackFBViewContent, trackFBLead } from "@/components/common/FacebookPixel";
+import { thumbUrl } from "@/lib/imageUrl";
 
 export default function CourseDetail() {
   const { courseSlug } = useParams<{ courseSlug: string }>();
@@ -188,7 +189,7 @@ export default function CourseDetail() {
 
           {/* Course Image */}
           {course.image_url && <div className="mb-12 flex justify-center">
-              <img src={course.image_url} alt={course.title} className="w-full max-w-2xl rounded-lg shadow-lg" />
+              <img src={thumbUrl(course.image_url, { width: 1200 })} alt={course.title} className="w-full max-w-2xl rounded-lg shadow-lg" loading="eager" width={1200} height={675} />
             </div>}
 
           {/* Course Stats - Using real-time data */}

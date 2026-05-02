@@ -1,5 +1,6 @@
 
 import { Helmet } from "react-helmet-async";
+import { thumbUrl } from "@/lib/imageUrl";
 
 interface OpenGraphTagsProps {
   title: string;
@@ -26,7 +27,9 @@ export function OpenGraphTags({
 }: OpenGraphTagsProps) {
   // Add a unique debug ID to verify these tags are being rendered
   const debugId = `og-${Math.random().toString(36).substring(7)}`;
-  
+  // Always serve the OG image through the CDN render endpoint at 1200x630 (the size we declare).
+  const ogImage = thumbUrl(imageUrl, { width: 1200, height: 630, quality: 75 }) || imageUrl;
+
   return (
     <Helmet prioritizeSeoTags={true}>
       {/* Debug tag to verify rendering */}
@@ -40,7 +43,7 @@ export function OpenGraphTags({
       {/* OpenGraph tags for social sharing */}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={imageUrl} />
+      <meta property="og:image" content={ogImage} />
       <meta property="og:type" content={type} />
       <meta property="og:url" content={url} />
       <meta property="og:site_name" content={siteName} />
@@ -66,7 +69,7 @@ export function OpenGraphTags({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={imageUrl} />
+      <meta name="twitter:image" content={ogImage} />
     </Helmet>
   );
 }

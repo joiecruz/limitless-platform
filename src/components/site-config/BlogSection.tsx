@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { thumbUrl } from "@/lib/imageUrl";
 
 interface BlogPost {
   id: string;
@@ -50,9 +51,12 @@ export function BlogSection() {
           {post.cover_image && (
             <div className="aspect-video w-full overflow-hidden">
               <img
-                src={post.cover_image}
+                src={thumbUrl(post.cover_image, { width: 600 })}
                 alt={post.title}
                 className="w-full h-full object-cover"
+                loading="lazy"
+                width={600}
+                height={338}
               />
             </div>
           )}

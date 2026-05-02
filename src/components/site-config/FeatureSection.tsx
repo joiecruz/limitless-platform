@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { thumbUrl } from "@/lib/imageUrl";
 
 interface FeatureProps {
   badge: string;
@@ -59,9 +60,12 @@ export function FeatureSection({
       )}
       <div className="flex-1">
         <img 
-          src={imageSrc}
+          src={thumbUrl(imageSrc, { width: 800 })}
           alt={imageAlt}
           className="w-full rounded-lg"
+          loading="lazy"
+          width={800}
+          height={600}
         />
       </div>
       {isReversed && (

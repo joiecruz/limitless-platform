@@ -1,6 +1,7 @@
 
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
+import { thumbUrl } from "@/lib/imageUrl";
 
 export default function About() {
   const timelineEvents = [
@@ -90,9 +91,12 @@ export default function About() {
           <div className="relative">
             <div className="w-full overflow-hidden rounded-2xl">
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/About%20photo.png"
+                src={thumbUrl("https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/About%20photo.png", { width: 1200 })}
                 alt="Limitless Lab Team"
                 className="w-full h-auto object-cover"
+                loading="lazy"
+                width={1200}
+                height={800}
               />
             </div>
           </div>

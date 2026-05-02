@@ -10,6 +10,7 @@ import { ServiceCard } from "@/components/services/ServiceCard";
 import { CoDesignProcess } from "@/components/services/CoDesignProcess";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
+import { thumbUrl } from "@/lib/imageUrl";
 
 const services = [
   {
@@ -86,9 +87,12 @@ export default function Services() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
               <img
-                src={servicesImage}
+                src={thumbUrl(servicesImage, { width: 1200 })}
                 alt="Co-design Process"
                 className="w-full rounded-lg"
+                loading="eager"
+                width={1200}
+                height={800}
               />
             </div>
             <div>
