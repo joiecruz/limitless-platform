@@ -3384,6 +3384,7 @@ export type Database = {
       }
       delete_user_data: { Args: never; Returns: undefined }
       generate_course_slug: { Args: { title: string }; Returns: string }
+      get_admin_analytics: { Args: { days_back?: number }; Returns: Json }
       get_course_counts: {
         Args: { course_id_param: string }
         Returns: {
