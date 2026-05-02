@@ -8,16 +8,18 @@ export function WorkshopsSection() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('courses')
-        .select('*')
-        .eq('format', 'In-Person');
-      
+        .select('id, title, description, image_url, format, locked')
+        .eq('format', 'In-Person')
+        .limit(12);
+
       if (error) {
-        
         return [];
       }
-      
+
       return data;
     },
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 
   return (

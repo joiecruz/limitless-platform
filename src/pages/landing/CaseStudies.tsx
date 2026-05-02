@@ -8,22 +8,39 @@ import { CTASection } from "@/components/site-config/CTASection";
 import { ArrowRight } from "lucide-react";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useState } from "react";
+import { LoadMoreButton } from "@/components/common/LoadMoreButton";
+import { thumbUrl } from "@/lib/imageUrl";
+
+const PAGE_SIZE = 9;
+
+interface CaseStudyCard {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  cover_photo: string | null;
+  services: string[] | null;
+}
 
 export default function CaseStudies() {
   const { toast } = useToast();
-  
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["case-studies"],
+  const [page, setPage] = useState(0);
+  const [accumulated, setAccumulated] = useState<CaseStudyCard[]>([]);
+
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ["case-studies", page],
     queryFn: async () => {
-      
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
       const { data, error } = await supabase
         .from('case_studies')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
+        .select('id, slug, name, description, cover_photo, services')
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
       if (error) {
-        
         toast({
           title: "Error loading case studies",
           description: "Failed to load case studies. Please try again later.",
@@ -31,47 +48,26 @@ export default function CaseStudies() {
         });
         throw error;
       }
-      
-      
-      return data || [];
+
+      return (data || []) as CaseStudyCard[];
     },
-    meta: {
-      onError: (error: Error) => {
-        
-        toast({
-          title: "Error loading case studies",
-          description: "Failed to load case studies. Please try again later.",
-          variant: "destructive",
-        });
-      },
-    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
-  // Ensure we always have an array to work with
-  const caseStudies = Array.isArray(data) ? data : [];
+  const caseStudies = page === 0 ? data ?? [] : [...accumulated, ...(data ?? [])];
+  const hasMore = (data?.length ?? 0) === PAGE_SIZE;
+
+  const handleLoadMore = () => {
+    if (data) setAccumulated((prev) => [...prev, ...data]);
+    setPage((p) => p + 1);
+  };
 
   const pageTitle = "Case Studies | Limitless Lab";
   const pageDescription = "Explore our portfolio of impactful projects and success stories across various industries and social innovation challenges.";
   const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   const canonicalUrl = `${window.location.origin}/case-studies`;
-
-  // Add additional console logs to debug OpenGraph tags
-  useEffect(() => {
-    
-    
-    
-    
-    
-    
-    // Debug what the document head contains
-    setTimeout(() => {
-      const metaTags = document.querySelectorAll('meta');
-      
-      metaTags.forEach(tag => {
-        
-      });
-    }, 500);
-  }, [pageTitle, pageDescription, pageImage, canonicalUrl]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -79,7 +75,7 @@ export default function CaseStudies() {
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonicalUrl} />
-        
+
         {/* OpenGraph tags */}
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
@@ -87,16 +83,16 @@ export default function CaseStudies() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Limitless Lab" />
-        
+
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
         <meta name="twitter:image" content={pageImage} />
       </Helmet>
-      
+
       <MainNav />
-      
+
       {/* Hero Section */}
       <div className="bg-[#393CA0] py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -136,39 +132,48 @@ export default function CaseStudies() {
               <p className="mt-2 text-gray-500">Check back later for new content</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {caseStudies.map((study) => (
-                <Link key={study.id} to={`/case-studies/${study.slug}`} className="group">
-                  <div className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
-                    <div className="aspect-video relative">
-                      <img
-                        src={study.cover_photo || "/placeholder.svg"}
-                        alt={study.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <div className="flex items-center mb-3">
-                        {study.services && study.services.length > 0 && (
-                          <span className="text-sm font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">
-                            {Array.isArray(study.services) ? study.services[0] : "Service"}
-                          </span>
-                        )}
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                {caseStudies.map((study) => (
+                  <Link key={study.id} to={`/case-studies/${study.slug}`} className="group">
+                    <div className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
+                      <div className="aspect-video relative">
+                        <img
+                          src={thumbUrl(study.cover_photo, { width: 1000 }) || "/placeholder.svg"}
+                          alt={study.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
-                      <h3 className="text-2xl font-semibold mb-3 group-hover:text-[#393CA0] transition-colors">
-                        {study.name}
-                      </h3>
-                      <p className="text-gray-600 mb-4 line-clamp-3">
-                        {study.description}
-                      </p>
-                      <div className="inline-flex items-center text-[#393CA0] font-medium">
-                        View case study <ArrowRight className="ml-2 h-4 w-4" />
+                      <div className="p-6">
+                        <div className="flex items-center mb-3">
+                          {study.services && study.services.length > 0 && (
+                            <span className="text-sm font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">
+                              {Array.isArray(study.services) ? study.services[0] : "Service"}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-2xl font-semibold mb-3 group-hover:text-[#393CA0] transition-colors">
+                          {study.name}
+                        </h3>
+                        <p className="text-gray-600 mb-4 line-clamp-3">
+                          {study.description}
+                        </p>
+                        <div className="inline-flex items-center text-[#393CA0] font-medium">
+                          View case study <ArrowRight className="ml-2 h-4 w-4" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+              <LoadMoreButton
+                onClick={handleLoadMore}
+                isLoading={isFetching}
+                hasMore={hasMore}
+              />
+            </>
           )}
         </div>
       </div>

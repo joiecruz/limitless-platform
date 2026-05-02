@@ -1,13 +1,15 @@
 
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Helmet } from "react-helmet";
+import { LoadMoreButton } from "@/components/common/LoadMoreButton";
+import { thumbUrl } from "@/lib/imageUrl";
 
 const categories = [
   "All tools",
@@ -19,31 +21,66 @@ const categories = [
   "Strategy and Visioning"
 ];
 
+const PAGE_SIZE = 12;
+
+interface ToolCard {
+  id: string;
+  name: string;
+  brief_description: string | null;
+  cover_image: string | null;
+  category: string | null;
+}
+
 export default function Tools() {
   const [selectedCategory, setSelectedCategory] = useState("All tools");
+  const [page, setPage] = useState(0);
+  const [accumulated, setAccumulated] = useState<ToolCard[]>([]);
 
   // Page metadata
   const pageTitle = "Innovation Tools | Limitless Lab";
   const pageDescription = "Empower your creative process with our collection of free worksheets, canvases, and downloadable resources for innovation.";
   const pageImage = "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png";
   const canonicalUrl = `${window.location.origin}/tools`;
-  
-  const { data: tools } = useQuery({
-    queryKey: ["innovation_tools"],
+
+  // Reset paging when filter changes
+  const handleCategoryChange = (cat: string) => {
+    setSelectedCategory(cat);
+    setPage(0);
+    setAccumulated([]);
+  };
+
+  const { data, isFetching } = useQuery({
+    queryKey: ["innovation_tools", selectedCategory, page],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      let query = supabase
         .from('innovation_tools')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
+        .select('id, name, brief_description, cover_image, category')
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (selectedCategory !== "All tools") {
+        query = query.eq('category', selectedCategory);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return (data || []) as ToolCard[];
     },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
-  const filteredTools = tools?.filter(tool => 
-    selectedCategory === "All tools" || tool.category === selectedCategory
-  );
+  const tools = page === 0 ? data ?? [] : [...accumulated, ...(data ?? [])];
+  const hasMore = (data?.length ?? 0) === PAGE_SIZE;
+
+  const handleLoadMore = () => {
+    if (data) setAccumulated((prev) => [...prev, ...data]);
+    setPage((p) => p + 1);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -51,7 +88,7 @@ export default function Tools() {
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonicalUrl} />
-        
+
         {/* OpenGraph tags */}
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
@@ -59,16 +96,16 @@ export default function Tools() {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="Limitless Lab" />
-        
+
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDescription} />
         <meta name="twitter:image" content={pageImage} />
       </Helmet>
-      
+
       <MainNav />
-      
+
       {/* Hero Section */}
       <div className="bg-[#393CA0] py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,7 +134,7 @@ export default function Tools() {
             {categories.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => handleCategoryChange(category)}
                 className={`px-6 py-2 rounded-full text-sm transition-colors ${
                   selectedCategory === category
                     ? "bg-[#393CA0] text-white"
@@ -115,12 +152,14 @@ export default function Tools() {
       <div className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredTools?.map((tool) => (
+            {tools.map((tool) => (
               <div key={tool.id} className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
                 <div className="aspect-[16/9] relative">
                   <img
-                    src={tool.cover_image || "/placeholder.svg"}
+                    src={thumbUrl(tool.cover_image, { width: 800 }) || "/placeholder.svg"}
                     alt={tool.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -139,6 +178,11 @@ export default function Tools() {
               </div>
             ))}
           </div>
+          <LoadMoreButton
+            onClick={handleLoadMore}
+            isLoading={isFetching}
+            hasMore={hasMore}
+          />
         </div>
       </div>
 
