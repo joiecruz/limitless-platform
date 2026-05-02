@@ -1,5 +1,6 @@
 
 import { CreateProjectButton } from "./CreateProjectButton";
+import { thumbUrl } from "@/lib/imageUrl";
 
 interface ProjectBannerProps {
   onCreateProject: () => void;
@@ -22,9 +23,12 @@ export function ProjectBanner({ onCreateProject }: ProjectBannerProps) {
         </div>
         <div className="flex-shrink-0 w-full md:w-1/3 overflow-hidden relative">
           <img 
-            src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets//projects-banner.png" 
+            src={thumbUrl("https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets//projects-banner.png", { width: 600 })}
             alt="Project Design" 
             className="w-full object-contain"
+            loading="lazy"
+            width={600}
+            height={400}
           />
         </div>
       </div>

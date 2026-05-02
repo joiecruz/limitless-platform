@@ -1,4 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { thumbUrl } from "@/lib/imageUrl";
 
 export function CoDesignProcess() {
   return (
@@ -11,9 +12,12 @@ export function CoDesignProcess() {
         </p>
         
         <img 
-          src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design%20Diamond.png"
+          src={thumbUrl("https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Co-Design%20Diamond.png", { width: 1200 })}
           alt="Co-Design Process"
           className="w-full mb-12 rounded-lg"
+          loading="lazy"
+          width={1200}
+          height={675}
         />
 
         <Tabs defaultValue="discover" className="w-full">

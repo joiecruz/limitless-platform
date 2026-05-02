@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CourseAccessGrantedDialog } from "@/components/dashboard/CourseAccessGrantedDialog";
 import { LimitlessBizAvailableDialog } from "@/components/dashboard/LimitlessBizAvailableDialog";
+import { thumbUrl } from "@/lib/imageUrl";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -106,9 +107,12 @@ export default function Dashboard() {
           >
             <div className="aspect-[4/3] relative overflow-hidden">
               <img
-                src={link.image}
+                src={thumbUrl(link.image, { width: 600 })}
                 alt={link.title}
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
+                loading="lazy"
+                width={600}
+                height={450}
               />
             </div>
             <div className="p-6 space-y-4">
