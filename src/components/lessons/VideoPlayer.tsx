@@ -185,7 +185,7 @@ const VideoPlayer = ({ videoUrl }: VideoPlayerProps) => {
         ref={videoRef}
         controls
         playsInline
-        preload="auto"
+        preload="metadata"
         className="w-full h-full"
         onLoadedMetadata={handleLoadedMetadata}
         onCanPlay={() => setIsBuffering(false)}
