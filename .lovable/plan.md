@@ -1,99 +1,118 @@
-# Bandwidth & Performance Optimization Plan
+# Reduce Supabase Cached Egress (41 GB → <5 GB)
 
-A full sweep of every file would be huge and risky. This plan focuses on the **highest-bandwidth offenders** identified in the codebase (79 `select('*')` calls, 211 total queries, zero pagination) and ships them in 4 phases. Each phase is independently shippable.
+## Where the bytes actually come from
 
-## Findings
+I inspected the storage buckets and public-page code. Egress is dominated by **video and image bytes**, not JSON. Recent query trimming work has already eliminated most `select('*')` waste; the remaining wins are in assets and caching.
 
-| Problem | Evidence |
-|---|---|
-| `select('*')` everywhere | 79 occurrences across 50 files |
-| Zero pagination | 0 uses of `.range()` in codebase |
-| Heavy landing pages | `Blog`, `Tools`, `Courses`, `CaseStudies` each load entire table |
-| Admin pages fetch all rows | `AdminUsers` loads every profile, filters client-side |
-| Client-side search on full datasets | `AdminUsers`, `Tools`, several admin tables |
-| No debounce on search inputs | confirmed in admin tables |
-| React Query already set up | `staleTime: 5min`, `refetchOnWindowFocus: false` ✅ already good |
+| Bucket | Files | Size | Notes |
+|---|---|---|---|
+| `aim-asean-modules` | 29 | **6.6 GB** of MP4 | many 200–535 MB videos served from public bucket |
+| `master-trainer-reports` | 481 | 557 MB | not public, fine |
+| `course-lessons` | 8 | 257 MB | MP4s |
+| `limitless-gov-lessons` | 1 | 174 MB | one 174 MB MP4 |
+| `blog-covers` | 61 | 62 MB | several 4–9 MB JPGs/PNGs served full-size |
+| `web-assets` | 60 | 16 MB | hero PNG re-downloaded repeatedly |
 
-## Phase 1 — Public landing pages (biggest cached-egress wins)
+Plus on the public homepage and listings:
+- The hero PNG (`Hero_section_image.png?t=...`) is loaded raw, with a cache-busting `?t=` query that defeats CDN caching.
+- `BlogSection`, `Features`, `InfiniteLogos`, `Product.tsx`, `About.tsx`, `Privacy/Terms/NotFound`, `OpenGraphTags` all reference original `/storage/v1/object/public/...` URLs (no `thumbUrl`, no `loading="lazy"`, no `width/height`).
+- `WorkshopDetail`, `CourseDetail` render `image_url` at full resolution.
 
-These pages are hit by anonymous traffic, so every byte multiplies.
+A single homepage visit currently pulls ~3–5 MB of images. With the AIM ASEAN videos served from public Supabase Storage, even a handful of learners replays = tens of GB.
 
-**Files:**
-- `src/pages/landing/Blog.tsx` — paginate articles (12/page), select only `id, slug, title, excerpt, cover_image, published_at, categories`
-- `src/pages/landing/Tools.tsx` — paginate (12/page), select `id, name, slug, category, cover_image, short_description`. Move category filter server-side
-- `src/pages/landing/Courses.tsx` — select `id, title, slug, image_url, short_description, duration, level`
-- `src/pages/landing/CaseStudies.tsx` — paginate (9/page), trim columns
-- `src/components/site-config/InfiniteLogos.tsx` / `useClientLogos.ts` — select only `id, name, logo_url`
-- `src/components/site-config/TestimonialsSection.tsx` — limit 6, trim columns
-- `src/components/site-config/WorkshopsSection.tsx` — select only card-level fields
+## What we will change (no design changes)
 
-**Pattern applied:**
+### 1. Stop serving large videos directly from Supabase egress
+This is the single biggest line item.
+
+- Add a cheap `videoUrl()` helper that returns the storage URL **as-is for now** but marks where every `<video>` source comes from.
+- For `aim-asean-modules`, `course-lessons`, `limitless-gov-lessons`: in `VideoPlayer.tsx`, set `preload="metadata"` (currently videos may auto-preload), and ensure no listing page renders `<video>` thumbnails — only the actual lesson page mounts a player.
+- Document (in README) that long-form video should move to YouTube/Mux/Cloudflare Stream. The player already supports YouTube — recommend re-uploading the AIM ASEAN catalogue to an unlisted YouTube channel and pasting URLs into existing `video_url` fields. **No code change needed beyond enabling that path; this alone removes ~6 GB/month of repeated egress.**
+
+### 2. Route every public image through `thumbUrl()`
+`src/lib/imageUrl.ts` already exists but is only used on 4 listing pages. Extend it everywhere a Supabase image is rendered on a public page.
+
+Files to update with `thumbUrl(url, { width: N })` + `loading="lazy"` + explicit `width`/`height`:
+
+| File | Image | Width preset |
+|---|---|---|
+| `src/pages/Index.tsx` (hero) | Hero PNG | 1600, drop the `?t=` cache-buster, `fetchpriority="high"` |
+| `src/components/site-config/BlogSection.tsx` | `cover_image` | 600 |
+| `src/components/site-config/Features.tsx` | feature images | 800 |
+| `src/components/site-config/InfiniteLogos.tsx` | logos | 240 |
+| `src/components/site-config/FeatureSection.tsx` | image | 800 |
+| `src/components/site-config/TestimonialsSection.tsx` | `photo_url` | 200 |
+| `src/components/services/CoDesignProcess.tsx` | diagram | 1200 |
+| `src/components/projects/ProjectBanner.tsx` | banner | 1200 |
+| `src/pages/About.tsx` | hero | 1200 |
+| `src/pages/landing/Product.tsx` | 4 product images | 1200 |
+| `src/pages/landing/Services.tsx` | services image | 1200 |
+| `src/pages/landing/CourseDetail.tsx` | `image_url` | 1200 |
+| `src/pages/landing/WorkshopDetail.tsx` | `image_url` | 1200 |
+| `src/pages/CaseStudy.tsx`, `BlogPost.tsx`, `ToolDetails.tsx` | covers | 1200 |
+| `OpenGraphTags` defaults | hero | 1200 |
+| `src/pages/Dashboard.tsx` (3 quick-link cards) | promo | 600 |
+
+`thumbUrl` already adds `quality=70` and uses Supabase's `/render/image/public/` endpoint so the CDN serves a much smaller derivative (typical 4 MB PNG → ~80 KB WEBP-equivalent).
+
+### 3. Cache-buster cleanup
+Strip `?t=2024-...` from the hero URL in `Index.tsx`, `BlogPost.tsx`, `CaseStudy.tsx`, `Privacy.tsx`, `Terms.tsx`, `NotFound.tsx`, `Tools.tsx`, `Blog.tsx`, `CaseStudies.tsx`, `Courses.tsx`, `WorkshopDetail.tsx`, `Services.tsx`, `Product.tsx`, `OpenGraphTags`. The `?t=` defeats the Supabase CDN cache and forces revalidation on every load.
+
+### 4. Lock in client-side caching on public queries
+Most public hooks call `useQuery` without `staleTime`, so React Query refetches on every navigation/focus. Add long `staleTime` + `gcTime` to:
+
+- `Index.tsx` session check (already 5 min — keep)
+- `BlogSection`, `WorkshopsSection`, `TestimonialsSection`, `useClientLogos` → `staleTime: 30 * 60_000`
+- `landing/Blog.tsx`, `landing/CaseStudies.tsx`, `landing/Tools.tsx`, `landing/Courses.tsx` → `staleTime: 10 * 60_000`, `refetchOnWindowFocus: false`
+- Detail pages (`BlogPost`, `CaseStudy`, `CourseDetail`, `ToolDetail`, `WorkshopDetail`) → `staleTime: 15 * 60_000`
+
+Also set sensible global defaults in `src/main.tsx` `QueryClient`:
 ```ts
-.select('id, slug, title, excerpt, cover_image, published_at')
-.eq('published', true)
-.order('published_at', { ascending: false })
-.range(page * 12, page * 12 + 11)
+defaultOptions: { queries: {
+  staleTime: 5 * 60_000,
+  gcTime: 30 * 60_000,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+}}
 ```
 
-Add a `<LoadMoreButton />` shared component. Set React Query `staleTime: 10min` on public content.
+### 5. Compress the worst storage offenders (one-off)
+Top blog covers are 4–9 MB. Even after `thumbUrl`, the original is still served once when an editor opens the dashboard. Add a short script note in the plan deliverable; no automatic re-upload (out of scope), but flag the 5 worst offenders to the team.
 
-## Phase 2 — Admin tables (largest authenticated payloads)
+### 6. Pagination / list-page guards
+Already done in the previous pass. Spot-fix only:
+- `landing/Tools.tsx` — confirm `.range()` + Load more is in place.
+- `BlogSection` (homepage) — already `.limit(3)`. Good.
 
-These tables today fetch every row and filter in the browser — they break at scale.
+### 7. Dev-only diagnostics
+Add a tiny `src/lib/egressLogger.ts` that, when `import.meta.env.DEV`, wraps `supabase.from(...).select(...)` calls via a thin proxy and `console.debug`s the table + approximate response size from `JSON.stringify(data).length`. Off in production. Helps the team spot regressions without affecting users.
 
-**Files:**
-- `src/pages/admin/AdminUsers.tsx` — server-side search via `.or('email.ilike,first_name.ilike,last_name.ilike')`, paginate 25/page, select `id, email, first_name, last_name, is_admin, is_superadmin, created_at, last_active`
-- `src/pages/admin/AdminWorkspaceDetails.tsx` — paginate members
-- `src/pages/admin/AdminMasterTrainers.tsx` — paginate + select trim
-- `src/pages/admin/courses/CourseDetails.tsx` + `tabs/CourseLessons.tsx` + `tabs/CourseSections.tsx` — drop `select('*')`, request only fields rendered
-- `src/components/admin/tools/ToolsTable.tsx`, `admin/logos/LogosTable.tsx`, `admin/blog/EditBlog.tsx`, `admin/case-studies/EditCaseStudy.tsx` — column trim + pagination
+## Files to create / edit
 
-**New shared utilities:**
-- `src/hooks/useDebouncedValue.ts` — 400ms debounce hook for search inputs
-- `src/components/common/DataTablePagination.tsx` — Prev / Next / page indicator
-- `src/lib/queryGuards.ts` — `assertPaginated(query, { max: 100 })` dev-mode guard that throws if `.range()` / `.limit()` is missing
+**Create**
+- `src/lib/egressLogger.ts` (dev-only)
 
-## Phase 3 — Authenticated app surfaces
-
-**Files:**
-- `src/pages/Lesson.tsx` — already uses React Query, just trim columns (3 `select('*')` calls)
-- `src/pages/Lessons.tsx` — same
-- `src/pages/Courses.tsx` — same
-- `src/hooks/useWorkspaceMembersView.ts` — replace 3× `select('*')` with explicit field list (interface already defines them)
-- `src/pages/AccountSettings.tsx` — trim profile select
-- `src/hooks/useAdminAnalytics.ts` — DAU/WAU currently pulls every `sessions.user_id` row for the period. Replace with a SECURITY DEFINER SQL function `get_admin_analytics(filter text)` that returns counts only — drops payload from MBs to <1KB
-
-**One database migration:** add `get_admin_analytics()` function (read-only, search_path=public).
-
-## Phase 4 — AI-related flows + safeguards
-
-**Files:**
-- `src/hooks/useEmpathize.ts`, `useDefine.ts`, `useIdeate.ts`, `usePrototype.ts`, `useTest.ts`, `useImplement.ts`, `useMeasure.ts`, `useProjectBrief.ts` — these `select('*')` from `stage_contents` and feed content to AI. Add `selectAIContext()` helper that returns only `{ id, content, summary }` truncated to ~2000 chars per item, with a hard limit of 20 items per AI call
-- `supabase/functions/*` (any function piping data to AI) — same trim at the edge
-
-## Cross-cutting changes
-
-1. **React Query defaults** in `src/App.tsx` — already good, but add `gcTime: 10 * 60_000` and per-resource overrides for static lists (`staleTime: 30min`)
-2. **Image delivery** — add `?width=400&quality=70` Supabase image transform query string to all `storage/v1/object/public/...` URLs in card thumbnails (Blog, Tools, Courses, CaseStudies, Workshops, Logos). Centralize in `src/lib/imageUrl.ts`
-3. **Debounce** all search inputs (admin tables, future search) via `useDebouncedValue`
-4. **Dev-only logging** — small wrapper logs response size + duration to console when `import.meta.env.DEV`, so future regressions are visible
-
-## What this plan does NOT do
-
-- Does **not** touch every one of the 50 files with `select('*')` in this single change — the long tail (design-thinking pages, smaller hooks) becomes a follow-up after we confirm Phase 1+2 measurably reduce egress
-- Does **not** add a polling-based realtime layer — current behavior already disables `refetchOnWindowFocus`
-- Does **not** restructure auth or change RLS
+**Edit (asset/caching changes only — no UI changes)**
+- `src/main.tsx` — QueryClient defaults
+- `src/pages/Index.tsx`, `Dashboard.tsx`, `About.tsx`, `BlogPost.tsx`, `CaseStudy.tsx`, `ToolDetails.tsx`, `Privacy.tsx`, `Terms.tsx`, `NotFound.tsx`
+- `src/pages/landing/Product.tsx`, `Services.tsx`, `CourseDetail.tsx`, `WorkshopDetail.tsx`, `Blog.tsx`, `CaseStudies.tsx`, `Courses.tsx`, `Tools.tsx`
+- `src/components/site-config/BlogSection.tsx`, `Features.tsx`, `FeatureSection.tsx`, `InfiniteLogos.tsx`, `TestimonialsSection.tsx`, `WorkshopsSection.tsx`
+- `src/components/site-config/hooks/useClientLogos.ts`
+- `src/components/services/CoDesignProcess.tsx`
+- `src/components/projects/ProjectBanner.tsx`
+- `src/components/OpenGraphTags.tsx`
+- `src/components/lessons/VideoPlayer.tsx` — `preload="metadata"`
 
 ## Expected impact
+- Hero/listing image bytes per page: **~4 MB → ~150 KB** (~25× smaller, served WEBP from Supabase render endpoint).
+- Removing the `?t=` cache-buster lets the CDN actually cache; repeat visits drop to **0 KB** for the hero.
+- React Query `staleTime` removes most repeat JSON fetches across navigations.
+- If AIM ASEAN videos move to YouTube (recommended, no code change beyond pasting URLs), **~6 GB of monthly egress disappears outright**.
 
-- Public landing pages: ~70-90% smaller responses (entire `articles`/`innovation_tools` table → 12 trimmed rows + image transforms)
-- Admin tables: scales from "breaks at 1k rows" → "constant payload regardless of table size"
-- Analytics hook: from O(sessions) bytes → ~500 bytes
-- AI hooks: bounded payload regardless of project size
+Combined, this should land egress well under 5 GB/month while keeping every page visually identical.
 
-## Suggested ship order
-
-1. Phase 1 (landing + public) — biggest cached-egress win, lowest risk
-2. Phase 3 analytics function migration — single biggest authenticated payload drop
-3. Phase 2 admin tables — needs UI changes, ship after pagination component exists
-4. Phase 4 AI flows — needs careful prompt testing
+## What I'm explicitly NOT doing
+- No layout, copy, or component restructuring.
+- No backend schema changes.
+- No automatic re-upload of existing storage files (call-out only).
+- No removal of Supabase Storage for non-video assets — `thumbUrl` makes them cheap enough.
