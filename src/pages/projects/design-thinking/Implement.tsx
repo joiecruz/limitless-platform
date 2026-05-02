@@ -68,7 +68,7 @@ export default function Implement({ inNavBar = false }: ImplementProps) {
       try {
         const { data: project, error } = await supabase
           .from('projects')
-          .select('*')
+          .select('id, name, description, metadata')
           .eq('id', projectId)
           .single();
         if (error) throw error;

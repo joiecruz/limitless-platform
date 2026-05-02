@@ -63,7 +63,7 @@ export default function Ideate() {
       try {
         const { data: project, error } = await supabase
           .from('projects')
-          .select('*')
+          .select('id, name, description, metadata')
           .eq('id', effectiveProjectId)
           .single();
         if (error) throw error;
