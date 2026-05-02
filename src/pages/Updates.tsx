@@ -23,9 +23,10 @@ export default function Updates() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("platform_updates")
-        .select("*")
+        .select("id, title, description, version, update_type, changes, published_at")
         .eq("published", true)
-        .order("published_at", { ascending: false });
+        .order("published_at", { ascending: false })
+        .limit(50);
 
       if (error) throw error;
       return data;

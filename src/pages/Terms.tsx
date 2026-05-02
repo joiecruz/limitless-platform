@@ -14,7 +14,7 @@ export default function Terms() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pages")
-        .select("*")
+        .select("id, title, slug, content")
         .eq("slug", "terms-of-service")
         .eq("published", true)
         .single();

@@ -21,7 +21,7 @@ export function BlogSection() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('articles')
-        .select('*')
+        .select('id, title, excerpt, created_at, slug, cover_image')
         .eq('published', true)
         .order('created_at', { ascending: false })
         .limit(3);

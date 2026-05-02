@@ -28,7 +28,7 @@ export default function CaseStudy() {
       
       const { data, error } = await supabase
         .from('case_studies')
-        .select('*')
+        .select('id, name, slug, client, description, cover_image, problem_opportunity, approach, impact, quote_from_customer, quote_from_customer_designation, additional_photo_1, additional_photo_2')
         .eq('slug', slug)
         .single();
 

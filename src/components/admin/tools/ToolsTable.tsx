@@ -27,8 +27,9 @@ export function ToolsTable() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("innovation_tools")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("id, name, category, type, downloads_count, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
 
       if (error) throw error;
       return data as Tool[];

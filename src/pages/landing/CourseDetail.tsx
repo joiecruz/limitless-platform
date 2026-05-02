@@ -22,7 +22,9 @@ export default function CourseDetail() {
       if (!courseSlug) throw new Error("Course slug is required");
       
       // Try to find by slug first, then fallback to ID for backwards compatibility
-      let query = supabase.from("courses").select("*");
+      let query = supabase
+        .from("courses")
+        .select("id, title, slug, description, image_url, format, locked, price, booking_link, learning_outcomes, course_curriculum_text, who_is_this_for");
       
       // Check if it looks like a UUID (for backwards compatibility)
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(courseSlug);
