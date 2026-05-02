@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceToNow } from 'date-fns';
+import { thumbUrl } from "@/lib/imageUrl";
 
 interface RelatedBlogsProps {
   currentPostId: string;
@@ -120,9 +121,12 @@ export function RelatedBlogs({
               {post.cover_image && (
                 <div className="h-40 overflow-hidden">
                   <img 
-                    src={post.cover_image} 
+                    src={thumbUrl(post.cover_image, { width: 500, height: 320 })} 
                     alt={post.title} 
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    width={500}
+                    height={320}
                   />
                 </div>
               )}
