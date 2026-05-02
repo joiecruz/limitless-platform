@@ -21,8 +21,20 @@ serve(async (req: Request): Promise<Response> => {
     const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
     const fromEmail = Deno.env.get("FROM_EMAIL") || "noreply@limitlesslab.org";
 
+    // Restrict invocation to callers presenting the service role key
+    // (pg_cron / server-side schedulers). Public/anon callers are rejected.
+    const authHeader = req.headers.get("Authorization") || "";
+    const providedKey = authHeader.replace(/^Bearer\s+/i, "").trim();
+    if (!providedKey || providedKey !== supabaseServiceKey) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const resend = new Resend(resendApiKey);
+
 
     // Get all lesson IDs for the course
     const { data: lessonRows, error: lessonError } = await supabase
