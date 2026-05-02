@@ -28,7 +28,7 @@ const Lesson = () => {
 
       const { data, error } = await supabase
         .from("lessons")
-        .select("id, title, description, video_url, release_date, order, duration, section_id, course_id")
+        .select("id, title, description, video_url, body_content, release_date, order, duration, section_id, course_id")
         .eq("id", lessonId)
         .maybeSingle();
 
@@ -55,7 +55,7 @@ const Lesson = () => {
 
       const { data, error } = await supabase
         .from("lessons")
-        .select("id, title, order, section_id, duration")
+        .select("id, title, order, section_id, duration, release_date")
         .eq("course_id", courseId)
         .order("order");
 
