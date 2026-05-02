@@ -58,7 +58,7 @@ export function useWorkspaceMembersView(workspaceId: string) {
 
       if (error) throw error;
 
-      return data as WorkspaceMemberView[];
+      return data as unknown as WorkspaceMemberView[];
     },
     enabled: !!workspaceId,
     staleTime: 60 * 1000,
@@ -82,7 +82,7 @@ export function useWorkspaceActiveMembers(workspaceId: string) {
 
       if (error) throw error;
 
-      return data as WorkspaceMemberView[];
+      return data as unknown as WorkspaceMemberView[];
     },
     enabled: !!workspaceId,
     staleTime: 60 * 1000,
@@ -106,7 +106,7 @@ export function useWorkspacePendingInvitations(workspaceId: string) {
 
       if (error) throw error;
 
-      return data as WorkspaceMemberView[];
+      return data as unknown as WorkspaceMemberView[];
     },
     enabled: !!workspaceId,
     staleTime: 60 * 1000,
