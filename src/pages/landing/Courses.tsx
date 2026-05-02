@@ -24,16 +24,14 @@ export default function Courses() {
   const { data: courses, isLoading } = useQuery({
     queryKey: ["featured-courses"],
     queryFn: async () => {
-      
-      
       const { data: coursesData, error } = await supabase
         .from('courses')
-        .select('*')
+        .select('id, title, slug, description, image_url, format, created_at')
         .in('format', ['Online', 'Hybrid'])
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(24);
 
       if (error) {
-        
         toast({
           title: "Error",
           description: "Failed to load courses. Please try again later.",
@@ -42,12 +40,9 @@ export default function Courses() {
         return [];
       }
 
-      
-
       // Get real-time counts for each course using the secure function
       const coursesWithCounts = await Promise.all(
-        coursesData.map(async (course) => {
-          // Use the SECURITY DEFINER function that bypasses RLS for counts
+        (coursesData ?? []).map(async (course) => {
           const { data: counts, error: countsError } = await supabase
             .rpc('get_course_counts', { course_id_param: course.id })
             .single();
@@ -59,15 +54,16 @@ export default function Courses() {
           return {
             ...course,
             enrollee_count: counts?.enrollee_count || 0,
-            lesson_count: counts?.lesson_count || 0
+            lesson_count: counts?.lesson_count || 0,
           };
         })
       );
 
       return coursesWithCounts;
     },
-    staleTime: 1000 * 60, // Cache for 1 minute
-    refetchOnWindowFocus: true,
+    staleTime: 5 * 60 * 1000, // 5 min
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   if (isLoading) {

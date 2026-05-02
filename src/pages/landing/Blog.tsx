@@ -7,23 +7,40 @@ import { Link } from "react-router-dom";
 import { CTASection } from "@/components/site-config/CTASection";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useState } from "react";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
+import { LoadMoreButton } from "@/components/common/LoadMoreButton";
+import { thumbUrl } from "@/lib/imageUrl";
+
+const PAGE_SIZE = 12;
+
+interface BlogCard {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  cover_image: string | null;
+  created_at: string | null;
+}
 
 export default function Blog() {
   const { toast } = useToast();
+  const [page, setPage] = useState(0);
 
-  const { data: posts, isLoading, error } = useQuery({
-    queryKey: ["published-blog-posts"],
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ["published-blog-posts", page],
     queryFn: async () => {
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
       const { data, error } = await supabase
         .from('articles')
-        .select('*')
+        .select('id, slug, title, excerpt, cover_image, created_at')
         .eq('published', true)
-        .order('created_at', { ascending: false });
-      
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
       if (error) {
-        
         toast({
           title: "Error loading blog posts",
           description: "Unable to load blog posts. Please try again later.",
@@ -31,17 +48,23 @@ export default function Blog() {
         });
         throw error;
       }
-      
-      return data || [];
+
+      return (data || []) as BlogCard[];
     },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
-  // Log any errors for debugging
-  useEffect(() => {
-    if (error) {
-      
-    }
-  }, [error]);
+  // Accumulate pages for "Load more" UX
+  const [accumulated, setAccumulated] = useState<BlogCard[]>([]);
+  const posts = page === 0 ? data ?? [] : [...accumulated, ...(data ?? [])];
+  const hasMore = (data?.length ?? 0) === PAGE_SIZE;
+
+  const handleLoadMore = () => {
+    if (data) setAccumulated((prev) => [...prev, ...data]);
+    setPage((p) => p + 1);
+  };
 
   // Metadata for the blog listing page
   const baseUrl = window.location.origin;
@@ -59,9 +82,9 @@ export default function Blog() {
         url={canonicalUrl}
         type="website"
       />
-      
+
       <MainNav />
-      
+
       {/* Hero Section */}
       <div className="bg-[#393CA0] py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,40 +116,49 @@ export default function Blog() {
               <h3 className="text-xl text-gray-600">Failed to load blog posts</h3>
               <p className="mt-2 text-gray-500">Please try again later</p>
             </div>
-          ) : (posts && posts.length > 0) ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.map((post) => (
-                <Link 
-                  key={post.id} 
-                  to={`/blog/${post.slug}`}
-                  className="group"
-                >
-                  <div className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow h-full flex flex-col">
-                    <div className="aspect-[16/9] relative">
-                      <img
-                        src={post.cover_image || "/placeholder.svg"}
-                        alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div className="p-6 flex-1 flex flex-col">
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-500 mb-2">
-                          {post.created_at && format(new Date(post.created_at), 'MMMM d, yyyy')}
-                        </p>
-                        <h3 className="text-xl font-semibold mb-3 group-hover:text-[#393CA0] transition-colors">
-                          {post.title}
-                        </h3>
-                        <p className="text-gray-600 mb-4 line-clamp-3">
-                          {post.excerpt}
-                        </p>
+          ) : posts.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {posts.map((post) => (
+                  <Link
+                    key={post.id}
+                    to={`/blog/${post.slug}`}
+                    className="group"
+                  >
+                    <div className="bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-shadow h-full flex flex-col">
+                      <div className="aspect-[16/9] relative">
+                        <img
+                          src={thumbUrl(post.cover_image, { width: 800 }) || "/placeholder.svg"}
+                          alt={post.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
                       </div>
-                      <div className="text-[#393CA0] font-medium">Read more</div>
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-500 mb-2">
+                            {post.created_at && format(new Date(post.created_at), 'MMMM d, yyyy')}
+                          </p>
+                          <h3 className="text-xl font-semibold mb-3 group-hover:text-[#393CA0] transition-colors">
+                            {post.title}
+                          </h3>
+                          <p className="text-gray-600 mb-4 line-clamp-3">
+                            {post.excerpt}
+                          </p>
+                        </div>
+                        <div className="text-[#393CA0] font-medium">Read more</div>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+              <LoadMoreButton
+                onClick={handleLoadMore}
+                isLoading={isFetching}
+                hasMore={hasMore}
+              />
+            </>
           ) : (
             <div className="text-center py-12">
               <h3 className="text-xl text-gray-600">No blog posts found</h3>
