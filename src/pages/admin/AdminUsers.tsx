@@ -47,10 +47,7 @@ export default function AdminUsers() {
 
   const debouncedSearch = useDebouncedValue(search.trim(), 400);
 
-  // Reset to first page when the search term changes.
-  if (page !== 0 && debouncedSearch !== "" && page * PAGE_SIZE > 0) {
-    // no-op; handled by including debouncedSearch in queryKey below.
-  }
+
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["admin-users", debouncedSearch, page],
