@@ -54,9 +54,12 @@ export default function Product() {
             </div>
             <div className="order-1 lg:order-2">
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product.png"
+                src={thumbUrl("https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product.png", { width: 1200 })}
                 alt="Innovation Platform Interface"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1200}
+                height={800}
               />
             </div>
           </div>
@@ -69,9 +72,12 @@ export default function Product() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Website_Assets__3_.png"
+                src={thumbUrl("https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Website_Assets__3_.png", { width: 1200 })}
                 alt="Innovation Journey"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1200}
+                height={800}
               />
             </div>
             <div>
@@ -106,9 +112,12 @@ export default function Product() {
             </div>
             <div className="order-1 lg:order-2">
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product-Empathize.png"
+                src={thumbUrl("https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Product-Empathize.png", { width: 1200 })}
                 alt="Innovation Platform Interface"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1200}
+                height={800}
               />
             </div>
           </div>
@@ -121,9 +130,12 @@ export default function Product() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
               <img
-                src="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Screenshot_2024-11-15_at_2.36.42_PM.png"
+                src={thumbUrl("https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/product_page/Screenshot_2024-11-15_at_2.36.42_PM.png", { width: 1200 })}
                 alt="Impact Measurement Dashboard"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1200}
+                height={800}
               />
             </div>
             <div>
