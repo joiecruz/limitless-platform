@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Users, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { thumbUrl } from "@/lib/imageUrl";
 
 export default function Courses() {
   const { toast } = useToast();
@@ -133,8 +134,10 @@ export default function Courses() {
                 {course.image_url && (
                   <div className="w-full h-48 overflow-hidden">
                     <img
-                      src={course.image_url}
+                      src={thumbUrl(course.image_url, { width: 800 })}
                       alt={course.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </div>
