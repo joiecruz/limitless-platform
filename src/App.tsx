@@ -14,15 +14,18 @@ import { HelmetProvider } from "react-helmet-async";
 import { isApexDomain } from "./utils/domainHelpers";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
-// Create optimized query client
+// Create optimized query client — aggressive caching to slash Supabase egress
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       retryDelay: 1000,
       networkMode: 'always',
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000, // 5 minutes — most public content is near-static
+      gcTime: 30 * 60 * 1000, // keep cached results around for 30 min
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
     },
   },
 });
