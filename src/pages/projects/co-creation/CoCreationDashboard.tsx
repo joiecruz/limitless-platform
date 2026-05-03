@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Copy, Globe, Sparkles, Lock, Unlock, Play } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { QRCodeCanvas } from "qrcode.react";
+import { getPublicSiteOrigin } from "@/utils/domainHelpers";
 
 interface Session {
   id: string;
@@ -64,7 +65,7 @@ export default function CoCreationDashboard() {
   const [loading, setLoading] = useState(true);
   const [synthLoading, setSynthLoading] = useState(false);
 
-  const publicUrl = session ? `${window.location.origin}/cocreate/${session.slug}` : "";
+  const publicUrl = session ? `${getPublicSiteOrigin()}/cocreate/${session.slug}` : "";
 
   useEffect(() => {
     if (!id) return;
