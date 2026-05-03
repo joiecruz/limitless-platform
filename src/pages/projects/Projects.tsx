@@ -11,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useDesignChallenges } from "@/hooks/useDesignChallenges";
 import { useProjects, Project } from "@/hooks/useProjects";
+import { useCoCreationSessions } from "@/hooks/useCoCreationSessions";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { Briefcase, Plus, Trash2, Lightbulb } from "lucide-react";
+import { Briefcase, Plus, Trash2, Lightbulb, Sparkles } from "lucide-react";
 import { ProjectNavBar } from "@/components/projects/ProjectNavBar";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import SearchHeader from "@/components/tools/SearchHeader";
