@@ -6,8 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ProjectCardProps } from "./ProjectCard";
-import { X, Rocket, Lightbulb, Sparkles } from "lucide-react";
+import { X, Rocket, Lightbulb, Sparkles, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -21,6 +22,7 @@ type ProjectCreationStep = "initial" | "collectIdeas";
 
 export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onCreateChallenge, onStartDesignThinking }: CreateProjectDialogProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<ProjectCreationStep>("initial");
   const [projectData, setProjectData] = useState<Partial<ProjectCardProps>>({
     title: "",
@@ -121,7 +123,7 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onCre
         </DialogDescription>
       </DialogHeader>
       
-      <div className="grid grid-cols-2 gap-4 py-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-4">
         <div 
           onClick={() => {
             if (typeof onStartDesignThinking === 'function') {
@@ -133,8 +135,8 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onCre
           <div className="bg-[#FFEFE5] p-4 rounded-lg mb-3">
             <Rocket className="h-8 w-8 text-[#FF5722]" />
           </div>
-          <h3 className="font-medium text-lg mb-1">Start with design thinking</h3>
-          <p className="text-muted-foreground text-sm">Kickstart your project going through an AI-enabled design process</p>
+          <h3 className="font-medium text-lg mb-1">Design thinking</h3>
+          <p className="text-muted-foreground text-sm">Go through an AI-enabled design process</p>
         </div>
 
         <div 
@@ -145,7 +147,21 @@ export function CreateProjectDialog({ open, onOpenChange, onCreateProject, onCre
             <Lightbulb className="h-8 w-8 text-[#FFC107]" />
           </div>
           <h3 className="font-medium text-lg mb-1">Collect ideas</h3>
-          <p className="text-muted-foreground text-sm">Crowdsource ideas from your colleagues for a specific design challenge</p>
+          <p className="text-muted-foreground text-sm">Crowdsource ideas for a specific design challenge</p>
+        </div>
+
+        <div
+          onClick={() => {
+            onOpenChange(false);
+            navigate("/dashboard/projects/co-creation/new");
+          }}
+          className="bg-muted/20 hover:bg-muted/30 rounded-lg p-6 cursor-pointer flex flex-col items-center text-center hover:shadow-lg transition-shadow"
+        >
+          <div className="bg-[#EDE9FE] p-4 rounded-lg mb-3">
+            <Users className="h-8 w-8 text-[#7C3AED]" />
+          </div>
+          <h3 className="font-medium text-lg mb-1">AI-Assisted Co-Creation</h3>
+          <p className="text-muted-foreground text-sm">Run a public live ideation session with AI synthesis</p>
         </div>
       </div>
     </>
