@@ -133,6 +133,14 @@ export default function CoCreationPublic() {
         .order("created_at", { ascending: false });
       setResponses((rs as Response[]) || []);
 
+      const { data: ps } = await supabase
+        .from("cocreation_participants")
+        .select("id, display_name")
+        .eq("session_id", s.id);
+      setParticipants(
+        Object.fromEntries(((ps as any[]) || []).map((p) => [p.id, p.display_name])),
+      );
+
       if (pid) {
         const { data: votes } = await supabase
           .from("cocreation_upvotes")
