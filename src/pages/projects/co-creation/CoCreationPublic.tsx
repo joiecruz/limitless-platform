@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { getOrCreateAnonIdentity } from "@/lib/anonymousName";
+import { cacheAnonName, generateUniqueAnonName, getCachedAnonIdentity } from "@/lib/anonymousName";
 import { Sparkles, Plus, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Session {
@@ -67,6 +67,7 @@ export default function CoCreationPublic() {
   const [session, setSession] = useState<Session | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
+  const [participants, setParticipants] = useState<Record<string, string>>({});
   const [participantId, setParticipantId] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
   const [draft, setDraft] = useState("");
@@ -93,17 +94,20 @@ export default function CoCreationPublic() {
         return;
       }
       setSession(s as Session);
-      const { token, displayName: name } = getOrCreateAnonIdentity(slug);
-      setDisplayName(name);
+      const { token, displayName: cachedName } = getCachedAnonIdentity(slug);
 
       const { data: existing } = await supabase
         .from("cocreation_participants")
-        .select("id")
+        .select("id, display_name")
         .eq("session_id", s.id)
         .eq("anon_token", token)
         .maybeSingle();
+
       let pid = existing?.id;
+      let name = existing?.display_name || cachedName || null;
+
       if (!pid) {
+        name = await generateUniqueAnonName(s.id);
         const { data: created } = await supabase
           .from("cocreation_participants")
           .insert({ session_id: s.id, anon_token: token, display_name: name })
@@ -111,6 +115,8 @@ export default function CoCreationPublic() {
           .single();
         pid = created?.id;
       }
+      if (name) cacheAnonName(slug, name);
+      setDisplayName(name || "");
       setParticipantId(pid || null);
 
       const { data: qs } = await supabase
@@ -126,6 +132,14 @@ export default function CoCreationPublic() {
         .eq("session_id", s.id)
         .order("created_at", { ascending: false });
       setResponses((rs as Response[]) || []);
+
+      const { data: ps } = await supabase
+        .from("cocreation_participants")
+        .select("id, display_name")
+        .eq("session_id", s.id);
+      setParticipants(
+        Object.fromEntries(((ps as any[]) || []).map((p) => [p.id, p.display_name])),
+      );
 
       if (pid) {
         const { data: votes } = await supabase
@@ -151,12 +165,21 @@ export default function CoCreationPublic() {
         "postgres_changes",
         { event: "*", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${session.id}` },
         async () => {
-          const { data: rs } = await supabase
-            .from("cocreation_responses")
-            .select("*")
-            .eq("session_id", session.id)
-            .order("created_at", { ascending: false });
+          const [{ data: rs }, { data: ps }] = await Promise.all([
+            supabase
+              .from("cocreation_responses")
+              .select("*")
+              .eq("session_id", session.id)
+              .order("created_at", { ascending: false }),
+            supabase
+              .from("cocreation_participants")
+              .select("id, display_name")
+              .eq("session_id", session.id),
+          ]);
           setResponses((rs as Response[]) || []);
+          setParticipants(
+            Object.fromEntries(((ps as any[]) || []).map((p) => [p.id, p.display_name])),
+          );
         },
       )
       .on(
@@ -212,21 +235,12 @@ export default function CoCreationPublic() {
     if (!text) return;
     setSubmitting(true);
     try {
-      let refined: string | null = null;
-      try {
-        const { data } = await supabase.functions.invoke("cocreation-refine-response", {
-          body: { text, question: currentQuestion.text, framing: currentQuestion.framing },
-        });
-        refined = data?.refined || null;
-      } catch {
-        // optional
-      }
       const { error } = await supabase.from("cocreation_responses").insert({
         session_id: session.id,
         question_id: currentQuestion.id,
         participant_id: participantId,
         original_text: text,
-        refined_text: refined,
+        refined_text: null,
       });
       if (error) throw error;
       setDraft("");
@@ -389,8 +403,11 @@ export default function CoCreationPublic() {
                     r.id,
                   )}`}
                 >
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-700 mb-1">
+                    {participants[r.participant_id] || "Anonymous"}
+                  </p>
                   <p className="text-sm text-gray-900 whitespace-pre-wrap break-words">
-                    {r.refined_text || r.original_text}
+                    {r.original_text}
                   </p>
                   <div className="mt-3 flex items-center justify-end">
                     <button
