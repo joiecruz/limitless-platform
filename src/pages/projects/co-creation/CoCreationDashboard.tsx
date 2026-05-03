@@ -191,17 +191,28 @@ export default function CoCreationDashboard() {
   const generateVisual = async () => {
     if (!session) return;
     setVisualLoading(true);
+    setVisualError(null);
     toast({ title: "Creating your visual summary…", description: "This may take 20–40 seconds." });
     try {
       const { data, error } = await supabase.functions.invoke("cocreation-generate-output", {
         body: { session_id: session.id, kind: "visual" },
       });
       if (error) throw error;
-      const url = (data as any)?.image_url;
-      if (url) setLatestVisual(url);
+      const errMsg = (data as any)?.error;
+      if (errMsg) throw new Error(errMsg);
+      const out = (data as any)?.output;
+      if (out?.id && out?.image_url) {
+        setVisuals((prev) => {
+          if (prev.some((v) => v.id === out.id)) return prev;
+          return [{ id: out.id, image_url: out.image_url, created_at: out.created_at }, ...prev];
+        });
+        setActiveVisualId(out.id);
+      }
       toast({ title: "Visual summary ready" });
     } catch (e: any) {
-      toast({ title: "Failed", description: e.message || "Image generation failed", variant: "destructive" });
+      const msg = e?.message || "Image generation failed";
+      setVisualError(msg);
+      toast({ title: "Failed", description: msg, variant: "destructive" });
     } finally {
       setVisualLoading(false);
     }
