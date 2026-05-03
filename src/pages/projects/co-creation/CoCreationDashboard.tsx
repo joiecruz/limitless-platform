@@ -6,10 +6,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Globe, Sparkles, Lock, Unlock, Play, Image as ImageIcon, Presentation, Mic, Loader2, Download } from "lucide-react";
+import { ArrowLeft, Copy, Globe, Sparkles, Lock, Unlock, Play, Image as ImageIcon, Presentation, Mic, Loader2, Download, RefreshCw, ExternalLink, AlertCircle } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { QRCodeCanvas } from "qrcode.react";
 import { getPublicSiteOrigin } from "@/utils/domainHelpers";
+
+interface VisualOutput {
+  id: string;
+  image_url: string;
+  created_at: string;
+}
+
+function timeAgo(iso: string) {
+  const diff = Math.max(0, Date.now() - new Date(iso).getTime());
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hr ago`;
+  const d = Math.floor(h / 24);
+  return `${d} day${d > 1 ? "s" : ""} ago`;
+}
 
 interface Session {
   id: string;
