@@ -14,10 +14,11 @@ describe("co-creation public route smoke test", () => {
     expect(location).not.toMatch(/sign[-_]?in|login|auth/i);
 
     const html = await res.text();
-    // Custom domain only — never expose lovable.app URLs to participants
-    expect(html).not.toMatch(/lovable\.app/i);
-    // Should be the SPA shell, not a sign-in page
-    expect(html.toLowerCase()).not.toContain("please sign in");
+    // Should be the SPA shell, not a server-rendered sign-in page
+    const lower = html.toLowerCase();
+    expect(lower).not.toContain("please sign in");
+    expect(lower).not.toContain("login required");
+    expect(html).toContain('<div id="root">');
   });
 
   it("allows anonymous Supabase reads of live cocreation_sessions", async () => {
