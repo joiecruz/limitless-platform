@@ -34,3 +34,17 @@ export const getNormalizedDomain = (): string => {
   
   return hostname;
 };
+
+// Public-facing origin for shareable links (QR codes, participant URLs).
+// Always returns the custom domain in production-like environments so links
+// shown to participants never expose preview/lovable.app URLs.
+export const getPublicSiteOrigin = (): string => {
+  if (typeof window === "undefined") return "https://www.limitlesslab.org";
+  const hostname = window.location.hostname;
+  // Use local origin only when developing locally
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return window.location.origin;
+  }
+  return "https://www.limitlesslab.org";
+};
+
