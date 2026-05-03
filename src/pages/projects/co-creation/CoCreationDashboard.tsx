@@ -295,7 +295,7 @@ export default function CoCreationDashboard() {
                           </span>
                           <Badge variant="outline">▲ {r.upvote_count}</Badge>
                         </div>
-                        <p className="text-sm">{r.refined_text || r.original_text}</p>
+                        <p className="text-sm">{r.original_text}</p>
                       </div>
                     ))}
                     {list.length > 8 && (
