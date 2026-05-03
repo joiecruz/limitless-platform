@@ -94,17 +94,20 @@ export default function CoCreationPublic() {
         return;
       }
       setSession(s as Session);
-      const { token, displayName: name } = getOrCreateAnonIdentity(slug);
-      setDisplayName(name);
+      const { token, displayName: cachedName } = getCachedAnonIdentity(slug);
 
       const { data: existing } = await supabase
         .from("cocreation_participants")
-        .select("id")
+        .select("id, display_name")
         .eq("session_id", s.id)
         .eq("anon_token", token)
         .maybeSingle();
+
       let pid = existing?.id;
+      let name = existing?.display_name || cachedName || null;
+
       if (!pid) {
+        name = await generateUniqueAnonName(s.id);
         const { data: created } = await supabase
           .from("cocreation_participants")
           .insert({ session_id: s.id, anon_token: token, display_name: name })
@@ -112,6 +115,8 @@ export default function CoCreationPublic() {
           .single();
         pid = created?.id;
       }
+      if (name) cacheAnonName(slug, name);
+      setDisplayName(name || "");
       setParticipantId(pid || null);
 
       const { data: qs } = await supabase
