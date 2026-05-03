@@ -1,155 +1,52 @@
-# AI-Assisted Co-Creation — Projects Template
+## Goal
 
-A new template inside the existing Projects module (alongside "Start with design thinking" and "Collect ideas"). Owners create a co-creation session with guide questions, publish a public link/QR for anonymous participation, then trigger AI synthesis and outputs.
+Rework the public participant page (`/cocreate/:slug`) so it feels like a Padlet/sticky-note board, with one question shown at a time, a clear progress indicator, and a floating "+" button for adding ideas. Confirm the page is truly public (no Lovable auth wall) and hide the "Edit with Lovable" badge from published deployments.
 
-## User flow
+## Changes
 
-1. **Create** — Owner picks "AI-Assisted Co-Creation" from CreateProjectDialog → wizard captures title, description, 3–5 guide questions (each with optional framing + examples), and Event Mode toggle.
-2. **Publish** — Generates `/cocreate/:slug` public link + QR code. Status: draft → live → synthesizing → completed.
-3. **Participate (public, no auth)** — Anonymous user gets assigned a friendly name (e.g. "Curious Panda"), stored in localStorage. They answer questions, submit multiple short ideas, see others' ideas live, upvote.
-4. **Owner controls** — Live dashboard shows counts/trending. In Event Mode, owner activates one question at a time and can lock phases.
-5. **AI refinement** — On submission, optional AI rewrite (clarity, framing) preserving meaning.
-6. **Pre-synthesis** — Owner sees draft theme groupings + duplicate flags, can adjust.
-7. **Synthesis** — AI produces 3–5 themed insights per question.
-8. **Outputs** — Generate slides, visual summary, podcast-style digest (text script).
+### 1. Rewrite `src/pages/projects/co-creation/CoCreationPublic.tsx`
 
-## Pages & components (new)
+**Layout (one-question-at-a-time)**
+- Replace the long stack of question cards with a single active question view.
+- Local state `currentIndex` (0…questions.length-1) drives which question is shown.
+- In **Event Mode**, `currentIndex` is forced to follow `session.active_question_id` (host controls the room).
+- In **non-event mode**, participant navigates freely with **Prev / Next** buttons at the bottom.
 
-```
-src/pages/projects/co-creation/
-  CoCreationCreate.tsx          # owner wizard
-  CoCreationDashboard.tsx       # owner live view + synthesis + outputs
-  CoCreationPublic.tsx          # public participant view (/cocreate/:slug)
-src/components/projects/co-creation/
-  GuideQuestionEditor.tsx
-  QRCodeBlock.tsx
-  ResponseCard.tsx              # idea + upvote + anon name
-  LiveResponsesPanel.tsx
-  ThemePreviewPanel.tsx
-  SynthesisOutput.tsx
-  OutputSlides.tsx / OutputVisual.tsx / OutputPodcast.tsx
-  EventModeControls.tsx
-src/lib/anonymousName.ts        # adjective+animal generator
-```
+**Progress indicator (top, under header)**
+- Linear progress bar: `value = ((currentIndex + 1) / questions.length) * 100` using existing `Progress` component (`@/components/ui/progress`).
+- Caption: `Question {currentIndex + 1} of {questions.length}` plus phase badge if present.
 
-Wire a third tile into `CreateProjectDialog.tsx` ("AI-Assisted Co-Creation") that routes to `/dashboard/projects/co-creation/new`. Add public route `/cocreate/:slug` in `AppRoutes.tsx` (outside DashboardLayout, no auth).
+**Sticky-note board**
+- Render responses for the current question as a responsive masonry-ish grid (`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3`).
+- Each "note": rounded-lg card, soft pastel background (rotate through 5 token-based hues derived from `r.id` hash), slight rotation (`-rotate-1` / `rotate-1`), shadow, padding, body text, and a small footer with anonymous display name + upvote button (heart/▲). Reuse existing upvote logic.
+- Empty state: dashed outline tile saying "Be the first to share an idea."
 
-## Database (migration)
+**Floating Add button**
+- Fixed `+` button bottom-right (`fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg`), only visible when `canSubmit` is true.
+- Clicking opens a Dialog (`@/components/ui/dialog`) titled "Share an idea" with the `Textarea`, char counter, Cancel and Submit buttons. Reuses the current `submitResponse` flow (still calls `cocreation-refine-response` edge function in background).
+- After submit, dialog closes and the new note animates onto the board (rely on realtime subscription already in place).
 
-```sql
-create table cocreation_sessions (
-  id uuid primary key default gen_random_uuid(),
-  workspace_id uuid not null references workspaces(id) on delete cascade,
-  project_id uuid references projects(id) on delete set null,
-  owner_id uuid not null references auth.users(id),
-  title text not null,
-  description text,
-  slug text unique not null,
-  status text not null default 'draft',          -- draft|live|synthesizing|completed
-  event_mode boolean not null default false,
-  active_question_id uuid,                       -- for event mode
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
+**Header simplification**
+- Keep small header: Sparkles icon + "Co-Creation" + `You: {displayName}` badge. No Lovable branding anywhere.
+- Title + description shown above progress bar.
 
-create table cocreation_questions (
-  id uuid primary key default gen_random_uuid(),
-  session_id uuid not null references cocreation_sessions(id) on delete cascade,
-  position int not null,
-  text text not null,
-  framing text,
-  examples jsonb default '[]'::jsonb,
-  phase text,                                    -- e.g. Problems/Opportunities/Recs
-  locked boolean not null default false
-);
+### 2. Hide Lovable badge on published site
 
-create table cocreation_participants (
-  id uuid primary key default gen_random_uuid(),
-  session_id uuid not null references cocreation_sessions(id) on delete cascade,
-  anon_token text not null,                      -- random per-browser id
-  display_name text not null,                    -- "Curious Panda"
-  created_at timestamptz default now(),
-  unique(session_id, anon_token)
-);
+- Call `publish_settings--set_badge_visibility` with `hide_badge: true` so the published participant link has no "Edit with Lovable" pill. (This is what the user means by "no Lovable trace".)
 
-create table cocreation_responses (
-  id uuid primary key default gen_random_uuid(),
-  session_id uuid not null references cocreation_sessions(id) on delete cascade,
-  question_id uuid not null references cocreation_questions(id) on delete cascade,
-  participant_id uuid not null references cocreation_participants(id) on delete cascade,
-  original_text text not null,
-  refined_text text,
-  upvote_count int not null default 0,
-  created_at timestamptz default now()
-);
+### 3. Confirm public access (no auth required)
 
-create table cocreation_upvotes (
-  response_id uuid references cocreation_responses(id) on delete cascade,
-  participant_id uuid references cocreation_participants(id) on delete cascade,
-  primary key (response_id, participant_id)
-);
+- Route is already outside `RequireAuth` in `AppRoutes.tsx` (`/cocreate/:slug`).
+- Sanity-check the RLS policies on `cocreation_sessions`, `cocreation_questions`, `cocreation_participants`, `cocreation_responses`, `cocreation_upvotes` allow anonymous SELECT/INSERT for live sessions. If any policy still requires `auth.uid()` we will adjust it in a follow-up migration; from the prior migration this should already be the case, but we'll verify by reading the migration file before shipping.
 
-create table cocreation_synthesis (
-  id uuid primary key default gen_random_uuid(),
-  session_id uuid not null references cocreation_sessions(id) on delete cascade,
-  question_id uuid references cocreation_questions(id) on delete cascade,
-  themes jsonb not null,                         -- [{label, insight, supporting_response_ids[]}]
-  created_at timestamptz default now()
-);
+### 4. Out of scope
 
-create table cocreation_outputs (
-  id uuid primary key default gen_random_uuid(),
-  session_id uuid not null references cocreation_sessions(id) on delete cascade,
-  kind text not null,                            -- slides|visual|podcast
-  content jsonb not null,
-  created_at timestamptz default now()
-);
-```
-
-### RLS (per security memory: workspace-scoped private, but session is intentionally public when status='live')
-
-- `cocreation_sessions`: SELECT public if `status in ('live','synthesizing','completed')` (anon allowed); full CRUD limited to workspace members; status/event/synthesis writes limited to owner or workspace admin via `is_workspace_admin_or_owner_of`.
-- `cocreation_questions`: SELECT inherits session visibility; writes by session owner / workspace admin.
-- `cocreation_participants`: INSERT allowed for `anon` when parent session is live; SELECT only by workspace member or by matching `anon_token` (passed as request header / RPC arg).
-- `cocreation_responses`: INSERT allowed for `anon` when session live AND (event_mode=false OR question = active_question_id) AND question not locked; SELECT public on live sessions; UPDATE/DELETE by workspace owner only.
-- `cocreation_upvotes`: INSERT/DELETE allowed for `anon` participant on live sessions; trigger updates `upvote_count`.
-- `cocreation_synthesis` / `cocreation_outputs`: SELECT public on live/completed; writes by workspace admin/owner only.
-
-Realtime: enable replication on `cocreation_responses`, `cocreation_upvotes`, `cocreation_sessions` so public + owner views update live.
-
-## Edge functions (new)
-
-All call Lovable AI Gateway (`google/gemini-3-flash-preview` default), key already in secrets.
-
-- `cocreation-refine-response` — input: response text + question + framing; returns 1–2 sentence rewrite.
-- `cocreation-pre-synthesis` — groups responses into draft themes, flags duplicates.
-- `cocreation-synthesize` — produces 3–5 themed insights per question; writes `cocreation_synthesis`.
-- `cocreation-generate-output` — kind=slides|visual|podcast; structured tool-calling output; writes `cocreation_outputs`.
-
-All validate input with zod, include CORS, return clear 402/429 errors. Public-callable functions verify `session.status='live'` and use service role internally; never trust client-supplied workspace claims.
-
-## Anonymous identity
-
-`src/lib/anonymousName.ts` exports `generateAnonName()` combining ~30 friendly adjectives × ~30 animals. Token = `crypto.randomUUID()` stored in `localStorage` keyed per session slug. Public page upserts a `cocreation_participants` row and uses returned id for all writes.
-
-## Event Mode
-
-Owner dashboard exposes EventModeControls: toggle, set active question, lock/unlock per question, optional countdown timer (client-side). Public page highlights the active question and disables others.
-
-## QR + share
-
-Use `qrcode` library (already-allowed: jsPDF approach not needed) to render an SVG/PNG of `${window.location.origin}/cocreate/${slug}` on the dashboard with copy-link button.
-
-## Out of scope (this plan)
-
-- Editing/reordering questions after going live (ship later)
-- Exporting outputs to .pptx (slides shown in-app; PDF export can follow)
-- Moderation/blocklist for inappropriate inputs (note as follow-up)
+- No changes to the host dashboard, edge functions, or DB schema.
+- Anonymous identity (`getOrCreateAnonIdentity`) keeps working as-is.
 
 ## Technical notes
 
-- New routes: `/dashboard/projects/co-creation/new`, `/dashboard/projects/co-creation/:id` (owner), `/cocreate/:slug` (public, no DashboardLayout, no auth gate).
-- Public page uses `supabase` anon client; RLS does the gating.
-- React Query for fetch + Supabase realtime channels for live updates.
-- Reuse existing `LoadingSpinner`, `Button`, `Dialog`, `Card`, `Badge` from shadcn.
-- Follow security memory: never expose service role; admin checks via `is_workspace_admin_or_owner_of`; explicit `search_path = public` on any new SQL functions.
+- New imports in `CoCreationPublic.tsx`: `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogFooter` from `@/components/ui/dialog`; `Progress` from `@/components/ui/progress`; `Plus`, `Heart` from `lucide-react`.
+- Sticky-note color palette uses Tailwind tokens already in the design system (e.g., `bg-yellow-100`, `bg-pink-100`, `bg-blue-100`, `bg-green-100`, `bg-purple-100`) — picked deterministically from `r.id.charCodeAt(0) % 5` so notes don't reshuffle on re-render.
+- Event-mode sync: `useEffect` watching `session.active_question_id` updates `currentIndex` to match the host's active question.
+- Locked / inactive states: when `canSubmit` is false, FAB is hidden and an inline notice ("Waiting for host to activate this question." / "Locked by host.") replaces the empty CTA.
