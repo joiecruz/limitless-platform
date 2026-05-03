@@ -6,10 +6,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Globe, Sparkles, Lock, Unlock, Play, Image as ImageIcon, Presentation, Mic, Loader2, Download } from "lucide-react";
+import { ArrowLeft, Copy, Globe, Sparkles, Lock, Unlock, Play, Image as ImageIcon, Presentation, Mic, Loader2, Download, RefreshCw, ExternalLink, AlertCircle } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { QRCodeCanvas } from "qrcode.react";
 import { getPublicSiteOrigin } from "@/utils/domainHelpers";
+
+interface VisualOutput {
+  id: string;
+  image_url: string;
+  created_at: string;
+}
+
+function timeAgo(iso: string) {
+  const diff = Math.max(0, Date.now() - new Date(iso).getTime());
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hr ago`;
+  const d = Math.floor(h / 24);
+  return `${d} day${d > 1 ? "s" : ""} ago`;
+}
 
 interface Session {
   id: string;
@@ -65,7 +83,9 @@ export default function CoCreationDashboard() {
   const [loading, setLoading] = useState(true);
   const [synthLoading, setSynthLoading] = useState(false);
   const [visualLoading, setVisualLoading] = useState(false);
-  const [latestVisual, setLatestVisual] = useState<string | null>(null);
+  const [visualError, setVisualError] = useState<string | null>(null);
+  const [visuals, setVisuals] = useState<VisualOutput[]>([]);
+  const [activeVisualId, setActiveVisualId] = useState<string | null>(null);
 
   const publicUrl = session ? `${getPublicSiteOrigin()}/cocreate/${session.slug}` : "";
 
@@ -93,13 +113,19 @@ export default function CoCreationDashboard() {
         .eq("session_id", id);
       const { data: outs } = await supabase
         .from("cocreation_outputs")
-        .select("kind, content, created_at")
+        .select("id, content, created_at")
         .eq("session_id", id)
         .eq("kind", "visual")
-        .order("created_at", { ascending: false })
-        .limit(1);
-      const latest = (outs?.[0]?.content as any)?.image_url as string | undefined;
-      if (latest) setLatestVisual(latest);
+        .order("created_at", { ascending: false });
+      const visualList: VisualOutput[] = ((outs as any[]) || [])
+        .map((o) => ({
+          id: o.id,
+          image_url: (o.content as any)?.image_url as string,
+          created_at: o.created_at,
+        }))
+        .filter((o) => !!o.image_url);
+      setVisuals(visualList);
+      setActiveVisualId((prev) => prev ?? visualList[0]?.id ?? null);
 
       setSession(s as Session);
       setQuestions((qs as Question[]) || []);
@@ -117,6 +143,7 @@ export default function CoCreationDashboard() {
       .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${id}` }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_sessions", filter: `id=eq.${id}` }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_questions", filter: `session_id=eq.${id}` }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_outputs", filter: `session_id=eq.${id}` }, load)
       .subscribe();
 
     return () => {
@@ -164,17 +191,28 @@ export default function CoCreationDashboard() {
   const generateVisual = async () => {
     if (!session) return;
     setVisualLoading(true);
+    setVisualError(null);
     toast({ title: "Creating your visual summary…", description: "This may take 20–40 seconds." });
     try {
       const { data, error } = await supabase.functions.invoke("cocreation-generate-output", {
         body: { session_id: session.id, kind: "visual" },
       });
       if (error) throw error;
-      const url = (data as any)?.image_url;
-      if (url) setLatestVisual(url);
+      const errMsg = (data as any)?.error;
+      if (errMsg) throw new Error(errMsg);
+      const out = (data as any)?.output;
+      if (out?.id && out?.image_url) {
+        setVisuals((prev) => {
+          if (prev.some((v) => v.id === out.id)) return prev;
+          return [{ id: out.id, image_url: out.image_url, created_at: out.created_at }, ...prev];
+        });
+        setActiveVisualId(out.id);
+      }
       toast({ title: "Visual summary ready" });
     } catch (e: any) {
-      toast({ title: "Failed", description: e.message || "Image generation failed", variant: "destructive" });
+      const msg = e?.message || "Image generation failed";
+      setVisualError(msg);
+      toast({ title: "Failed", description: msg, variant: "destructive" });
     } finally {
       setVisualLoading(false);
     }
@@ -365,39 +403,141 @@ export default function CoCreationDashboard() {
         <CardHeader>
           <CardTitle>Generate outputs</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={generateVisual} disabled={visualLoading}>
-              {visualLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-              Visual summary
-            </Button>
-            <Button variant="outline" disabled>
-              <Presentation className="h-4 w-4" />
-              Slides — Coming soon
-            </Button>
-            <Button variant="outline" disabled>
-              <Mic className="h-4 w-4" />
-              Podcast digest — Coming soon
-            </Button>
-          </div>
+        <CardContent className="space-y-6">
+          {(() => {
+            const hasSynthesis = synthesis.some((s) => s.themes && s.themes.length > 0);
+            const active = visuals.find((v) => v.id === activeVisualId) || visuals[0];
+            return (
+              <>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    onClick={generateVisual}
+                    disabled={visualLoading || !hasSynthesis}
+                    title={!hasSynthesis ? "Run synthesis first" : undefined}
+                  >
+                    {visualLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : visuals.length > 0 ? (
+                      <RefreshCw className="h-4 w-4" />
+                    ) : (
+                      <ImageIcon className="h-4 w-4" />
+                    )}
+                    {visuals.length > 0 ? "Regenerate visual summary" : "Generate visual summary"}
+                  </Button>
+                  <Button variant="outline" disabled>
+                    <Presentation className="h-4 w-4" />
+                    Slides — Coming soon
+                  </Button>
+                  <Button variant="outline" disabled>
+                    <Mic className="h-4 w-4" />
+                    Podcast digest — Coming soon
+                  </Button>
+                </div>
 
-          {latestVisual && (
-            <div className="border rounded-lg overflow-hidden bg-muted/20">
-              <img src={latestVisual} alt="Visual summary" className="w-full h-auto block" />
-              <div className="flex items-center justify-between p-3 border-t bg-background">
-                <p className="text-xs text-muted-foreground">Latest visual summary</p>
-                <a
-                  href={latestVisual}
-                  download
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                >
-                  <Download className="h-4 w-4" /> Download
-                </a>
-              </div>
-            </div>
-          )}
+                {!hasSynthesis && (
+                  <p className="text-sm text-muted-foreground">
+                    Run AI synthesis above first — the visual summary illustrates the synthesized themes.
+                  </p>
+                )}
+
+                {visualError && (
+                  <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <span>{visualError}</span>
+                  </div>
+                )}
+
+                {visualLoading && !active && (
+                  <div className="space-y-2">
+                    <Skeleton className="aspect-[16/10] w-full rounded-lg" />
+                    <p className="text-xs text-muted-foreground">
+                      Drawing your visual summary… this usually takes 20–40 seconds.
+                    </p>
+                  </div>
+                )}
+
+                {active && (
+                  <div className="space-y-3">
+                    <div className="border rounded-lg overflow-hidden bg-muted/20 relative">
+                      <img
+                        src={active.image_url}
+                        alt="Visual summary"
+                        className="w-full h-auto block"
+                      />
+                      {visualLoading && (
+                        <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                      )}
+                      <div className="flex flex-wrap items-center justify-between gap-2 p-3 border-t bg-background">
+                        <p className="text-xs text-muted-foreground">
+                          Generated {timeAgo(active.created_at)}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={active.image_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+                          >
+                            <ExternalLink className="h-4 w-4" /> Open
+                          </a>
+                          <a
+                            href={active.image_url}
+                            download
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                          >
+                            <Download className="h-4 w-4" /> Download
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    {visuals.length > 1 && (
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+                          History ({visuals.length})
+                        </p>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {visuals.map((v) => {
+                            const isActive = v.id === active.id;
+                            return (
+                              <button
+                                key={v.id}
+                                onClick={() => setActiveVisualId(v.id)}
+                                title={`Generated ${timeAgo(v.created_at)}`}
+                                className={`relative shrink-0 w-28 h-20 rounded-md overflow-hidden border-2 transition ${
+                                  isActive
+                                    ? "border-primary ring-2 ring-primary/30"
+                                    : "border-border hover:border-primary/60"
+                                }`}
+                              >
+                                <img
+                                  src={v.image_url}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!active && !visualLoading && hasSynthesis && (
+                  <div className="rounded-lg border border-dashed p-6 text-center">
+                    <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm font-medium">No visual summary yet</p>
+                    <p className="text-xs text-muted-foreground">
+                      Generate a hand-drawn poster of your synthesized themes.
+                    </p>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </CardContent>
       </Card>
     </div>

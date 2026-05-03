@@ -65,40 +65,60 @@ Deno.serve(async (req) => {
       .from("cocreation_synthesis")
       .select("question_id, themes")
       .eq("session_id", session_id);
-    const { data: responses } = await admin
-      .from("cocreation_responses")
-      .select("question_id, original_text")
-      .eq("session_id", session_id);
 
     const synthMap = new Map<string, any[]>();
-    for (const s of synthesis || []) synthMap.set(s.question_id, s.themes as any[]);
-    const respMap = new Map<string, string[]>();
-    for (const r of responses || []) {
-      const arr = respMap.get(r.question_id) || [];
-      arr.push(r.original_text);
-      respMap.set(r.question_id, arr);
+    for (const s of synthesis || []) {
+      const themes = (s.themes as any[]) || [];
+      if (themes.length > 0) synthMap.set(s.question_id, themes);
     }
 
-    const summary = (questions || [])
+    if (synthMap.size === 0) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Run synthesis first — the visual summary illustrates the synthesized themes.",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Build a strict, faithful content outline from synthesis ONLY.
+    const outlineSections = (questions || [])
+      .filter((q: any) => synthMap.has(q.id))
       .map((q: any) => {
         const themes = synthMap.get(q.id) || [];
-        const themeText = themes.length
-          ? themes.map((t: any) => `- ${t.label}: ${t.insight}`).join("\n")
-          : (respMap.get(q.id) || []).slice(0, 6).map((t) => `- ${t}`).join("\n");
-        return `Q: ${q.text}\n${themeText}`;
+        const lines = themes
+          .map((t: any) => `  • ${t.label}: ${t.insight}`)
+          .join("\n");
+        return `Question: ${q.text}\n${lines}`;
       })
       .join("\n\n");
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
-    const prompt = `Create a hand-drawn whiteboard-style infographic poster summarizing a co-creation workshop. Style: playful sketch-noted illustration, hand-lettered titles, sketchy line art, watercolor washes in teal, orange, mustard, and soft greens on an off-white background. Include a bold hand-lettered title at the top, a central concept illustration, and surrounding mini-scenes connected by sketchy lines/arrows with hand-lettered captions and tiny doodles of people, lightbulbs, hearts, plants, etc. Looks like a graphic recording / scribing artist drew it during a live event. No photorealism, no 3D, no stock-photo style.
+    const prompt = `Create a single landscape hand-drawn whiteboard-style infographic poster summarizing a co-creation workshop.
 
-Title: "${session?.title || "Co-Creation Summary"}"
-${session?.description ? `Subtitle: "${session.description}"\n` : ""}
-Themes and ideas to illustrate as captioned mini-scenes around the page:
-${summary}
+STYLE (visual only):
+- Sketch-noted / graphic-recording aesthetic, as if drawn live by a scribing artist.
+- Hand-lettered titles and body text. All text must be legible and spelled exactly as provided.
+- Watercolor washes in teal, orange, mustard, and soft greens on an off-white background.
+- Sketchy connecting lines, arrows, underlines, simple banners, and small neutral marks (dots, ticks).
+- No photorealism, no 3D, no stock-photo style.
 
-Render the entire poster as a single landscape image. Make sure all hand-lettered text is legible and spelled correctly.`;
+STRICT CONTENT RULES — READ CAREFULLY:
+- Render ONLY the title, question headings, and theme labels with their insights given below. Do not add, paraphrase loosely, or invent any other themes, statistics, examples, names, quotes, or captions.
+- Every piece of text on the poster must come from the provided content. Do not write decorative words, taglines, or filler text.
+- Do NOT add representational icons or doodles (people, lightbulbs, hearts, plants, gears, buildings, etc.) unless a theme label explicitly names that object. Decoration is limited to abstract marks: arrows, dots, underlines, simple frames, ribbons.
+- If a question has no themes provided, omit it entirely.
+- Preserve the exact wording, capitalization, and punctuation of the title and theme labels.
+
+CONTENT TO RENDER:
+
+Title: ${session?.title || "Co-Creation Summary"}
+${session?.description ? `Subtitle: ${session.description}\n` : ""}
+${outlineSections}
+
+Layout: place the title prominently at the top. Group each question as a labeled section with its themes listed beneath. Use sketchy connectors between sections only — never invent additional content nodes.`;
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -156,13 +176,24 @@ Render the entire poster as a single landscape image. Make sure all hand-lettere
     const { data: pub } = admin.storage.from("cocreation-outputs").getPublicUrl(path);
     const image_url = pub.publicUrl;
 
-    await admin
+    const { data: inserted } = await admin
       .from("cocreation_outputs")
-      .insert({ session_id, kind, content: { image_url, prompt } });
+      .insert({ session_id, kind, content: { image_url, prompt } })
+      .select("id, created_at")
+      .single();
 
-    return new Response(JSON.stringify({ ok: true, image_url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        image_url,
+        output: {
+          id: inserted?.id,
+          created_at: inserted?.created_at,
+          image_url,
+        },
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (e) {
     console.error(e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "error" }), {
