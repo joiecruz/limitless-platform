@@ -298,12 +298,22 @@ export default function CoCreationPublic() {
   return (
     <div className="min-h-screen bg-muted/20 pb-32">
       <header className="bg-background border-b sticky top-0 z-10">
-        <div className="container max-w-4xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <span className="font-semibold">Co-Creation</span>
+        <div className="container max-w-4xl px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src="/limitless-logo.svg"
+              alt="Limitless Lab"
+              className="h-7 w-auto shrink-0"
+            />
+            <div className="hidden sm:flex items-center gap-2 min-w-0">
+              <span className="h-5 w-px bg-border" />
+              <Sparkles className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-sm font-medium truncate">
+                AI-Assisted Co-Creation
+              </span>
+            </div>
           </div>
-          <Badge variant="outline">You: {displayName}</Badge>
+          <Badge variant="outline" className="shrink-0">You: {displayName}</Badge>
         </div>
       </header>
 
