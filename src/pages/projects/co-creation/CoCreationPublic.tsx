@@ -403,8 +403,11 @@ export default function CoCreationPublic() {
                     r.id,
                   )}`}
                 >
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-700 mb-1">
+                    {participants[r.participant_id] || "Anonymous"}
+                  </p>
                   <p className="text-sm text-gray-900 whitespace-pre-wrap break-words">
-                    {r.refined_text || r.original_text}
+                    {r.original_text}
                   </p>
                   <div className="mt-3 flex items-center justify-end">
                     <button
