@@ -165,12 +165,21 @@ export default function CoCreationPublic() {
         "postgres_changes",
         { event: "*", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${session.id}` },
         async () => {
-          const { data: rs } = await supabase
-            .from("cocreation_responses")
-            .select("*")
-            .eq("session_id", session.id)
-            .order("created_at", { ascending: false });
+          const [{ data: rs }, { data: ps }] = await Promise.all([
+            supabase
+              .from("cocreation_responses")
+              .select("*")
+              .eq("session_id", session.id)
+              .order("created_at", { ascending: false }),
+            supabase
+              .from("cocreation_participants")
+              .select("id, display_name")
+              .eq("session_id", session.id),
+          ]);
           setResponses((rs as Response[]) || []);
+          setParticipants(
+            Object.fromEntries(((ps as any[]) || []).map((p) => [p.id, p.display_name])),
+          );
         },
       )
       .on(
