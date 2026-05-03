@@ -112,13 +112,17 @@ export default function Projects() {
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
-    
+
     if (deleteTarget.type === 'project') {
-      await deleteProject(deleteTarget.id);
+      if (deleteTarget.id.startsWith('cocreate:')) {
+        await deleteCocreationSession(deleteTarget.id.replace('cocreate:', ''));
+      } else {
+        await deleteProject(deleteTarget.id);
+      }
     } else {
       deleteChallenge(deleteTarget.id);
     }
-    
+
     setDeleteTarget(null);
   };
 
