@@ -1,29 +1,32 @@
-I found the immediate cause: the dashboard builds the participant URL from `window.location.origin`, so when the host is using the Lovable preview/admin URL, the QR code and copied link also point to Lovable. The project itself is already published publicly and the Lovable badge is already hidden.
+Two issues to fix:
 
-Plan:
+## 1. Co-creation sessions don't appear in the Projects list
 
-1. Use the custom domain for participant links
-   - Add a small URL helper for co-creation participant links.
-   - Generate links as `https://www.limitlesslab.org/cocreate/{slug}` instead of using the current preview/admin origin.
-   - Update the QR code, link input, and copy button to use that custom-domain URL.
+Cause: Co-creation sessions are stored in the `cocreation_sessions` table, but `Projects.tsx` only renders rows from `projects` (via `useProjects`) and `design_challenges` (via `useDesignChallenges`). Sessions ARE being saved successfully — they're just never fetched.
 
-2. Preserve preview/local development behavior safely
-   - In local or non-production environments, still allow a usable local/preview URL when needed for testing.
-   - In the host dashboard UI, prefer the public custom domain so real event participants never see a Lovable URL.
+Fix:
+- Add a new hook `src/hooks/useCoCreationSessions.ts` that fetches `cocreation_sessions` for the current workspace, ordered by `created_at desc`, with a realtime subscription (mirroring `useProjects`).
+- In `src/pages/projects/Projects.tsx`:
+  - Use the new hook.
+  - Render each session as its own card in the existing grid, alongside projects and challenges.
+  - Card shows title, description, status badge (`draft` / `live` / `completed`), a small "AI-Assisted Co-Creation" tag, created date, and a delete button (visible to owner / workspace admin).
+  - Clicking a session navigates to `/dashboard/projects/co-creation/:id`.
+  - Include co-creation sessions in the `searchValue` filter and the empty-state check.
+  - Wire up delete: call `supabase.from('cocreation_sessions').delete().eq('id', id)` (RLS already restricts delete to owner / workspace admin / superadmin).
 
-3. Keep the participant route public
-   - Confirm `/cocreate/:slug` remains outside the authenticated dashboard route.
-   - Add/adjust route handling only if needed so opening the custom-domain co-creation link does not send unauthenticated participants to sign in.
+## 2. Add Limitless Lab logo and "AI-Assisted Co-Creation" label to the public ideation page
 
-4. Improve domain consistency
-   - Since the app currently redirects `limitlesslab.org` to `www.limitlesslab.org`, use the `www` custom domain in generated links to avoid redirects and make QR scans cleaner.
+In `src/pages/projects/co-creation/CoCreationPublic.tsx`, replace the current header (just a Sparkles icon + "Co-Creation" text) with:
+- `<img src="/limitless-logo.svg" alt="Limitless Lab" />` on the left.
+- A divider, then `Sparkles` icon + "AI-Assisted Co-Creation" label (hidden on very small screens to keep room for the participant badge).
+- Keep the existing "You: {displayName}" badge on the right.
 
-5. Verify branding/access settings
-   - Keep the published site visibility public.
-   - Keep the Lovable badge hidden.
-   - No `lovable.app` URL should appear in the participant link or QR code after the change.
+This matches the logo treatment used elsewhere (`AuthLogo`, `AdminLayout`).
 
-Technical details:
-- Main code change: `src/pages/projects/co-creation/CoCreationDashboard.tsx`, replacing `${window.location.origin}/cocreate/${session.slug}` with a custom-domain-aware helper.
-- Likely helper location: `src/utils/domainHelpers.ts`, adding something like `getPublicSiteOrigin()` / `getCoCreationPublicUrl(slug)`.
-- Existing public route is already defined at `src/routes/AppRoutes.tsx` as `/cocreate/:slug` outside `RequireAuth`, so the route should remain public unless we uncover an auth redirect issue during verification.
+## Files to change
+
+- `src/hooks/useCoCreationSessions.ts` (new)
+- `src/pages/projects/Projects.tsx` (render co-creation cards in the grid + delete handling + search filter)
+- `src/pages/projects/co-creation/CoCreationPublic.tsx` (header logo + label)
+
+No database changes needed — RLS already allows workspace members to view/delete their sessions.

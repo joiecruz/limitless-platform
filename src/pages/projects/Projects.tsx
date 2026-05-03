@@ -11,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useDesignChallenges } from "@/hooks/useDesignChallenges";
 import { useProjects, Project } from "@/hooks/useProjects";
+import { useCoCreationSessions } from "@/hooks/useCoCreationSessions";
 import { WorkspaceContext } from "@/components/layout/DashboardLayout";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { Briefcase, Plus, Trash2, Lightbulb } from "lucide-react";
+import { Briefcase, Plus, Trash2, Lightbulb, Sparkles } from "lucide-react";
 import { ProjectNavBar } from "@/components/projects/ProjectNavBar";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import SearchHeader from "@/components/tools/SearchHeader";
@@ -36,6 +37,7 @@ export default function Projects() {
   const workspaceId = currentWorkspace?.id || null;
   const { challenges, loading: challengesLoading, createChallenge, updateChallengeStatus, deleteChallenge } = useDesignChallenges(workspaceId);
   const { projects, loading: projectsLoading, createProject, deleteProject } = useProjects(workspaceId);
+  const { sessions: cocreationSessions, loading: cocreationLoading, deleteSession: deleteCocreationSession } = useCoCreationSessions(workspaceId);
   const [searchValue, setSearchValue] = useState("");
   const { checkUserHasProject } = useUserHasProject(workspaceId);
 
@@ -110,13 +112,17 @@ export default function Projects() {
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
-    
+
     if (deleteTarget.type === 'project') {
-      await deleteProject(deleteTarget.id);
+      if (deleteTarget.id.startsWith('cocreate:')) {
+        await deleteCocreationSession(deleteTarget.id.replace('cocreate:', ''));
+      } else {
+        await deleteProject(deleteTarget.id);
+      }
     } else {
       deleteChallenge(deleteTarget.id);
     }
-    
+
     setDeleteTarget(null);
   };
 
@@ -178,6 +184,26 @@ export default function Projects() {
   const filteredChallenges = challenges.filter(challenge =>
     (challenge.title || "").toLowerCase().includes(searchValue.toLowerCase())
   );
+  const filteredCocreation = cocreationSessions.filter(s =>
+    (s.title || "").toLowerCase().includes(searchValue.toLowerCase())
+  );
+
+  const canDeleteCocreation = (s: { owner_id: string | null }) =>
+    canManageStatus || s.owner_id === currentUserId;
+
+  const handleDeleteCocreation = (id: string, title: string) => {
+    setDeleteTarget({ type: 'project', id: `cocreate:${id}`, title });
+    setDeleteDialogOpen(true);
+  };
+
+  const cocreationStatusColor = (status: string) => {
+    switch (status) {
+      case 'live': return 'bg-green-100 text-green-800';
+      case 'synthesizing': return 'bg-blue-100 text-blue-800';
+      case 'completed': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-yellow-100 text-yellow-800';
+    }
+  };
 
   return (
     <Routes>
@@ -202,16 +228,16 @@ export default function Projects() {
 
               <ProjectBanner onCreateProject={handleOpenCreateDialog} />
 
-              {challengesLoading || projectsLoading ? (
+              {challengesLoading || projectsLoading || cocreationLoading ? (
                 <div className="flex items-center justify-center h-32">
                   <LoadingSpinner />
                 </div>
               ) : (
                 <>
-                  {/* Combined Projects and Challenges */}
-                  {filteredProjects.length === 0 && filteredChallenges.length === 0 ? (
+                  {/* Combined Projects, Challenges, and Co-Creation Sessions */}
+                  {filteredProjects.length === 0 && filteredChallenges.length === 0 && filteredCocreation.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
-                      <p className="mb-4">No projects or challenges created yet</p>
+                      <p className="mb-4">No projects, challenges, or co-creation sessions yet</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
@@ -317,6 +343,55 @@ export default function Projects() {
                                 </SelectContent>
                               </Select>
                             )}
+                          </CardFooter>
+                        </Card>
+                      ))}
+
+                      {/* Co-Creation Sessions */}
+                      {filteredCocreation.map((s) => (
+                        <Card
+                          key={`cocreate-${s.id}`}
+                          className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+                          onClick={() => navigate(`/dashboard/projects/co-creation/${s.id}`)}
+                        >
+                          <CardHeader>
+                            <div className="flex justify-between items-start gap-2">
+                              <CardTitle className="text-lg line-clamp-2">{s.title}</CardTitle>
+                              <div className="flex gap-1 items-center">
+                                <Badge className={cocreationStatusColor(s.status)}>
+                                  {s.status}
+                                </Badge>
+                                {canDeleteCocreation(s) && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteCocreation(s.id, s.title);
+                                    }}
+                                    className="text-destructive hover:text-destructive p-1 h-auto"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-primary mt-1">
+                              <Sparkles className="h-3.5 w-3.5" />
+                              <span>AI-Assisted Co-Creation</span>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            {s.description && (
+                              <p className="text-muted-foreground text-sm line-clamp-3">
+                                {s.description}
+                              </p>
+                            )}
+                          </CardContent>
+                          <CardFooter className="pt-2">
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(s.created_at), 'MMM d, yyyy')}
+                            </span>
                           </CardFooter>
                         </Card>
                       ))}
