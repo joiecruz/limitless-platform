@@ -269,10 +269,13 @@ export default function CoCreationPublic() {
 
   if (notFound || !session) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Session not found</h1>
-          <p className="text-muted-foreground">This session doesn't exist or isn't public yet.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen px-6 bg-background">
+        <img src="/limitless-logo.svg" alt="Limitless Lab" className="h-8 w-auto mb-6" />
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-2">Session not available</h1>
+          <p className="text-muted-foreground">
+            This co-creation session doesn't exist, has ended, or isn't public yet. Please double-check the link or QR code.
+          </p>
         </div>
       </div>
     );
