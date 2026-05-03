@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { getOrCreateAnonIdentity } from "@/lib/anonymousName";
+import { cacheAnonName, generateUniqueAnonName, getCachedAnonIdentity } from "@/lib/anonymousName";
 import { Sparkles, Plus, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Session {
