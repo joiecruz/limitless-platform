@@ -180,6 +180,26 @@ export default function Projects() {
   const filteredChallenges = challenges.filter(challenge =>
     (challenge.title || "").toLowerCase().includes(searchValue.toLowerCase())
   );
+  const filteredCocreation = cocreationSessions.filter(s =>
+    (s.title || "").toLowerCase().includes(searchValue.toLowerCase())
+  );
+
+  const canDeleteCocreation = (s: { owner_id: string | null }) =>
+    canManageStatus || s.owner_id === currentUserId;
+
+  const handleDeleteCocreation = (id: string, title: string) => {
+    setDeleteTarget({ type: 'project', id: `cocreate:${id}`, title });
+    setDeleteDialogOpen(true);
+  };
+
+  const cocreationStatusColor = (status: string) => {
+    switch (status) {
+      case 'live': return 'bg-green-100 text-green-800';
+      case 'synthesizing': return 'bg-blue-100 text-blue-800';
+      case 'completed': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-yellow-100 text-yellow-800';
+    }
+  };
 
   return (
     <Routes>
