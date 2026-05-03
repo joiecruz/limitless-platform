@@ -228,16 +228,16 @@ export default function Projects() {
 
               <ProjectBanner onCreateProject={handleOpenCreateDialog} />
 
-              {challengesLoading || projectsLoading ? (
+              {challengesLoading || projectsLoading || cocreationLoading ? (
                 <div className="flex items-center justify-center h-32">
                   <LoadingSpinner />
                 </div>
               ) : (
                 <>
-                  {/* Combined Projects and Challenges */}
-                  {filteredProjects.length === 0 && filteredChallenges.length === 0 ? (
+                  {/* Combined Projects, Challenges, and Co-Creation Sessions */}
+                  {filteredProjects.length === 0 && filteredChallenges.length === 0 && filteredCocreation.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
-                      <p className="mb-4">No projects or challenges created yet</p>
+                      <p className="mb-4">No projects, challenges, or co-creation sessions yet</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
