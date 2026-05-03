@@ -67,6 +67,7 @@ export default function CoCreationPublic() {
   const [session, setSession] = useState<Session | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
+  const [participants, setParticipants] = useState<Record<string, string>>({});
   const [participantId, setParticipantId] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("");
   const [draft, setDraft] = useState("");
