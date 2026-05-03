@@ -403,39 +403,141 @@ export default function CoCreationDashboard() {
         <CardHeader>
           <CardTitle>Generate outputs</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={generateVisual} disabled={visualLoading}>
-              {visualLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-              Visual summary
-            </Button>
-            <Button variant="outline" disabled>
-              <Presentation className="h-4 w-4" />
-              Slides — Coming soon
-            </Button>
-            <Button variant="outline" disabled>
-              <Mic className="h-4 w-4" />
-              Podcast digest — Coming soon
-            </Button>
-          </div>
+        <CardContent className="space-y-6">
+          {(() => {
+            const hasSynthesis = synthesis.some((s) => s.themes && s.themes.length > 0);
+            const active = visuals.find((v) => v.id === activeVisualId) || visuals[0];
+            return (
+              <>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    onClick={generateVisual}
+                    disabled={visualLoading || !hasSynthesis}
+                    title={!hasSynthesis ? "Run synthesis first" : undefined}
+                  >
+                    {visualLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : visuals.length > 0 ? (
+                      <RefreshCw className="h-4 w-4" />
+                    ) : (
+                      <ImageIcon className="h-4 w-4" />
+                    )}
+                    {visuals.length > 0 ? "Regenerate visual summary" : "Generate visual summary"}
+                  </Button>
+                  <Button variant="outline" disabled>
+                    <Presentation className="h-4 w-4" />
+                    Slides — Coming soon
+                  </Button>
+                  <Button variant="outline" disabled>
+                    <Mic className="h-4 w-4" />
+                    Podcast digest — Coming soon
+                  </Button>
+                </div>
 
-          {latestVisual && (
-            <div className="border rounded-lg overflow-hidden bg-muted/20">
-              <img src={latestVisual} alt="Visual summary" className="w-full h-auto block" />
-              <div className="flex items-center justify-between p-3 border-t bg-background">
-                <p className="text-xs text-muted-foreground">Latest visual summary</p>
-                <a
-                  href={latestVisual}
-                  download
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                >
-                  <Download className="h-4 w-4" /> Download
-                </a>
-              </div>
-            </div>
-          )}
+                {!hasSynthesis && (
+                  <p className="text-sm text-muted-foreground">
+                    Run AI synthesis above first — the visual summary illustrates the synthesized themes.
+                  </p>
+                )}
+
+                {visualError && (
+                  <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <span>{visualError}</span>
+                  </div>
+                )}
+
+                {visualLoading && !active && (
+                  <div className="space-y-2">
+                    <Skeleton className="aspect-[16/10] w-full rounded-lg" />
+                    <p className="text-xs text-muted-foreground">
+                      Drawing your visual summary… this usually takes 20–40 seconds.
+                    </p>
+                  </div>
+                )}
+
+                {active && (
+                  <div className="space-y-3">
+                    <div className="border rounded-lg overflow-hidden bg-muted/20 relative">
+                      <img
+                        src={active.image_url}
+                        alt="Visual summary"
+                        className="w-full h-auto block"
+                      />
+                      {visualLoading && (
+                        <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                      )}
+                      <div className="flex flex-wrap items-center justify-between gap-2 p-3 border-t bg-background">
+                        <p className="text-xs text-muted-foreground">
+                          Generated {timeAgo(active.created_at)}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={active.image_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+                          >
+                            <ExternalLink className="h-4 w-4" /> Open
+                          </a>
+                          <a
+                            href={active.image_url}
+                            download
+                            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                          >
+                            <Download className="h-4 w-4" /> Download
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    {visuals.length > 1 && (
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+                          History ({visuals.length})
+                        </p>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {visuals.map((v) => {
+                            const isActive = v.id === active.id;
+                            return (
+                              <button
+                                key={v.id}
+                                onClick={() => setActiveVisualId(v.id)}
+                                title={`Generated ${timeAgo(v.created_at)}`}
+                                className={`relative shrink-0 w-28 h-20 rounded-md overflow-hidden border-2 transition ${
+                                  isActive
+                                    ? "border-primary ring-2 ring-primary/30"
+                                    : "border-border hover:border-primary/60"
+                                }`}
+                              >
+                                <img
+                                  src={v.image_url}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!active && !visualLoading && hasSynthesis && (
+                  <div className="rounded-lg border border-dashed p-6 text-center">
+                    <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm font-medium">No visual summary yet</p>
+                    <p className="text-xs text-muted-foreground">
+                      Generate a hand-drawn poster of your synthesized themes.
+                    </p>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </CardContent>
       </Card>
     </div>
