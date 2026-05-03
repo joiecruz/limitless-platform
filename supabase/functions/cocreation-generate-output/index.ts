@@ -24,6 +24,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (kind !== "visual") {
+      return new Response(JSON.stringify({ error: "coming_soon" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -58,123 +65,102 @@ Deno.serve(async (req) => {
       .from("cocreation_synthesis")
       .select("question_id, themes")
       .eq("session_id", session_id);
+    const { data: responses } = await admin
+      .from("cocreation_responses")
+      .select("question_id, original_text")
+      .eq("session_id", session_id);
 
     const synthMap = new Map<string, any[]>();
     for (const s of synthesis || []) synthMap.set(s.question_id, s.themes as any[]);
+    const respMap = new Map<string, string[]>();
+    for (const r of responses || []) {
+      const arr = respMap.get(r.question_id) || [];
+      arr.push(r.original_text);
+      respMap.set(r.question_id, arr);
+    }
 
-    const synthSummary = (questions || [])
+    const summary = (questions || [])
       .map((q: any) => {
         const themes = synthMap.get(q.id) || [];
-        return `Q: ${q.text}\n${themes.map((t: any) => `- ${t.label}: ${t.insight}`).join("\n")}`;
+        const themeText = themes.length
+          ? themes.map((t: any) => `- ${t.label}: ${t.insight}`).join("\n")
+          : (respMap.get(q.id) || []).slice(0, 6).map((t) => `- ${t}`).join("\n");
+        return `Q: ${q.text}\n${themeText}`;
       })
       .join("\n\n");
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
-    const systems: Record<string, string> = {
-      slides:
-        "Create a presentation outline. Structure: title, overview, key insights per question, recommendations, next steps. Keep slides concise and presentation-ready.",
-      visual:
-        "Create a scannable visual summary grouping insights into short statements and themes.",
-      podcast:
-        "Write a conversational podcast-style narrative with sections: Introduction, Key Insights, Implications, Closing. Tone: clear, engaging, professional.",
-    };
+    const prompt = `Create a hand-drawn whiteboard-style infographic poster summarizing a co-creation workshop. Style: playful sketch-noted illustration, hand-lettered titles, sketchy line art, watercolor washes in teal, orange, mustard, and soft greens on an off-white background. Include a bold hand-lettered title at the top, a central concept illustration, and surrounding mini-scenes connected by sketchy lines/arrows with hand-lettered captions and tiny doodles of people, lightbulbs, hearts, plants, etc. Looks like a graphic recording / scribing artist drew it during a live event. No photorealism, no 3D, no stock-photo style.
 
-    const tools: Record<string, any> = {
-      slides: {
-        name: "emit_slides",
-        parameters: {
-          type: "object",
-          properties: {
-            slides: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  title: { type: "string" },
-                  bullets: { type: "array", items: { type: "string" } },
-                },
-                required: ["title", "bullets"],
-                additionalProperties: false,
-              },
-            },
-          },
-          required: ["slides"],
-          additionalProperties: false,
-        },
-      },
-      visual: {
-        name: "emit_visual",
-        parameters: {
-          type: "object",
-          properties: {
-            sections: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  heading: { type: "string" },
-                  statements: { type: "array", items: { type: "string" } },
-                },
-                required: ["heading", "statements"],
-                additionalProperties: false,
-              },
-            },
-          },
-          required: ["sections"],
-          additionalProperties: false,
-        },
-      },
-      podcast: {
-        name: "emit_podcast",
-        parameters: {
-          type: "object",
-          properties: {
-            intro: { type: "string" },
-            insights: { type: "string" },
-            implications: { type: "string" },
-            closing: { type: "string" },
-          },
-          required: ["intro", "insights", "implications", "closing"],
-          additionalProperties: false,
-        },
-      },
-    };
+Title: "${session?.title || "Co-Creation Summary"}"
+${session?.description ? `Subtitle: "${session.description}"\n` : ""}
+Themes and ideas to illustrate as captioned mini-scenes around the page:
+${summary}
 
-    const tool = tools[kind];
+Render the entire poster as a single landscape image. Make sure all hand-lettered text is legible and spelled correctly.`;
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systems[kind] },
-          {
-            role: "user",
-            content: `Session: ${session?.title}\n${session?.description || ""}\n\nSynthesized insights:\n${synthSummary}`,
-          },
-        ],
-        tools: [{ type: "function", function: { ...tool, description: `Emit ${kind} content` } }],
-        tool_choice: { type: "function", function: { name: tool.name } },
+        model: "google/gemini-3-pro-image-preview",
+        messages: [{ role: "user", content: prompt }],
+        modalities: ["image", "text"],
       }),
     });
 
     if (!resp.ok) {
       const t = await resp.text();
-      console.error("AI output failed", resp.status, t);
-      return new Response(JSON.stringify({ error: "ai_failed" }), {
+      console.error("AI image failed", resp.status, t);
+      const status = resp.status === 429 ? 429 : resp.status === 402 ? 402 : 500;
+      const msg =
+        status === 429
+          ? "Rate limit reached. Please try again in a moment."
+          : status === 402
+          ? "AI credits exhausted. Add credits in Settings → Workspace → Usage."
+          : "Image generation failed.";
+      return new Response(JSON.stringify({ error: msg }), {
+        status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const data = await resp.json();
+    const dataUrl: string | undefined =
+      data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!dataUrl?.startsWith("data:image/")) {
+      console.error("No image in response", JSON.stringify(data).slice(0, 500));
+      return new Response(JSON.stringify({ error: "No image returned" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const data = await resp.json();
-    const args = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    const content = args ? JSON.parse(args) : {};
 
-    await admin.from("cocreation_outputs").insert({ session_id, kind, content });
+    const [meta, b64] = dataUrl.split(",");
+    const contentType = meta.match(/data:(image\/[^;]+)/)?.[1] || "image/png";
+    const ext = contentType.split("/")[1] || "png";
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const path = `${session_id}/visual-${Date.now()}.${ext}`;
 
-    return new Response(JSON.stringify({ ok: true, content }), {
+    const { error: upErr } = await admin.storage
+      .from("cocreation-outputs")
+      .upload(path, bytes, { contentType, upsert: true });
+    if (upErr) {
+      console.error("Upload failed", upErr);
+      return new Response(JSON.stringify({ error: "Upload failed" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: pub } = admin.storage.from("cocreation-outputs").getPublicUrl(path);
+    const image_url = pub.publicUrl;
+
+    await admin
+      .from("cocreation_outputs")
+      .insert({ session_id, kind, content: { image_url, prompt } });
+
+    return new Response(JSON.stringify({ ok: true, image_url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Globe, Sparkles, Lock, Unlock, Play } from "lucide-react";
+import { ArrowLeft, Copy, Globe, Sparkles, Lock, Unlock, Play, Image as ImageIcon, Presentation, Mic, Loader2, Download } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { QRCodeCanvas } from "qrcode.react";
 import { getPublicSiteOrigin } from "@/utils/domainHelpers";
@@ -64,6 +64,8 @@ export default function CoCreationDashboard() {
   const [synthesis, setSynthesis] = useState<Synthesis[]>([]);
   const [loading, setLoading] = useState(true);
   const [synthLoading, setSynthLoading] = useState(false);
+  const [visualLoading, setVisualLoading] = useState(false);
+  const [latestVisual, setLatestVisual] = useState<string | null>(null);
 
   const publicUrl = session ? `${getPublicSiteOrigin()}/cocreate/${session.slug}` : "";
 
@@ -89,6 +91,15 @@ export default function CoCreationDashboard() {
         .from("cocreation_synthesis")
         .select("*")
         .eq("session_id", id);
+      const { data: outs } = await supabase
+        .from("cocreation_outputs")
+        .select("kind, content, created_at")
+        .eq("session_id", id)
+        .eq("kind", "visual")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const latest = (outs?.[0]?.content as any)?.image_url as string | undefined;
+      if (latest) setLatestVisual(latest);
 
       setSession(s as Session);
       setQuestions((qs as Question[]) || []);
@@ -150,16 +161,22 @@ export default function CoCreationDashboard() {
     }
   };
 
-  const generateOutput = async (kind: "slides" | "visual" | "podcast") => {
+  const generateVisual = async () => {
     if (!session) return;
+    setVisualLoading(true);
+    toast({ title: "Creating your visual summary…", description: "This may take 20–40 seconds." });
     try {
       const { data, error } = await supabase.functions.invoke("cocreation-generate-output", {
-        body: { session_id: session.id, kind },
+        body: { session_id: session.id, kind: "visual" },
       });
       if (error) throw error;
-      toast({ title: `${kind} generated` });
+      const url = (data as any)?.image_url;
+      if (url) setLatestVisual(url);
+      toast({ title: "Visual summary ready" });
     } catch (e: any) {
-      toast({ title: "Failed", description: e.message, variant: "destructive" });
+      toast({ title: "Failed", description: e.message || "Image generation failed", variant: "destructive" });
+    } finally {
+      setVisualLoading(false);
     }
   };
 
@@ -348,16 +365,39 @@ export default function CoCreationDashboard() {
         <CardHeader>
           <CardTitle>Generate outputs</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => generateOutput("slides")}>
-            Slides
-          </Button>
-          <Button variant="outline" onClick={() => generateOutput("visual")}>
-            Visual summary
-          </Button>
-          <Button variant="outline" onClick={() => generateOutput("podcast")}>
-            Podcast digest
-          </Button>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={generateVisual} disabled={visualLoading}>
+              {visualLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+              Visual summary
+            </Button>
+            <Button variant="outline" disabled>
+              <Presentation className="h-4 w-4" />
+              Slides — Coming soon
+            </Button>
+            <Button variant="outline" disabled>
+              <Mic className="h-4 w-4" />
+              Podcast digest — Coming soon
+            </Button>
+          </div>
+
+          {latestVisual && (
+            <div className="border rounded-lg overflow-hidden bg-muted/20">
+              <img src={latestVisual} alt="Visual summary" className="w-full h-auto block" />
+              <div className="flex items-center justify-between p-3 border-t bg-background">
+                <p className="text-xs text-muted-foreground">Latest visual summary</p>
+                <a
+                  href={latestVisual}
+                  download
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                >
+                  <Download className="h-4 w-4" /> Download
+                </a>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
