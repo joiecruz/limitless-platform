@@ -346,6 +346,55 @@ export default function Projects() {
                           </CardFooter>
                         </Card>
                       ))}
+
+                      {/* Co-Creation Sessions */}
+                      {filteredCocreation.map((s) => (
+                        <Card
+                          key={`cocreate-${s.id}`}
+                          className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+                          onClick={() => navigate(`/dashboard/projects/co-creation/${s.id}`)}
+                        >
+                          <CardHeader>
+                            <div className="flex justify-between items-start gap-2">
+                              <CardTitle className="text-lg line-clamp-2">{s.title}</CardTitle>
+                              <div className="flex gap-1 items-center">
+                                <Badge className={cocreationStatusColor(s.status)}>
+                                  {s.status}
+                                </Badge>
+                                {canDeleteCocreation(s) && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteCocreation(s.id, s.title);
+                                    }}
+                                    className="text-destructive hover:text-destructive p-1 h-auto"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-primary mt-1">
+                              <Sparkles className="h-3.5 w-3.5" />
+                              <span>AI-Assisted Co-Creation</span>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            {s.description && (
+                              <p className="text-muted-foreground text-sm line-clamp-3">
+                                {s.description}
+                              </p>
+                            )}
+                          </CardContent>
+                          <CardFooter className="pt-2">
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(s.created_at), 'MMM d, yyyy')}
+                            </span>
+                          </CardFooter>
+                        </Card>
+                      ))}
                     </div>
                   )}
                 </>
