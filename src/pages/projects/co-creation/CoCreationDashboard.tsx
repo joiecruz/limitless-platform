@@ -83,7 +83,9 @@ export default function CoCreationDashboard() {
   const [loading, setLoading] = useState(true);
   const [synthLoading, setSynthLoading] = useState(false);
   const [visualLoading, setVisualLoading] = useState(false);
-  const [latestVisual, setLatestVisual] = useState<string | null>(null);
+  const [visualError, setVisualError] = useState<string | null>(null);
+  const [visuals, setVisuals] = useState<VisualOutput[]>([]);
+  const [activeVisualId, setActiveVisualId] = useState<string | null>(null);
 
   const publicUrl = session ? `${getPublicSiteOrigin()}/cocreate/${session.slug}` : "";
 
