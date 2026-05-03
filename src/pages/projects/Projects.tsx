@@ -37,6 +37,7 @@ export default function Projects() {
   const workspaceId = currentWorkspace?.id || null;
   const { challenges, loading: challengesLoading, createChallenge, updateChallengeStatus, deleteChallenge } = useDesignChallenges(workspaceId);
   const { projects, loading: projectsLoading, createProject, deleteProject } = useProjects(workspaceId);
+  const { sessions: cocreationSessions, loading: cocreationLoading, deleteSession: deleteCocreationSession } = useCoCreationSessions(workspaceId);
   const [searchValue, setSearchValue] = useState("");
   const { checkUserHasProject } = useUserHasProject(workspaceId);
 
