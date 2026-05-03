@@ -1,26 +1,54 @@
 ## Goal
-Stop AI from rewording submitted ideas, switch anonymous identities to unique single-word names, and display the author's name on each idea card.
+
+Make the **Visual Summary** output actually produce a hand-drawn, infographic-style poster (matching the user's reference pegs — playful sketch style, central concept with branching ideas, hand-lettered titles). Mark **Slides** and **Podcast Digest** as "Coming Soon". Add Lucide icons to all three output buttons.
+
+## What's broken today
+
+- The `cocreation-generate-output` edge function returns only JSON (`{ sections: [...] }`) for the `visual` kind. There is no UI rendering of that JSON, so it appears as if "nothing happens".
+- No image is actually generated, no file is shown to the user.
 
 ## Changes
 
-### 1. `src/lib/anonymousName.ts`
-- Replace two-word generator with a single-word pool (e.g. `Panda`, `Falcon`, `Otter`, ~80 nouns).
-- Append a short numeric suffix only when needed for uniqueness (e.g. `Panda7`).
-- Keep the `localStorage` token/name caching for repeat visitors.
+### 1. Edge function: `supabase/functions/cocreation-generate-output/index.ts`
 
-### 2. `src/pages/projects/co-creation/CoCreationPublic.tsx`
-- Remove the `cocreation-refine-response` invocation in `submitResponse`. Insert the response with `original_text` only and `refined_text: null`.
-- Render `r.original_text` directly on sticky notes (no more `refined_text || original_text` fallback).
-- After loading responses, fetch `cocreation_participants` (id + display_name) for the session and build an `id -> name` map. Show the author name as a small label at the top of each sticky note (e.g. `— Panda7`).
-- When inserting a new participant, if a name collision exists in the same session, regenerate with a numeric suffix until unique (best-effort using a quick `select display_name` lookup).
+For `kind === "visual"`:
+- Build a detailed image prompt from session title + synthesized themes that requests a hand-drawn whiteboard-style infographic (teal/orange palette, sketchy line art, central concept node with branching mini-illustrations and hand-lettered captions — matching the reference pegs).
+- Call Lovable AI Gateway image model `google/gemini-3-pro-image-preview` (chat completions endpoint with `modalities: ["image","text"]`, similar to existing image-gen pattern).
+- Decode the returned base64 PNG and upload it to a new public Supabase storage bucket `cocreation-outputs` at path `{session_id}/visual-{timestamp}.png`.
+- Insert into `cocreation_outputs` with `content = { image_url, prompt }`.
+- Return `{ ok: true, image_url }`.
 
-### 3. `src/pages/projects/co-creation/CoCreationDashboard.tsx` (host view)
-- Mirror the same change: show `original_text` instead of `refined_text` so host and public stay consistent.
-- Show participant display name above each response.
+For `slides` and `podcast`: return early with `{ error: "coming_soon" }` (kept disabled in UI anyway, but defensive).
 
-### 4. Edge function `supabase/functions/cocreation-refine-response`
-- Leave the function deployed (other flows may rely on it) but it will no longer be called from the public page. No code change required.
+### 2. New storage bucket migration
+
+- Create public bucket `cocreation-outputs`.
+- Policies: public read; insert restricted to service role (edge function uses service role, so no end-user policy needed).
+
+### 3. UI: `src/pages/projects/co-creation/CoCreationDashboard.tsx`
+
+- Import icons: `Image as ImageIcon`, `Presentation`, `Mic`, `Loader2` from lucide-react.
+- Add state `outputLoading: kind | null` and `latestVisual: string | null`.
+- On mount and after generation, fetch latest `cocreation_outputs` row where `kind = 'visual'` for this session and store `image_url`.
+- Update the "Generate outputs" card:
+  - **Visual summary** button: `<ImageIcon />` icon, calls `generateOutput("visual")`, shows spinner while loading, toast on success/error.
+  - **Slides** button: `<Presentation />` icon, `disabled`, label "Slides — Coming soon".
+  - **Podcast digest** button: `<Mic />` icon, `disabled`, label "Podcast digest — Coming soon".
+- Below the buttons, when `latestVisual` exists, render the generated image inside a bordered card with a "Download" link (anchor with `download` attribute pointing to the public URL).
+
+### 4. Toast copy
+
+- Generating: "Creating your visual summary… this may take 20–40s."
+- Success: "Visual summary ready."
+- Error: surface gateway error message.
+
+## Technical notes
+
+- Image gen via Lovable Gateway: POST to `https://ai.gateway.lovable.dev/v1/chat/completions` with `model: "google/gemini-3-pro-image-preview"`, `modalities: ["image","text"]`, message containing the prompt. Response includes `choices[0].message.images[0].image_url.url` as a `data:image/png;base64,...` string — strip the prefix and upload bytes via `admin.storage.from('cocreation-outputs').upload(path, bytes, { contentType: 'image/png', upsert: true })`, then `getPublicUrl`.
+- Handle 429 (rate limit) and 402 (credits) with friendly errors.
+- Keep auth + `cocreation_can_manage` check unchanged.
 
 ## Out of scope
-- No DB schema changes. `refined_text` column stays (nullable) for backward compatibility with existing rows.
-- Synthesis flow (`cocreation-synthesize`) keeps working off `original_text`, which is already the primary signal.
+
+- Actual PPTX generation and audio podcast synthesis (deferred — buttons disabled).
+- Editing/regenerating the infographic in place (single fresh render per click; new rows accumulate).
