@@ -1,26 +1,26 @@
-## Why the QR returns 404
+## Goal
+Stop AI from rewording submitted ideas, switch anonymous identities to unique single-word names, and display the author's name on each idea card.
 
-- DNS/hosting is fine: `https://www.limitlesslab.org/cocreate/<slug>` returns HTTP 200 (SPA shell), and the session row exists in `cocreation_sessions` with `status=live` and the matching slug.
-- The 404 you see is the in‑app `NotFound` page. The `/cocreate/:slug` route was added to `src/routes/AppRoutes.tsx` but the **published** build on `limitlesslab.org` does not include it yet. Frontend changes only go live after clicking **Publish → Update**.
+## Changes
 
-## Plan
+### 1. `src/lib/anonymousName.ts`
+- Replace two-word generator with a single-word pool (e.g. `Panda`, `Falcon`, `Otter`, ~80 nouns).
+- Append a short numeric suffix only when needed for uniqueness (e.g. `Panda7`).
+- Keep the `localStorage` token/name caching for repeat visitors.
 
-1. **Republish the app**
-   - Click Publish → Update in Lovable so the new `/cocreate/:slug` route ships to `limitlesslab.org`.
-   - This alone resolves the QR 404.
+### 2. `src/pages/projects/co-creation/CoCreationPublic.tsx`
+- Remove the `cocreation-refine-response` invocation in `submitResponse`. Insert the response with `original_text` only and `refined_text: null`.
+- Render `r.original_text` directly on sticky notes (no more `refined_text || original_text` fallback).
+- After loading responses, fetch `cocreation_participants` (id + display_name) for the session and build an `id -> name` map. Show the author name as a small label at the top of each sticky note (e.g. `— Panda7`).
+- When inserting a new participant, if a name collision exists in the same session, regenerate with a numeric suffix until unique (best-effort using a quick `select display_name` lookup).
 
-2. **Harden `CoCreationPublic` 404 UX** (`src/pages/projects/co-creation/CoCreationPublic.tsx`)
-   - When `notFound === true`, render a friendly branded "Session not available" screen with the Limitless Lab logo instead of the generic look, so a mistyped/expired slug never feels like a broken site.
-   - Keep the existing fetch by `slug` (already uses `maybeSingle` and sets `notFound`).
+### 3. `src/pages/projects/co-creation/CoCreationDashboard.tsx` (host view)
+- Mirror the same change: show `original_text` instead of `refined_text` so host and public stay consistent.
+- Show participant display name above each response.
 
-3. **Confirm route placement** (`src/routes/AppRoutes.tsx`)
-   - Verify `/cocreate/:slug` is registered before any catch‑all `*` / `NotFound` route and outside the `isAppSubdomain()` gate (it already is at line 136, but I'll re‑check the bottom of the file for the catch‑all order).
+### 4. Edge function `supabase/functions/cocreation-refine-response`
+- Leave the function deployed (other flows may rely on it) but it will no longer be called from the public page. No code change required.
 
-4. **Re-run the existing smoke test**
-   - `bunx vitest run src/test/cocreate-public.smoke.test.ts` after publish to confirm 200 + no auth redirect on the live slug.
-
-## Technical notes
-
-- No DB / RLS changes needed — `cocreation_sessions` is already readable by the anon key (verified by smoke test).
-- No domain/DNS work needed — `www.limitlesslab.org` already serves the SPA shell with status 200.
-- Root cause is purely "published build is older than source"; steps 2–4 are quality hardening so this failure mode is obvious next time.
+## Out of scope
+- No DB schema changes. `refined_text` column stays (nullable) for backward compatibility with existing rows.
+- Synthesis flow (`cocreation-synthesize`) keeps working off `original_text`, which is already the primary signal.
