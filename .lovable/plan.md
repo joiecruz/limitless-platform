@@ -1,54 +1,62 @@
-## Goal
+# Visual Summary: Inline Display, History, and Faithful Prompt
 
-Make the **Visual Summary** output actually produce a hand-drawn, infographic-style poster (matching the user's reference pegs — playful sketch style, central concept with branching ideas, hand-lettered titles). Mark **Slides** and **Podcast Digest** as "Coming Soon". Add Lucide icons to all three output buttons.
+## Problem
 
-## What's broken today
+1. Generated visuals already exist in `cocreation_outputs` (confirmed two rows for this session, including a valid public image URL), but the dashboard isn't reliably surfacing them — only the very latest is fetched, with no list/history, no regenerate affordance, and no clear empty/error state.
+2. The current image prompt instructs the model to add icons, mini-scenes, doodles (lightbulbs, hearts, plants, people) and "illustrate" the themes. This causes the model to invent content not present in the synthesis.
+3. When synthesis is missing for some questions (as in the most recent run), the prompt feeds the model raw responses or empty sections, so the image fills in gaps creatively.
 
-- The `cocreation-generate-output` edge function returns only JSON (`{ sections: [...] }`) for the `visual` kind. There is no UI rendering of that JSON, so it appears as if "nothing happens".
-- No image is actually generated, no file is shown to the user.
+## Where Outputs Are Stored
+
+- File: `cocreation-outputs` storage bucket (public), path `{session_id}/visual-{timestamp}.png`
+- Row: `cocreation_outputs` table — `kind = 'visual'`, `content = { image_url, prompt }`, `created_at`
 
 ## Changes
 
-### 1. Edge function: `supabase/functions/cocreation-generate-output/index.ts`
+### 1. Dashboard UI — Visual Summary panel (`CoCreationDashboard.tsx`)
 
-For `kind === "visual"`:
-- Build a detailed image prompt from session title + synthesized themes that requests a hand-drawn whiteboard-style infographic (teal/orange palette, sketchy line art, central concept node with branching mini-illustrations and hand-lettered captions — matching the reference pegs).
-- Call Lovable AI Gateway image model `google/gemini-3-pro-image-preview` (chat completions endpoint with `modalities: ["image","text"]`, similar to existing image-gen pattern).
-- Decode the returned base64 PNG and upload it to a new public Supabase storage bucket `cocreation-outputs` at path `{session_id}/visual-{timestamp}.png`.
-- Insert into `cocreation_outputs` with `content = { image_url, prompt }`.
-- Return `{ ok: true, image_url }`.
+Replace the single "latest visual" preview with a proper output panel inside the existing "Generate outputs" card:
 
-For `slides` and `podcast`: return early with `{ error: "coming_soon" }` (kept disabled in UI anyway, but defensive).
+- **Current view** at the top: the most recent visual rendered large, with:
+  - Primary action: "Regenerate" (calls the same edge function; shows spinner + toast)
+  - Secondary actions: "Download" and "Open in new tab"
+  - Timestamp ("Generated 3 min ago")
+- **History strip** below: horizontal scroll of thumbnails of all prior visuals for this session, newest first. Click a thumbnail to make it the current view. Each thumbnail shows the timestamp on hover.
+- **Empty state**: friendly card explaining what a visual summary is, with a single "Generate visual summary" CTA. Disabled until at least one synthesis row exists (visuals should reflect synthesized themes, not raw input).
+- **Loading state**: skeleton in the current-view slot + disabled buttons + toast about 20–40s wait.
+- **Error state**: inline alert with retry button.
 
-### 2. New storage bucket migration
+Data fetch change: load all `cocreation_outputs` for the session where `kind = 'visual'`, ordered desc, into local state. Append the new row when generation succeeds (no full reload needed). Keep the existing realtime channel; add a subscription on `cocreation_outputs` filtered by `session_id` so multiple hosts see new generations live.
 
-- Create public bucket `cocreation-outputs`.
-- Policies: public read; insert restricted to service role (edge function uses service role, so no end-user policy needed).
+### 2. Tighten the AI prompt (`supabase/functions/cocreation-generate-output/index.ts`)
 
-### 3. UI: `src/pages/projects/co-creation/CoCreationDashboard.tsx`
+Goals: faithful to synthesis, no invented content, still visually appealing in the user's reference style.
 
-- Import icons: `Image as ImageIcon`, `Presentation`, `Mic`, `Loader2` from lucide-react.
-- Add state `outputLoading: kind | null` and `latestVisual: string | null`.
-- On mount and after generation, fetch latest `cocreation_outputs` row where `kind = 'visual'` for this session and store `image_url`.
-- Update the "Generate outputs" card:
-  - **Visual summary** button: `<ImageIcon />` icon, calls `generateOutput("visual")`, shows spinner while loading, toast on success/error.
-  - **Slides** button: `<Presentation />` icon, `disabled`, label "Slides — Coming soon".
-  - **Podcast digest** button: `<Mic />` icon, `disabled`, label "Podcast digest — Coming soon".
-- Below the buttons, when `latestVisual` exists, render the generated image inside a bordered card with a "Download" link (anchor with `download` attribute pointing to the public URL).
+- **Refuse to generate when there is no synthesis.** Return a 400 with a clear message ("Run synthesis first — the visual summary illustrates the synthesized themes."). Today the function silently falls back to raw responses; that's where most of the "overcompensation" comes from.
+- **Build the content payload from synthesis only**, structured as a strict outline:
+  - Workshop title (verbatim from session)
+  - Per question: question text + bulleted theme `label: insight` pairs (verbatim)
+- **Rewrite the prompt** to:
+  - Describe the visual *style* only (sketch-noted poster, hand lettering, watercolor washes in teal/orange/mustard on off-white, sketchy connecting lines).
+  - Explicitly instruct: "Render ONLY the title, question headings, and theme labels/insights provided below. Do not invent additional themes, statistics, names, quotes, or examples. Do not add captions or text that are not in the provided content. Decorative doodles are allowed only as small neutral marks (dots, arrows, underlines) — no representational icons (people, lightbulbs, plants, hearts, etc.) unless a theme label explicitly references them."
+  - Require all rendered text to match the provided strings exactly (spelling and wording).
+  - Single landscape poster, legible hand-lettering.
+- Keep storing the exact prompt in `content.prompt` for traceability.
 
-### 4. Toast copy
+### 3. Minor robustness
 
-- Generating: "Creating your visual summary… this may take 20–40s."
-- Success: "Visual summary ready."
-- Error: surface gateway error message.
+- After successful upload, return the new row id and `created_at` so the UI can append without refetch.
+- Add `session_id` filter index check is unnecessary (small table); skip.
 
-## Technical notes
+## Out of Scope
 
-- Image gen via Lovable Gateway: POST to `https://ai.gateway.lovable.dev/v1/chat/completions` with `model: "google/gemini-3-pro-image-preview"`, `modalities: ["image","text"]`, message containing the prompt. Response includes `choices[0].message.images[0].image_url.url` as a `data:image/png;base64,...` string — strip the prefix and upload bytes via `admin.storage.from('cocreation-outputs').upload(path, bytes, { contentType: 'image/png', upsert: true })`, then `getPublicUrl`.
-- Handle 429 (rate limit) and 402 (credits) with friendly errors.
-- Keep auth + `cocreation_can_manage` check unchanged.
+- Slides and Podcast digest stay disabled ("Coming soon").
+- No deletion of past outputs in this iteration (history is read-only).
+- No changes to synthesis logic.
 
-## Out of scope
+## Files Touched
 
-- Actual PPTX generation and audio podcast synthesis (deferred — buttons disabled).
-- Editing/regenerating the infographic in place (single fresh render per click; new rows accumulate).
+- `src/pages/projects/co-creation/CoCreationDashboard.tsx` — new visual panel with history, regenerate, empty/loading/error states, realtime on `cocreation_outputs`.
+- `supabase/functions/cocreation-generate-output/index.ts` — require synthesis, rebuild structured content payload, rewrite prompt to forbid invention, return new row metadata.
+
+No database migrations needed.
