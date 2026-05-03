@@ -1,32 +1,26 @@
-Two issues to fix:
+## Why the QR returns 404
 
-## 1. Co-creation sessions don't appear in the Projects list
+- DNS/hosting is fine: `https://www.limitlesslab.org/cocreate/<slug>` returns HTTP 200 (SPA shell), and the session row exists in `cocreation_sessions` with `status=live` and the matching slug.
+- The 404 you see is the in‑app `NotFound` page. The `/cocreate/:slug` route was added to `src/routes/AppRoutes.tsx` but the **published** build on `limitlesslab.org` does not include it yet. Frontend changes only go live after clicking **Publish → Update**.
 
-Cause: Co-creation sessions are stored in the `cocreation_sessions` table, but `Projects.tsx` only renders rows from `projects` (via `useProjects`) and `design_challenges` (via `useDesignChallenges`). Sessions ARE being saved successfully — they're just never fetched.
+## Plan
 
-Fix:
-- Add a new hook `src/hooks/useCoCreationSessions.ts` that fetches `cocreation_sessions` for the current workspace, ordered by `created_at desc`, with a realtime subscription (mirroring `useProjects`).
-- In `src/pages/projects/Projects.tsx`:
-  - Use the new hook.
-  - Render each session as its own card in the existing grid, alongside projects and challenges.
-  - Card shows title, description, status badge (`draft` / `live` / `completed`), a small "AI-Assisted Co-Creation" tag, created date, and a delete button (visible to owner / workspace admin).
-  - Clicking a session navigates to `/dashboard/projects/co-creation/:id`.
-  - Include co-creation sessions in the `searchValue` filter and the empty-state check.
-  - Wire up delete: call `supabase.from('cocreation_sessions').delete().eq('id', id)` (RLS already restricts delete to owner / workspace admin / superadmin).
+1. **Republish the app**
+   - Click Publish → Update in Lovable so the new `/cocreate/:slug` route ships to `limitlesslab.org`.
+   - This alone resolves the QR 404.
 
-## 2. Add Limitless Lab logo and "AI-Assisted Co-Creation" label to the public ideation page
+2. **Harden `CoCreationPublic` 404 UX** (`src/pages/projects/co-creation/CoCreationPublic.tsx`)
+   - When `notFound === true`, render a friendly branded "Session not available" screen with the Limitless Lab logo instead of the generic look, so a mistyped/expired slug never feels like a broken site.
+   - Keep the existing fetch by `slug` (already uses `maybeSingle` and sets `notFound`).
 
-In `src/pages/projects/co-creation/CoCreationPublic.tsx`, replace the current header (just a Sparkles icon + "Co-Creation" text) with:
-- `<img src="/limitless-logo.svg" alt="Limitless Lab" />` on the left.
-- A divider, then `Sparkles` icon + "AI-Assisted Co-Creation" label (hidden on very small screens to keep room for the participant badge).
-- Keep the existing "You: {displayName}" badge on the right.
+3. **Confirm route placement** (`src/routes/AppRoutes.tsx`)
+   - Verify `/cocreate/:slug` is registered before any catch‑all `*` / `NotFound` route and outside the `isAppSubdomain()` gate (it already is at line 136, but I'll re‑check the bottom of the file for the catch‑all order).
 
-This matches the logo treatment used elsewhere (`AuthLogo`, `AdminLayout`).
+4. **Re-run the existing smoke test**
+   - `bunx vitest run src/test/cocreate-public.smoke.test.ts` after publish to confirm 200 + no auth redirect on the live slug.
 
-## Files to change
+## Technical notes
 
-- `src/hooks/useCoCreationSessions.ts` (new)
-- `src/pages/projects/Projects.tsx` (render co-creation cards in the grid + delete handling + search filter)
-- `src/pages/projects/co-creation/CoCreationPublic.tsx` (header logo + label)
-
-No database changes needed — RLS already allows workspace members to view/delete their sessions.
+- No DB / RLS changes needed — `cocreation_sessions` is already readable by the anon key (verified by smoke test).
+- No domain/DNS work needed — `www.limitlesslab.org` already serves the SPA shell with status 200.
+- Root cause is purely "published build is older than source"; steps 2–4 are quality hardening so this failure mode is obvious next time.
