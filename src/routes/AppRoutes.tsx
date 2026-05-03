@@ -70,6 +70,9 @@ import EditCaseStudy from '@/pages/admin/case-studies/EditCaseStudy';
 import AdminReports from '@/components/admin/reports/AdminReports';
 import Empathize from '@/pages/projects/design-thinking/Empathize';
 import { ProjectNavBar } from '@/components/projects/ProjectNavBar';
+import CoCreationCreate from '@/pages/projects/co-creation/CoCreationCreate';
+import CoCreationDashboard from '@/pages/projects/co-creation/CoCreationDashboard';
+import CoCreationPublic from '@/pages/projects/co-creation/CoCreationPublic';
 
 interface AppRoutesProps {
   session: Session | null;
@@ -129,11 +132,16 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
 
+      {/* Public co-creation participant route - no auth required */}
+      <Route path="/cocreate/:slug" element={<CoCreationPublic />} />
+
       {/* Protected app routes */}
       <Route
         element={<RequireAuth><DashboardLayout /></RequireAuth>}
       >
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/projects/co-creation/new" element={<CoCreationCreate />} />
+        <Route path="/dashboard/projects/co-creation/:id" element={<CoCreationDashboard />} />
         <Route path="/dashboard/projects/*" element={<Projects />} />
         <Route path="/dashboard/projects/create-project" element={<CreateProject />} />
         <Route path="/dashboard/projects/project-brief/:projectId" element={<ProjectNavBar />} />
