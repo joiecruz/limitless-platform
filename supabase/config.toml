@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.send-course-reminders]
 verify_jwt = false
+
+[functions.cocreation-refine-response]
+verify_jwt = false
