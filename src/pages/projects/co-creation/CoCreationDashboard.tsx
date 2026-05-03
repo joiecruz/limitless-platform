@@ -113,13 +113,19 @@ export default function CoCreationDashboard() {
         .eq("session_id", id);
       const { data: outs } = await supabase
         .from("cocreation_outputs")
-        .select("kind, content, created_at")
+        .select("id, content, created_at")
         .eq("session_id", id)
         .eq("kind", "visual")
-        .order("created_at", { ascending: false })
-        .limit(1);
-      const latest = (outs?.[0]?.content as any)?.image_url as string | undefined;
-      if (latest) setLatestVisual(latest);
+        .order("created_at", { ascending: false });
+      const visualList: VisualOutput[] = ((outs as any[]) || [])
+        .map((o) => ({
+          id: o.id,
+          image_url: (o.content as any)?.image_url as string,
+          created_at: o.created_at,
+        }))
+        .filter((o) => !!o.image_url);
+      setVisuals(visualList);
+      setActiveVisualId((prev) => prev ?? visualList[0]?.id ?? null);
 
       setSession(s as Session);
       setQuestions((qs as Question[]) || []);
