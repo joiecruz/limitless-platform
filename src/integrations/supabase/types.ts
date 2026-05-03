@@ -228,6 +228,301 @@ export type Database = {
           },
         ]
       }
+      cocreation_outputs: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          kind: string
+          session_id: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          id?: string
+          kind: string
+          session_id: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cocreation_outputs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cocreation_participants: {
+        Row: {
+          anon_token: string
+          created_at: string
+          display_name: string
+          id: string
+          session_id: string
+        }
+        Insert: {
+          anon_token: string
+          created_at?: string
+          display_name: string
+          id?: string
+          session_id: string
+        }
+        Update: {
+          anon_token?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cocreation_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cocreation_questions: {
+        Row: {
+          created_at: string
+          examples: Json
+          framing: string | null
+          id: string
+          locked: boolean
+          phase: string | null
+          position: number
+          session_id: string
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          examples?: Json
+          framing?: string | null
+          id?: string
+          locked?: boolean
+          phase?: string | null
+          position: number
+          session_id: string
+          text: string
+        }
+        Update: {
+          created_at?: string
+          examples?: Json
+          framing?: string | null
+          id?: string
+          locked?: boolean
+          phase?: string | null
+          position?: number
+          session_id?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cocreation_questions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cocreation_responses: {
+        Row: {
+          created_at: string
+          id: string
+          original_text: string
+          participant_id: string
+          question_id: string
+          refined_text: string | null
+          session_id: string
+          upvote_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          original_text: string
+          participant_id: string
+          question_id: string
+          refined_text?: string | null
+          session_id: string
+          upvote_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          original_text?: string
+          participant_id?: string
+          question_id?: string
+          refined_text?: string | null
+          session_id?: string
+          upvote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cocreation_responses_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cocreation_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cocreation_responses_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cocreation_sessions: {
+        Row: {
+          active_question_id: string | null
+          created_at: string
+          description: string | null
+          event_mode: boolean
+          id: string
+          owner_id: string
+          project_id: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          active_question_id?: string | null
+          created_at?: string
+          description?: string | null
+          event_mode?: boolean
+          id?: string
+          owner_id: string
+          project_id?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          active_question_id?: string | null
+          created_at?: string
+          description?: string | null
+          event_mode?: boolean
+          id?: string
+          owner_id?: string
+          project_id?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cocreation_sessions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cocreation_sessions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cocreation_synthesis: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string | null
+          session_id: string
+          themes: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          session_id: string
+          themes: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          session_id?: string
+          themes?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cocreation_synthesis_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cocreation_synthesis_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cocreation_upvotes: {
+        Row: {
+          created_at: string
+          participant_id: string
+          response_id: string
+        }
+        Insert: {
+          created_at?: string
+          participant_id: string
+          response_id: string
+        }
+        Update: {
+          created_at?: string
+          participant_id?: string
+          response_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cocreation_upvotes_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cocreation_upvotes_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "cocreation_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_dependencies: {
         Row: {
           content_id: string
@@ -3370,6 +3665,15 @@ export type Database = {
       }
       cleanup_expired_invitations: { Args: never; Returns: undefined }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
+      cocreation_can_manage: { Args: { _session_id: string }; Returns: boolean }
+      cocreation_session_is_live: {
+        Args: { _session_id: string }
+        Returns: boolean
+      }
+      cocreation_session_is_public: {
+        Args: { _session_id: string }
+        Returns: boolean
+      }
       create_workspace_with_owner: {
         Args: {
           owner_id: string
