@@ -1,118 +1,155 @@
-# Reduce Supabase Cached Egress (41 GB → <5 GB)
+# AI-Assisted Co-Creation — Projects Template
 
-## Where the bytes actually come from
+A new template inside the existing Projects module (alongside "Start with design thinking" and "Collect ideas"). Owners create a co-creation session with guide questions, publish a public link/QR for anonymous participation, then trigger AI synthesis and outputs.
 
-I inspected the storage buckets and public-page code. Egress is dominated by **video and image bytes**, not JSON. Recent query trimming work has already eliminated most `select('*')` waste; the remaining wins are in assets and caching.
+## User flow
 
-| Bucket | Files | Size | Notes |
-|---|---|---|---|
-| `aim-asean-modules` | 29 | **6.6 GB** of MP4 | many 200–535 MB videos served from public bucket |
-| `master-trainer-reports` | 481 | 557 MB | not public, fine |
-| `course-lessons` | 8 | 257 MB | MP4s |
-| `limitless-gov-lessons` | 1 | 174 MB | one 174 MB MP4 |
-| `blog-covers` | 61 | 62 MB | several 4–9 MB JPGs/PNGs served full-size |
-| `web-assets` | 60 | 16 MB | hero PNG re-downloaded repeatedly |
+1. **Create** — Owner picks "AI-Assisted Co-Creation" from CreateProjectDialog → wizard captures title, description, 3–5 guide questions (each with optional framing + examples), and Event Mode toggle.
+2. **Publish** — Generates `/cocreate/:slug` public link + QR code. Status: draft → live → synthesizing → completed.
+3. **Participate (public, no auth)** — Anonymous user gets assigned a friendly name (e.g. "Curious Panda"), stored in localStorage. They answer questions, submit multiple short ideas, see others' ideas live, upvote.
+4. **Owner controls** — Live dashboard shows counts/trending. In Event Mode, owner activates one question at a time and can lock phases.
+5. **AI refinement** — On submission, optional AI rewrite (clarity, framing) preserving meaning.
+6. **Pre-synthesis** — Owner sees draft theme groupings + duplicate flags, can adjust.
+7. **Synthesis** — AI produces 3–5 themed insights per question.
+8. **Outputs** — Generate slides, visual summary, podcast-style digest (text script).
 
-Plus on the public homepage and listings:
-- The hero PNG (`Hero_section_image.png?t=...`) is loaded raw, with a cache-busting `?t=` query that defeats CDN caching.
-- `BlogSection`, `Features`, `InfiniteLogos`, `Product.tsx`, `About.tsx`, `Privacy/Terms/NotFound`, `OpenGraphTags` all reference original `/storage/v1/object/public/...` URLs (no `thumbUrl`, no `loading="lazy"`, no `width/height`).
-- `WorkshopDetail`, `CourseDetail` render `image_url` at full resolution.
+## Pages & components (new)
 
-A single homepage visit currently pulls ~3–5 MB of images. With the AIM ASEAN videos served from public Supabase Storage, even a handful of learners replays = tens of GB.
-
-## What we will change (no design changes)
-
-### 1. Stop serving large videos directly from Supabase egress
-This is the single biggest line item.
-
-- Add a cheap `videoUrl()` helper that returns the storage URL **as-is for now** but marks where every `<video>` source comes from.
-- For `aim-asean-modules`, `course-lessons`, `limitless-gov-lessons`: in `VideoPlayer.tsx`, set `preload="metadata"` (currently videos may auto-preload), and ensure no listing page renders `<video>` thumbnails — only the actual lesson page mounts a player.
-- Document (in README) that long-form video should move to YouTube/Mux/Cloudflare Stream. The player already supports YouTube — recommend re-uploading the AIM ASEAN catalogue to an unlisted YouTube channel and pasting URLs into existing `video_url` fields. **No code change needed beyond enabling that path; this alone removes ~6 GB/month of repeated egress.**
-
-### 2. Route every public image through `thumbUrl()`
-`src/lib/imageUrl.ts` already exists but is only used on 4 listing pages. Extend it everywhere a Supabase image is rendered on a public page.
-
-Files to update with `thumbUrl(url, { width: N })` + `loading="lazy"` + explicit `width`/`height`:
-
-| File | Image | Width preset |
-|---|---|---|
-| `src/pages/Index.tsx` (hero) | Hero PNG | 1600, drop the `?t=` cache-buster, `fetchpriority="high"` |
-| `src/components/site-config/BlogSection.tsx` | `cover_image` | 600 |
-| `src/components/site-config/Features.tsx` | feature images | 800 |
-| `src/components/site-config/InfiniteLogos.tsx` | logos | 240 |
-| `src/components/site-config/FeatureSection.tsx` | image | 800 |
-| `src/components/site-config/TestimonialsSection.tsx` | `photo_url` | 200 |
-| `src/components/services/CoDesignProcess.tsx` | diagram | 1200 |
-| `src/components/projects/ProjectBanner.tsx` | banner | 1200 |
-| `src/pages/About.tsx` | hero | 1200 |
-| `src/pages/landing/Product.tsx` | 4 product images | 1200 |
-| `src/pages/landing/Services.tsx` | services image | 1200 |
-| `src/pages/landing/CourseDetail.tsx` | `image_url` | 1200 |
-| `src/pages/landing/WorkshopDetail.tsx` | `image_url` | 1200 |
-| `src/pages/CaseStudy.tsx`, `BlogPost.tsx`, `ToolDetails.tsx` | covers | 1200 |
-| `OpenGraphTags` defaults | hero | 1200 |
-| `src/pages/Dashboard.tsx` (3 quick-link cards) | promo | 600 |
-
-`thumbUrl` already adds `quality=70` and uses Supabase's `/render/image/public/` endpoint so the CDN serves a much smaller derivative (typical 4 MB PNG → ~80 KB WEBP-equivalent).
-
-### 3. Cache-buster cleanup
-Strip `?t=2024-...` from the hero URL in `Index.tsx`, `BlogPost.tsx`, `CaseStudy.tsx`, `Privacy.tsx`, `Terms.tsx`, `NotFound.tsx`, `Tools.tsx`, `Blog.tsx`, `CaseStudies.tsx`, `Courses.tsx`, `WorkshopDetail.tsx`, `Services.tsx`, `Product.tsx`, `OpenGraphTags`. The `?t=` defeats the Supabase CDN cache and forces revalidation on every load.
-
-### 4. Lock in client-side caching on public queries
-Most public hooks call `useQuery` without `staleTime`, so React Query refetches on every navigation/focus. Add long `staleTime` + `gcTime` to:
-
-- `Index.tsx` session check (already 5 min — keep)
-- `BlogSection`, `WorkshopsSection`, `TestimonialsSection`, `useClientLogos` → `staleTime: 30 * 60_000`
-- `landing/Blog.tsx`, `landing/CaseStudies.tsx`, `landing/Tools.tsx`, `landing/Courses.tsx` → `staleTime: 10 * 60_000`, `refetchOnWindowFocus: false`
-- Detail pages (`BlogPost`, `CaseStudy`, `CourseDetail`, `ToolDetail`, `WorkshopDetail`) → `staleTime: 15 * 60_000`
-
-Also set sensible global defaults in `src/main.tsx` `QueryClient`:
-```ts
-defaultOptions: { queries: {
-  staleTime: 5 * 60_000,
-  gcTime: 30 * 60_000,
-  refetchOnWindowFocus: false,
-  refetchOnReconnect: false,
-}}
+```
+src/pages/projects/co-creation/
+  CoCreationCreate.tsx          # owner wizard
+  CoCreationDashboard.tsx       # owner live view + synthesis + outputs
+  CoCreationPublic.tsx          # public participant view (/cocreate/:slug)
+src/components/projects/co-creation/
+  GuideQuestionEditor.tsx
+  QRCodeBlock.tsx
+  ResponseCard.tsx              # idea + upvote + anon name
+  LiveResponsesPanel.tsx
+  ThemePreviewPanel.tsx
+  SynthesisOutput.tsx
+  OutputSlides.tsx / OutputVisual.tsx / OutputPodcast.tsx
+  EventModeControls.tsx
+src/lib/anonymousName.ts        # adjective+animal generator
 ```
 
-### 5. Compress the worst storage offenders (one-off)
-Top blog covers are 4–9 MB. Even after `thumbUrl`, the original is still served once when an editor opens the dashboard. Add a short script note in the plan deliverable; no automatic re-upload (out of scope), but flag the 5 worst offenders to the team.
+Wire a third tile into `CreateProjectDialog.tsx` ("AI-Assisted Co-Creation") that routes to `/dashboard/projects/co-creation/new`. Add public route `/cocreate/:slug` in `AppRoutes.tsx` (outside DashboardLayout, no auth).
 
-### 6. Pagination / list-page guards
-Already done in the previous pass. Spot-fix only:
-- `landing/Tools.tsx` — confirm `.range()` + Load more is in place.
-- `BlogSection` (homepage) — already `.limit(3)`. Good.
+## Database (migration)
 
-### 7. Dev-only diagnostics
-Add a tiny `src/lib/egressLogger.ts` that, when `import.meta.env.DEV`, wraps `supabase.from(...).select(...)` calls via a thin proxy and `console.debug`s the table + approximate response size from `JSON.stringify(data).length`. Off in production. Helps the team spot regressions without affecting users.
+```sql
+create table cocreation_sessions (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  project_id uuid references projects(id) on delete set null,
+  owner_id uuid not null references auth.users(id),
+  title text not null,
+  description text,
+  slug text unique not null,
+  status text not null default 'draft',          -- draft|live|synthesizing|completed
+  event_mode boolean not null default false,
+  active_question_id uuid,                       -- for event mode
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
 
-## Files to create / edit
+create table cocreation_questions (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references cocreation_sessions(id) on delete cascade,
+  position int not null,
+  text text not null,
+  framing text,
+  examples jsonb default '[]'::jsonb,
+  phase text,                                    -- e.g. Problems/Opportunities/Recs
+  locked boolean not null default false
+);
 
-**Create**
-- `src/lib/egressLogger.ts` (dev-only)
+create table cocreation_participants (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references cocreation_sessions(id) on delete cascade,
+  anon_token text not null,                      -- random per-browser id
+  display_name text not null,                    -- "Curious Panda"
+  created_at timestamptz default now(),
+  unique(session_id, anon_token)
+);
 
-**Edit (asset/caching changes only — no UI changes)**
-- `src/main.tsx` — QueryClient defaults
-- `src/pages/Index.tsx`, `Dashboard.tsx`, `About.tsx`, `BlogPost.tsx`, `CaseStudy.tsx`, `ToolDetails.tsx`, `Privacy.tsx`, `Terms.tsx`, `NotFound.tsx`
-- `src/pages/landing/Product.tsx`, `Services.tsx`, `CourseDetail.tsx`, `WorkshopDetail.tsx`, `Blog.tsx`, `CaseStudies.tsx`, `Courses.tsx`, `Tools.tsx`
-- `src/components/site-config/BlogSection.tsx`, `Features.tsx`, `FeatureSection.tsx`, `InfiniteLogos.tsx`, `TestimonialsSection.tsx`, `WorkshopsSection.tsx`
-- `src/components/site-config/hooks/useClientLogos.ts`
-- `src/components/services/CoDesignProcess.tsx`
-- `src/components/projects/ProjectBanner.tsx`
-- `src/components/OpenGraphTags.tsx`
-- `src/components/lessons/VideoPlayer.tsx` — `preload="metadata"`
+create table cocreation_responses (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references cocreation_sessions(id) on delete cascade,
+  question_id uuid not null references cocreation_questions(id) on delete cascade,
+  participant_id uuid not null references cocreation_participants(id) on delete cascade,
+  original_text text not null,
+  refined_text text,
+  upvote_count int not null default 0,
+  created_at timestamptz default now()
+);
 
-## Expected impact
-- Hero/listing image bytes per page: **~4 MB → ~150 KB** (~25× smaller, served WEBP from Supabase render endpoint).
-- Removing the `?t=` cache-buster lets the CDN actually cache; repeat visits drop to **0 KB** for the hero.
-- React Query `staleTime` removes most repeat JSON fetches across navigations.
-- If AIM ASEAN videos move to YouTube (recommended, no code change beyond pasting URLs), **~6 GB of monthly egress disappears outright**.
+create table cocreation_upvotes (
+  response_id uuid references cocreation_responses(id) on delete cascade,
+  participant_id uuid references cocreation_participants(id) on delete cascade,
+  primary key (response_id, participant_id)
+);
 
-Combined, this should land egress well under 5 GB/month while keeping every page visually identical.
+create table cocreation_synthesis (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references cocreation_sessions(id) on delete cascade,
+  question_id uuid references cocreation_questions(id) on delete cascade,
+  themes jsonb not null,                         -- [{label, insight, supporting_response_ids[]}]
+  created_at timestamptz default now()
+);
 
-## What I'm explicitly NOT doing
-- No layout, copy, or component restructuring.
-- No backend schema changes.
-- No automatic re-upload of existing storage files (call-out only).
-- No removal of Supabase Storage for non-video assets — `thumbUrl` makes them cheap enough.
+create table cocreation_outputs (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references cocreation_sessions(id) on delete cascade,
+  kind text not null,                            -- slides|visual|podcast
+  content jsonb not null,
+  created_at timestamptz default now()
+);
+```
+
+### RLS (per security memory: workspace-scoped private, but session is intentionally public when status='live')
+
+- `cocreation_sessions`: SELECT public if `status in ('live','synthesizing','completed')` (anon allowed); full CRUD limited to workspace members; status/event/synthesis writes limited to owner or workspace admin via `is_workspace_admin_or_owner_of`.
+- `cocreation_questions`: SELECT inherits session visibility; writes by session owner / workspace admin.
+- `cocreation_participants`: INSERT allowed for `anon` when parent session is live; SELECT only by workspace member or by matching `anon_token` (passed as request header / RPC arg).
+- `cocreation_responses`: INSERT allowed for `anon` when session live AND (event_mode=false OR question = active_question_id) AND question not locked; SELECT public on live sessions; UPDATE/DELETE by workspace owner only.
+- `cocreation_upvotes`: INSERT/DELETE allowed for `anon` participant on live sessions; trigger updates `upvote_count`.
+- `cocreation_synthesis` / `cocreation_outputs`: SELECT public on live/completed; writes by workspace admin/owner only.
+
+Realtime: enable replication on `cocreation_responses`, `cocreation_upvotes`, `cocreation_sessions` so public + owner views update live.
+
+## Edge functions (new)
+
+All call Lovable AI Gateway (`google/gemini-3-flash-preview` default), key already in secrets.
+
+- `cocreation-refine-response` — input: response text + question + framing; returns 1–2 sentence rewrite.
+- `cocreation-pre-synthesis` — groups responses into draft themes, flags duplicates.
+- `cocreation-synthesize` — produces 3–5 themed insights per question; writes `cocreation_synthesis`.
+- `cocreation-generate-output` — kind=slides|visual|podcast; structured tool-calling output; writes `cocreation_outputs`.
+
+All validate input with zod, include CORS, return clear 402/429 errors. Public-callable functions verify `session.status='live'` and use service role internally; never trust client-supplied workspace claims.
+
+## Anonymous identity
+
+`src/lib/anonymousName.ts` exports `generateAnonName()` combining ~30 friendly adjectives × ~30 animals. Token = `crypto.randomUUID()` stored in `localStorage` keyed per session slug. Public page upserts a `cocreation_participants` row and uses returned id for all writes.
+
+## Event Mode
+
+Owner dashboard exposes EventModeControls: toggle, set active question, lock/unlock per question, optional countdown timer (client-side). Public page highlights the active question and disables others.
+
+## QR + share
+
+Use `qrcode` library (already-allowed: jsPDF approach not needed) to render an SVG/PNG of `${window.location.origin}/cocreate/${slug}` on the dashboard with copy-link button.
+
+## Out of scope (this plan)
+
+- Editing/reordering questions after going live (ship later)
+- Exporting outputs to .pptx (slides shown in-app; PDF export can follow)
+- Moderation/blocklist for inappropriate inputs (note as follow-up)
+
+## Technical notes
+
+- New routes: `/dashboard/projects/co-creation/new`, `/dashboard/projects/co-creation/:id` (owner), `/cocreate/:slug` (public, no DashboardLayout, no auth gate).
+- Public page uses `supabase` anon client; RLS does the gating.
+- React Query for fetch + Supabase realtime channels for live updates.
+- Reuse existing `LoadingSpinner`, `Button`, `Dialog`, `Card`, `Badge` from shadcn.
+- Follow security memory: never expose service role; admin checks via `is_workspace_admin_or_owner_of`; explicit `search_path = public` on any new SQL functions.
