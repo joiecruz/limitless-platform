@@ -235,21 +235,12 @@ export default function CoCreationPublic() {
     if (!text) return;
     setSubmitting(true);
     try {
-      let refined: string | null = null;
-      try {
-        const { data } = await supabase.functions.invoke("cocreation-refine-response", {
-          body: { text, question: currentQuestion.text, framing: currentQuestion.framing },
-        });
-        refined = data?.refined || null;
-      } catch {
-        // optional
-      }
       const { error } = await supabase.from("cocreation_responses").insert({
         session_id: session.id,
         question_id: currentQuestion.id,
         participant_id: participantId,
         original_text: text,
-        refined_text: refined,
+        refined_text: null,
       });
       if (error) throw error;
       setDraft("");
