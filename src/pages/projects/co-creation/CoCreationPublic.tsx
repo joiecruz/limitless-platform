@@ -200,8 +200,21 @@ export default function CoCreationPublic() {
         },
       )
       .subscribe();
+
+    // Polling fallback so participants see new ideas even if realtime drops.
+    const interval = window.setInterval(async () => {
+      if (document.visibilityState !== "visible") return;
+      const { data: rs } = await supabase
+        .from("cocreation_responses")
+        .select("*")
+        .eq("session_id", session.id)
+        .order("created_at", { ascending: false });
+      setResponses((rs as Response[]) || []);
+    }, 5000);
+
     return () => {
       supabase.removeChannel(ch);
+      window.clearInterval(interval);
     };
   }, [session?.id]);
 

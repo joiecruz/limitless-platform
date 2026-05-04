@@ -39,6 +39,7 @@ interface Session {
   active_question_id: string | null;
   workspace_id: string;
   owner_id: string;
+  last_synthesis_at: string | null;
 }
 
 interface Question {
@@ -88,6 +89,29 @@ export default function CoCreationDashboard() {
   const [activeVisualId, setActiveVisualId] = useState<string | null>(null);
 
   const publicUrl = session ? `${getPublicSiteOrigin()}/cocreate/${session.slug}` : "";
+
+  const refreshResponses = async (sessionId: string) => {
+    const [{ data: rs }, { data: ps }] = await Promise.all([
+      supabase
+        .from("cocreation_responses")
+        .select("*")
+        .eq("session_id", sessionId)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("cocreation_participants")
+        .select("id, display_name")
+        .eq("session_id", sessionId),
+    ]);
+    setResponses((rs as Response[]) || []);
+    setParticipantNames(
+      Object.fromEntries(((ps as any[]) || []).map((p) => [p.id, p.display_name])),
+    );
+  };
+
+  const refreshSession = async (sessionId: string) => {
+    const { data: s } = await supabase.from("cocreation_sessions").select("*").eq("id", sessionId).single();
+    if (s) setSession(s as Session);
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -140,14 +164,27 @@ export default function CoCreationDashboard() {
 
     const channel = supabase
       .channel(`cocreate-dash-${id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${id}` }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_sessions", filter: `id=eq.${id}` }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${id}` }, () => refreshResponses(id))
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_sessions", filter: `id=eq.${id}` }, () => refreshSession(id))
       .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_questions", filter: `session_id=eq.${id}` }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_outputs", filter: `session_id=eq.${id}` }, load)
-      .subscribe();
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_synthesis", filter: `session_id=eq.${id}` }, load)
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn("Realtime channel issue:", status);
+        }
+      });
+
+    // Polling fallback — guarantees ideas appear within ~5s even if realtime is degraded.
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        refreshResponses(id);
+      }
+    }, 5000);
 
     return () => {
       supabase.removeChannel(channel);
+      window.clearInterval(interval);
     };
   }, [id]);
 
@@ -174,13 +211,18 @@ export default function CoCreationDashboard() {
     if (!session) return;
     setSynthLoading(true);
     try {
-      await supabase.from("cocreation_sessions").update({ status: "synthesizing" }).eq("id", session.id);
       const { data, error } = await supabase.functions.invoke("cocreation-synthesize", {
         body: { session_id: session.id },
       });
       if (error) throw error;
       toast({ title: "Synthesis complete", description: `${data?.themes_created || 0} themes created` });
-      await supabase.from("cocreation_sessions").update({ status: "completed" }).eq("id", session.id);
+      // Refresh synthesis + session (for last_synthesis_at). Session stays live.
+      const [{ data: syn }, { data: s }] = await Promise.all([
+        supabase.from("cocreation_synthesis").select("*").eq("session_id", session.id),
+        supabase.from("cocreation_sessions").select("*").eq("id", session.id).single(),
+      ]);
+      setSynthesis(((syn as any[]) || []).map((x) => ({ ...x, themes: x.themes as ThemeBlock[] })));
+      if (s) setSession(s as Session);
     } catch (e: any) {
       toast({ title: "Synthesis failed", description: e.message, variant: "destructive" });
     } finally {
@@ -312,7 +354,19 @@ export default function CoCreationDashboard() {
         </Card>
       )}
 
-      <h2 className="text-xl font-semibold mb-4">Live responses</h2>
+      <div className="flex items-center gap-3 mb-4">
+        <h2 className="text-xl font-semibold">Live responses</h2>
+        {session.status === "live" && (
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            Live · auto-refreshing
+          </span>
+        )}
+        <span className="text-xs text-muted-foreground ml-auto">{responses.length} total ideas</span>
+      </div>
       <div className="space-y-4 mb-8">
         {questions.map((q) => {
           const list = responsesByQ(q.id);
@@ -382,9 +436,20 @@ export default function CoCreationDashboard() {
           <p className="text-sm text-muted-foreground mb-4">
             Generate themed insights (3–5 per question) from all submitted ideas.
           </p>
-          <Button onClick={runSynthesis} disabled={synthLoading || responses.length === 0}>
-            {synthLoading ? "Synthesizing..." : "Run synthesis"}
-          </Button>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button onClick={runSynthesis} disabled={synthLoading || responses.length === 0}>
+              {synthLoading
+                ? "Synthesizing..."
+                : synthesis.length > 0
+                  ? "Re-run synthesis"
+                  : "Run synthesis"}
+            </Button>
+            {session.last_synthesis_at && (
+              <span className="text-xs text-muted-foreground">
+                Last synthesized {timeAgo(session.last_synthesis_at)}
+              </span>
+            )}
+          </div>
 
           {synthesis.length > 0 && (
             <div className="mt-6 space-y-4">

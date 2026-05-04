@@ -1,0 +1,1 @@
+ALTER TABLE public.cocreation_sessions ADD COLUMN IF NOT EXISTS last_synthesis_at timestamptz;
