@@ -398,6 +398,7 @@ export type Database = {
           description: string | null
           event_mode: boolean
           id: string
+          last_synthesis_at: string | null
           owner_id: string
           project_id: string | null
           slug: string
@@ -412,6 +413,7 @@ export type Database = {
           description?: string | null
           event_mode?: boolean
           id?: string
+          last_synthesis_at?: string | null
           owner_id: string
           project_id?: string | null
           slug: string
@@ -426,6 +428,7 @@ export type Database = {
           description?: string | null
           event_mode?: boolean
           id?: string
+          last_synthesis_at?: string | null
           owner_id?: string
           project_id?: string | null
           slug?: string
