@@ -261,6 +261,16 @@ export default function CoCreationDashboard() {
               Pause
             </Button>
           )}
+          {(session.status === "completed" || session.status === "synthesizing") && (
+            <>
+              <Button onClick={() => setStatus("live")}>
+                <Play className="h-4 w-4 mr-1" /> Reopen for participation
+              </Button>
+              <Button variant="outline" onClick={() => setStatus("draft")}>
+                Move to draft
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
