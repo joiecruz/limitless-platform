@@ -211,13 +211,18 @@ export default function CoCreationDashboard() {
     if (!session) return;
     setSynthLoading(true);
     try {
-      await supabase.from("cocreation_sessions").update({ status: "synthesizing" }).eq("id", session.id);
       const { data, error } = await supabase.functions.invoke("cocreation-synthesize", {
         body: { session_id: session.id },
       });
       if (error) throw error;
       toast({ title: "Synthesis complete", description: `${data?.themes_created || 0} themes created` });
-      await supabase.from("cocreation_sessions").update({ status: "completed" }).eq("id", session.id);
+      // Refresh synthesis + session (for last_synthesis_at). Session stays live.
+      const [{ data: syn }, { data: s }] = await Promise.all([
+        supabase.from("cocreation_synthesis").select("*").eq("session_id", session.id),
+        supabase.from("cocreation_sessions").select("*").eq("id", session.id).single(),
+      ]);
+      setSynthesis(((syn as any[]) || []).map((x) => ({ ...x, themes: x.themes as ThemeBlock[] })));
+      if (s) setSession(s as Session);
     } catch (e: any) {
       toast({ title: "Synthesis failed", description: e.message, variant: "destructive" });
     } finally {
