@@ -39,6 +39,7 @@ interface Session {
   active_question_id: string | null;
   workspace_id: string;
   owner_id: string;
+  last_synthesis_at: string | null;
 }
 
 interface Question {
