@@ -90,6 +90,29 @@ export default function CoCreationDashboard() {
 
   const publicUrl = session ? `${getPublicSiteOrigin()}/cocreate/${session.slug}` : "";
 
+  const refreshResponses = async (sessionId: string) => {
+    const [{ data: rs }, { data: ps }] = await Promise.all([
+      supabase
+        .from("cocreation_responses")
+        .select("*")
+        .eq("session_id", sessionId)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("cocreation_participants")
+        .select("id, display_name")
+        .eq("session_id", sessionId),
+    ]);
+    setResponses((rs as Response[]) || []);
+    setParticipantNames(
+      Object.fromEntries(((ps as any[]) || []).map((p) => [p.id, p.display_name])),
+    );
+  };
+
+  const refreshSession = async (sessionId: string) => {
+    const { data: s } = await supabase.from("cocreation_sessions").select("*").eq("id", sessionId).single();
+    if (s) setSession(s as Session);
+  };
+
   useEffect(() => {
     if (!id) return;
     const load = async () => {
@@ -141,14 +164,27 @@ export default function CoCreationDashboard() {
 
     const channel = supabase
       .channel(`cocreate-dash-${id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${id}` }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_sessions", filter: `id=eq.${id}` }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${id}` }, () => refreshResponses(id))
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_sessions", filter: `id=eq.${id}` }, () => refreshSession(id))
       .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_questions", filter: `session_id=eq.${id}` }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_outputs", filter: `session_id=eq.${id}` }, load)
-      .subscribe();
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_synthesis", filter: `session_id=eq.${id}` }, load)
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn("Realtime channel issue:", status);
+        }
+      });
+
+    // Polling fallback — guarantees ideas appear within ~5s even if realtime is degraded.
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        refreshResponses(id);
+      }
+    }, 5000);
 
     return () => {
       supabase.removeChannel(channel);
+      window.clearInterval(interval);
     };
   }, [id]);
 
