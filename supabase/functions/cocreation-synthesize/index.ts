@@ -166,6 +166,11 @@ Deno.serve(async (req) => {
       themesCreated += themes.length;
     }
 
+    await admin
+      .from("cocreation_sessions")
+      .update({ last_synthesis_at: new Date().toISOString() })
+      .eq("id", session_id);
+
     return new Response(JSON.stringify({ themes_created: themesCreated }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
