@@ -436,9 +436,20 @@ export default function CoCreationDashboard() {
           <p className="text-sm text-muted-foreground mb-4">
             Generate themed insights (3–5 per question) from all submitted ideas.
           </p>
-          <Button onClick={runSynthesis} disabled={synthLoading || responses.length === 0}>
-            {synthLoading ? "Synthesizing..." : "Run synthesis"}
-          </Button>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button onClick={runSynthesis} disabled={synthLoading || responses.length === 0}>
+              {synthLoading
+                ? "Synthesizing..."
+                : synthesis.length > 0
+                  ? "Re-run synthesis"
+                  : "Run synthesis"}
+            </Button>
+            {session.last_synthesis_at && (
+              <span className="text-xs text-muted-foreground">
+                Last synthesized {timeAgo(session.last_synthesis_at)}
+              </span>
+            )}
+          </div>
 
           {synthesis.length > 0 && (
             <div className="mt-6 space-y-4">
