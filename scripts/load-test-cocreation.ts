@@ -134,7 +134,7 @@ async function runVirtualUser(i: number): Promise<Metrics> {
       .select("id")
       .single();
     if (pErr) throw new Error(`participant insert: ${pErr.message}`);
-    const participantId = (created as any).id as string;
+    participantId = (created as any).id as string;
     m.joinMs = Date.now() - joinT0;
 
     // Wait staggered before submitting
