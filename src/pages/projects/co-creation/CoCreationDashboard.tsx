@@ -90,22 +90,30 @@ export default function CoCreationDashboard() {
 
   const publicUrl = session ? `${getPublicSiteOrigin()}/cocreate/${session.slug}` : "";
 
-  const refreshResponses = async (sessionId: string) => {
-    const [{ data: rs }, { data: ps }] = await Promise.all([
-      supabase
-        .from("cocreation_responses")
-        .select("*")
-        .eq("session_id", sessionId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("cocreation_participants")
-        .select("id, display_name")
-        .eq("session_id", sessionId),
-    ]);
-    setResponses((rs as Response[]) || []);
-    setParticipantNames(
-      Object.fromEntries(((ps as any[]) || []).map((p) => [p.id, p.display_name])),
-    );
+  const channelHealthyRef = useRef(false);
+
+  const RESPONSE_COLS = "id, question_id, original_text, refined_text, upvote_count, participant_id, created_at";
+
+  const fetchResponses = async (sessionId: string) => {
+    const { data: rs } = await supabase
+      .from("cocreation_responses")
+      .select(RESPONSE_COLS)
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (rs) setResponses(rs as Response[]);
+  };
+
+  const fetchParticipantById = async (sessionId: string, pid: string) => {
+    const { data } = await supabase
+      .from("cocreation_participants")
+      .select("id, display_name")
+      .eq("session_id", sessionId)
+      .eq("id", pid)
+      .maybeSingle();
+    if (data) {
+      setParticipantNames((prev) => ({ ...prev, [data.id]: data.display_name }));
+    }
   };
 
   const refreshSession = async (sessionId: string) => {
@@ -124,13 +132,15 @@ export default function CoCreationDashboard() {
         .order("position");
       const { data: rs } = await supabase
         .from("cocreation_responses")
-        .select("*")
+        .select(RESPONSE_COLS)
         .eq("session_id", id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(500);
       const { data: ps } = await supabase
         .from("cocreation_participants")
         .select("id, display_name")
-        .eq("session_id", id);
+        .eq("session_id", id)
+        .limit(500);
       const { data: syn } = await supabase
         .from("cocreation_synthesis")
         .select("*")
@@ -162,29 +172,54 @@ export default function CoCreationDashboard() {
     };
     load();
 
+    const sid = id;
     const channel = supabase
-      .channel(`cocreate-dash-${id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${id}` }, () => refreshResponses(id))
-      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_sessions", filter: `id=eq.${id}` }, () => refreshSession(id))
-      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_questions", filter: `session_id=eq.${id}` }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_outputs", filter: `session_id=eq.${id}` }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_synthesis", filter: `session_id=eq.${id}` }, load)
+      .channel(`cocreate-dash-${sid}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${sid}` }, (payload) => {
+        const row = payload.new as Response;
+        setResponses((prev) => (prev.some((r) => r.id === row.id) ? prev : [row, ...prev]));
+        setParticipantNames((prev) => {
+          if (prev[row.participant_id]) return prev;
+          fetchParticipantById(sid, row.participant_id);
+          return prev;
+        });
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${sid}` }, (payload) => {
+        const row = payload.new as Response;
+        setResponses((prev) => prev.map((r) => (r.id === row.id ? { ...r, ...row } : r)));
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${sid}` }, (payload) => {
+        const row = payload.old as Response;
+        setResponses((prev) => prev.filter((r) => r.id !== row.id));
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_sessions", filter: `id=eq.${sid}` }, () => refreshSession(sid))
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_questions", filter: `session_id=eq.${sid}` }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_outputs", filter: `session_id=eq.${sid}` }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "cocreation_synthesis", filter: `session_id=eq.${sid}` }, load)
       .subscribe((status) => {
+        channelHealthyRef.current = status === "SUBSCRIBED";
         if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
           console.warn("Realtime channel issue:", status);
         }
       });
 
-    // Polling fallback — guarantees ideas appear within ~5s even if realtime is degraded.
-    const interval = window.setInterval(() => {
-      if (document.visibilityState === "visible") {
-        refreshResponses(id);
-      }
-    }, 5000);
+    // Smart polling fallback — slow heartbeat when healthy, faster when degraded.
+    let timer: number | undefined;
+    const schedule = () => {
+      const base = channelHealthyRef.current ? 20000 : 5000;
+      const jitter = Math.floor((Math.random() - 0.5) * 3000);
+      timer = window.setTimeout(async () => {
+        if (document.visibilityState === "visible") {
+          await fetchResponses(sid);
+        }
+        schedule();
+      }, base + jitter);
+    };
+    schedule();
 
     return () => {
       supabase.removeChannel(channel);
-      window.clearInterval(interval);
+      if (timer) window.clearTimeout(timer);
     };
   }, [id]);
 
