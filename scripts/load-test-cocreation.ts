@@ -90,6 +90,7 @@ async function runVirtualUser(i: number): Promise<Metrics> {
   const userStart = Date.now();
   let firstIdeaSeen = false;
   let ownInsertedAt = 0;
+  let participantId = "";
   let resolveProp: (() => void) | null = null;
   const propPromise = new Promise<void>((r) => (resolveProp = r));
 
