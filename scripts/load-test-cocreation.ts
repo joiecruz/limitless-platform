@@ -141,6 +141,7 @@ async function runVirtualUser(i: number): Promise<Metrics> {
       .single();
     if (pErr) throw new Error(`participant insert: ${pErr.message}`);
     participantId = (created as any).id as string;
+    createdParticipantIds.add(participantId);
     m.joinMs = Date.now() - joinT0;
 
     // Wait staggered before submitting
@@ -152,7 +153,7 @@ async function runVirtualUser(i: number): Promise<Metrics> {
       session_id: sessionId,
       question_id: questionId,
       participant_id: participantId,
-      original_text: `Load test idea from user ${i} @ ${new Date().toISOString()}`,
+      original_text: `[${runTag}] Load test idea from user ${i} @ ${new Date().toISOString()}`,
     });
     if (rErr) throw new Error(`response insert: ${rErr.message}`);
     m.submitMs = Date.now() - submitT0;
