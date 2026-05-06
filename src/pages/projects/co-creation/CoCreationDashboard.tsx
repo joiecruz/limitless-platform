@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Globe, Sparkles, Lock, Unlock, Play, Image as ImageIcon, Presentation, Mic, Loader2, Download, RefreshCw, ExternalLink, AlertCircle } from "lucide-react";
+import { ArrowLeft, Copy, Globe, Sparkles, Lock, Unlock, Play, Image as ImageIcon, Presentation, Mic, Loader2, Download, RefreshCw, ExternalLink, AlertCircle, Trash2 } from "lucide-react";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QRCodeCanvas } from "qrcode.react";
@@ -87,6 +88,19 @@ export default function CoCreationDashboard() {
   const [visualError, setVisualError] = useState<string | null>(null);
   const [visuals, setVisuals] = useState<VisualOutput[]>([]);
   const [activeVisualId, setActiveVisualId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Response | null>(null);
+
+  const handleDeleteResponse = async (r: Response) => {
+    const prev = responses;
+    setResponses((p) => p.filter((x) => x.id !== r.id));
+    const { error } = await supabase.from("cocreation_responses").delete().eq("id", r.id);
+    if (error) {
+      setResponses(prev);
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Idea deleted" });
+    }
+  };
 
   const publicUrl = session ? `${getPublicSiteOrigin()}/cocreate/${session.slug}` : "";
 
@@ -441,17 +455,28 @@ export default function CoCreationDashboard() {
                   <p className="text-sm text-muted-foreground">No ideas yet.</p>
                 ) : (
                   <div className="space-y-2">
-                    {list.slice(0, 8).map((r) => (
-                      <div key={r.id} className="border rounded-lg p-3 bg-muted/20">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-muted-foreground">
-                            {participantNames[r.participant_id] || "Anonymous"}
-                          </span>
-                          <Badge variant="outline">▲ {r.upvote_count}</Badge>
-                        </div>
-                        <p className="text-sm">{r.original_text}</p>
-                      </div>
-                    ))}
+                     {list.slice(0, 8).map((r) => (
+                       <div key={r.id} className="border rounded-lg p-3 bg-muted/20">
+                         <div className="flex items-center justify-between mb-1 gap-2">
+                           <span className="text-xs text-muted-foreground">
+                             {participantNames[r.participant_id] || "Anonymous"}
+                           </span>
+                           <div className="flex items-center gap-1">
+                             <Badge variant="outline">▲ {r.upvote_count}</Badge>
+                             <Button
+                               size="icon"
+                               variant="ghost"
+                               className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                               onClick={() => setDeleteTarget(r)}
+                               aria-label="Delete idea"
+                             >
+                               <Trash2 className="h-3.5 w-3.5" />
+                             </Button>
+                           </div>
+                         </div>
+                         <p className="text-sm">{r.original_text}</p>
+                       </div>
+                     ))}
                     {list.length > 8 && (
                       <p className="text-xs text-muted-foreground">+ {list.length - 8} more</p>
                     )}
@@ -650,6 +675,18 @@ export default function CoCreationDashboard() {
           })()}
         </CardContent>
       </Card>
+
+      <ConfirmationDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Delete this idea?"
+        description="This will permanently remove the idea and its upvotes. This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={() => {
+          if (deleteTarget) handleDeleteResponse(deleteTarget);
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }
