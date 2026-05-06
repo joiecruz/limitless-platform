@@ -438,7 +438,14 @@ export default function CoCreationPublic() {
               </span>
             </div>
           </div>
-          <Badge variant="outline" className="shrink-0">You: {displayName}</Badge>
+          <div className="flex items-center gap-2 shrink-0">
+            {reconnecting && (
+              <span className="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                Reconnecting…
+              </span>
+            )}
+            <Badge variant="outline">You: {displayName}</Badge>
+          </div>
         </div>
       </header>
 
