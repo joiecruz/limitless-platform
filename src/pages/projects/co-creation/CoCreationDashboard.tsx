@@ -88,6 +88,19 @@ export default function CoCreationDashboard() {
   const [visualError, setVisualError] = useState<string | null>(null);
   const [visuals, setVisuals] = useState<VisualOutput[]>([]);
   const [activeVisualId, setActiveVisualId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Response | null>(null);
+
+  const handleDeleteResponse = async (r: Response) => {
+    const prev = responses;
+    setResponses((p) => p.filter((x) => x.id !== r.id));
+    const { error } = await supabase.from("cocreation_responses").delete().eq("id", r.id);
+    if (error) {
+      setResponses(prev);
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Idea deleted" });
+    }
+  };
 
   const publicUrl = session ? `${getPublicSiteOrigin()}/cocreate/${session.slug}` : "";
 
