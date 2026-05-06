@@ -227,10 +227,81 @@ async function main() {
     `  DELETE FROM cocreation_participants WHERE display_name LIKE 'LoadBot%';`,
   );
 
+  await cleanup();
+
   process.exit(failed ? 1 : 0);
 }
 
-main().catch((e) => {
+async function cleanup() {
+  if (cleanupRan) return;
+  cleanupRan = true;
+
+  const ids = [...createdParticipantIds];
+  console.log(`\n🧹 Cleanup: removing ${ids.length} participants + responses (tag=${runTag})`);
+
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn(
+      "  ⚠️  SUPABASE_SERVICE_ROLE_KEY not set — automatic deletion may be blocked by RLS.",
+    );
+    console.warn("  Run this SQL manually if needed:");
+    console.warn(
+      `    DELETE FROM cocreation_responses WHERE original_text LIKE '[${runTag}]%';`,
+    );
+    if (ids.length) {
+      console.warn(
+        `    DELETE FROM cocreation_participants WHERE id IN ('${ids.join("','")}');`,
+      );
+    }
+    return;
+  }
+
+  try {
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { error: rErr } = await admin
+      .from("cocreation_responses")
+      .delete()
+      .like("original_text", `[${runTag}]%`);
+    if (rErr) console.warn(`  responses delete error: ${rErr.message}`);
+
+    if (ids.length) {
+      const { error: pErr } = await admin
+        .from("cocreation_participants")
+        .delete()
+        .in("id", ids);
+      if (pErr) console.warn(`  participants delete error: ${pErr.message}`);
+    }
+    console.log("  ✅ Cleanup complete");
+  } catch (e: any) {
+    console.warn(`  cleanup failed: ${e?.message || e}`);
+  }
+}
+
+// Best-effort cleanup on interrupt / unexpected exit
+let exiting = false;
+async function gracefulExit(code: number) {
+  if (exiting) return;
+  exiting = true;
+  try {
+    await cleanup();
+  } finally {
+    process.exit(code);
+  }
+}
+process.on("SIGINT", () => gracefulExit(130));
+process.on("SIGTERM", () => gracefulExit(143));
+process.on("uncaughtException", (e) => {
+  console.error("uncaughtException:", e);
+  gracefulExit(1);
+});
+process.on("unhandledRejection", (e) => {
+  console.error("unhandledRejection:", e);
+  gracefulExit(1);
+});
+
+main().catch(async (e) => {
   console.error(e);
+  await cleanup();
   process.exit(1);
 });
