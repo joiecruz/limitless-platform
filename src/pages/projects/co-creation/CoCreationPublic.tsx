@@ -78,21 +78,58 @@ export default function CoCreationPublic() {
   const [notFound, setNotFound] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const channelHealthyRef = useRef(false);
+  const [reconnecting, setReconnecting] = useState(false);
+
+  const RESPONSE_COLS = "id, question_id, original_text, refined_text, upvote_count, participant_id, created_at";
+
+  const fetchResponses = async (sessionId: string) => {
+    const { data: rs, error } = await supabase
+      .from("cocreation_responses")
+      .select(RESPONSE_COLS)
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (!error && rs) setResponses(rs as Response[]);
+  };
+
+  const fetchParticipantById = async (sessionId: string, pid: string) => {
+    const { data } = await supabase
+      .from("cocreation_participants")
+      .select("id, display_name")
+      .eq("session_id", sessionId)
+      .eq("id", pid)
+      .maybeSingle();
+    if (data) {
+      setParticipants((prev) => ({ ...prev, [data.id]: data.display_name }));
+    }
+  };
+
   useEffect(() => {
     if (!slug) return;
     let cancelled = false;
     const init = async () => {
-      const { data: s, error } = await supabase
-        .from("cocreation_sessions")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
-      if (cancelled) return;
-      if (error || !s) {
-        setNotFound(true);
-        setLoading(false);
-        return;
+      // Retry session fetch once on transient failure (QR rush)
+      let s: any = null;
+      for (let attempt = 0; attempt < 2 && !s; attempt++) {
+        const { data, error } = await supabase
+          .from("cocreation_sessions")
+          .select("*")
+          .eq("slug", slug)
+          .maybeSingle();
+        if (cancelled) return;
+        if (data) { s = data; break; }
+        if (error && attempt === 0) {
+          await new Promise((r) => setTimeout(r, 600));
+          continue;
+        }
+        if (!data) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
       }
+      if (!s) return;
       setSession(s as Session);
       const { token, displayName: cachedName } = getCachedAnonIdentity(slug);
 
@@ -108,12 +145,25 @@ export default function CoCreationPublic() {
 
       if (!pid) {
         name = await generateUniqueAnonName(s.id);
-        const { data: created } = await supabase
+        const { data: created, error: insertErr } = await supabase
           .from("cocreation_participants")
           .insert({ session_id: s.id, anon_token: token, display_name: name })
-          .select("id")
+          .select("id, display_name")
           .single();
-        pid = created?.id;
+        if (insertErr) {
+          // Likely a race — re-select by anon_token
+          const { data: again } = await supabase
+            .from("cocreation_participants")
+            .select("id, display_name")
+            .eq("session_id", s.id)
+            .eq("anon_token", token)
+            .maybeSingle();
+          pid = again?.id;
+          name = again?.display_name || name;
+        } else {
+          pid = created?.id;
+          name = created?.display_name || name;
+        }
       }
       if (name) cacheAnonName(slug, name);
       setDisplayName(name || "");
@@ -126,17 +176,13 @@ export default function CoCreationPublic() {
         .order("position");
       setQuestions((qs as any) || []);
 
-      const { data: rs } = await supabase
-        .from("cocreation_responses")
-        .select("*")
-        .eq("session_id", s.id)
-        .order("created_at", { ascending: false });
-      setResponses((rs as Response[]) || []);
+      await fetchResponses(s.id);
 
       const { data: ps } = await supabase
         .from("cocreation_participants")
         .select("id, display_name")
-        .eq("session_id", s.id);
+        .eq("session_id", s.id)
+        .limit(500);
       setParticipants(
         Object.fromEntries(((ps as any[]) || []).map((p) => [p.id, p.display_name])),
       );
@@ -156,67 +202,84 @@ export default function CoCreationPublic() {
     };
   }, [slug]);
 
-  // Realtime
+  // Realtime + smart polling
   useEffect(() => {
     if (!session) return;
+    const sid = session.id;
     const ch = supabase
-      .channel(`cocreate-pub-${session.id}`)
+      .channel(`cocreate-pub-${sid}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${session.id}` },
-        async () => {
-          const [{ data: rs }, { data: ps }] = await Promise.all([
-            supabase
-              .from("cocreation_responses")
-              .select("*")
-              .eq("session_id", session.id)
-              .order("created_at", { ascending: false }),
-            supabase
-              .from("cocreation_participants")
-              .select("id, display_name")
-              .eq("session_id", session.id),
-          ]);
-          setResponses((rs as Response[]) || []);
-          setParticipants(
-            Object.fromEntries(((ps as any[]) || []).map((p) => [p.id, p.display_name])),
-          );
+        { event: "INSERT", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${sid}` },
+        (payload) => {
+          const row = payload.new as Response;
+          setResponses((prev) => (prev.some((r) => r.id === row.id) ? prev : [row, ...prev]));
+          setParticipants((prev) => {
+            if (prev[row.participant_id]) return prev;
+            // lazy fetch unknown participant
+            fetchParticipantById(sid, row.participant_id);
+            return prev;
+          });
         },
       )
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "cocreation_sessions", filter: `id=eq.${session.id}` },
+        { event: "UPDATE", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${sid}` },
+        (payload) => {
+          const row = payload.new as Response;
+          setResponses((prev) => prev.map((r) => (r.id === row.id ? { ...r, ...row } : r)));
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "cocreation_responses", filter: `session_id=eq.${sid}` },
+        (payload) => {
+          const row = payload.old as Response;
+          setResponses((prev) => prev.filter((r) => r.id !== row.id));
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "cocreation_sessions", filter: `id=eq.${sid}` },
         (payload) => setSession(payload.new as Session),
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "cocreation_questions", filter: `session_id=eq.${session.id}` },
+        { event: "*", schema: "public", table: "cocreation_questions", filter: `session_id=eq.${sid}` },
         async () => {
           const { data: qs } = await supabase
             .from("cocreation_questions")
             .select("*")
-            .eq("session_id", session.id)
+            .eq("session_id", sid)
             .order("position");
           setQuestions((qs as any) || []);
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        const healthy = status === "SUBSCRIBED";
+        channelHealthyRef.current = healthy;
+        setReconnecting(!healthy && (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED"));
+      });
 
-    // Polling fallback so participants see new ideas even if realtime drops.
-    const interval = window.setInterval(async () => {
-      if (document.visibilityState !== "visible") return;
-      const { data: rs } = await supabase
-        .from("cocreation_responses")
-        .select("*")
-        .eq("session_id", session.id)
-        .order("created_at", { ascending: false });
-      setResponses((rs as Response[]) || []);
-    }, 5000);
+    // Smart polling: heartbeat every ~20s when healthy, ~5s with jitter when degraded.
+    let timer: number | undefined;
+    const schedule = () => {
+      const base = channelHealthyRef.current ? 20000 : 5000;
+      const jitter = Math.floor((Math.random() - 0.5) * 3000); // ±1.5s
+      timer = window.setTimeout(async () => {
+        if (document.visibilityState === "visible" && session.status === "live") {
+          await fetchResponses(sid);
+        }
+        schedule();
+      }, base + jitter);
+    };
+    schedule();
 
     return () => {
       supabase.removeChannel(ch);
-      window.clearInterval(interval);
+      if (timer) window.clearTimeout(timer);
     };
-  }, [session?.id]);
+  }, [session?.id, session?.status]);
 
   // In event mode, follow the host's active question
   useEffect(() => {
