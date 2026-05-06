@@ -29,6 +29,12 @@ const SUPABASE_URL =
 const SUPABASE_ANON_KEY =
   process.env.SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1NDQ1MjksImV4cCI6MjA0OTEyMDUyOX0.-L1Kc059oqFdOacRh9wcbf5wBCOqqTHBzvmIFKqlWU8";
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+// Track created rows so we can clean up even on failure / interruption.
+const createdParticipantIds = new Set<string>();
+const runTag = `loadtest-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+let cleanupRan = false;
 
 const slug = process.argv[2];
 const USERS = Number(process.argv[3] || 100);
