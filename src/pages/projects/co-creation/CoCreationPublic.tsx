@@ -306,46 +306,78 @@ export default function CoCreationPublic() {
     session?.status === "live" && currentQuestion && !currentQuestion.locked && (!session.event_mode || isActive);
 
   const submitResponse = async () => {
-    if (!session || !participantId || !currentQuestion) return;
+    if (!session || !participantId || !currentQuestion || submitting) return;
     const text = draft.trim();
     if (!text) return;
     setSubmitting(true);
-    try {
-      const { error } = await supabase.from("cocreation_responses").insert({
-        session_id: session.id,
-        question_id: currentQuestion.id,
-        participant_id: participantId,
-        original_text: text,
-        refined_text: null,
-      });
-      if (error) throw error;
+    const payload = {
+      session_id: session.id,
+      question_id: currentQuestion.id,
+      participant_id: participantId,
+      original_text: text,
+      refined_text: null,
+    };
+    let lastErr: any = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const { error } = await supabase.from("cocreation_responses").insert(payload);
+      if (!error) {
+        lastErr = null;
+        break;
+      }
+      lastErr = error;
+      await new Promise((r) => setTimeout(r, 400));
+    }
+    if (lastErr) {
+      toast({ title: "Couldn't submit", description: lastErr.message, variant: "destructive" });
+    } else {
       setDraft("");
       setDialogOpen(false);
-    } catch (e: any) {
-      toast({ title: "Couldn't submit", description: e.message, variant: "destructive" });
-    } finally {
-      setSubmitting(false);
     }
+    // small cooldown to prevent double-tap dupes
+    setTimeout(() => setSubmitting(false), 600);
   };
 
   const toggleUpvote = async (r: Response) => {
     if (!participantId || session?.status !== "live") return;
-    if (myUpvotes.has(r.id)) {
-      await supabase
-        .from("cocreation_upvotes")
-        .delete()
-        .eq("response_id", r.id)
-        .eq("participant_id", participantId);
+    const wasUpvoted = myUpvotes.has(r.id);
+    // optimistic update
+    setMyUpvotes((s) => {
+      const n = new Set(s);
+      if (wasUpvoted) n.delete(r.id);
+      else n.add(r.id);
+      return n;
+    });
+    setResponses((prev) =>
+      prev.map((row) =>
+        row.id === r.id
+          ? { ...row, upvote_count: Math.max(0, row.upvote_count + (wasUpvoted ? -1 : 1)) }
+          : row,
+      ),
+    );
+    const { error } = wasUpvoted
+      ? await supabase
+          .from("cocreation_upvotes")
+          .delete()
+          .eq("response_id", r.id)
+          .eq("participant_id", participantId)
+      : await supabase
+          .from("cocreation_upvotes")
+          .insert({ response_id: r.id, participant_id: participantId });
+    if (error) {
+      // rollback
       setMyUpvotes((s) => {
         const n = new Set(s);
-        n.delete(r.id);
+        if (wasUpvoted) n.add(r.id);
+        else n.delete(r.id);
         return n;
       });
-    } else {
-      const { error } = await supabase
-        .from("cocreation_upvotes")
-        .insert({ response_id: r.id, participant_id: participantId });
-      if (!error) setMyUpvotes((s) => new Set(s).add(r.id));
+      setResponses((prev) =>
+        prev.map((row) =>
+          row.id === r.id
+            ? { ...row, upvote_count: Math.max(0, row.upvote_count + (wasUpvoted ? 1 : -1)) }
+            : row,
+        ),
+      );
     }
   };
 
