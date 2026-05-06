@@ -455,17 +455,28 @@ export default function CoCreationDashboard() {
                   <p className="text-sm text-muted-foreground">No ideas yet.</p>
                 ) : (
                   <div className="space-y-2">
-                    {list.slice(0, 8).map((r) => (
-                      <div key={r.id} className="border rounded-lg p-3 bg-muted/20">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-muted-foreground">
-                            {participantNames[r.participant_id] || "Anonymous"}
-                          </span>
-                          <Badge variant="outline">▲ {r.upvote_count}</Badge>
-                        </div>
-                        <p className="text-sm">{r.original_text}</p>
-                      </div>
-                    ))}
+                     {list.slice(0, 8).map((r) => (
+                       <div key={r.id} className="border rounded-lg p-3 bg-muted/20">
+                         <div className="flex items-center justify-between mb-1 gap-2">
+                           <span className="text-xs text-muted-foreground">
+                             {participantNames[r.participant_id] || "Anonymous"}
+                           </span>
+                           <div className="flex items-center gap-1">
+                             <Badge variant="outline">▲ {r.upvote_count}</Badge>
+                             <Button
+                               size="icon"
+                               variant="ghost"
+                               className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                               onClick={() => setDeleteTarget(r)}
+                               aria-label="Delete idea"
+                             >
+                               <Trash2 className="h-3.5 w-3.5" />
+                             </Button>
+                           </div>
+                         </div>
+                         <p className="text-sm">{r.original_text}</p>
+                       </div>
+                     ))}
                     {list.length > 8 && (
                       <p className="text-xs text-muted-foreground">+ {list.length - 8} more</p>
                     )}
