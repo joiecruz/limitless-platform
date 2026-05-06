@@ -675,6 +675,18 @@ export default function CoCreationDashboard() {
           })()}
         </CardContent>
       </Card>
+
+      <ConfirmationDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Delete this idea?"
+        description="This will permanently remove the idea and its upvotes. This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={() => {
+          if (deleteTarget) handleDeleteResponse(deleteTarget);
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }
