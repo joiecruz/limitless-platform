@@ -29,6 +29,12 @@ const SUPABASE_URL =
 const SUPABASE_ANON_KEY =
   process.env.SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNybGxneWdqdXFwbHV2ZHB3YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1NDQ1MjksImV4cCI6MjA0OTEyMDUyOX0.-L1Kc059oqFdOacRh9wcbf5wBCOqqTHBzvmIFKqlWU8";
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+// Track created rows so we can clean up even on failure / interruption.
+const createdParticipantIds = new Set<string>();
+const runTag = `loadtest-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+let cleanupRan = false;
 
 const slug = process.argv[2];
 const USERS = Number(process.argv[3] || 100);
@@ -135,6 +141,7 @@ async function runVirtualUser(i: number): Promise<Metrics> {
       .single();
     if (pErr) throw new Error(`participant insert: ${pErr.message}`);
     participantId = (created as any).id as string;
+    createdParticipantIds.add(participantId);
     m.joinMs = Date.now() - joinT0;
 
     // Wait staggered before submitting
@@ -146,7 +153,7 @@ async function runVirtualUser(i: number): Promise<Metrics> {
       session_id: sessionId,
       question_id: questionId,
       participant_id: participantId,
-      original_text: `Load test idea from user ${i} @ ${new Date().toISOString()}`,
+      original_text: `[${runTag}] Load test idea from user ${i} @ ${new Date().toISOString()}`,
     });
     if (rErr) throw new Error(`response insert: ${rErr.message}`);
     m.submitMs = Date.now() - submitT0;
@@ -220,10 +227,81 @@ async function main() {
     `  DELETE FROM cocreation_participants WHERE display_name LIKE 'LoadBot%';`,
   );
 
+  await cleanup();
+
   process.exit(failed ? 1 : 0);
 }
 
-main().catch((e) => {
+async function cleanup() {
+  if (cleanupRan) return;
+  cleanupRan = true;
+
+  const ids = [...createdParticipantIds];
+  console.log(`\n🧹 Cleanup: removing ${ids.length} participants + responses (tag=${runTag})`);
+
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn(
+      "  ⚠️  SUPABASE_SERVICE_ROLE_KEY not set — automatic deletion may be blocked by RLS.",
+    );
+    console.warn("  Run this SQL manually if needed:");
+    console.warn(
+      `    DELETE FROM cocreation_responses WHERE original_text LIKE '[${runTag}]%';`,
+    );
+    if (ids.length) {
+      console.warn(
+        `    DELETE FROM cocreation_participants WHERE id IN ('${ids.join("','")}');`,
+      );
+    }
+    return;
+  }
+
+  try {
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { error: rErr } = await admin
+      .from("cocreation_responses")
+      .delete()
+      .like("original_text", `[${runTag}]%`);
+    if (rErr) console.warn(`  responses delete error: ${rErr.message}`);
+
+    if (ids.length) {
+      const { error: pErr } = await admin
+        .from("cocreation_participants")
+        .delete()
+        .in("id", ids);
+      if (pErr) console.warn(`  participants delete error: ${pErr.message}`);
+    }
+    console.log("  ✅ Cleanup complete");
+  } catch (e: any) {
+    console.warn(`  cleanup failed: ${e?.message || e}`);
+  }
+}
+
+// Best-effort cleanup on interrupt / unexpected exit
+let exiting = false;
+async function gracefulExit(code: number) {
+  if (exiting) return;
+  exiting = true;
+  try {
+    await cleanup();
+  } finally {
+    process.exit(code);
+  }
+}
+process.on("SIGINT", () => gracefulExit(130));
+process.on("SIGTERM", () => gracefulExit(143));
+process.on("uncaughtException", (e) => {
+  console.error("uncaughtException:", e);
+  gracefulExit(1);
+});
+process.on("unhandledRejection", (e) => {
+  console.error("unhandledRejection:", e);
+  gracefulExit(1);
+});
+
+main().catch(async (e) => {
   console.error(e);
+  await cleanup();
   process.exit(1);
 });
