@@ -47,6 +47,7 @@ import AccountSettings from "@/pages/AccountSettings";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import ResetPassword from "@/pages/ResetPassword";
+import ForgotPassword from "@/pages/ForgotPassword";
 import VerifyEmail from "@/pages/VerifyEmail";
 import InvitePage from "@/pages/InvitePage";
 import Lessons from "@/pages/Lessons";
