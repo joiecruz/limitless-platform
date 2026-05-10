@@ -27,18 +27,26 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
   const isValidEmail = /\S+@\S+\.\S+/.test(email);
 
+  const checkAccountExists = async (emailAddress: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke("check-email-exists", {
+        body: { email: emailAddress.toLowerCase().trim() },
+      });
+      if (error) return false;
+      return !!data?.exists;
+    } catch {
+      return false;
+    }
+  };
+
   // Check if a pre-filled invite email already has an account
   useEffect(() => {
     if (emailFromUrl && /\S+@\S+\.\S+/.test(emailFromUrl)) {
-      supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", emailFromUrl.toLowerCase().trim())
-        .maybeSingle()
-        .then(({ data: profile }) => {
-          if (profile) setExistingAccount(true);
-        });
+      checkAccountExists(emailFromUrl).then((exists) => {
+        if (exists) setExistingAccount(true);
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emailFromUrl]);
 
   // Also check on blur when user types an email
@@ -47,12 +55,8 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
       setExistingAccount(false);
       return;
     }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", email.toLowerCase().trim())
-      .maybeSingle();
-    setExistingAccount(!!profile);
+    const exists = await checkAccountExists(email);
+    setExistingAccount(exists);
   };
 
   const sendOtpCode = async (emailAddress: string) => {
@@ -78,6 +82,14 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
     setLoading(true);
     try {
+      // Pre-check existing account first to avoid sending an OTP
+      const exists = await checkAccountExists(email);
+      if (exists) {
+        setExistingAccount(true);
+        setLoading(false);
+        return;
+      }
+
       await sendOtpCode(email);
 
       setShowOtpInput(true);
@@ -86,11 +98,16 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
         description: "Please check your email for the 6-digit code.",
       });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send verification code.",
-        variant: "destructive",
-      });
+      const message = error?.message || "";
+      if (message.includes("account_exists")) {
+        setExistingAccount(true);
+      } else {
+        toast({
+          title: "Error",
+          description: message || "Failed to send verification code.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -310,7 +327,8 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
                 An account with this email already exists. Please{" "}
                 <Link to={`/signin`} className="font-semibold underline hover:text-blue-900">
                   sign in instead
-                </Link>.
+                </Link>{" "}
+                — you can reset your password from the sign-in page if you've forgotten it.
               </p>
             </div>
           </div>
@@ -319,8 +337,8 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
         <Button
           type="submit"
           className="w-full"
-          disabled={loading || !isValidEmail}
-          variant={isValidEmail ? "default" : "secondary"}
+          disabled={loading || !isValidEmail || existingAccount}
+          variant={isValidEmail && !existingAccount ? "default" : "secondary"}
         >
           {loading ? (
             <>

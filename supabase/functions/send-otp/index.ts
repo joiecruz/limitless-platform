@@ -34,6 +34,26 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Block sending if an account already exists for this email
+    const normalizedEmail = email.toLowerCase().trim();
+    let accountExists = false;
+    for (let page = 1; page <= 5; page++) {
+      const { data, error } = await (supabase as any).auth.admin.listUsers({ page, perPage: 200 });
+      if (error) break;
+      const users = data?.users ?? [];
+      if (users.some((u: any) => (u.email ?? "").toLowerCase() === normalizedEmail)) {
+        accountExists = true;
+        break;
+      }
+      if (users.length < 200) break;
+    }
+    if (accountExists) {
+      return new Response(
+        JSON.stringify({ error: "account_exists", message: "An account with this email already exists. Please sign in instead." }),
+        { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+
     // Generate OTP
     const code = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes

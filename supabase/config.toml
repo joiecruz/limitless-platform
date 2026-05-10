@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.cocreation-refine-response]
 verify_jwt = false
+
+[functions.check-email-exists]
+verify_jwt = false
+
+[functions.send-otp]
+verify_jwt = false
