@@ -47,6 +47,7 @@ import AccountSettings from "@/pages/AccountSettings";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
 import ResetPassword from "@/pages/ResetPassword";
+import ForgotPassword from "@/pages/ForgotPassword";
 import VerifyEmail from "@/pages/VerifyEmail";
 import InvitePage from "@/pages/InvitePage";
 import Lessons from "@/pages/Lessons";
@@ -129,6 +130,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
 
