@@ -130,6 +130,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/invite" element={<InvitePage />} />
 
