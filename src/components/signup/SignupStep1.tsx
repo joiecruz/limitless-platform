@@ -82,6 +82,14 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
     setLoading(true);
     try {
+      // Pre-check existing account first to avoid sending an OTP
+      const exists = await checkAccountExists(email);
+      if (exists) {
+        setExistingAccount(true);
+        setLoading(false);
+        return;
+      }
+
       await sendOtpCode(email);
 
       setShowOtpInput(true);
@@ -90,11 +98,16 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
         description: "Please check your email for the 6-digit code.",
       });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send verification code.",
-        variant: "destructive",
-      });
+      const message = error?.message || "";
+      if (message.includes("account_exists")) {
+        setExistingAccount(true);
+      } else {
+        toast({
+          title: "Error",
+          description: message || "Failed to send verification code.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
