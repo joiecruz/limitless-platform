@@ -27,18 +27,26 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
 
   const isValidEmail = /\S+@\S+\.\S+/.test(email);
 
+  const checkAccountExists = async (emailAddress: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke("check-email-exists", {
+        body: { email: emailAddress.toLowerCase().trim() },
+      });
+      if (error) return false;
+      return !!data?.exists;
+    } catch {
+      return false;
+    }
+  };
+
   // Check if a pre-filled invite email already has an account
   useEffect(() => {
     if (emailFromUrl && /\S+@\S+\.\S+/.test(emailFromUrl)) {
-      supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", emailFromUrl.toLowerCase().trim())
-        .maybeSingle()
-        .then(({ data: profile }) => {
-          if (profile) setExistingAccount(true);
-        });
+      checkAccountExists(emailFromUrl).then((exists) => {
+        if (exists) setExistingAccount(true);
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emailFromUrl]);
 
   // Also check on blur when user types an email
@@ -47,12 +55,8 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
       setExistingAccount(false);
       return;
     }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", email.toLowerCase().trim())
-      .maybeSingle();
-    setExistingAccount(!!profile);
+    const exists = await checkAccountExists(email);
+    setExistingAccount(exists);
   };
 
   const sendOtpCode = async (emailAddress: string) => {
