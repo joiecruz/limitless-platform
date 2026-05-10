@@ -328,10 +328,7 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
                 <Link to={`/signin`} className="font-semibold underline hover:text-blue-900">
                   sign in instead
                 </Link>{" "}
-                or{" "}
-                <Link to={`/forgot-password`} className="font-semibold underline hover:text-blue-900">
-                  reset your password
-                </Link>.
+                — you can reset your password from the sign-in page if you've forgotten it.
               </p>
             </div>
           </div>
