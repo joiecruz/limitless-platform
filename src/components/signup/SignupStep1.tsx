@@ -327,6 +327,10 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
                 An account with this email already exists. Please{" "}
                 <Link to={`/signin`} className="font-semibold underline hover:text-blue-900">
                   sign in instead
+                </Link>{" "}
+                or{" "}
+                <Link to={`/forgot-password`} className="font-semibold underline hover:text-blue-900">
+                  reset your password
                 </Link>.
               </p>
             </div>
@@ -336,8 +340,8 @@ export function SignupStep1({ data, onEmailVerified }: SignupStep1Props) {
         <Button
           type="submit"
           className="w-full"
-          disabled={loading || !isValidEmail}
-          variant={isValidEmail ? "default" : "secondary"}
+          disabled={loading || !isValidEmail || existingAccount}
+          variant={isValidEmail && !existingAccount ? "default" : "secondary"}
         >
           {loading ? (
             <>
