@@ -105,11 +105,11 @@ export default function Dashboard() {
             className="overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
             onClick={() => navigate(link.link)}
           >
-            <div className="aspect-[4/3] relative overflow-hidden">
+            <div className="aspect-video relative overflow-hidden bg-muted">
               <img
                 src={thumbUrl(link.image, { width: 600 })}
                 alt={link.title}
-                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
+                className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-200"
                 loading="lazy"
                 width={600}
                 height={450}
