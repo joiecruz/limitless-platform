@@ -1,33 +1,50 @@
-## Why the images look "zoomed in"
+## Problem
 
-On `src/pages/Dashboard.tsx`, the quick-link cards render their images inside a fixed `aspect-[4/3]` box with `object-cover`:
+The three dashboard quick-link cards ("Explore online courses", "Access innovation templates", "Create your innovation project") look broken:
 
-```tsx
-<div className="aspect-[4/3] relative overflow-hidden">
-  <img className="object-cover w-full h-full ..." />
-</div>
-```
+- The illustration area is a wide 16:9 box (`aspect-video`) with `object-contain` on a muted background.
+- The source images in `web-assets` are **tall, near-square UI-mockup illustrations** (browser window with colorful content in the top portion and lots of empty space below).
+- Result: `object-contain` scales the image to fit the short height of the box → image becomes small and centered with awkward grey letterboxing on the sides, and what's shown looks "cropped at the top of a mockup".
 
-The grid is `md:grid-cols-2 lg:grid-cols-4`. At your current 981px viewport you're in the `md` breakpoint, so each card is roughly half the screen wide. A half-width card with a 4:3 ratio becomes very tall, and `object-cover` then crops the source illustration heavily — which is exactly what the screenshot shows: just a slice of the pink circle / yellow shape on the left card and a slice of the template mock on the right card.
-
-The source images themselves are fine; they're square-ish illustrations meant to be seen in full. `object-cover` + an oversized container is what's chopping them up.
+The previous edit (switching from `object-cover` + `aspect-[4/3]` to `object-contain` + `aspect-video`) made it worse, not better, because the source illustrations don't match a 16:9 frame.
 
 ## Fix
 
-In `src/pages/Dashboard.tsx`:
+In `src/pages/Dashboard.tsx`, restyle the image container (lines 108-117) so the illustrations are presented as deliberate, full-bleed artwork:
 
-1. Change the image container so it stays a sensible size at every breakpoint and the full illustration is visible.
-   - Replace `aspect-[4/3]` with `aspect-video` (16:9) so cards aren't excessively tall when only 2 fit per row.
-   - Replace `object-cover` with `object-contain` and add a soft background (`bg-muted`) so the illustration is shown whole, with neutral padding around it instead of being cropped.
-2. Keep `thumbUrl(..., { width: 600 })`, lazy loading, and the hover scale effect — those aren't the problem.
+1. Change the container from `aspect-video` to `aspect-[4/3]` — closer to the natural ratio of these mockup illustrations, so far less empty space.
+2. Keep `object-contain` so the full illustration is always visible (no cropping of the colorful part).
+3. Add inner padding (`p-6`) and a soft branded background (`bg-muted/40`) so the illustration sits inside a calm "frame" instead of floating awkwardly.
+4. Keep `group-hover:scale-105`, `loading="lazy"`, and `thumbUrl(..., { width: 600 })` — these aren't the problem.
 
-No other files need to change. This is a pure presentation tweak on the dashboard cards.
+No other files need to change. Pure presentation tweak.
 
-### Before / after (conceptual)
+## Technical details
+
+Replace the image block:
 
 ```text
-before:  [aspect-4/3] + object-cover  →  tall box, image cropped to fill
-after:   [aspect-video] + object-contain + bg-muted  →  shorter box, full illustration with neutral padding
+<div className="aspect-video relative overflow-hidden bg-muted">
+  <img
+    src={thumbUrl(link.image, { width: 600 })}
+    alt={link.title}
+    className="object-contain w-full h-full group-hover:scale-105 ..."
+    ...
+  />
+</div>
 ```
 
-After the change, the pink/yellow course card and the template card should each show their full artwork instead of a zoomed-in corner.
+with:
+
+```text
+<div className="aspect-[4/3] relative overflow-hidden bg-muted/40 p-6">
+  <img
+    src={thumbUrl(link.image, { width: 600 })}
+    alt={link.title}
+    className="object-contain w-full h-full group-hover:scale-105 ..."
+    ...
+  />
+</div>
+```
+
+After the change I'll screenshot the dashboard at the current viewport (~1091px, 3-up grid) and at the `md` breakpoint (2-up) to confirm the illustrations sit nicely with no awkward cropping or excessive letterboxing.
