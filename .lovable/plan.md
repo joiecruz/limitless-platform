@@ -1,21 +1,14 @@
-# Restore dashboard card images
+## Fix zoomed-in dashboard card images
 
-## Problem
-The three dashboard cards ("Explore online courses", "Access innovation templates", "Create your innovation project") currently render the illustration as a small contained image with large empty gray margins. This is caused by recent changes to the image container.
-
-## Fix
-Revert the image container in `src/pages/Dashboard.tsx` (around lines 108–112) to the original styling so illustrations fill the card edge-to-edge like in the reference screenshot.
+The reference screenshot shows illustrations being cropped (only partial pink arc, partial yellow shape, partial SDG wheel). This is because the image wrapper uses `object-cover` which crops to fill.
 
 ### Change
-- Aspect ratio: `aspect-[4/3]` → `aspect-video`
-- Remove `bg-muted/40` background
-- Remove `p-6` inner padding
-- Image fit: `object-contain` → `object-cover`
-- Keep: `thumbUrl(..., { width: 600 })`, `group-hover:scale-105`, `loading="lazy"`, rounded corners, overflow-hidden
+In `src/pages/Dashboard.tsx` (line 112), change `object-cover` → `object-contain` so the full illustration fits within the 16:9 frame without cropping or zooming.
+
+Keep everything else: `aspect-video`, `group-hover:scale-105`, `loading="lazy"`, dimensions.
 
 ### Result
-Illustrations crop to fill the full card width in a 16:9 frame, matching the reference screenshot you shared. No other files change.
+Each card shows the full illustration centered in the frame, no zoom/crop. Slight letterboxing may appear if the source image isn't 16:9, but nothing is cut off.
 
-## Scope
-- Single file: `src/pages/Dashboard.tsx`
-- Presentation-only (Tailwind classes on the image wrapper + `<img>`); no logic, data, or routing changes.
+### Scope
+Single-line presentation change in `src/pages/Dashboard.tsx`. No logic or data changes.
