@@ -109,7 +109,7 @@ export default function Dashboard() {
               <img
                 src={thumbUrl(link.image, { width: 600 })}
                 alt={link.title}
-                className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-200"
+                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
                 loading="lazy"
                 width={600}
                 height={450}
