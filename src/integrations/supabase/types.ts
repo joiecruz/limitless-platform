@@ -3692,6 +3692,13 @@ export type Database = {
       delete_user_data: { Args: never; Returns: undefined }
       generate_course_slug: { Args: { title: string }; Returns: string }
       get_admin_analytics: { Args: { days_back?: number }; Returns: Json }
+      get_cocreation_participant_by_token: {
+        Args: { p_anon_token: string; p_session_id: string }
+        Returns: {
+          display_name: string
+          id: string
+        }[]
+      }
       get_course_counts: {
         Args: { course_id_param: string }
         Returns: {
