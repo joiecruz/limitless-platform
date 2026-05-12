@@ -133,12 +133,12 @@ export default function CoCreationPublic() {
       setSession(s as Session);
       const { token, displayName: cachedName } = getCachedAnonIdentity(slug);
 
-      const { data: existing } = await supabase
-        .from("cocreation_participants")
-        .select("id, display_name")
-        .eq("session_id", s.id)
-        .eq("anon_token", token)
-        .maybeSingle();
+      const { data: existingRows } = await supabase
+        .rpc("get_cocreation_participant_by_token", {
+          p_session_id: s.id,
+          p_anon_token: token,
+        });
+      const existing = Array.isArray(existingRows) ? existingRows[0] : null;
 
       let pid = existing?.id;
       let name = existing?.display_name || cachedName || null;
@@ -152,12 +152,12 @@ export default function CoCreationPublic() {
           .single();
         if (insertErr) {
           // Likely a race — re-select by anon_token
-          const { data: again } = await supabase
-            .from("cocreation_participants")
-            .select("id, display_name")
-            .eq("session_id", s.id)
-            .eq("anon_token", token)
-            .maybeSingle();
+          const { data: againRows } = await supabase
+            .rpc("get_cocreation_participant_by_token", {
+              p_session_id: s.id,
+              p_anon_token: token,
+            });
+          const again = Array.isArray(againRows) ? againRows[0] : null;
           pid = again?.id;
           name = again?.display_name || name;
         } else {
