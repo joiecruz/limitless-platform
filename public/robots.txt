@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /signin
+Disallow: /signup
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /verify-email
+Disallow: /invite
+
+Sitemap: https://limitlesslab.org/sitemap.xml
