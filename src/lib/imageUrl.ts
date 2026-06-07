@@ -30,27 +30,13 @@ export interface ThumbOptions {
  * Non-Supabase URLs (or empty/falsy values) are returned unchanged.
  * Always strips any `?t=...` cache-busting query string before transforming.
  */
-export function thumbUrl(url: string | null | undefined, opts: ThumbOptions | number = {}): string {
+export function thumbUrl(url: string | null | undefined, _opts: ThumbOptions | number = {}): string {
   if (!url) return "";
-  const options: ThumbOptions =
-    typeof opts === "number" ? { width: opts } : opts;
-
-  const { width, height, quality = 70, resize = "cover" } = options;
-
-  // Drop any existing query string — almost always a cache-buster like `?t=2024-...`
-  // which defeats the Supabase CDN.
-  const cleanUrl = url.split("?")[0];
-
-  // Only transform Supabase public-object URLs.
-  if (!cleanUrl.includes(STORAGE_PUBLIC_MARKER)) return cleanUrl;
-
-  const transformed = cleanUrl.replace(STORAGE_PUBLIC_MARKER, STORAGE_RENDER_MARKER);
-  const params = new URLSearchParams();
-  if (width) params.set("width", String(width));
-  if (height) params.set("height", String(height));
-  if (quality) params.set("quality", String(quality));
-  if (resize) params.set("resize", resize);
-
-  const qs = params.toString();
-  return qs ? `${transformed}?${qs}` : transformed;
+  // Supabase image transformations are disabled to stay within the project's
+  // monthly transformation quota. Return the original public URL with any
+  // cache-busting query string stripped so the Supabase CDN can cache it.
+  // The _opts argument is intentionally ignored — kept for API compatibility
+  // with existing callers across the codebase.
+  void STORAGE_RENDER_MARKER;
+  return url.split("?")[0];
 }
