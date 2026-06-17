@@ -26,6 +26,12 @@ export default function Programs() {
 
   return (
     <div className="min-h-screen bg-background">
+      <OpenGraphTags
+        title="Programs — LimitlessGov, AI Ready ASEAN, AIM ASEAN | Limitless Lab"
+        description="Explore Limitless Lab's flagship programs building digital, AI, and innovation capabilities for governments, MSMEs, and communities across Southeast Asia."
+        imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+        url="https://limitlesslab.org/programs"
+      />
       {/* Header */}
       <section className="bg-gradient-to-b from-primary/5 to-background py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
