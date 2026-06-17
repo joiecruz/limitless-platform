@@ -1,5 +1,6 @@
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { Button } from "@/components/ui/button";
 import { CTASection } from "@/components/site-config/CTASection";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,12 @@ export default function Product() {
 
   return (
     <div className="min-h-screen bg-white">
+      <OpenGraphTags
+        title="Product — All-in-one innovation platform | Limitless Lab"
+        description="Limitless Lab brings courses, design-thinking tools, co-creation workspaces, and AI-powered project workflows into one platform for innovation teams."
+        imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+        url="https://limitlesslab.org/product"
+      />
       <MainNav />
       
       {/* Hero Section */}
