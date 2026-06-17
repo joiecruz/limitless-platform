@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 
 export default function Programs() {
   const programs = [
