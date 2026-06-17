@@ -1,5 +1,6 @@
 import { MainNav } from "@/components/site-config/MainNav";
 import { Footer } from "@/components/site-config/Footer";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { Button } from "@/components/ui/button";
 import { CTASection } from "@/components/site-config/CTASection";
 import { useNavigate } from "react-router-dom";
