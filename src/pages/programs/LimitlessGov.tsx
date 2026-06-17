@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Mail, Globe } from "lucide-react";
 import { MainNav } from "@/components/site-config/MainNav";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Footer } from "@/components/site-config/Footer";
 import heroImage from "@/assets/limitlessgov-hero.jpg";
@@ -9,6 +10,12 @@ import heroImage from "@/assets/limitlessgov-hero.jpg";
 export default function LimitlessGov() {
   return (
     <div className="min-h-screen bg-background">
+      <OpenGraphTags
+        title="LimitlessGov — Human-centered, AI-powered governance | Limitless Lab"
+        description="LimitlessGov builds the capability of public servants and youth leaders to design human-centered, AI-powered solutions for governments across Southeast Asia."
+        imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+        url="https://limitlesslab.org/programs/limitlessgov"
+      />
       <MainNav />
       
       {/* Hero Section with Cover Image */}

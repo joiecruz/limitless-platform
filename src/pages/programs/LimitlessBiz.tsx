@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, CheckCircle } from "lucide-react";
 import { MainNav } from "@/components/site-config/MainNav";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Footer } from "@/components/site-config/Footer";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -11,6 +12,12 @@ export default function LimitlessBiz() {
 
   return (
     <div className="min-h-screen bg-background">
+      <OpenGraphTags
+        title="LimitlessBiz — AI for Business Owners Challenge | Limitless Lab"
+        description="LimitlessBiz is a free AI challenge helping Filipino business owners learn practical AI skills to grow their MSMEs — join, learn, and win prizes."
+        imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+        url="https://limitlesslab.org/limitlessbiz"
+      />
       <MainNav />
 
       {/* Hero Section */}

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { MainNav } from "@/components/site-config/MainNav";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Footer } from "@/components/site-config/Footer";
 import heroImage from "@/assets/ai-ready-asean-hero.jpg";
@@ -9,6 +10,12 @@ import heroImage from "@/assets/ai-ready-asean-hero.jpg";
 export default function AIReadyASEAN() {
   return (
     <div className="min-h-screen bg-background">
+      <OpenGraphTags
+        title="AI Ready ASEAN — Regional AI literacy initiative | Limitless Lab"
+        description="AI Ready ASEAN equips 320,000+ learners across Southeast Asia with foundational AI literacy, tools, and opportunities to apply AI for social impact."
+        imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+        url="https://limitlesslab.org/programs/ai-ready-asean"
+      />
       <MainNav />
       
       {/* Hero Section */}

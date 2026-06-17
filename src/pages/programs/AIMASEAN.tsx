@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { MainNav } from "@/components/site-config/MainNav";
+import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { CTASection } from "@/components/site-config/CTASection";
 import { Footer } from "@/components/site-config/Footer";
 import heroImage from "@/assets/aim-asean-hero.jpg";
@@ -9,6 +10,12 @@ import heroImage from "@/assets/aim-asean-hero.jpg";
 export default function AIMASEAN() {
   return (
     <div className="min-h-screen bg-background">
+      <OpenGraphTags
+        title="AIM ASEAN — AI for MSMEs across Southeast Asia | Limitless Lab"
+        description="AIM ASEAN helps 17,500+ MSMEs adopt AI to grow their businesses through capability building, mentorship, and regional collaboration."
+        imageUrl="https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png"
+        url="https://limitlesslab.org/programs/aim-asean"
+      />
       <MainNav />
       
       {/* Hero Section */}
