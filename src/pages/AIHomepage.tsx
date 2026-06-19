@@ -34,12 +34,21 @@ export default function AIHomepage() {
       <MainNav />
 
       {/* Hero Section */}
-      <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-[85vh] flex items-center pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto w-full">
           <div className="text-left mb-12 max-w-4xl">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               Grow beyond limits using{" "}
-              <span className="font-serif italic text-purple-600">human-centered AI</span>.
+              <span
+                className="italic text-[#393CA0]"
+                style={{
+                  fontFamily: '"Times New Roman", "Times New Roman Condensed", Times, serif',
+                  fontStretch: "condensed",
+                }}
+              >
+                human-centered AI
+              </span>
+              .
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-3xl">
               We work with changemakers across sectors—from individuals and businesses to governments—to solve real-world problems using innovation, emerging tech, and human-centered design.
@@ -79,6 +88,56 @@ export default function AIHomepage() {
           </div>
         </Suspense>
       </div>
+
+      {/* People We Help Evolve */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12 max-w-3xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              The people we help evolve
+            </h2>
+            <p className="text-lg text-gray-600">
+              We partner with the people shaping tomorrow—across sectors, scales, and missions.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                Icon: Rocket,
+                title: "Entrepreneurs & Small Businesses",
+                desc: "Build, launch, and scale with AI-powered tools and human-centered design.",
+              },
+              {
+                Icon: Building2,
+                title: "Corporate Teams",
+                desc: "Unlock innovation capability and modern ways of working across your organization.",
+              },
+              {
+                Icon: Landmark,
+                title: "Public Servants",
+                desc: "Design better services and policies with citizen-centered, AI-enabled approaches.",
+              },
+              {
+                Icon: GraduationCap,
+                title: "Educators & Students",
+                desc: "Learn the skills, mindsets, and tools to thrive in an AI-shaped future.",
+              },
+            ].map(({ Icon, title, desc }) => (
+              <div
+                key={title}
+                className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow"
+              >
+                <div className="w-12 h-12 rounded-xl bg-[#393CA0]/10 flex items-center justify-center mb-4">
+                  <Icon className="w-6 h-6 text-[#393CA0]" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
 
       {/* Features Section */}
       <Suspense fallback={<LoadingPage />}>
