@@ -11,6 +11,7 @@ import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
+import { Rocket, Building2, Landmark, GraduationCap } from "lucide-react";
 
 export default function AIHomepage() {
   const navigate = useNavigate();
