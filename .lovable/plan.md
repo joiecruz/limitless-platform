@@ -1,28 +1,38 @@
-## Create a Homepage Variant
+Update `/ai-homepage` only. Leave other pages untouched.
 
-Create a duplicate of the current homepage (`src/pages/Index.tsx`) at a new route (`/ai-homepage`) with the following modifications:
+## 1. Taller hero (UX-standard hero height)
 
-### Hero Section Changes
-- **Headline**: Change to "Grow beyond limits using human-centered AI."
-- **Styling**: The phrase "human-centered AI" should be:
-  - Serif font (`font-serif`)
-  - Italicized (`italic`)
-  - Purple (`text-purple-500` or similar purple shade)
-- **Alignment**: Left-align the headline and subtext instead of center (`text-left`)
-- **CTAs**: Replace the two existing buttons with:
-  - "Learn More" — links to `/services`
-  - "Take Free Assessment" — links to a relevant page (e.g., `/programs` or external)
-- **Hero image**: Remove the large colorful hero image (`HERO_IMAGE`) entirely. Retain all other sections below (logos, features, blog, CTA, footer).
+In `src/pages/AIHomepage.tsx`:
+- Change hero wrapper from `pt-32 pb-12` to a min-height hero: `min-h-[85vh] flex items-center pt-32 pb-20`.
+- Keep left alignment and current max-width.
 
-### New Files
-- `src/pages/AIHomepage.tsx` — the new page component
+## 2. Headline accent color = CTA purple
 
-### Modified Files
-- `src/routes/AppRoutes.tsx` — add route `/ai-homepage` → `AIHomepage`
+- Change `text-purple-600` on "human-centered AI" to `text-[#393CA0]` (the same purple used by the Learn More / Take Free Assessment buttons).
 
-### Implementation Notes
-- Copy `Index.tsx` as the base for `AIHomepage.tsx`.
-- Remove the hero image preload from `<Helmet>` and the image markup.
-- Adjust hero `div` classes from `text-center` to `text-left` and remove `mx-auto` constraints that center content.
-- For the serif font, use Tailwind's `font-serif` (system serif stack) since no custom serif font is currently loaded.
-- Keep all existing sections (InfiniteLogos, Features, BlogSection, CTASection, Footer) unchanged.
+## 3. Times New Roman Condensed for the accent
+
+- Replace `font-serif` on the "human-centered AI" span with an inline `style={{ fontFamily: '"Times New Roman", "Times New Roman Condensed", Times, serif', fontStretch: "condensed" }}` so it renders in Times New Roman (condensed where the OS supports it) without adding a new web font.
+- Keep `italic`.
+
+## 4. New "People We Help Evolve" section
+
+Add it right after the "We've worked with" logo block and before `<Features />`.
+
+Inline (in `AIHomepage.tsx`, no new file) so we don't change the existing `PeopleWeHelpSection` used elsewhere. Structure:
+
+- Section heading: "The people we help evolve" (left-aligned within max-w-7xl container, matching hero alignment).
+- Short one-line subhead.
+- 4-card responsive grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`, gap-6).
+
+Cards (lucide-react icons, `#393CA0` accent):
+1. Entrepreneurs & Small Businesses — icon `Rocket`
+2. Corporate Teams — icon `Building2`
+3. Public Servants — icon `Landmark`
+4. Educators & Students — icon `GraduationCap`
+
+Each card: white bg, subtle border, rounded-2xl, p-6, icon in a purple-tinted square, title, 1-sentence description.
+
+## Out of scope
+
+- No route changes, no edits to `PeopleWeHelpSection.tsx`, no changes to other pages or the design system.
