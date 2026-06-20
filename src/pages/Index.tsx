@@ -91,110 +91,114 @@ export default function Index() {
       <Helmet>
         <title>Limitless Lab: All-in-One Innovation Platform</title>
         <meta name="description" content="Transform your innovation journey with Limitless Lab's comprehensive platform for learning, tools, and community." />
+        <link rel="canonical" href="https://limitlesslab.org/" />
+        <meta property="og:title" content="Limitless Lab: All-in-One Innovation Platform" />
+        <meta property="og:description" content="Transform your innovation journey with Limitless Lab's comprehensive platform for learning, tools, and community." />
+        <meta property="og:url" content="https://limitlesslab.org/" />
         <link rel="preload" href={HERO_IMAGE} as="image" fetchPriority="high" />
       </Helmet>
       
       <MainNav />
       
-      {/* Hero Section */}
-      <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
-              We empower people to create real impact using{" "}
-              <span className="inline-block min-w-[280px] text-left">
-                <span className="text-[#393CA0]">
-                  {displayText}
-                  <span className="animate-pulse">|</span>
+      <main>
+        {/* Hero Section */}
+        <div className="pt-32 pb-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
+                We empower people to create real impact using{" "}
+                <span className="inline-block min-w-[280px] text-left">
+                  <span className="text-[#393CA0]">
+                    {displayText}
+                    <span className="animate-pulse">|</span>
+                  </span>
                 </span>
-              </span>
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-4xl mx-auto">
-              We work with changemakers across sectors—from individuals and businesses to governments—to solve real-world problems using innovation, emerging tech, and human-centered design.
-            </p>
-            <div className="flex justify-center gap-4">
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-700 mb-8 max-w-4xl mx-auto">
+                We work with changemakers across sectors—from individuals and businesses to governments—to solve real-world problems using innovation, emerging tech, and human-centered design.
+              </p>
+              <div className="flex justify-center gap-4">
+                <Button 
+                  size="lg"
+                  onClick={handleCreateAccount}
+                  className="px-8 bg-[#393CA0] hover:bg-[#393CA0]/90 transition-colors duration-200"
+                >
+                  {session ? "Go to Dashboard" : "Create account"}
+                </Button>
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  onClick={() => navigate("/services")}
+                  className="px-8 text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
+                >
+                  Explore services
+                </Button>
+              </div>
+            </div>
+            
+            {/* Hero Image - rendered immediately so it can serve as the LCP element */}
+            <div className="relative -mt-[30px]">
+              <img 
+                src={HERO_IMAGE}
+                alt="Limitless Lab Platform"
+                className="w-full rounded-lg bg-gray-100"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                width={1600}
+                height={900}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Logo Sections */}
+        <div className="py-8">
+          <div className="mb-8 text-center">
+            <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900">
+              We've worked with
+            </h3>
+          </div>
+          <Suspense fallback={<LoadingPage />}>
+            <div className="space-y-4">
+              <InfiniteLogos direction="left" logoGroup="rectangular" />
+              <InfiniteLogos direction="right" logoGroup="square" />
+            </div>
+          </Suspense>
+        </div>
+
+        {/* Features Section */}
+        <Suspense fallback={<LoadingPage />}>
+          <Features />
+        </Suspense>
+
+        {/* Blog Section */}
+        <div className="py-24 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900">Latest Articles</h2>
+              <p className="mt-4 text-lg text-gray-700">
+                Stay updated with our latest insights and news
+              </p>
+            </div>
+            <Suspense fallback={<LoadingPage />}>
+              <BlogSection />
+            </Suspense>
+            <div className="mt-12 text-center">
               <Button 
-                size="lg"
-                onClick={handleCreateAccount}
-                className="px-8 bg-[#393CA0] hover:bg-[#393CA0]/90 transition-colors duration-200"
-              >
-                {session ? "Go to Dashboard" : "Create account"}
-              </Button>
-              <Button 
-                size="lg"
                 variant="outline"
-                onClick={() => navigate("/services")}
+                onClick={() => navigate('/blog')}
                 className="px-8 text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
               >
-                Explore services
+                View All Articles
               </Button>
             </div>
           </div>
-          
-          {/* Hero Image with loading placeholder */}
-          <div className="relative -mt-[30px]">
-            {!heroImageLoaded && (
-              <div className="w-full aspect-[16/9] bg-gray-100 rounded-lg animate-pulse"></div>
-            )}
-            <img 
-              src={HERO_IMAGE}
-              alt="Limitless Lab Platform"
-              className={`w-full rounded-lg ${!heroImageLoaded ? 'invisible absolute' : 'visible'}`}
-              loading="eager"
-              fetchPriority="high"
-              width={1600}
-              height={900}
-            />
-          </div>
         </div>
-      </div>
 
-      {/* Logo Sections */}
-      <div className="py-8">
-        <div className="mb-8 text-center">
-          <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900">
-            We've worked with
-          </h3>
-        </div>
-        <Suspense fallback={<LoadingPage />}>
-          <div className="space-y-4">
-            <InfiniteLogos direction="left" logoGroup="rectangular" />
-            <InfiniteLogos direction="right" logoGroup="square" />
-          </div>
-        </Suspense>
-      </div>
-
-      {/* Features Section */}
-      <Suspense fallback={<LoadingPage />}>
-        <Features />
-      </Suspense>
-
-      {/* Blog Section */}
-      <div className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Latest Articles</h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Stay updated with our latest insights and news
-            </p>
-          </div>
-          <Suspense fallback={<LoadingPage />}>
-            <BlogSection />
-          </Suspense>
-          <div className="mt-12 text-center">
-            <Button 
-              variant="outline"
-              onClick={() => navigate('/blog')}
-              className="px-8 text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
-            >
-              View All Articles
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <CTASection />
+        {/* CTA Section */}
+        <CTASection />
+      </main>
 
       <Footer />
     </div>
