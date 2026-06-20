@@ -27,17 +27,10 @@ const rotatingTexts = [
 
 export default function Index() {
   const navigate = useNavigate();
-  const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
-  
-  // Preload hero image
-  useEffect(() => {
-    const img = new Image();
-    img.src = HERO_IMAGE;
-    img.onload = () => setHeroImageLoaded(true);
-  }, []);
+
 
   // Typing effect
   useEffect(() => {
