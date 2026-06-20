@@ -49,7 +49,6 @@ export default function AIHomepage() {
               >
                 human-centered AI
               </span>
-              .
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-3xl">
               We work with changemakers across sectors—from individuals and businesses to governments—to solve real-world problems using innovation, emerging tech, and human-centered design.
