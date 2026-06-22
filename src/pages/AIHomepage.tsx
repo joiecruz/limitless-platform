@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
 import { Rocket, Building2, Landmark, GraduationCap } from "lucide-react";
+import heroAsset from "@/assets/limitless-lab-hero.png.asset.json";
 
 export default function AIHomepage() {
   const navigate = useNavigate();
@@ -35,40 +36,52 @@ export default function AIHomepage() {
       <MainNav />
 
       {/* Hero Section */}
-      <div className="min-h-[85vh] flex items-center pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto w-full">
-          <div className="text-left mb-12 max-w-4xl">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Grow beyond limits using{" "}
-              <span
-                className="italic text-[#393CA0]"
-                style={{
-                  fontFamily: '"Times New Roman", "Times New Roman Condensed", Times, serif',
-                  fontStretch: "condensed",
-                }}
-              >
-                human-centered AI
-              </span>
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-3xl">
-              We work with changemakers across sectors—from individuals and businesses to governments—to solve real-world problems using innovation, emerging tech, and human-centered design.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                size="lg"
-                onClick={() => navigate("/services")}
-                className="px-8 bg-[#393CA0] hover:bg-[#393CA0]/90 transition-colors duration-200"
-              >
-                Learn More
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => navigate("/programs")}
-                className="px-8 text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
-              >
-                Take Free Assessment
-              </Button>
+      <div className="relative min-h-[85vh] flex items-center pt-32 pb-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-4 items-center">
+            <div className="text-left relative z-10">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                Grow beyond limits using{" "}
+                <span
+                  className="italic text-[#393CA0] text-[1.15em]"
+                  style={{
+                    fontFamily: '"Times New Roman", "Times New Roman Condensed", Times, serif',
+                    fontStretch: "condensed",
+                    fontWeight: 700,
+                  }}
+                >
+                  human-centered AI
+                </span>
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl">
+                We work with changemakers across sectors—from individuals and businesses to governments—to solve real-world problems using innovation, emerging tech, and human-centered design.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/services")}
+                  className="px-8 bg-[#393CA0] hover:bg-[#393CA0]/90 transition-colors duration-200"
+                >
+                  Learn More
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => navigate("/programs")}
+                  className="px-8 text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
+                >
+                  Take Free Assessment
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative lg:h-[600px] hidden lg:block">
+              <img
+                src={heroAsset.url}
+                alt="Team collaborating with human-centered AI"
+                className="absolute top-1/2 -translate-y-1/2 left-0 w-[115%] max-w-none h-auto lg:translate-x-[5%] xl:translate-x-[10%]"
+                style={{ right: "auto" }}
+              />
             </div>
           </div>
         </div>
