@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
 import { Rocket, Building2, Landmark, GraduationCap } from "lucide-react";
+import heroAsset from "@/assets/limitless-lab-hero.png.asset.json";
 
 export default function AIHomepage() {
   const navigate = useNavigate();
