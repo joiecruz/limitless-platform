@@ -124,35 +124,36 @@ export default function AIHomepage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                Icon: Rocket,
-                title: "Entrepreneurs & Small Businesses",
-                desc: "Build, launch, and scale with AI-powered tools and human-centered design.",
+                image: personaEntrepreneur.url,
+                title: "Entrepreneurs and Business Owners",
               },
               {
-                Icon: Building2,
-                title: "Corporate Teams",
-                desc: "Unlock innovation capability and modern ways of working across your organization.",
+                image: personaCorporate.url,
+                title: "Corporate Teams and Professionals",
               },
               {
-                Icon: Landmark,
-                title: "Public Servants",
-                desc: "Design better services and policies with citizen-centered, AI-enabled approaches.",
+                image: personaPublicServant.url,
+                title: "Public Servants and Government Leaders",
               },
               {
-                Icon: GraduationCap,
-                title: "Educators & Students",
-                desc: "Learn the skills, mindsets, and tools to thrive in an AI-shaped future.",
+                image: personaEducator.url,
+                title: "Educators and Students",
               },
-            ].map(({ Icon, title, desc }) => (
+            ].map(({ image, title }) => (
               <div
                 key={title}
-                className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow"
+                className="group bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col h-[360px] transition-colors duration-300 hover:border-[#393CA0]"
               >
-                <div className="w-12 h-12 rounded-xl bg-[#393CA0]/10 flex items-center justify-center mb-4">
-                  <Icon className="w-6 h-6 text-[#393CA0]" />
+                <h3 className="text-lg font-bold text-gray-900 px-6 pt-6 pb-2 transition-colors duration-300 group-hover:text-[#393CA0]">
+                  {title}
+                </h3>
+                <div className="flex-1 flex items-end justify-center overflow-hidden">
+                  <img
+                    src={image}
+                    alt={title}
+                    className="w-full h-full object-contain object-bottom"
+                  />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
