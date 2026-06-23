@@ -126,32 +126,36 @@ export default function AIHomepage() {
               {
                 image: personaEntrepreneur.url,
                 title: "Entrepreneurs and Business Owners",
+                imageClass: "scale-[1.25] origin-bottom",
               },
               {
                 image: personaCorporate.url,
                 title: "Corporate Teams and Professionals",
+                imageClass: "scale-[1.25] origin-bottom",
               },
               {
                 image: personaPublicServant.url,
                 title: "Public Servants and Government Leaders",
+                imageClass: "",
               },
               {
                 image: personaEducator.url,
                 title: "Educators and Students",
+                imageClass: "",
               },
-            ].map(({ image, title }) => (
+            ].map(({ image, title, imageClass }) => (
               <div
                 key={title}
                 className="group bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col h-[360px] transition-colors duration-300 hover:border-[#393CA0]"
               >
-                <h3 className="text-lg font-bold text-gray-900 px-6 pt-6 pb-2 transition-colors duration-300 group-hover:text-[#393CA0]">
+                <h3 className="text-xl font-bold text-gray-900 px-6 pt-6 pb-2 transition-colors duration-300 group-hover:text-[#393CA0]">
                   {title}
                 </h3>
                 <div className="flex-1 flex items-end justify-center overflow-hidden">
                   <img
                     src={image}
                     alt={title}
-                    className="w-full h-full object-contain object-bottom"
+                    className={`w-full h-full object-contain object-bottom ${imageClass}`}
                   />
                 </div>
               </div>
