@@ -53,9 +53,14 @@ export default function AIHomepage() {
                   human-centered AI
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl">
-                We work with changemakers across sectors—from individuals and businesses to governments—to solve real-world problems using innovation, emerging tech, and human-centered design.
-              </p>
+              <div className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl space-y-6">
+                <p>
+                  Limitless Lab helps entrepreneurs, professionals, and organizations unlock growth, lead innovation, and drive lasting impact.
+                </p>
+                <p>
+                  We transform people and institutions through human-centered design and AI — building the mindsets, tools, and capabilities to reach their full potential.
+                </p>
+              </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
@@ -70,7 +75,7 @@ export default function AIHomepage() {
                   onClick={() => navigate("/programs")}
                   className="px-8 text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
                 >
-                  Take Free Assessment
+                  Take Free AI Assessment
                 </Button>
               </div>
             </div>
