@@ -11,7 +11,7 @@ export function DesignThinkingSection() {
           >
             How we work
           </p>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight">
             Design Thinking and Systems Thinking, Amplified by AI
           </h2>
           <div className="space-y-6 text-lg sm:text-xl text-gray-600 leading-relaxed">

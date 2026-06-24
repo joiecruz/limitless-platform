@@ -41,7 +41,7 @@ export default function AIHomepage() {
 
       {/* Hero Section */}
       <div className="relative min-h-[85vh] flex items-center pt-32 pb-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-7xl mx-auto w-full px-3 sm:px-4 lg:px-6 relative">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-4 items-center">
             <div className="text-left relative z-10">
               <h1 className="text-4xl sm:text-5xl lg:text-[2.75rem] xl:text-[3.5rem] font-bold text-gray-900 mb-6 leading-[1.1]">

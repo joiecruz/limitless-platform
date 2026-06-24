@@ -1,21 +1,8 @@
-## Revert persona cards & section heading fonts
+## Plan
 
-### 1. Persona card titles (AIHomepage.tsx)
-- Reduce from `text-3xl sm:text-[2rem] lg:text-[2.25rem] leading-[1]` back to `text-2xl sm:text-[1.6rem] leading-tight`
-- Keep the `Times New Roman MT Condensed Bold` inline fontFamily
+### 1. Reduce section heading font sizes slightly
+- **DesignThinkingSection.tsx**: Reduce the `h2` from `text-4xl sm:text-5xl lg:text-6xl` → one step smaller (e.g., `text-3xl sm:text-4xl lg:text-5xl`).
+- **BeliefSections.tsx**: Reduce both "The future is HUMAN + AI" and "Transformation by design" `h2` elements from `text-4xl sm:text-5xl lg:text-6xl` → one step smaller (e.g., `text-3xl sm:text-4xl lg:text-5xl`).
 
-### 2. Section eyebrow labels (DesignThinkingSection.tsx, BeliefSections.tsx)
-- **No change** — keep `text-sm sm:text-base` size and Times New Roman MT Condensed Bold font
-
-### 3. Section headings (DesignThinkingSection.tsx, BeliefSections.tsx)
-- Revert font style: remove the inline `fontFamily: "Times New Roman MT Condensed Bold"...` style
-- Keep the current larger size (`text-4xl sm:text-5xl lg:text-6xl`) since the user only asked to revert the font style, not the size
-- Keep `font-bold text-gray-900 leading-tight`
-
-### 4. Hero "human-centered AI" (AIHomepage.tsx)
-- **No change** — keep Times New Roman MT Condensed Bold italic
-
-### Files to edit
-- `src/pages/AIHomepage.tsx`
-- `src/components/ai-homepage/DesignThinkingSection.tsx`
-- `src/components/ai-homepage/BeliefSections.tsx`
+### 2. Tighten hero margins so headline wraps to 2 lines
+- **AIHomepage.tsx**: Reduce the hero container horizontal padding from `px-4 sm:px-6 lg:px-8` to a tighter value (e.g., `px-3 sm:px-4 lg:px-6`) so the `h1` has more width, causing the headline to wrap to just 2 lines instead of 3.
