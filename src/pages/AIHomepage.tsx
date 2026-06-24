@@ -44,17 +44,19 @@ export default function AIHomepage() {
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-4 items-center">
             <div className="text-left relative z-10">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Grow beyond limits using{" "}
-                <span
-                  className="italic text-[#393CA0] text-[1.15em]"
-                  style={{
-                    fontFamily: '"Times New Roman", "Times New Roman Condensed", Times, serif',
-                    fontStretch: "condensed",
-                    fontWeight: 700,
-                  }}
-                >
-                  human-centered AI
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                Grow beyond limits with{" "}
+                <span className="block whitespace-nowrap">
+                  <span
+                    className="italic text-[#393CA0] text-[1.15em]"
+                    style={{
+                      fontFamily: '"Times New Roman", "Times New Roman Condensed", Times, serif',
+                      fontStretch: "condensed",
+                      fontWeight: 700,
+                    }}
+                  >
+                    human-centered AI
+                  </span>
                 </span>
               </h1>
               <div className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl space-y-6">
