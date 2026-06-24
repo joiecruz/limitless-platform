@@ -1,47 +1,45 @@
 ## Goal
-Add a dedicated navbar used only on `/ai-homepage`, leaving the existing `MainNav` untouched elsewhere.
+Add a "Who We Help" mega-menu to `AINav` mirroring the "Why Limitless Lab" pattern, and create blank placeholder pages at `/entrepreneurs`, `/corporates`, `/government`, `/schools`.
 
-## New file: `src/components/ai-homepage/AINav.tsx`
-A copy of `MainNav` structure (fixed top, logo left, links center, CTAs right, mobile Sheet) with these changes:
+## 1. Update `src/components/ai-homepage/AINav.tsx`
+Replace the simple "Who We Help" link with a mega-menu identical in style to the existing Why mega-menu (white card, rounded-xl, shadow-xl, hover-open), but using a 2x2 grid (4 personas):
 
-**Nav items (desktop + mobile):**
-1. **Why Limitless Lab** — hover/click mega-menu (see below)
-2. **Who We Help** — `href="#"`
-3. **Solutions** — `href="#"`
-4. **Programs** — `href="#"` (single link, no sub-dropdown for now)
-
-**CTAs (right side):**
-- `Log in` → `/signin` (ghost button, unchanged)
-- `Take Free AI Assessment` → `/ai-assessment` (primary `#393CA0` button, replaces Sign up)
-
-Auth state: if `session` exists, show `WebNavProfileMenu` instead of the two CTAs (same as current MainNav).
-
-## "Why Limitless Lab" mega-menu
-Full-width panel anchored under the trigger, ~720px wide, white card with `rounded-xl` + `shadow-xl` + `border-gray-200`, opens on hover (desktop) and is keyboard-accessible. Grid of 3 columns, each a link block with:
-
-- Square icon tile (56px, soft brand-tinted background, e.g. `bg-[#393CA0]/10`) holding a custom abstract minimalist SVG icon stroked in `#393CA0` with an `#F59E0B`/`#EC4899` accent dot or line
-- Bold title + one-line muted description
-
-Items:
 | Title | Description | Link |
 |---|---|---|
-| About Us | Our story, mission, and the team behind Limitless Lab | `#` |
-| Our Transformation Model | The human-centered AI framework that drives lasting change | `#` |
-| Partner with Limitless Lab | Collaborate with us to scale impact across your organization | `#` |
+| Entrepreneurs & Business Owners | Grow your venture with human-centered AI | `/entrepreneurs` |
+| Corporate Teams & Professionals | Lead innovation and upskill your teams | `/corporates` |
+| Public Servants & Government Leaders | Deliver better services with AI-powered design | `/government` |
+| Educators & Students | Learn, teach, and build the future of work | `/schools` |
 
-Mobile: render the three items as an indented collapsible list under "Why Limitless Lab" (same `Collapsible` pattern used for Programs in `MainNav`), each row showing the small icon + title.
+Use React Router `Link` for these (real routes, unlike the Why dropdown placeholders).
 
-## Icons
-Three inline React SVG components defined inside `AINav.tsx` (no asset files), each ~28px, abstract minimalist:
-- **AboutUsIcon** — three overlapping circles (people) in `#393CA0` outline with one `#F59E0B` filled dot
-- **TransformationIcon** — two arrows curving into an infinity/loop shape in `#393CA0` with `#EC4899` accent
-- **PartnerIcon** — two interlocking brackets / handshake-abstract shapes in `#393CA0` with `#F59E0B` joining dot
+Add 4 new inline abstract minimalist SVG icons (~28px, stroke 1.75, `#393CA0` strokes with `#F59E0B` or `#EC4899` accent dots), matching the existing icon style:
+- **EntrepreneurIcon** — a stylized rocket/upward arrow with an accent spark
+- **CorporateIcon** — overlapping rectangles (cards/teams) with one accent dot
+- **GovernmentIcon** — abstract pillared arch with an accent dot above
+- **EducatorIcon** — open book / mortarboard cap silhouette with accent dot
 
-All strokes `1.75`, rounded line caps, no fills except the accent dots — keeps the "abstract minimalist" feel and uses the existing brand palette already present on the page.
+Mobile: extend the Sheet menu with a second `Collapsible` for "Who We Help" containing the four persona links (icon + title), same styling pattern as the Why collapsible.
 
-## Wire-up
-`src/pages/AIHomepage.tsx`: replace `import { MainNav }` and `<MainNav />` with the new `AINav`. No other pages change.
+## 2. Create 4 blank pages
+Minimal pages following the existing site shell (`AINav` + `Footer`), each showing the persona title in a hero block and a short placeholder paragraph. Files:
+- `src/pages/personas/Entrepreneurs.tsx`
+- `src/pages/personas/Corporates.tsx`
+- `src/pages/personas/Government.tsx`
+- `src/pages/personas/Schools.tsx`
+
+Each page sets a `<Helmet>` title, renders `<AINav />`, a centered hero (`min-h-[60vh]`) with the page name + "Coming soon" copy, then `<Footer />`.
+
+## 3. Register routes in `src/routes/AppRoutes.tsx`
+Add four public routes alongside `/ai-homepage`:
+```
+<Route path="/entrepreneurs" element={<Entrepreneurs />} />
+<Route path="/corporates" element={<Corporates />} />
+<Route path="/government" element={<Government />} />
+<Route path="/schools" element={<Schools />} />
+```
+Plus the four imports.
 
 ## Out of scope
-- No new routes created for `/ai-assessment` or the dropdown destinations — they're placeholder links to be wired later.
-- No changes to existing `MainNav` or other pages.
+- No other pages or navs change.
+- No real content for the persona pages yet — just placeholder shells.
