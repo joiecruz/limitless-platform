@@ -164,6 +164,7 @@ const whoItems = [
 export function AINav() {
   const [isOpen, setIsOpen] = useState(false);
   const [whyOpenMobile, setWhyOpenMobile] = useState(false);
+  const [whoOpenMobile, setWhoOpenMobile] = useState(false);
 
   const { data: session } = useQuery({
     queryKey: ["session"],
