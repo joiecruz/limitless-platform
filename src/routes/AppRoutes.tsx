@@ -31,6 +31,10 @@ import Updates from '@/pages/Updates';
 import NotFound from '@/pages/NotFound';
 import DraftHome from '@/pages/DraftHome';
 import AIHomepage from '@/pages/AIHomepage';
+import Entrepreneurs from '@/pages/personas/Entrepreneurs';
+import Corporates from '@/pages/personas/Corporates';
+import Government from '@/pages/personas/Government';
+import Schools from '@/pages/personas/Schools';
 import WorkshopDetail from '@/pages/landing/WorkshopDetail';
 
 // App pages
@@ -125,6 +129,10 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/workshops/:courseId" element={<WorkshopDetail />} />
           <Route path="/draft-home" element={<DraftHome />} />
           <Route path="/ai-homepage" element={<AIHomepage />} />
+          <Route path="/entrepreneurs" element={<Entrepreneurs />} />
+          <Route path="/corporates" element={<Corporates />} />
+          <Route path="/government" element={<Government />} />
+          <Route path="/schools" element={<Schools />} />
         </>
       )}
 
