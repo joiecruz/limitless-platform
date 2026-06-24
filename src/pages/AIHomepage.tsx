@@ -44,9 +44,9 @@ export default function AIHomepage() {
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-4 items-center">
             <div className="text-left relative z-10">
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Grow beyond limits with{" "}
-                <span className="block whitespace-nowrap">
+              <h1 className="text-4xl sm:text-5xl lg:text-[2.75rem] xl:text-[3.5rem] font-bold text-gray-900 mb-6 leading-[1.1]">
+                Grow beyond limits with
+                <span className="block">
                   <span
                     className="italic text-[#393CA0] text-[1.15em]"
                     style={{
