@@ -34,7 +34,30 @@ export default function AIHomepage() {
     <div className="min-h-screen bg-white">
       <Helmet>
         <title>Grow Beyond Limits Using Human-Centered AI | Limitless Lab</title>
-        <meta name="description" content="Grow beyond limits using human-centered AI. Explore Limitless Lab's approach to making AI work for people." />
+        <meta name="description" content="Limitless Lab helps entrepreneurs, corporates, governments, and schools across Southeast Asia grow beyond limits using human-centered AI — courses, tools, and flagship programs." />
+        <link rel="canonical" href="https://limitlesslab.org/" />
+        <meta property="og:title" content="Grow Beyond Limits Using Human-Centered AI | Limitless Lab" />
+        <meta property="og:description" content="Courses, tools, and programs that help people and organizations grow beyond limits with human-centered AI." />
+        <meta property="og:url" content="https://limitlesslab.org/" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Grow Beyond Limits Using Human-Centered AI | Limitless Lab" />
+        <meta name="twitter:description" content="Courses, tools, and programs that help people and organizations grow beyond limits with human-centered AI." />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: "Grow Beyond Limits Using Human-Centered AI | Limitless Lab",
+          url: "https://limitlesslab.org/",
+          description: "Limitless Lab helps entrepreneurs, corporates, governments, and schools across Southeast Asia grow beyond limits using human-centered AI.",
+          inLanguage: "en",
+          isPartOf: { "@type": "WebSite", name: "Limitless Lab", url: "https://limitlesslab.org/" },
+          publisher: { "@type": "Organization", name: "Limitless Lab", url: "https://limitlesslab.org/" },
+          about: [
+            { "@type": "Thing", name: "Human-centered AI" },
+            { "@type": "Thing", name: "Design thinking" },
+            { "@type": "Thing", name: "Innovation capability" },
+          ],
+        })}</script>
       </Helmet>
 
       <AINav />
