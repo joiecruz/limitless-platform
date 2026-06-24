@@ -1,5 +1,5 @@
 
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { isApexDomain } from './utils/domainHelpers.ts'
@@ -17,13 +17,18 @@ const hasRedirected = sessionStorage.getItem('apex_redirect_attempted');
 
 // Redirect apex domain to www if needed, but only if we haven't tried redirecting before
 if (isApexDomain() && !hasRedirected) {
-  
+
   sessionStorage.setItem('apex_redirect_attempted', 'true');
   window.location.href = `https://www.limitlesslab.org${window.location.pathname}${window.location.search}`;
 } else {
-  // Mount React application
-  const root = createRoot(document.getElementById("root")!);
-  root.render(<App />);
+  // Mount React application — hydrate if react-snap pre-rendered the page,
+  // otherwise do a normal client-side render.
+  const container = document.getElementById("root")!;
+  if (container.hasChildNodes()) {
+    hydrateRoot(container, <App />);
+  } else {
+    createRoot(container).render(<App />);
+  }
 
   // Clear the redirect flag after successful mount
   if (hasRedirected) {
