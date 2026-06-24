@@ -153,7 +153,7 @@ export default function AIHomepage() {
               >
                 <h3
                   className="text-2xl sm:text-[1.6rem] font-bold text-gray-900 px-6 pt-6 pb-2 leading-tight transition-colors duration-300 group-hover:text-[#393CA0]"
-                  style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                  style={{ fontFamily: '"Times New Roman MT Condensed bold", "Times New Roman", Times, serif' }}
                 >
                   {title}
                 </h3>
