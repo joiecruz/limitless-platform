@@ -1,7 +1,7 @@
 export function DesignThinkingSection() {
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <p className="text-xs font-bold text-[#393CA0] uppercase tracking-widest mb-4">
           How we work
         </p>

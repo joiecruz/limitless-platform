@@ -1,7 +1,7 @@
 export function BeliefFutureSection() {
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-5xl mx-auto flex justify-end">
+      <div className="max-w-7xl mx-auto flex justify-end">
         <div className="max-w-md">
           <p className="text-xs font-bold text-[#393CA0] uppercase tracking-widest mb-4">
             Our belief
@@ -28,7 +28,7 @@ export function BeliefFutureSection() {
 export function BeliefTransformationSection() {
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="max-w-md">
           <p className="text-xs font-bold text-[#393CA0] uppercase tracking-widest mb-4">
             Our belief
