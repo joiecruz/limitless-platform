@@ -102,7 +102,7 @@ export default function AIHomepage() {
       <div className="py-8">
         <div className="mb-8 text-center">
           <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900">
-            Trusted by leading organizations across sectors
+            Trusted by 100+ leading organizations across sectors
           </h3>
         </div>
         <Suspense fallback={<LoadingPage />}>
@@ -121,7 +121,7 @@ export default function AIHomepage() {
               The people we help evolve
             </h2>
             <p className="text-lg text-gray-600">
-              We partner with the people shaping tomorrow—across sectors, scales, and missions.
+              Find yourself in the work we do
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
