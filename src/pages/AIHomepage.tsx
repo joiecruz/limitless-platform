@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MainNav } from "@/components/site-config/MainNav";
+import { AINav } from "@/components/ai-homepage/AINav";
 import { Footer } from "@/components/site-config/Footer";
 import { InfiniteLogos } from "@/components/site-config/InfiniteLogos";
 import { DesignThinkingSection } from "@/components/ai-homepage/DesignThinkingSection";
