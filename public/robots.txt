@@ -8,5 +8,6 @@ Disallow: /reset-password
 Disallow: /forgot-password
 Disallow: /verify-email
 Disallow: /invite
+Disallow: /cocreate
 
 Sitemap: https://limitlesslab.org/sitemap.xml
