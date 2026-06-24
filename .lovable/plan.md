@@ -1,9 +1,26 @@
-1. **Logos section** (`AIHomepage.tsx`): Change "We've worked with" to "Trusted by leading organizations across sectors" (using same heading styling).
+## Plan: Integrate Uploaded Custom Font
 
-2. **People we help evolve section** (`AIHomepage.tsx`): Keep current 4-card grid layout and persona images, but update copy to match mockup tone — confirming the existing heading/subheading is fine, no structural change to the card grid.
+The persona card titles currently reference `"Times New Roman MT Condensed bold"` in CSS, but the actual font file is not loaded — it falls back to system defaults. You uploaded the `.otf` file; here's how we'll wire it up:
 
-3. **DesignThinkingSection.tsx**: Convert to a 2-column layout inside `max-w-7xl`. Left column holds eyebrow + title + body. Right column is a placeholder slot for the upcoming graphic (empty div, no placeholder image). Stacks on mobile.
+### Steps
 
-4. **Body text size in 3 sections** (`DesignThinkingSection`, `BeliefFutureSection`, `BeliefTransformationSection`): Change body paragraphs from `text-lg`/`text-base` to `text-lg sm:text-xl text-gray-600` to match hero blurb size/font.
+1. **Upload font to CDN**
+   - Use `lovable-assets create` to upload `Times_New_Roman_MT_Condensed_Bold.otf` from the upload mount to the Lovable CDN.
+   - Write the resulting `.asset.json` pointer to `src/assets/`.
 
-5. **Headline**: Leave the current hero `h1` as-is (already breaks into 2 lines).
+2. **Add `@font-face` declaration**
+   - In `src/index.css`, add a `@font-face` block:
+     - `font-family: "Times New Roman MT Condensed Bold"`
+     - `src: url(<cdn-url>) format("opentype")`
+     - `font-weight: 700`
+     - `font-style: normal`
+   - This makes the font available across the app.
+
+3. **Update persona card reference**
+   - In `src/pages/AIHomepage.tsx` (the persona card `<h3>`), replace the inline `style={{ fontFamily: ... }}` with the exact `@font-face` family name so it resolves to the real font file.
+
+No other files or layout changes are needed.
+
+### Technical notes
+- The CSP already allows `font-src 'self' data:;`. The CDN asset will be served from the same origin (`/__l5e/assets-v1/...`), so it complies.
+- The original font file will not be kept in the repo; only the `.asset.json` pointer stays.
