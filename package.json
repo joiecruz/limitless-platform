@@ -9,8 +9,31 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "postbuild": "react-snap || echo 'react-snap skipped (no chromium available in this build env)'",
     "lint": "eslint .",
     "preview": "vite preview"
+  },
+  "reactSnap": {
+    "source": "dist",
+    "destination": "dist",
+    "inlineCss": false,
+    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+    "skipThirdPartyRequests": true,
+    "include": [
+      "/",
+      "/entrepreneurs",
+      "/corporates",
+      "/government",
+      "/schools",
+      "/about",
+      "/programs",
+      "/programs/limitlessgov",
+      "/programs/ai-ready-asean",
+      "/programs/aim-asean",
+      "/programs/limitlessbiz",
+      "/privacy",
+      "/terms"
+    ]
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
