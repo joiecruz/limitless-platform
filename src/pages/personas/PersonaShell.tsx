@@ -6,14 +6,52 @@ interface PersonaShellProps {
   title: string;
   tagline: string;
   metaDescription: string;
+  /** Path of this page relative to root, e.g. "/entrepreneurs" */
+  path: string;
+  /** Audience name for JSON-LD (e.g. "Entrepreneurs and business owners") */
+  audience: string;
 }
 
-export function PersonaShell({ title, tagline, metaDescription }: PersonaShellProps) {
+export function PersonaShell({ title, tagline, metaDescription, path, audience }: PersonaShellProps) {
+  const url = `https://limitlesslab.org${path}`;
+  const fullTitle = `${title} | Limitless Lab`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: fullTitle,
+    url,
+    description: metaDescription,
+    inLanguage: "en",
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Limitless Lab",
+      url: "https://limitlesslab.org/",
+    },
+    about: {
+      "@type": "Audience",
+      audienceType: audience,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Limitless Lab",
+      url: "https://limitlesslab.org/",
+    },
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Helmet>
-        <title>{title} | Limitless Lab</title>
+        <title>{fullTitle}</title>
         <meta name="description" content={metaDescription} />
+        <link rel="canonical" href={url} />
+        <meta property="og:title" content={fullTitle} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:url" content={url} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={fullTitle} />
+        <meta name="twitter:description" content={metaDescription} />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <AINav />
       <main className="flex-1 flex items-center justify-center px-4 pt-32 pb-20 min-h-[60vh]">
