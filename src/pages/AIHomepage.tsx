@@ -45,7 +45,7 @@ export default function AIHomepage() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-4 items-center">
             <div className="text-left relative z-10">
               <h1 className="text-4xl sm:text-5xl lg:text-[2.75rem] xl:text-[3.5rem] font-bold text-gray-900 mb-6 leading-[1.1]">
-                Grow beyond limits with
+                Grow beyond limits with&nbsp;
                 <span className="block">
                   <span
                     className="italic text-[#393CA0] text-[1.15em]"
