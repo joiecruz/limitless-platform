@@ -161,10 +161,137 @@ const whoItems = [
   },
 ];
 
+function GovProgramIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 4l10 4v6c0 6-4 11-10 14-6-3-10-8-10-14V8l10-4z" stroke={BRAND} strokeWidth="1.75" strokeLinejoin="round" />
+      <path d="M12 16l3 3 6-6" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="25" cy="9" r="1.75" fill={ACCENT_GOLD} />
+    </svg>
+  );
+}
+
+function AseanProgramIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="7" cy="8" r="2.5" stroke={BRAND} strokeWidth="1.75" />
+      <circle cx="25" cy="8" r="2.5" stroke={BRAND} strokeWidth="1.75" />
+      <circle cx="7" cy="24" r="2.5" stroke={BRAND} strokeWidth="1.75" />
+      <circle cx="25" cy="24" r="2.5" stroke={BRAND} strokeWidth="1.75" />
+      <circle cx="16" cy="16" r="3" stroke={BRAND} strokeWidth="1.75" />
+      <path d="M9 10l5 4M23 10l-5 4M9 22l5-4M23 22l-5-4" stroke={BRAND} strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="16" cy="16" r="1.25" fill={ACCENT_PINK} />
+    </svg>
+  );
+}
+
+function AimProgramIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 26h22" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" />
+      <rect x="8" y="18" width="4" height="8" rx="1" stroke={BRAND} strokeWidth="1.75" />
+      <rect x="14" y="13" width="4" height="13" rx="1" stroke={BRAND} strokeWidth="1.75" />
+      <rect x="20" y="8" width="4" height="18" rx="1" stroke={BRAND} strokeWidth="1.75" />
+      <circle cx="22" cy="5" r="1.75" fill={ACCENT_GOLD} />
+    </svg>
+  );
+}
+
+function BizProgramIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 4v4M6 8l3 3M26 8l-3 3M4 18h4M24 18h4" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M11 20a5 5 0 1 1 10 0c0 2-1 3-2 4v2h-6v-2c-1-1-2-2-2-4z" stroke={BRAND} strokeWidth="1.75" strokeLinejoin="round" />
+      <path d="M13 28h6" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" />
+      <circle cx="16" cy="20" r="1.5" fill={ACCENT_PINK} />
+    </svg>
+  );
+}
+
+const programItems = [
+  {
+    title: "LimitlessGov",
+    description: "Capability development for public servants",
+    Icon: GovProgramIcon,
+    href: "/programs/limitlessgov",
+  },
+  {
+    title: "AI Ready ASEAN",
+    description: "Regional AI literacy initiative",
+    Icon: AseanProgramIcon,
+    href: "/programs/ai-ready-asean",
+  },
+  {
+    title: "AIM ASEAN",
+    description: "AI for MSME regional program",
+    Icon: AimProgramIcon,
+    href: "/programs/aim-asean",
+  },
+  {
+    title: "LimitlessBiz",
+    description: "Innovation program for entrepreneurs",
+    Icon: BizProgramIcon,
+    href: "/programs/limitlessbiz",
+  },
+];
+
+function BlogResourceIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="5" width="18" height="22" rx="2" stroke={BRAND} strokeWidth="1.75" />
+      <path d="M10 11h10M10 16h10M10 21h6" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" />
+      <circle cx="24" cy="9" r="2" fill={ACCENT_GOLD} />
+    </svg>
+  );
+}
+
+function ToolsResourceIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M19 6a5 5 0 0 0 6 6l-13 13a3 3 0 1 1-4-4L21 8a5 5 0 0 1-2-2z" stroke={BRAND} strokeWidth="1.75" strokeLinejoin="round" />
+      <path d="M6 6l4 4M8 4l4 4" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" />
+      <circle cx="10" cy="23" r="1.5" fill={ACCENT_PINK} />
+    </svg>
+  );
+}
+
+function CoursesResourceIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 8c4-2 8-2 12 0v18c-4-2-8-2-12 0V8z" stroke={BRAND} strokeWidth="1.75" strokeLinejoin="round" />
+      <path d="M28 8c-4-2-8-2-12 0v18c4-2 8-2 12 0V8z" stroke={BRAND} strokeWidth="1.75" strokeLinejoin="round" />
+      <path d="M13 14l4 2-4 2v-4z" fill={ACCENT_GOLD} />
+    </svg>
+  );
+}
+
+const resourceItems = [
+  {
+    title: "Blog Articles",
+    description: "Insights on innovation, AI, and design",
+    Icon: BlogResourceIcon,
+    href: "/blog",
+  },
+  {
+    title: "Tools",
+    description: "Hands-on tools to apply our methods",
+    Icon: ToolsResourceIcon,
+    href: "/tools",
+  },
+  {
+    title: "Courses",
+    description: "Self-paced learning on AI and innovation",
+    Icon: CoursesResourceIcon,
+    href: "/courses",
+  },
+];
+
 export function AINav() {
   const [isOpen, setIsOpen] = useState(false);
   const [whyOpenMobile, setWhyOpenMobile] = useState(false);
   const [whoOpenMobile, setWhoOpenMobile] = useState(false);
+  const [programsOpenMobile, setProgramsOpenMobile] = useState(false);
+  const [resourcesOpenMobile, setResourcesOpenMobile] = useState(false);
 
   const { data: session } = useQuery({
     queryKey: ["session"],
