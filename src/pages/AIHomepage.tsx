@@ -61,10 +61,10 @@ export default function AIHomepage() {
               </h1>
               <div className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl space-y-6">
                 <p>
-                  Limitless Lab helps entrepreneurs, professionals, and organizations unlock growth, lead innovation, and drive lasting impact.
+                  Limitless Lab helps entrepreneurs, professionals, and organizations unlock growth, lead innovation, and drive lasting impact in the age of AI.
                 </p>
                 <p>
-                  We transform people and institutions through human-centered design and AI — building the mindsets, tools, and capabilities to reach their full potential.
+
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
