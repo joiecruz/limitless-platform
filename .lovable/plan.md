@@ -1,45 +1,36 @@
 ## Goal
-Add a "Who We Help" mega-menu to `AINav` mirroring the "Why Limitless Lab" pattern, and create blank placeholder pages at `/entrepreneurs`, `/corporates`, `/government`, `/schools`.
+In `AINav`: remove "Solutions", convert "Programs" into a mega-menu with real program links, and add a "Resources" mega-menu.
 
-## 1. Update `src/components/ai-homepage/AINav.tsx`
-Replace the simple "Who We Help" link with a mega-menu identical in style to the existing Why mega-menu (white card, rounded-xl, shadow-xl, hover-open), but using a 2x2 grid (4 personas):
+## Changes to `src/components/ai-homepage/AINav.tsx`
 
-| Title | Description | Link |
-|---|---|---|
-| Entrepreneurs & Business Owners | Grow your venture with human-centered AI | `/entrepreneurs` |
-| Corporate Teams & Professionals | Lead innovation and upskill your teams | `/corporates` |
-| Public Servants & Government Leaders | Deliver better services with AI-powered design | `/government` |
-| Educators & Students | Learn, teach, and build the future of work | `/schools` |
+### Remove
+- The "Solutions" link in both desktop nav and mobile Sheet.
 
-Use React Router `Link` for these (real routes, unlike the Why dropdown placeholders).
+### Programs mega-menu
+Replace the current single "Programs" link with a 2x2 mega-menu (same style: white card, rounded-xl, shadow-xl, hover-open, `Link` to real routes).
 
-Add 4 new inline abstract minimalist SVG icons (~28px, stroke 1.75, `#393CA0` strokes with `#F59E0B` or `#EC4899` accent dots), matching the existing icon style:
-- **EntrepreneurIcon** — a stylized rocket/upward arrow with an accent spark
-- **CorporateIcon** — overlapping rectangles (cards/teams) with one accent dot
-- **GovernmentIcon** — abstract pillared arch with an accent dot above
-- **EducatorIcon** — open book / mortarboard cap silhouette with accent dot
+Items (with new abstract minimalist SVG icons inline in the file, brand colors `#393CA0` strokes + `#F59E0B`/`#EC4899` accents, same style as existing icons):
 
-Mobile: extend the Sheet menu with a second `Collapsible` for "Who We Help" containing the four persona links (icon + title), same styling pattern as the Why collapsible.
+| Title | Description | Link | Icon concept |
+|---|---|---|---|
+| LimitlessGov | Capability development for public servants | `/programs/limitlessgov` | Shield/government building abstract |
+| AI Ready ASEAN | Regional AI literacy initiative | `/programs/ai-ready-asean` | Network of connected nodes |
+| AIM ASEAN | AI for MSME regional program | `/programs/aim-asean` | Upward bar chart / growth |
+| LimitlessBiz | Innovation program for entrepreneurs | `/programs/limitlessbiz` | Spark / lightbulb abstract |
 
-## 2. Create 4 blank pages
-Minimal pages following the existing site shell (`AINav` + `Footer`), each showing the persona title in a hero block and a short placeholder paragraph. Files:
-- `src/pages/personas/Entrepreneurs.tsx`
-- `src/pages/personas/Corporates.tsx`
-- `src/pages/personas/Government.tsx`
-- `src/pages/personas/Schools.tsx`
+### Resources mega-menu
+New nav item "Resources" after Programs with a 3-column mega-menu:
 
-Each page sets a `<Helmet>` title, renders `<AINav />`, a centered hero (`min-h-[60vh]`) with the page name + "Coming soon" copy, then `<Footer />`.
+| Title | Description | Link | Icon concept |
+|---|---|---|---|
+| Blog Articles | Insights on innovation, AI, and design | `/blog` | Stacked lines / document abstract |
+| Tools | Hands-on tools to apply our methods | `/tools` | Toolkit / wrench-grid abstract |
+| Courses | Self-paced learning on AI and innovation | `/courses` | Open book / play triangle abstract |
 
-## 3. Register routes in `src/routes/AppRoutes.tsx`
-Add four public routes alongside `/ai-homepage`:
-```
-<Route path="/entrepreneurs" element={<Entrepreneurs />} />
-<Route path="/corporates" element={<Corporates />} />
-<Route path="/government" element={<Government />} />
-<Route path="/schools" element={<Schools />} />
-```
-Plus the four imports.
+### Mobile
+- Drop the "Solutions" and standalone "Programs" links.
+- Add two new `Collapsible` blocks (Programs, Resources) following the same icon+title pattern as the Why / Who collapsibles. Add `programsOpenMobile` and `resourcesOpenMobile` state.
 
 ## Out of scope
-- No other pages or navs change.
-- No real content for the persona pages yet — just placeholder shells.
+- No other files change; no new routes (all targets already exist).
+- Existing icons (`AboutUsIcon`, persona icons, etc.) stay untouched.
