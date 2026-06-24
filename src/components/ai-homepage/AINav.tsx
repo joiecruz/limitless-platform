@@ -556,8 +556,55 @@ export function AINav() {
                         ))}
                       </CollapsibleContent>
                     </Collapsible>
-                    <a href="#" onClick={closeMenu} className="block px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0] font-medium">Solutions</a>
-                    <a href="#" onClick={closeMenu} className="block px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0] font-medium">Programs</a>
+                    {/* Programs collapsible */}
+                    <Collapsible open={programsOpenMobile} onOpenChange={setProgramsOpenMobile}>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0] font-medium">
+                        Programs
+                        <ChevronDown
+                          className={`h-4 w-4 transition-transform ${programsOpenMobile ? "rotate-180" : ""}`}
+                        />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="bg-gray-50">
+                        {programItems.map(({ title, Icon, href }) => (
+                          <Link
+                            key={title}
+                            to={href}
+                            onClick={closeMenu}
+                            className="flex items-center gap-3 px-8 py-3 text-gray-600 hover:text-[#393CA0]"
+                          >
+                            <div className="w-8 h-8 rounded-md bg-[#393CA0]/10 flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-5 h-5" />
+                            </div>
+                            <span className="text-sm">{title}</span>
+                          </Link>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Resources collapsible */}
+                    <Collapsible open={resourcesOpenMobile} onOpenChange={setResourcesOpenMobile}>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0] font-medium">
+                        Resources
+                        <ChevronDown
+                          className={`h-4 w-4 transition-transform ${resourcesOpenMobile ? "rotate-180" : ""}`}
+                        />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="bg-gray-50">
+                        {resourceItems.map(({ title, Icon, href }) => (
+                          <Link
+                            key={title}
+                            to={href}
+                            onClick={closeMenu}
+                            className="flex items-center gap-3 px-8 py-3 text-gray-600 hover:text-[#393CA0]"
+                          >
+                            <div className="w-8 h-8 rounded-md bg-[#393CA0]/10 flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-5 h-5" />
+                            </div>
+                            <span className="text-sm">{title}</span>
+                          </Link>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
                   </nav>
 
                   <div className="p-4 border-t border-gray-200">
