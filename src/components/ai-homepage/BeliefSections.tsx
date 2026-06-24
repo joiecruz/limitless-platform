@@ -19,7 +19,7 @@ export function BeliefFutureSection() {
           >
             Our belief
           </p>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
             The future is{" "}
             <span className="line-through decoration-2 text-gray-400">AI</span>{" "}
             <span className="text-[#66E6F5]">HUMAN + AI</span>
@@ -49,7 +49,7 @@ export function BeliefTransformationSection() {
           >
             Our belief
           </p>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
             Transformation by design
           </h2>
           <div className="space-y-4 text-lg sm:text-xl text-gray-600 leading-relaxed">
