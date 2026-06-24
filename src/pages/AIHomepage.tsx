@@ -37,7 +37,7 @@ export default function AIHomepage() {
         <meta name="description" content="Grow beyond limits using human-centered AI. Explore Limitless Lab's approach to making AI work for people." />
       </Helmet>
 
-      <MainNav />
+      <AINav />
 
       {/* Hero Section */}
       <div className="relative min-h-[85vh] flex items-center pt-32 pb-20 overflow-hidden">
