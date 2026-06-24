@@ -11,7 +11,7 @@ export function BeliefFutureSection() {
             <span className="line-through decoration-2 text-gray-400">AI</span>{" "}
             <span className="text-[#66E6F5]">HUMAN + AI</span>
           </h2>
-          <div className="space-y-4 text-base text-gray-600 leading-relaxed">
+          <div className="space-y-4 text-lg sm:text-xl text-gray-600 leading-relaxed">
             <p>
               Technology accelerates what humans decide to do with it. That's why we never put the tool before the person.
             </p>
@@ -36,7 +36,7 @@ export function BeliefTransformationSection() {
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 leading-tight">
             Transformation by design
           </h2>
-          <div className="space-y-4 text-base text-gray-600 leading-relaxed">
+          <div className="space-y-4 text-lg sm:text-xl text-gray-600 leading-relaxed">
             <p>
               Change doesn't happen by accident. And it doesn't happen in a one-day workshop either.
             </p>
