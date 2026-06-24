@@ -5,10 +5,16 @@ export function DesignThinkingSection() {
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
         <div>
-          <p className="text-xs font-bold text-[#393CA0] uppercase tracking-widest mb-4">
+          <p
+            className="text-sm sm:text-base font-bold text-[#393CA0] uppercase tracking-widest mb-4"
+            style={{ fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif' }}
+          >
             How we work
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8 leading-tight">
+          <h2
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-8 leading-tight"
+            style={{ fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif' }}
+          >
             Design Thinking and Systems Thinking, Amplified by AI
           </h2>
           <div className="space-y-6 text-lg sm:text-xl text-gray-600 leading-relaxed">

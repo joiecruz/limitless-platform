@@ -1,26 +1,27 @@
-## Plan: Integrate Uploaded Custom Font
+## Changes to `/ai-homepage`
 
-The persona card titles currently reference `"Times New Roman MT Condensed bold"` in CSS, but the actual font file is not loaded — it falls back to system defaults. You uploaded the `.otf` file; here's how we'll wire it up:
+### 1. Persona card titles — bigger, tighter
+File: `src/pages/AIHomepage.tsx` (the persona `<h3>` around line 154)
+- Increase size from `text-2xl sm:text-[1.6rem]` → `text-3xl sm:text-[2rem] lg:text-[2.25rem]`
+- Change `leading-tight` → `leading-[1]` for tighter line spacing
+- Keep the Times New Roman MT Condensed Bold font
 
-### Steps
+### 2. Hero "human-centered AI" — italic in the same custom font
+File: `src/pages/AIHomepage.tsx` (lines 50–59)
+- Update the inline `style` `fontFamily` to `'"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif'` so it uses the self-hosted font
+- Keep the existing `italic` class so it renders italicized (the font file is roman; browsers will synthesize an italic slant on top of the condensed bold weight, matching the rest of the site since no separate italic file was provided)
 
-1. **Upload font to CDN**
-   - Use `lovable-assets create` to upload `Times_New_Roman_MT_Condensed_Bold.otf` from the upload mount to the Lovable CDN.
-   - Write the resulting `.asset.json` pointer to `src/assets/`.
+### 3. Section eyebrow labels + headings — new font, bigger
+Files: `src/components/ai-homepage/DesignThinkingSection.tsx`, `src/components/ai-homepage/BeliefSections.tsx` (both `BeliefFutureSection` and `BeliefTransformationSection`)
 
-2. **Add `@font-face` declaration**
-   - In `src/index.css`, add a `@font-face` block:
-     - `font-family: "Times New Roman MT Condensed Bold"`
-     - `src: url(<cdn-url>) format("opentype")`
-     - `font-weight: 700`
-     - `font-style: normal`
-   - This makes the font available across the app.
+For the small eyebrow labels ("How we work", "Our belief", "Our belief"):
+- Change from `text-xs` → `text-sm sm:text-base`
+- Apply `fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif'` via inline style
+- Keep uppercase tracking + `#393CA0` color
 
-3. **Update persona card reference**
-   - In `src/pages/AIHomepage.tsx` (the persona card `<h3>`), replace the inline `style={{ fontFamily: ... }}` with the exact `@font-face` family name so it resolves to the real font file.
+For the big section headings ("Design Thinking and Systems Thinking, Amplified by AI", "The future is HUMAN + AI", "Transformation by design"):
+- Bump size from `text-3xl sm:text-4xl` → `text-4xl sm:text-5xl lg:text-6xl`
+- Apply the same Times New Roman MT Condensed Bold font via inline style
+- Keep existing color/leading
 
-No other files or layout changes are needed.
-
-### Technical notes
-- The CSP already allows `font-src 'self' data:;`. The CDN asset will be served from the same origin (`/__l5e/assets-v1/...`), so it complies.
-- The original font file will not be kept in the repo; only the `.asset.json` pointer stays.
+No other components, routes, or layout structure change.
