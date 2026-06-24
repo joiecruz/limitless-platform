@@ -92,6 +92,75 @@ const whyItems = [
   },
 ];
 
+function EntrepreneurIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 4c4 3 6 7 6 11a6 6 0 0 1-12 0c0-4 2-8 6-11z" stroke={BRAND} strokeWidth="1.75" strokeLinejoin="round" />
+      <path d="M11 22l-3 5 5-2M21 22l3 5-5-2" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="16" cy="14" r="2" fill={ACCENT_GOLD} />
+    </svg>
+  );
+}
+
+function CorporateIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="9" width="14" height="16" rx="2" stroke={BRAND} strokeWidth="1.75" />
+      <rect x="13" y="5" width="14" height="16" rx="2" stroke={BRAND} strokeWidth="1.75" />
+      <circle cx="24" cy="24" r="2" fill={ACCENT_PINK} />
+    </svg>
+  );
+}
+
+function GovernmentIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 13l11-7 11 7" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 13v10M14 13v10M18 13v10M24 13v10" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M4 26h24" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" />
+      <circle cx="16" cy="4" r="1.75" fill={ACCENT_GOLD} />
+    </svg>
+  );
+}
+
+function EducatorIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 11l13-5 13 5-13 5-13-5z" stroke={BRAND} strokeWidth="1.75" strokeLinejoin="round" />
+      <path d="M8 14v6c0 2 4 4 8 4s8-2 8-4v-6" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M29 11v7" stroke={BRAND} strokeWidth="1.75" strokeLinecap="round" />
+      <circle cx="29" cy="20" r="1.75" fill={ACCENT_PINK} />
+    </svg>
+  );
+}
+
+const whoItems = [
+  {
+    title: "Entrepreneurs & Business Owners",
+    description: "Grow your venture with human-centered AI",
+    Icon: EntrepreneurIcon,
+    href: "/entrepreneurs",
+  },
+  {
+    title: "Corporate Teams & Professionals",
+    description: "Lead innovation and upskill your teams",
+    Icon: CorporateIcon,
+    href: "/corporates",
+  },
+  {
+    title: "Public Servants & Government Leaders",
+    description: "Deliver better services with AI-powered design",
+    Icon: GovernmentIcon,
+    href: "/government",
+  },
+  {
+    title: "Educators & Students",
+    description: "Learn, teach, and build the future of work",
+    Icon: EducatorIcon,
+    href: "/schools",
+  },
+];
+
 export function AINav() {
   const [isOpen, setIsOpen] = useState(false);
   const [whyOpenMobile, setWhyOpenMobile] = useState(false);
