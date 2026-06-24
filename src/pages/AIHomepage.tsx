@@ -151,7 +151,7 @@ export default function AIHomepage() {
                 className="group bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col h-[360px] transition-colors duration-300 hover:border-[#393CA0]"
               >
                 <h3
-                  className="text-3xl sm:text-[2rem] lg:text-[2.25rem] font-bold text-gray-900 px-6 pt-6 pb-2 leading-[1] transition-colors duration-300 group-hover:text-[#393CA0]"
+                  className="text-2xl sm:text-[1.6rem] font-bold text-gray-900 px-6 pt-6 pb-2 leading-tight transition-colors duration-300 group-hover:text-[#393CA0]"
                   style={{ fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif' }}
                 >
                   {title}
