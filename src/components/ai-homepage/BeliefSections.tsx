@@ -13,10 +13,16 @@ export function BeliefFutureSection() {
           />
         </div>
         <div className="order-1 lg:order-2">
-          <p className="text-xs font-bold text-[#393CA0] uppercase tracking-widest mb-4">
+          <p
+            className="text-sm sm:text-base font-bold text-[#393CA0] uppercase tracking-widest mb-4"
+            style={{ fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif' }}
+          >
             Our belief
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+          <h2
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight"
+            style={{ fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif' }}
+          >
             The future is{" "}
             <span className="line-through decoration-2 text-gray-400">AI</span>{" "}
             <span className="text-[#66E6F5]">HUMAN + AI</span>
@@ -40,10 +46,16 @@ export function BeliefTransformationSection() {
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
         <div>
-          <p className="text-xs font-bold text-[#393CA0] uppercase tracking-widest mb-4">
+          <p
+            className="text-sm sm:text-base font-bold text-[#393CA0] uppercase tracking-widest mb-4"
+            style={{ fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif' }}
+          >
             Our belief
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+          <h2
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight"
+            style={{ fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif' }}
+          >
             Transformation by design
           </h2>
           <div className="space-y-4 text-lg sm:text-xl text-gray-600 leading-relaxed">
