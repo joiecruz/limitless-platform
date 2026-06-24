@@ -3,6 +3,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Times New Roman MT Condensed Bold";
+  src: url("/__l5e/assets-v1/e46c8f9b-c715-4adf-8508-8ef73eaca2da/TimesNewRomanMTCondensedBold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
 @layer base {
   :root {
     --background: 0 0% 100%;
