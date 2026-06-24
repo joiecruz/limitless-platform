@@ -102,7 +102,7 @@ export default function AIHomepage() {
       <div className="py-8">
         <div className="mb-8 text-center">
           <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900">
-            We've worked with
+            Trusted by leading organizations across sectors
           </h3>
         </div>
         <Suspense fallback={<LoadingPage />}>
