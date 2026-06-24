@@ -90,7 +90,7 @@ export function TestimonialsRailSection() {
           -webkit-mask-image: linear-gradient(to right, transparent 0, black 80px, black calc(100% - 80px), transparent 100%);
         }
       `}</style>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center">
         <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
           What Our Customers and Stakeholders Are Saying
         </h2>

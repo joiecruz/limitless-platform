@@ -71,7 +71,7 @@ export default function AIHomepage() {
                 <Button
                   size="lg"
                   onClick={() => navigate("/services")}
-                  className="px-8 bg-[#393CA0] hover:bg-[#393CA0]/90 transition-colors duration-200"
+                  className="px-10 py-6 text-lg bg-[#393CA0] hover:bg-[#393CA0]/90 transition-colors duration-200"
                 >
                   Learn More
                 </Button>
@@ -79,7 +79,7 @@ export default function AIHomepage() {
                   size="lg"
                   variant="outline"
                   onClick={() => navigate("/programs")}
-                  className="px-8 text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
+                  className="px-10 py-6 text-lg text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
                 >
                   Take Free AI Assessment
                 </Button>
@@ -151,7 +151,10 @@ export default function AIHomepage() {
                 key={title}
                 className="group bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col h-[360px] transition-colors duration-300 hover:border-[#393CA0]"
               >
-                <h3 className="text-xl font-bold text-gray-900 px-6 pt-6 pb-2 transition-colors duration-300 group-hover:text-[#393CA0]">
+                <h3
+                  className="text-2xl sm:text-[1.6rem] font-bold text-gray-900 px-6 pt-6 pb-2 leading-tight transition-colors duration-300 group-hover:text-[#393CA0]"
+                  style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                >
                   {title}
                 </h3>
                 <div className="flex-1 flex items-end justify-center overflow-hidden">
