@@ -126,22 +126,22 @@ export default function AIHomepage() {
               {
                 image: personaEntrepreneur.url,
                 title: "Entrepreneurs and Business Owners",
-                imageClass: "scale-[1.25] origin-bottom",
+                imageClass: "scale-[1.2] origin-top",
               },
               {
                 image: personaCorporate.url,
                 title: "Corporate Teams and Professionals",
-                imageClass: "scale-[1.25] origin-bottom",
+                imageClass: "scale-[1.2] origin-top",
               },
               {
                 image: personaPublicServant.url,
                 title: "Public Servants and Government Leaders",
-                imageClass: "",
+                imageClass: "-mt-14",
               },
               {
                 image: personaEducator.url,
                 title: "Educators and Students",
-                imageClass: "",
+                imageClass: "-mt-10",
               },
             ].map(({ image, title, imageClass }) => (
               <div
