@@ -1,8 +1,18 @@
+import futureHumanAi from "@/assets/future-human-ai.png.asset.json";
+import transformationsImg from "@/assets/transformations.png.asset.json";
+
 export function BeliefFutureSection() {
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-7xl mx-auto flex justify-end">
-        <div className="max-w-md">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+        <div className="flex justify-center order-2 lg:order-1">
+          <img
+            src={futureHumanAi.url}
+            alt="Human and AI working together toward a brighter future"
+            className="w-full max-w-md h-auto"
+          />
+        </div>
+        <div className="order-1 lg:order-2">
           <p className="text-xs font-bold text-[#393CA0] uppercase tracking-widest mb-4">
             Our belief
           </p>
@@ -28,8 +38,8 @@ export function BeliefFutureSection() {
 export function BeliefTransformationSection() {
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="max-w-md">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+        <div>
           <p className="text-xs font-bold text-[#393CA0] uppercase tracking-widest mb-4">
             Our belief
           </p>
@@ -44,6 +54,13 @@ export function BeliefTransformationSection() {
               Real transformation requires a system: the right mindsets built first, the right tools introduced next, and the right structures put in place to make it stick. That's the Limitless approach. Every engagement is designed from the outcome backward, so you're not just inspired — you're equipped.
             </p>
           </div>
+        </div>
+        <div className="flex justify-center">
+          <img
+            src={transformationsImg.url}
+            alt="Transformation from uncertainty to clarity and capability"
+            className="w-full max-w-lg h-auto"
+          />
         </div>
       </div>
     </section>

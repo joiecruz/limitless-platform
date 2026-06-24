@@ -1,3 +1,5 @@
+import designThinkingImg from "@/assets/design-thinking-systems-ai.png.asset.json";
+
 export function DesignThinkingSection() {
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
@@ -18,7 +20,13 @@ export function DesignThinkingSection() {
             </p>
           </div>
         </div>
-        <div aria-hidden className="hidden lg:block" />
+        <div className="flex justify-center">
+          <img
+            src={designThinkingImg.url}
+            alt="Design Thinking and Systems Thinking connected by AI"
+            className="w-full max-w-lg h-auto"
+          />
+        </div>
       </div>
     </section>
   );
