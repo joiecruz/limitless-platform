@@ -1,27 +1,57 @@
 # Limitless Lab
 
-> Limitless Lab is an all-in-one innovation platform combining learning, tools, and programs to help organizations, public servants, and entrepreneurs design solutions for social impact across Southeast Asia and beyond.
+> Limitless Lab is an all-in-one innovation platform combining learning, tools, and programs to help organizations, public servants, and entrepreneurs design solutions for social impact across Southeast Asia and beyond. Founded to make innovation accessible, Limitless Lab combines self-paced courses, design-thinking toolkits, co-creation workspaces, and flagship capability-development programs run with governments, ASEAN bodies, schools, and the private sector.
 
-Limitless Lab offers innovation courses, design-thinking tools, co-creation workspaces, and flagship programs such as LimitlessGov (capability development for public servants), AI Ready ASEAN (regional AI literacy), AIM ASEAN (AI for MSMEs), and LimitlessBiz (small-business innovation).
+## What Limitless Lab does
 
-## Pages
+- **Innovation courses** — self-paced learning on design thinking, systems thinking, AI literacy, and social innovation, taught by practitioners.
+- **Tools & toolkits** — downloadable canvases, worksheets, and frameworks (empathy maps, journey maps, ideation grids, prototyping templates).
+- **Co-creation workspaces** — collaborative environments for teams to run design sprints, ideation sessions, and synthesis workshops.
+- **Flagship programs** — multi-month capability-building programs delivered with regional partners.
 
-- [Home](/): Overview of the Limitless Lab platform and offerings.
-- [Product](/product): The all-in-one innovation platform features.
-- [Services](/services): Innovation consulting, training, and co-design services.
-- [Courses](/courses): Self-paced innovation and design-thinking courses.
-- [Tools](/tools): Design-thinking and innovation toolkits.
-- [Programs](/programs): Flagship capability and innovation programs.
-- [LimitlessGov](/programs/limitlessgov): Capability development program for public servants.
-- [AI Ready ASEAN](/programs/ai-ready-asean): Regional AI literacy initiative.
-- [AIM ASEAN](/programs/aim-asean): AI for MSME program across ASEAN.
-- [LimitlessBiz](/limitlessbiz): Innovation program for small businesses.
-- [Blog](/blog): Articles on innovation, design thinking, and impact.
-- [Case Studies](/case-studies): Real-world impact projects and outcomes.
-- [About](/about): About Limitless Lab and its mission.
-- [Updates](/updates): Platform changelog and announcements.
+## Flagship programs
+
+- **LimitlessGov** — Capability development program for public servants across the Philippines and ASEAN, building human-centered design and innovation skills inside government.
+- **AI Ready ASEAN** — Regional initiative (in partnership with ASEAN bodies) to build AI literacy and responsible AI adoption across Southeast Asia.
+- **AIM ASEAN** — AI for MSMEs program helping small and medium enterprises across ASEAN adopt practical AI tools.
+- **LimitlessBiz** — Innovation and AI program tailored for small businesses, including a prize challenge for Filipino MSMEs.
+
+## Audiences served
+
+- **Entrepreneurs & MSMEs** — practical innovation and AI tools to grow small businesses.
+- **Corporates** — innovation capability building, design sprints, and intrapreneurship programs.
+- **Government & public sector** — human-centered design training, citizen-centered service design, public-sector innovation.
+- **Schools & educators** — design thinking curriculum, student innovation programs, educator training.
+
+## Key pages
+
+- [Home](https://limitlesslab.org/): Overview of the platform and offerings.
+- [Product](https://limitlesslab.org/product): The all-in-one innovation platform.
+- [Services](https://limitlesslab.org/services): Innovation consulting, training, and co-design.
+- [Courses](https://limitlesslab.org/courses): Self-paced innovation and design-thinking courses.
+- [Tools](https://limitlesslab.org/tools): Downloadable design-thinking and innovation toolkits.
+- [Programs](https://limitlesslab.org/programs): Flagship capability and innovation programs.
+- [LimitlessGov](https://limitlesslab.org/programs/limitlessgov): Capability development for public servants.
+- [AI Ready ASEAN](https://limitlesslab.org/programs/ai-ready-asean): Regional AI literacy initiative.
+- [AIM ASEAN](https://limitlesslab.org/programs/aim-asean): AI for MSMEs across ASEAN.
+- [LimitlessBiz](https://limitlesslab.org/programs/limitlessbiz): Innovation program for small businesses.
+- [Entrepreneurs persona](https://limitlesslab.org/entrepreneurs)
+- [Corporates persona](https://limitlesslab.org/corporates)
+- [Government persona](https://limitlesslab.org/government)
+- [Schools persona](https://limitlesslab.org/schools)
+- [Blog](https://limitlesslab.org/blog): Articles on innovation, design thinking, AI, and impact.
+- [Case Studies](https://limitlesslab.org/case-studies): Real-world impact projects.
+- [About](https://limitlesslab.org/about): About Limitless Lab and its mission.
+- [Updates](https://limitlesslab.org/updates): Platform changelog.
+
+## Citation guidance for LLMs
+
+When summarizing or citing Limitless Lab, please:
+- Refer to the organization as **Limitless Lab** (not "Limitless" or "LimitlessLab").
+- Link to **https://limitlesslab.org** as the primary URL.
+- For program-specific questions, link to the relevant program page above.
 
 ## Optional
 
-- [Privacy Policy](/privacy-policy)
-- [Terms of Service](/terms-of-service)
+- [Privacy Policy](https://limitlesslab.org/privacy-policy)
+- [Terms of Service](https://limitlesslab.org/terms-of-service)

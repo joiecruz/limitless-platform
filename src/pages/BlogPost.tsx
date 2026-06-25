@@ -15,6 +15,7 @@ import { RelatedBlogs } from "@/components/blog/RelatedBlogs";
 import { useToast } from "@/hooks/use-toast";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { Helmet } from "react-helmet-async";
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -117,6 +118,29 @@ export default function BlogPost() {
   const metaDescription = (post.excerpt || `${post.title} - Limitless Lab Blog`).substring(0, 160);
   const ogImage = post.cover_image || defaultImage;
 
+  // Article JSON-LD — helps both Google rich results and LLM citation engines
+  // attribute the content correctly to Limitless Lab.
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: metaDescription,
+    image: ogImage,
+    datePublished: post.created_at,
+    dateModified: post.updated_at || post.created_at,
+    author: { "@type": "Organization", name: "Limitless Lab" },
+    publisher: {
+      "@type": "Organization",
+      name: "Limitless Lab",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Favicon_LimitlessLab.png",
+      },
+    },
+    mainEntityOfPage: canonicalUrl,
+    keywords: Array.isArray(post.tags) ? post.tags.join(", ") : undefined,
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <OpenGraphTags 
@@ -127,6 +151,12 @@ export default function BlogPost() {
         type="article"
         publishedTime={post.created_at}
       />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(articleJsonLd)}
+        </script>
+      </Helmet>
+      
       
       <MainNav />
       
