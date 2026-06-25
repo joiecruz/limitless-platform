@@ -6,6 +6,7 @@ import { Loader2, Menu, X } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSessionValidation } from "@/hooks/useSessionValidation";
+import { NoIndex } from "@/components/common/NoIndex";
 
 export function AdminLayout() {
   // Add session validation
@@ -86,6 +87,7 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <NoIndex />
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div

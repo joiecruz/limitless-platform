@@ -11,6 +11,7 @@ import { SignupStep4 } from "@/components/signup/SignupStep4";
 import { SignupStep5 } from "@/components/signup/SignupStep5";
 import { SignupStep6 } from "@/components/signup/SignupStep6";
 import { SignupFormData } from "@/components/signup/types";
+import { NoIndex } from "@/components/common/NoIndex";
 
 export default function Register() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -268,6 +269,7 @@ export default function Register() {
       totalSteps={6}
       showProgress={currentStep > 1}
     >
+      <NoIndex />
       {renderStep()}
     </SignupLayout>
   );
