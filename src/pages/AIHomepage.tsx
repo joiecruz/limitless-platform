@@ -12,7 +12,6 @@ import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
-import heroAsset from "@/assets/limitless-lab-hero.png.asset.json";
 import personaEntrepreneur from "@/assets/persona-entrepreneur.png.asset.json";
 import personaCorporate from "@/assets/persona-corporate.png.asset.json";
 import personaPublicServant from "@/assets/persona-public-servant.png.asset.json";
