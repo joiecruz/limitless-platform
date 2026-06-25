@@ -12,7 +12,6 @@ import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet";
-import heroAsset from "@/assets/limitless-lab-hero.png.asset.json";
 import personaEntrepreneur from "@/assets/persona-entrepreneur.png.asset.json";
 import personaCorporate from "@/assets/persona-corporate.png.asset.json";
 import personaPublicServant from "@/assets/persona-public-servant.png.asset.json";
@@ -63,62 +62,45 @@ export default function AIHomepage() {
       <AINav />
 
       {/* Hero Section */}
-      <div className="relative min-h-[85vh] flex items-center pt-32 pb-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto w-full px-3 sm:px-4 lg:px-6 relative">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-4 items-center">
-            <div className="text-left relative z-10">
-              <h1 className="text-4xl sm:text-5xl lg:text-[2.75rem] xl:text-[3.5rem] font-bold text-gray-900 mb-6 leading-[1.1]">
-                Grow beyond limits with&nbsp;
-                <span className="block">
-                  <span
-                    className="italic text-[#393CA0] text-[1.15em]"
-                    style={{
-                      fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif',
-                      fontWeight: 700,
-                    }}
-                  >
-                    human-centered AI
-                  </span>
-                </span>
-              </h1>
-              <div className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl space-y-6">
-                <p>
-                  Limitless Lab helps entrepreneurs, professionals, and organizations unlock growth, lead innovation, and drive lasting impact in the age of AI.
-                </p>
-                <p>
-
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  size="lg"
-                  onClick={() => navigate("/services")}
-                  className="px-10 py-6 text-lg bg-[#393CA0] hover:bg-[#393CA0]/90 transition-colors duration-200"
-                >
-                  Learn More
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => navigate("/programs")}
-                  className="px-10 py-6 text-lg text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
-                >
-                  Take Free AI Assessment
-                </Button>
-              </div>
-            </div>
-
-            <div className="relative lg:h-[600px] hidden lg:block">
-              <img
-                src={heroAsset.url}
-                alt="Team collaborating with human-centered AI"
-                className="absolute top-1/2 -translate-y-1/2 left-0 w-[115%] max-w-none h-auto lg:translate-x-[5%] xl:translate-x-[10%]"
-                style={{ right: "auto" }}
-              />
-            </div>
+      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-[1.05]">
+            <span className="block">Grow beyond limits</span>
+            <span className="block">
+              with{" "}
+              <span
+                className="italic text-[#393CA0]"
+                style={{
+                  fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif',
+                  fontWeight: 700,
+                }}
+              >
+                human-centered AI
+              </span>
+            </span>
+          </h1>
+          <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
+            Limitless Lab helps entrepreneurs, professionals, and organizations unlock growth, lead innovation, and drive lasting impact in the age of AI.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              size="lg"
+              onClick={() => navigate("/services")}
+              className="px-8 py-6 text-lg bg-[#393CA0] hover:bg-[#393CA0]/90 transition-colors duration-200 rounded-xl"
+            >
+              Learn More
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate("/programs")}
+              className="px-8 py-6 text-lg text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200 rounded-xl"
+            >
+              Take Free AI Assessment
+            </Button>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Logo Sections */}
       <div className="py-8">
