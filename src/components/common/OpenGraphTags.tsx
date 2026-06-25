@@ -26,7 +26,18 @@ export function OpenGraphTags({
 }: OpenGraphTagsProps) {
   // Add a unique debug ID to verify these tags are being rendered
   const debugId = `og-${Math.random().toString(36).substring(7)}`;
-  
+
+  // Normalize the canonical / og:url: strip query strings + hash so paginated
+  // and tracking-tagged variants collapse to a single canonical URL. Fixes
+  // duplicate-content "Crawled - currently not indexed" verdicts.
+  let canonicalUrl = url;
+  try {
+    const u = new URL(url);
+    canonicalUrl = `${u.origin}${u.pathname.replace(/\/+$/, "") || "/"}`;
+  } catch {
+    canonicalUrl = url;
+  }
+
   return (
     <Helmet prioritizeSeoTags={true}>
       {/* Debug tag to verify rendering */}
@@ -35,14 +46,14 @@ export function OpenGraphTags({
       {/* Primary meta tags */}
       <title>{title}</title>
       <meta name="description" content={description} />
-      <link rel="canonical" href={url} />
+      <link rel="canonical" href={canonicalUrl} />
       
       {/* OpenGraph tags for social sharing */}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={imageUrl} />
       <meta property="og:type" content={type} />
-      <meta property="og:url" content={url} />
+      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:site_name" content={siteName} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />

@@ -1,3 +1,4 @@
+# Allow all standard search engines to crawl public marketing pages.
 User-agent: *
 Allow: /
 Disallow: /admin
@@ -9,5 +10,56 @@ Disallow: /forgot-password
 Disallow: /verify-email
 Disallow: /invite
 Disallow: /cocreate
+# Block common crawl traps & duplicates
+Disallow: /*?*_page=
+Disallow: /*?utm_
+
+# --- AI / LLM crawlers (Generative Engine Optimization) ---
+# Allowing these maximizes the chance Limitless Lab is cited in ChatGPT,
+# Claude, Perplexity, and Google AI Overviews answers.
+
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /signin
+Disallow: /signup
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
 
 Sitemap: https://limitlesslab.org/sitemap.xml
