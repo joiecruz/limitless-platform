@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLogo } from "@/components/auth/AuthLogo";
 import { LoadingPage } from "@/components/common/LoadingPage";
+import { NoIndex } from "@/components/common/NoIndex";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -113,6 +114,7 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <NoIndex />
       <div className="w-full max-w-md">
         <div onClick={() => navigate('/')} className="cursor-pointer">
           <AuthLogo />

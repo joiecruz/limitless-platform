@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { NoIndex } from "@/components/common/NoIndex";
 
 export default function VerifyEmail() {
   const [email, setEmail] = useState<string>("");
@@ -81,6 +82,7 @@ export default function VerifyEmail() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+      <NoIndex />
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <img

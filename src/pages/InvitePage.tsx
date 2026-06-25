@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { InviteModal } from "@/components/invite/InviteModal";
 import { verifyInvitation } from "@/components/invite/services/invitationService";
 import { LoadingPage } from "@/components/common/LoadingPage";
+import { NoIndex } from "@/components/common/NoIndex";
 
 export default function InvitePage() {
   const [searchParams] = useSearchParams();
@@ -116,6 +117,7 @@ export default function InvitePage() {
 
   return (
     <div>
+      <NoIndex />
       {showInviteModal && (
         <InviteModal
           open={true}

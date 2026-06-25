@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { CourseAccessGrantedDialog } from "@/components/dashboard/CourseAccessGrantedDialog";
 import { LimitlessBizAvailableDialog } from "@/components/dashboard/LimitlessBizAvailableDialog";
 import { thumbUrl } from "@/lib/imageUrl";
+import { NoIndex } from "@/components/common/NoIndex";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -85,6 +86,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in pt-20 pb-10 px-4 sm:px-6 lg:px-8">
+      <NoIndex />
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>

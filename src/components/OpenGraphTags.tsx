@@ -30,6 +30,20 @@ export function OpenGraphTags({
   // Always serve the OG image through the CDN render endpoint at 1200x630 (the size we declare).
   const ogImage = thumbUrl(imageUrl, { width: 1200, height: 630, quality: 75 }) || imageUrl;
 
+  // Normalize the canonical / og:url: strip query strings + hash so paginated
+  // and tracking-tagged variants (e.g. /?23e08153_page=2, /blog?utm=...) collapse
+  // to the clean canonical URL. This prevents "Crawled - currently not indexed"
+  // duplicate-content verdicts in Google Search Console.
+  let canonicalUrl = url;
+  try {
+    const u = new URL(url);
+    canonicalUrl = `${u.origin}${u.pathname.replace(/\/+$/, "") || "/"}`;
+  } catch {
+    canonicalUrl = url;
+  }
+
+
+
   return (
     <Helmet prioritizeSeoTags={true}>
       {/* Debug tag to verify rendering */}
@@ -38,14 +52,14 @@ export function OpenGraphTags({
       {/* Primary meta tags */}
       <title>{title}</title>
       <meta name="description" content={description} />
-      <link rel="canonical" href={url} />
+      <link rel="canonical" href={canonicalUrl} />
       
       {/* OpenGraph tags for social sharing */}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:type" content={type} />
-      <meta property="og:url" content={url} />
+      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:site_name" content={siteName} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
