@@ -1,6 +1,7 @@
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { AuthLogo } from "@/components/auth/AuthLogo";
+import { NoIndex } from "@/components/common/NoIndex";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+      <NoIndex />
       <div className="w-full max-w-md space-y-8">
         <AuthLogo />
         <ForgotPasswordForm
