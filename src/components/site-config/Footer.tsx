@@ -66,6 +66,8 @@ export function Footer() {
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
               <li><Link to="/about" className="text-gray-600 hover:text-primary-600">About</Link></li>
+              <li><Link to="/about/transformation-model" className="text-gray-600 hover:text-primary-600">Transformation Model</Link></li>
+              <li><Link to="/about/partner" className="text-gray-600 hover:text-primary-600">Partner With Us</Link></li>
               <li><Link to="/privacy-policy" className="text-gray-600 hover:text-primary-600">Privacy Policy</Link></li>
               <li><Link to="/terms-of-service" className="text-gray-600 hover:text-primary-600">Terms of Service</Link></li>
               <li><Link to="/updates" className="text-gray-600 hover:text-primary-600">Platform Updates</Link></li>
