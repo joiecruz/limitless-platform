@@ -81,6 +81,48 @@ export type Database = {
           },
         ]
       }
+      ati_leads: {
+        Row: {
+          answers: Json
+          context: string | null
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          organization: string
+          overall_score: number
+          persona: string
+          pillar_scores: Json
+          referral_source: string | null
+        }
+        Insert: {
+          answers: Json
+          context?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          organization: string
+          overall_score: number
+          persona: string
+          pillar_scores: Json
+          referral_source?: string | null
+        }
+        Update: {
+          answers?: Json
+          context?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          organization?: string
+          overall_score?: number
+          persona?: string
+          pillar_scores?: Json
+          referral_source?: string | null
+        }
+        Relationships: []
+      }
       case_studies: {
         Row: {
           additional_photo1: string | null
