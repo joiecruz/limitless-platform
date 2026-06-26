@@ -76,19 +76,19 @@ const whyItems = [
     title: "About Us",
     description: "Our story, mission, and the team behind Limitless Lab",
     Icon: AboutUsIcon,
-    href: "#",
+    href: "/about",
   },
   {
     title: "Our Transformation Model",
     description: "The human-centered AI framework that drives lasting change",
     Icon: TransformationIcon,
-    href: "#",
+    href: "/about/transformation-model",
   },
   {
     title: "Partner with Limitless Lab",
     description: "Collaborate with us to scale impact across your organization",
     Icon: PartnerIcon,
-    href: "#",
+    href: "/about/partner",
   },
 ];
 
