@@ -19,6 +19,7 @@ import {
 export function MainNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [programsOpen, setProgramsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const { data: session } = useQuery({
     queryKey: ['session'],
@@ -102,6 +103,27 @@ export function MainNav() {
                 </Link>
                 <Link to="/programs/aim-asean" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0]">
                   AIM ASEAN
+                </Link>
+              </div>
+            </div>
+
+            {/* About Dropdown */}
+            <div className="relative group">
+              <button className="text-gray-700 hover:text-[#393CA0] flex items-center">
+                About
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <Link to="/about" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0]">
+                  About Us
+                </Link>
+                <Link to="/about/transformation-model" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0]">
+                  Our Transformation Model
+                </Link>
+                <Link to="/about/partner" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0]">
+                  Partner With Us
                 </Link>
               </div>
             </div>
@@ -202,6 +224,37 @@ export function MainNav() {
                           className="block px-8 py-3 text-gray-600 hover:text-[#393CA0]"
                         >
                           AIM ASEAN
+                        </Link>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Mobile About Collapsible */}
+                    <Collapsible open={aboutOpen} onOpenChange={setAboutOpen}>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0] font-medium">
+                        About
+                        <ChevronDown className={`h-4 w-4 transition-transform ${aboutOpen ? 'rotate-180' : ''}`} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="bg-gray-50">
+                        <Link
+                          to="/about"
+                          onClick={closeMenu}
+                          className="block px-8 py-3 text-gray-600 hover:text-[#393CA0]"
+                        >
+                          About Us
+                        </Link>
+                        <Link
+                          to="/about/transformation-model"
+                          onClick={closeMenu}
+                          className="block px-8 py-3 text-gray-600 hover:text-[#393CA0]"
+                        >
+                          Our Transformation Model
+                        </Link>
+                        <Link
+                          to="/about/partner"
+                          onClick={closeMenu}
+                          className="block px-8 py-3 text-gray-600 hover:text-[#393CA0]"
+                        >
+                          Partner With Us
                         </Link>
                       </CollapsibleContent>
                     </Collapsible>

@@ -1,4 +1,7 @@
 
+import { Link } from "react-router-dom";
+import { ArrowRight, Compass, HeartHandshake } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { MainNav } from "@/components/site-config/MainNav";
 import { OpenGraphTags } from "@/components/common/OpenGraphTags";
 import { Footer } from "@/components/site-config/Footer";
@@ -191,6 +194,58 @@ export default function About() {
           <p className="text-xl text-gray-600 leading-relaxed">
             Over the years, Limitless Lab has trained thousands of changemakers, developed multiple platforms for government and citizen engagement, and co-led regional initiatives like the Digital Literacy Programme and the AI Ready ASEAN in partnership with the ASEAN Foundation and Google.org.
           </p>
+        </div>
+      </div>
+
+      {/* Learn More */}
+      <div className="bg-gray-50 py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Go Deeper</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Explore how we drive change and how you can build with us.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link
+              to="/about/transformation-model"
+              className="group bg-white border border-gray-100 rounded-2xl p-8 hover:shadow-md transition-shadow"
+            >
+              <div className="w-12 h-12 rounded-xl bg-[#393CA0]/10 text-[#393CA0] flex items-center justify-center mb-5">
+                <Compass className="w-6 h-6" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Our Transformation Model</h3>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                How we help individuals, organizations, and ecosystems grow beyond limits through human-centered design and AI.
+              </p>
+              <span className="inline-flex items-center text-[#393CA0] font-semibold group-hover:gap-3 gap-2 transition-all">
+                Learn more <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+            <Link
+              to="/about/partner"
+              className="group bg-white border border-gray-100 rounded-2xl p-8 hover:shadow-md transition-shadow"
+            >
+              <div className="w-12 h-12 rounded-xl bg-[#393CA0]/10 text-[#393CA0] flex items-center justify-center mb-5">
+                <HeartHandshake className="w-6 h-6" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Partner with Limitless Lab</h3>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Co-create programs, products, and policies that drive social impact across Southeast Asia.
+              </p>
+              <span className="inline-flex items-center text-[#393CA0] font-semibold group-hover:gap-3 gap-2 transition-all">
+                Partner with us <ArrowRight className="w-4 h-4" />
+              </span>
+            </Link>
+          </div>
+          <div className="text-center mt-12">
+            <Link to="/about/partner">
+              <Button size="lg" className="bg-[#393CA0] hover:bg-[#393CA0]/90">
+                Start a partnership conversation
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

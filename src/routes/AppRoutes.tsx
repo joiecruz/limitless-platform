@@ -19,7 +19,8 @@ import Programs from '@/pages/programs/Programs';
 import LimitlessGov from '@/pages/programs/LimitlessGov';
 import AIReadyASEANProgram from '@/pages/programs/AIReadyASEAN';
 import AIMASEAN from '@/pages/programs/AIMASEAN';
-import LimitlessBizProgram from '@/pages/programs/LimitlessBiz';
+import TransformationModel from '@/pages/about/TransformationModel';
+import Partner from '@/pages/about/Partner';
 import Blog from '@/pages/landing/Blog';
 import BlogPost from '@/pages/BlogPost';
 import CaseStudies from '@/pages/landing/CaseStudies';
@@ -117,7 +118,8 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/programs/limitlessgov" element={<LimitlessGov />} />
           <Route path="/programs/ai-ready-asean" element={<AIReadyASEANProgram />} />
           <Route path="/programs/aim-asean" element={<AIMASEAN />} />
-          <Route path="/limitlessbiz" element={<LimitlessBizProgram />} />
+          <Route path="/about/transformation-model" element={<TransformationModel />} />
+          <Route path="/about/partner" element={<Partner />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/case-studies" element={<CaseStudies />} />
