@@ -227,12 +227,6 @@ const programItems = [
     Icon: AimProgramIcon,
     href: "/programs/aim-asean",
   },
-  {
-    title: "LimitlessBiz",
-    description: "Innovation program for entrepreneurs",
-    Icon: BizProgramIcon,
-    href: "/programs/limitlessbiz",
-  },
 ];
 
 function BlogResourceIcon({ className = "" }: { className?: string }) {
