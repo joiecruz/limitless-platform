@@ -477,7 +477,7 @@ export function AINav() {
                 <Link to="/signin">
                   <Button variant="ghost">Log in</Button>
                 </Link>
-                <Link to="/ai-assessment">
+                <Link to="/ati">
                   <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90">
                     Take Free AI Assessment
                   </Button>
