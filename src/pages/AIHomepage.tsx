@@ -77,7 +77,7 @@ export default function AIHomepage() {
                       fontWeight: 700,
                     }}
                   >
-                    human-centered AI
+                    
                   </span>
                 </span>
               </h1>
