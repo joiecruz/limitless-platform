@@ -68,18 +68,7 @@ export default function AIHomepage() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-4 items-center">
             <div className="text-left relative z-10">
               <h1 className="text-4xl sm:text-5xl lg:text-[2.75rem] xl:text-[3.5rem] font-bold text-gray-900 mb-6 leading-[1.1]">
-                <span className="block">Grow beyond limits with</span>
-                <span className="block">
-                  <span
-                    className="italic text-[#393CA0] text-[1.15em]"
-                    style={{
-                      fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif',
-                      fontWeight: 700,
-                    }}
-                  >
-                    
-                  </span>
-                </span>
+                <span className="block">Grow beyond limits with human-centered AI</span>
               </h1>
               <div className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl space-y-6">
                 <p>
