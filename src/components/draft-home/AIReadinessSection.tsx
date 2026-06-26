@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { User, Building2, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function AIReadinessSection() {
+  const navigate = useNavigate();
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -42,7 +44,7 @@ export function AIReadinessSection() {
                 </p>
                 <Button
                   className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90 text-white justify-between"
-                  onClick={() => window.open("https://limitlesslab.scoreapp.com/", "_blank")}
+                  onClick={() => navigate("/ati")}
                 >
                   Get your score
                   <ArrowRight className="h-4 w-4" />
@@ -59,7 +61,7 @@ export function AIReadinessSection() {
                 </p>
                 <Button
                   className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90 text-white justify-between"
-                  onClick={() => window.open("https://limitlesslab.scoreapp.com/", "_blank")}
+                  onClick={() => navigate("/ati")}
                 >
                   Get your score
                   <ArrowRight className="h-4 w-4" />
