@@ -371,36 +371,6 @@ export function AINav() {
               </div>
             </div>
 
-            {/* Who We Help mega-menu */}
-            <div className="relative group">
-              <button className="text-gray-700 hover:text-[#393CA0] flex items-center py-6">
-                Who We Help
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 w-[720px] bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  {whoItems.map(({ title, description, Icon, href }) => (
-                    <Link
-                      key={title}
-                      to={href}
-                      className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors group/item"
-                    >
-                      <div className="w-14 h-14 rounded-xl bg-[#393CA0]/10 flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-8 h-8" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900 group-hover/item:text-[#393CA0] leading-tight">
-                          {title}
-                        </div>
-                        <div className="text-sm text-gray-500 mt-1 leading-snug">
-                          {description}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
             {/* Programs mega-menu */}
             <div className="relative group">
               <button className="text-gray-700 hover:text-[#393CA0] flex items-center py-6">
@@ -526,30 +496,6 @@ export function AINav() {
                       </CollapsibleContent>
                     </Collapsible>
 
-                    {/* Who We Help collapsible */}
-                    <Collapsible open={whoOpenMobile} onOpenChange={setWhoOpenMobile}>
-                      <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0] font-medium">
-                        Who We Help
-                        <ChevronDown
-                          className={`h-4 w-4 transition-transform ${whoOpenMobile ? "rotate-180" : ""}`}
-                        />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="bg-gray-50">
-                        {whoItems.map(({ title, Icon, href }) => (
-                          <Link
-                            key={title}
-                            to={href}
-                            onClick={closeMenu}
-                            className="flex items-center gap-3 px-8 py-3 text-gray-600 hover:text-[#393CA0]"
-                          >
-                            <div className="w-8 h-8 rounded-md bg-[#393CA0]/10 flex items-center justify-center flex-shrink-0">
-                              <Icon className="w-5 h-5" />
-                            </div>
-                            <span className="text-sm">{title}</span>
-                          </Link>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
                     {/* Programs collapsible */}
                     <Collapsible open={programsOpenMobile} onOpenChange={setProgramsOpenMobile}>
                       <CollapsibleTrigger className="flex items-center justify-between w-full px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#393CA0] font-medium">

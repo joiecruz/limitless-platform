@@ -38,32 +38,34 @@ export function PersonaIntake({ onBegin }: PersonaIntakeProps) {
         <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">1. Which best describes you?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {PERSONAS.map((p) => {
-            const Icon = p.icon;
             const active = persona === p.id;
             return (
               <button
                 key={p.id}
                 onClick={() => handleSelectPersona(p.id)}
-                className={`group relative text-left p-5 rounded-2xl border-2 transition-all bg-white ${
+                className={`group relative text-left rounded-2xl border-2 transition-all bg-white overflow-hidden ${
                   active
                     ? "border-[#393CA0] shadow-md"
                     : "border-gray-200 hover:border-[#393CA0]/50 hover:-translate-y-0.5"
                 }`}
               >
                 {active && (
-                  <span className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#393CA0] text-white flex items-center justify-center">
+                  <span className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-[#393CA0] text-white flex items-center justify-center shadow">
                     <Check className="h-4 w-4" />
                   </span>
                 )}
-                <span
-                  className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 transition-colors ${
-                    active ? "bg-[#393CA0] text-white" : "bg-[#393CA0]/10 text-[#393CA0]"
-                  }`}
-                >
-                  <Icon className="h-6 w-6" />
-                </span>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">{p.name}</h3>
-                <p className="text-sm text-gray-600">{p.description}</p>
+                <div className={`aspect-[4/3] w-full overflow-hidden ${active ? "bg-[#393CA0]/10" : "bg-gray-50"}`}>
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">{p.name}</h3>
+                  <p className="text-sm text-gray-600">{p.description}</p>
+                </div>
               </button>
             );
           })}
