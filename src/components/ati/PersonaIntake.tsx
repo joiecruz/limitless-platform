@@ -7,6 +7,14 @@ interface PersonaIntakeProps {
   onBegin: (persona: PersonaId, context: string) => void;
 }
 
+const IMAGE_CLASS: Record<PersonaId, string> = {
+  business_owner: "scale-[1.2] origin-bottom",
+  corporate: "scale-[1.2] origin-bottom",
+  public_servant: "-mt-14",
+  educator: "",
+  student: "",
+};
+
 export function PersonaIntake({ onBegin }: PersonaIntakeProps) {
   const [persona, setPersona] = useState<PersonaId | null>(null);
   const [context, setContext] = useState<string>("");
@@ -21,7 +29,7 @@ export function PersonaIntake({ onBegin }: PersonaIntakeProps) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
       <div className="text-center mb-10 sm:mb-12">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#393CA0]/10 text-[#393CA0] text-sm font-medium mb-5">
           Free Assessment · 5 mins
@@ -36,17 +44,17 @@ export function PersonaIntake({ onBegin }: PersonaIntakeProps) {
 
       <div className="mb-10">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">1. Which best describes you?</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {PERSONAS.map((p) => {
             const active = persona === p.id;
             return (
               <button
                 key={p.id}
                 onClick={() => handleSelectPersona(p.id)}
-                className={`group relative text-left rounded-2xl border-2 transition-all bg-white overflow-hidden ${
+                className={`group relative text-left bg-white border rounded-2xl overflow-hidden flex flex-col h-[360px] transition-colors duration-300 ${
                   active
                     ? "border-[#393CA0] shadow-md"
-                    : "border-gray-200 hover:border-[#393CA0]/50 hover:-translate-y-0.5"
+                    : "border-gray-200 hover:border-[#393CA0]"
                 }`}
               >
                 {active && (
@@ -54,17 +62,21 @@ export function PersonaIntake({ onBegin }: PersonaIntakeProps) {
                     <Check className="h-4 w-4" />
                   </span>
                 )}
-                <div className={`aspect-[4/3] w-full overflow-hidden ${active ? "bg-[#393CA0]/10" : "bg-gray-50"}`}>
+                <h3
+                  className={`text-2xl sm:text-[1.6rem] font-bold px-6 pt-6 pb-2 leading-tight transition-colors duration-300 ${
+                    active ? "text-[#393CA0]" : "text-gray-900 group-hover:text-[#393CA0]"
+                  }`}
+                  style={{ fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif' }}
+                >
+                  {p.name}
+                </h3>
+                <div className="flex-1 flex items-end justify-center overflow-hidden">
                   <img
                     src={p.image}
                     alt={p.name}
                     loading="lazy"
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-contain object-bottom ${IMAGE_CLASS[p.id] ?? ""}`}
                   />
-                </div>
-                <div className="p-5">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">{p.name}</h3>
-                  <p className="text-sm text-gray-600">{p.description}</p>
                 </div>
               </button>
             );
