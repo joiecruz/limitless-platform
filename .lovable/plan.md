@@ -1,26 +1,15 @@
-## Changes
+## Plan
 
-### 1. Remove "Who We Help" from AI nav
-In `src/components/ai-homepage/AINav.tsx`:
-- Remove the desktop "Who We Help" mega-menu trigger + dropdown (around line 374).
-- Remove the mobile "Who We Help" collapsible section (around line 529).
-- Leave the rest of the nav (logo, other menus, CTAs) untouched so it can be re-added later.
+### 1. Replace persona images
+- Upload the attached `Educator-b.jpeg` as the new `persona-educator` asset, replacing the existing `src/assets/persona-educator.png.asset.json`.
+- Wait for the Student illustration upload in the next message, then replace `src/assets/persona-student.png.asset.json` the same way.
 
-### 2. Use persona images instead of icons on `/ati`
-The four persona images already exist in `src/assets/`:
-- `persona-corporate.png`
-- `persona-educator.png`
-- `persona-entrepreneur.png`
-- `persona-public-servant.png`
+### 2. Restyle ATI persona cards (`src/components/ati/PersonaIntake.tsx`)
+Rewrite each card to mirror the homepage "People we help evolve" tiles exactly:
+- Fixed height `h-[360px]`, `bg-white border border-gray-200 rounded-2xl overflow-hidden`, flex column.
+- Title at top in serif (`font-family: "Times New Roman MT Condensed Bold", ...`), `text-2xl sm:text-[1.6rem] font-bold`, `px-6 pt-6 pb-2`, color shifting to `#393CA0` on hover/active.
+- Illustration anchored to bottom: `flex-1 flex items-end justify-center overflow-hidden`, `<img class="w-full h-full object-contain object-bottom">` with per-persona `imageClass` tweaks (scale/offset) matching the homepage values where applicable, and sensible defaults for the new Student and Educator artwork.
+- Hover state: border turns `#393CA0` (matching homepage). Active/selected: same purple border + the existing check badge in the top-right corner.
+- Grid stays `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6` so the 5 personas wrap cleanly; the short description text is removed (homepage cards are image + title only).
 
-There's no existing image for the **Student** persona, so I'll generate one (`src/assets/persona-student.png`) in the same illustrated style as the others.
-
-In `src/components/ati/data/personas.ts`:
-- Add an `image: string` field to each persona, importing the five assets. Keep `icon` available in case it's reused elsewhere (or drop it if unused — I'll check usages and remove if safe).
-
-In `src/components/ati/PersonaIntake.tsx`:
-- Replace the rounded icon tile with a square/rounded image thumbnail at the top of each card (e.g. `aspect-[4/3]` image, `rounded-xl object-cover`, with the persona name + description below).
-- Keep the active-state styling (purple border, check badge) and hover lift.
-- Keep grid responsive (1 / 2 / 3 columns) and the rest of the flow unchanged.
-
-No backend, scoring, or routing changes.
+No changes to scoring, routing, context-question step, or the rest of the ATI flow.
