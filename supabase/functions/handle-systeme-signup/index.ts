@@ -209,7 +209,6 @@ serve(async (req) => {
       JSON.stringify({
         success: false,
         error: 'Failed to add user to newsletter, but account was created successfully',
-          technical_details: apiError.message || 'Unknown error',
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -221,7 +220,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in handle-systeme-signup:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Unknown error' }),
+      JSON.stringify({ error: 'Operation failed. Please try again.' }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
