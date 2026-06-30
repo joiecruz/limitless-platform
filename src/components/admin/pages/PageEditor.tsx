@@ -42,8 +42,8 @@ export function PageEditor({ pageId, initialData, onSuccess }: PageEditorProps) 
 
     try {
       if (pageId) {
-        const { error } = await supabase
-          .from('pages')
+        const { error } = await (supabase
+          .from('pages') as any)
           .update({
             ...formData,
             updated_at: new Date().toISOString(),
