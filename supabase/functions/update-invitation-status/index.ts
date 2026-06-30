@@ -119,7 +119,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.error("Error in update-invitation-status function:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message || "An error occurred" }),
+      JSON.stringify({ error: "Operation failed. Please try again." }),
       { 
         headers: { 
           ...corsHeaders, 

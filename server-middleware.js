@@ -7,6 +7,18 @@ const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 
+// Escape HTML to prevent stored XSS when interpolating dynamic content
+// (e.g., blog title/excerpt/categories) into the served HTML template.
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+
 exports.handler = async function(event, context) {
   // Get the path from the request
   const { path: urlPath } = event;
@@ -37,17 +49,22 @@ exports.handler = async function(event, context) {
         let html = fs.readFileSync(path.join(__dirname, 'dist', 'index.html'), 'utf8');
 
         // Replace OpenGraph tags with dynamic content
+        const safeTitle = escapeHtml(post.title);
+        const safeDescription = escapeHtml(post.excerpt || (post.title || '').substring(0, 160));
+        const safeImage = escapeHtml(post.cover_image || 'https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png');
+        const safeSlug = escapeHtml(slug);
+
         html = html.replace(/<meta property="og:title" content="[^"]*"/,
-                          `<meta property="og:title" content="${post.title} | Limitless Lab"`);
+                          `<meta property="og:title" content="${safeTitle} | Limitless Lab"`);
 
         html = html.replace(/<meta property="og:description" content="[^"]*"/,
-                          `<meta property="og:description" content="${post.excerpt || post.title.substring(0, 160)}"`);
+                          `<meta property="og:description" content="${safeDescription}"`);
 
         html = html.replace(/<meta property="og:image" content="[^"]*"/,
-                          `<meta property="og:image" content="${post.cover_image || 'https://crllgygjuqpluvdpwayi.supabase.co/storage/v1/object/public/web-assets/Hero_section_image.png'}"`);
+                          `<meta property="og:image" content="${safeImage}"`);
 
         html = html.replace(/<meta property="og:url" content="[^"]*"/,
-                          `<meta property="og:url" content="https://limitlesslab.io/blog/${slug}"`);
+                          `<meta property="og:url" content="https://limitlesslab.io/blog/${safeSlug}"`);
 
         html = html.replace(/<meta property="og:type" content="[^"]*"/,
                           `<meta property="og:type" content="article"`);
@@ -55,26 +72,26 @@ exports.handler = async function(event, context) {
         // Add article specific tags
         if (post.created_at) {
           html = html.replace('</head>',
-                            `<meta property="article:published_time" content="${post.created_at}"></head>`);
+                            `<meta property="article:published_time" content="${escapeHtml(post.created_at)}"></head>`);
         }
 
         if (post.read_time) {
           html = html.replace('</head>',
-                            `<meta property="article:reading_time" content="${post.read_time}"></head>`);
+                            `<meta property="article:reading_time" content="${escapeHtml(post.read_time)}"></head>`);
         }
 
         if (post.categories && post.categories.length > 0) {
           const categoryTags = post.categories.map(category =>
-            `<meta property="article:tag" content="${category}">`
+            `<meta property="article:tag" content="${escapeHtml(category)}">`
           ).join('');
           html = html.replace('</head>', `${categoryTags}</head>`);
         }
 
         html = html.replace(/<title>[^<]*<\/title>/,
-                          `<title>${post.title} | Limitless Lab</title>`);
+                          `<title>${safeTitle} | Limitless Lab</title>`);
 
         html = html.replace(/<meta name="description" content="[^"]*"/,
-                          `<meta name="description" content="${post.excerpt || post.title.substring(0, 160)}"`);
+                          `<meta name="description" content="${safeDescription}"`);
 
         // Return the modified HTML
         return {
