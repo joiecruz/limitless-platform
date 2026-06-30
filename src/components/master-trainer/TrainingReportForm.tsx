@@ -419,8 +419,8 @@ export function TrainingReportForm({ sessionType, onBack, onSubmitSuccess }: Tra
       const currentCount = currentTargets?.[fieldToUpdate] || 0;
       const newTotal = currentCount + values.total_participants;
       
-      const { error: progressError } = await supabase
-        .from('master_trainer_targets')
+      const { error: progressError } = await (supabase
+        .from('master_trainer_targets') as any)
         .upsert({
           user_id: user.id,
           [fieldToUpdate]: newTotal

@@ -62,8 +62,8 @@ export function AddLogoDialog() {
         .from('web-assets')
         .getPublicUrl(filePath);
 
-      const { error: dbError } = await supabase
-        .from('client_logos')
+      const { error: dbError } = await (supabase
+        .from('client_logos') as any)
         .insert({
           name: values.name,
           image_url: publicUrl,
