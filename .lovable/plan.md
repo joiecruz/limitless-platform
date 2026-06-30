@@ -1,15 +1,13 @@
-## Plan
+## Plan: Replace Student Persona Image
 
-### 1. Replace persona images
-- Upload the attached `Educator-b.jpeg` as the new `persona-educator` asset, replacing the existing `src/assets/persona-educator.png.asset.json`.
-- Wait for the Student illustration upload in the next message, then replace `src/assets/persona-student.png.asset.json` the same way.
+### Context
+The previous plan to restyle ATI persona cards and replace the Educator/Student images was approved. The Educator image has already been swapped. The user just uploaded the new Student illustration (`Student.png`). This plan covers the final remaining step.
 
-### 2. Restyle ATI persona cards (`src/components/ati/PersonaIntake.tsx`)
-Rewrite each card to mirror the homepage "People we help evolve" tiles exactly:
-- Fixed height `h-[360px]`, `bg-white border border-gray-200 rounded-2xl overflow-hidden`, flex column.
-- Title at top in serif (`font-family: "Times New Roman MT Condensed Bold", ...`), `text-2xl sm:text-[1.6rem] font-bold`, `px-6 pt-6 pb-2`, color shifting to `#393CA0` on hover/active.
-- Illustration anchored to bottom: `flex-1 flex items-end justify-center overflow-hidden`, `<img class="w-full h-full object-contain object-bottom">` with per-persona `imageClass` tweaks (scale/offset) matching the homepage values where applicable, and sensible defaults for the new Student and Educator artwork.
-- Hover state: border turns `#393CA0` (matching homepage). Active/selected: same purple border + the existing check badge in the top-right corner.
-- Grid stays `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6` so the 5 personas wrap cleanly; the short description text is removed (homepage cards are image + title only).
+### Step 1: Upload Student illustration to CDN
+- Use `lovable-assets create` to upload `user-uploads://Student.png` as the new `persona-student` asset.
+- Write the CLI output to `src/assets/persona-student.png.asset.json`, replacing the existing pointer.
 
-No changes to scoring, routing, context-question step, or the rest of the ATI flow.
+### Step 2: Verify in preview
+- Confirm the `/ati` route shows the new Student illustration in the persona card grid with the correct styling (homepage-matched cards, bottom-anchored image, serif title).
+
+No other file edits are needed — `src/components/ati/data/personas.ts` already imports `persona-student.png.asset.json` by pointer, so updating the asset JSON automatically updates the image URL.
