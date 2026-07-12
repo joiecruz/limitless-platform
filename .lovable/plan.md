@@ -1,21 +1,18 @@
-## Changes
+## Make AIHomepage the new site homepage
 
-### 1. `src/components/draft-home/AIReadinessSection.tsx` — simplify final CTA
-Replace the two-column layout (copy + For Individuals / For Organizations cards) with a single centered CTA inside the same gradient panel:
-- Remove the "Free Assessment" badge and all AI Readiness Assessment copy.
-- Remove both "For Individuals" and "For Organizations" cards.
-- New centered content:
-  - Heading: "Start with clarity. Know where you stand." (second line in `#66E6F5`)
-  - Subcopy: short line inviting a conversation with a Limitless Lab strategist (no assessment mention).
-  - Single primary button "Book a free consultation" → `/book-consultation`, centered.
-- Container becomes `text-center max-w-3xl mx-auto`; drop the `grid lg:grid-cols-2` wrapper. Keep the gradient panel + decorative blobs.
-- Remove now-unused `User`, `Building2` imports.
+### 1. `src/routes/AppRoutes.tsx` — swap `/` to render AIHomepage
+- Replace the `<Index />` element on the unauthenticated `/` route with `<AIHomepage />`.
+- Keep auth/app-subdomain redirect logic unchanged (authed → `/dashboard`).
+- Keep the `/ai-homepage` route in place as an alias so existing links still work.
+- Keep the `Index` import and `src/pages/Index.tsx` file untouched (not deleted, just no longer routed to).
 
-### 2. `src/pages/AIHomepage.tsx` — fix persona card image alignment
-Currently each of the 4 persona cards uses a different ad-hoc class (`scale-[1.2] origin-top`, `-mt-14`, `-mt-10`), which is why the heads don't line up. Normalize so all four illustrations share the same frame and the head sits at a consistent vertical position:
-- Give the image wrapper a fixed height (e.g. `h-[220px]`) instead of `flex-1`, so the title area is the same on every card regardless of image aspect ratio.
-- Use `object-contain object-bottom` on every image with no per-card `scale`/`-mt` overrides. Remove the `imageClass` field from the persona array.
-- Adjust the Educator+Student and Public Servant images specifically: because their source PNGs have more empty headroom, apply a uniform `scale-110 origin-bottom` on all four (or crop via `object-position`) so the heads land at roughly the same y-position as the Entrepreneur/Corporate cards.
-- Keep card outer height `h-[360px]`, title block, hover state, and grid layout unchanged.
+### 2. `scripts/generate-sitemap.ts` + `public/sitemap.xml`
+- Remove `/ai-homepage` from the sitemap (avoid duplicate URL indexing now that `/` serves the same content).
+- `/` remains. Regenerate `public/sitemap.xml`.
 
-No other files change. No routing, data, or copy changes elsewhere.
+### 3. Canonical/SEO verification in `src/pages/AIHomepage.tsx`
+- Confirm `<link rel="canonical">`, `og:url`, and JSON-LD `url` all point to `https://limitlesslab.org/` (already correct — verify only, no code change expected).
+
+### Out of scope
+- No deletion of `Index.tsx` or its assets.
+- No copy, nav, footer, or persona-card code changes in this pass (image re-crop happens on your side; a follow-up can drop the `scale-110` override once new images are in).
