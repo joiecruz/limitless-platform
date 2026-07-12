@@ -33,6 +33,7 @@ import NotFound from '@/pages/NotFound';
 import DraftHome from '@/pages/DraftHome';
 import AIHomepage from '@/pages/AIHomepage';
 import ATI from '@/pages/ATI';
+import BookConsultation from '@/pages/BookConsultation';
 import Entrepreneurs from '@/pages/personas/Entrepreneurs';
 import Corporates from '@/pages/personas/Corporates';
 import Government from '@/pages/personas/Government';
@@ -133,6 +134,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/draft-home" element={<DraftHome />} />
           <Route path="/ai-homepage" element={<AIHomepage />} />
           <Route path="/ati" element={<ATI />} />
+          <Route path="/book-consultation" element={<BookConsultation />} />
           <Route path="/entrepreneurs" element={<Entrepreneurs />} />
           <Route path="/corporates" element={<Corporates />} />
           <Route path="/government" element={<Government />} />

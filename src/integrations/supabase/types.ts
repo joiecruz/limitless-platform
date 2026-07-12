@@ -568,6 +568,51 @@ export type Database = {
           },
         ]
       }
+      consultation_requests: {
+        Row: {
+          company_size: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          industry: string
+          interests: string[]
+          message: string | null
+          organization: string
+          persona: string
+          role_title: string
+          timeline: string | null
+        }
+        Insert: {
+          company_size?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          industry: string
+          interests?: string[]
+          message?: string | null
+          organization: string
+          persona: string
+          role_title: string
+          timeline?: string | null
+        }
+        Update: {
+          company_size?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          industry?: string
+          interests?: string[]
+          message?: string | null
+          organization?: string
+          persona?: string
+          role_title?: string
+          timeline?: string | null
+        }
+        Relationships: []
+      }
       content_dependencies: {
         Row: {
           content_id: string
