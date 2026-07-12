@@ -153,19 +153,19 @@ export default function AIHomepage() {
             ].map(({ image, title }) => (
               <div
                 key={title}
-                className="group bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col h-[360px] transition-colors duration-300 hover:border-[#393CA0]"
+                className="group bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col transition-colors duration-300 hover:border-[#393CA0]"
               >
                 <h3
-                  className="text-2xl sm:text-[1.6rem] font-bold text-gray-900 px-6 pt-6 pb-2 leading-tight transition-colors duration-300 group-hover:text-[#393CA0]"
+                  className="text-2xl sm:text-[1.6rem] font-bold text-gray-900 px-6 pt-6 pb-4 leading-tight transition-colors duration-300 group-hover:text-[#393CA0]"
                   style={{ fontFamily: '"Times New Roman MT Condensed Bold", "Times New Roman", Times, serif' }}
                 >
                   {title}
                 </h3>
-                <div className="h-[220px] flex items-end justify-center overflow-hidden">
+                <div className="mt-auto w-full aspect-[11/9] overflow-hidden">
                   <img
                     src={image}
                     alt={title}
-                    className="w-full h-full object-contain object-bottom scale-110 origin-bottom"
+                    className="w-full h-full object-cover object-bottom"
                   />
                 </div>
               </div>
