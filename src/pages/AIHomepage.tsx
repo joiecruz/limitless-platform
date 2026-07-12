@@ -137,24 +137,20 @@ export default function AIHomepage() {
               {
                 image: personaEntrepreneur.url,
                 title: "Entrepreneurs and Business Owners",
-                imageClass: "scale-[1.2] origin-top",
               },
               {
                 image: personaCorporate.url,
                 title: "Corporate Teams and Professionals",
-                imageClass: "scale-[1.2] origin-top",
               },
               {
                 image: personaPublicServant.url,
                 title: "Public Servants and Government Leaders",
-                imageClass: "-mt-14",
               },
               {
                 image: personaEducator.url,
                 title: "Educators and Students",
-                imageClass: "-mt-10",
               },
-            ].map(({ image, title, imageClass }) => (
+            ].map(({ image, title }) => (
               <div
                 key={title}
                 className="group bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col h-[360px] transition-colors duration-300 hover:border-[#393CA0]"
@@ -165,11 +161,11 @@ export default function AIHomepage() {
                 >
                   {title}
                 </h3>
-                <div className="flex-1 flex items-end justify-center overflow-hidden">
+                <div className="h-[220px] flex items-end justify-center overflow-hidden">
                   <img
                     src={image}
                     alt={title}
-                    className={`w-full h-full object-contain object-bottom ${imageClass}`}
+                    className="w-full h-full object-contain object-bottom scale-110 origin-bottom"
                   />
                 </div>
               </div>
