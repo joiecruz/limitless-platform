@@ -44,9 +44,9 @@ export function AIReadinessSection() {
                 </p>
                 <Button
                   className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90 text-white justify-between"
-                  onClick={() => navigate("/ati")}
+                  onClick={() => navigate("/book-consultation")}
                 >
-                  Get your score
+                  Book a free consultation
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -61,9 +61,9 @@ export function AIReadinessSection() {
                 </p>
                 <Button
                   className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90 text-white justify-between"
-                  onClick={() => navigate("/ati")}
+                  onClick={() => navigate("/book-consultation")}
                 >
-                  Get your score
+                  Book a free consultation
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>

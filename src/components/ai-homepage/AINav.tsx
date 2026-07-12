@@ -447,9 +447,9 @@ export function AINav() {
                 <Link to="/signin">
                   <Button variant="ghost">Log in</Button>
                 </Link>
-                <Link to="/ati">
+                <Link to="/book-consultation">
                   <Button className="bg-[#393CA0] hover:bg-[#393CA0]/90">
-                    Take Free AI Assessment
+                    Book a Free Consultation
                   </Button>
                 </Link>
               </>
@@ -559,9 +559,9 @@ export function AINav() {
                         <Link to="/signin" onClick={closeMenu}>
                           <Button variant="outline" className="w-full">Log in</Button>
                         </Link>
-                        <Link to="/ati" onClick={closeMenu}>
+                        <Link to="/book-consultation" onClick={closeMenu}>
                           <Button className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90">
-                            Take Free AI Assessment
+                            Book a Free Consultation
                           </Button>
                         </Link>
                       </div>

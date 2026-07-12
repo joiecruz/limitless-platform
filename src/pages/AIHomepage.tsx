@@ -86,10 +86,10 @@ export default function AIHomepage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  onClick={() => navigate("/ati")}
+                  onClick={() => navigate("/book-consultation")}
                   className="px-10 py-6 text-lg text-[#393CA0] border-[#393CA0] hover:bg-[#393CA0]/5 transition-colors duration-200"
                 >
-                  Take Free AI Assessment
+                  Book a Free Consultation
                 </Button>
               </div>
             </div>
