@@ -4,40 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Facebook, Instagram, Linkedin, Youtube, ArrowRight } from "lucide-react";
 
 export function Footer() {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = email.trim();
-    if (!trimmed) {
-      toast.error("Please enter your email address.");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        "https://bdzwxcdzwneufdwxwejm.supabase.co/functions/v1/subscribe",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: trimmed }),
-        }
-      );
-      const data = await response.json();
-      if (data.success) {
-        toast.success("You've been subscribed! Check your inbox.");
-        setEmail("");
-      } else {
-        toast.error(data.error || "Subscription failed. Please try again.");
-      }
-    } catch {
-      toast.error("Something went wrong. Please try again later.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <footer className="bg-white border-t border-gray-200 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,16 +14,20 @@ export function Footer() {
               alt="Limitless Lab"
               className="h-8 w-auto"
             />
-            <div className="space-y-4">
-              <p className="text-gray-600">Join our newsletter to stay up to date on insights, features, and releases.</p>
-              <form onSubmit={handleSubscribe} className="space-y-2">
-                <Input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
-                <Button type="submit" className="w-full bg-[#393CA0] hover:bg-[#393CA0]/90" disabled={isLoading}>
-                  {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Subscribing...</> : "Subscribe to our newsletter"}
+            <div className="rounded-2xl bg-[#393CA0] text-white p-5">
+              <h3 className="text-lg font-semibold mb-1">Book a free consultation</h3>
+              <p className="text-white/80 text-sm mb-4">
+                30 minutes with a Limitless Lab strategist. No obligation.
+              </p>
+              <Link to="/book-consultation">
+                <Button className="w-full bg-white text-[#393CA0] hover:bg-white/90 font-semibold">
+                  Book a free consultation
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-              </form>
+              </Link>
             </div>
           </div>
+
 
           <div>
             <h3 className="font-semibold mb-4">Company</h3>
