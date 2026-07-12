@@ -14,18 +14,6 @@ export function Footer() {
               alt="Limitless Lab"
               className="h-8 w-auto"
             />
-            <div className="rounded-2xl bg-[#393CA0] text-white p-5">
-              <h3 className="text-lg font-semibold mb-1">Book a free consultation</h3>
-              <p className="text-white/80 text-sm mb-4">
-                30 minutes with a Limitless Lab strategist. No obligation.
-              </p>
-              <Link to="/book-consultation">
-                <Button className="w-full bg-white text-[#393CA0] hover:bg-white/90 font-semibold">
-                  Book a free consultation
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
           </div>
 
 
