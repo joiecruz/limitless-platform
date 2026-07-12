@@ -102,10 +102,11 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           ) : isAppSubdomain() ? (
             <Navigate to="/dashboard" replace />
           ) : (
-            <Index />
+            <AIHomepage />
           )
         }
       />
+
 
       {/* Public/Marketing pages - only available on main domain */}
       {!isAppSubdomain() && (
