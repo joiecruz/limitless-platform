@@ -1,10 +1,7 @@
 
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Facebook, Instagram, Linkedin, Youtube, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Facebook, Instagram, Linkedin, Youtube, ArrowRight } from "lucide-react";
 
 export function Footer() {
   const [email, setEmail] = useState("");
