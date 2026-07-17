@@ -34,21 +34,21 @@ export default function AIHomepage() {
     <div className="min-h-screen bg-white">
       <Helmet>
         <title>Grow Beyond Limits Using Human-Centered AI | Limitless Lab</title>
-        <meta name="description" content="Limitless Lab helps entrepreneurs, corporates, governments, and schools across Southeast Asia grow beyond limits using human-centered AI — courses, tools, and flagship programs." />
+        <meta name="description" content="Human-centered AI and innovation company driving transformation through design, technology, and education across ASEAN since 2018." />
         <link rel="canonical" href="https://limitlesslab.org/" />
         <meta property="og:title" content="Grow Beyond Limits Using Human-Centered AI | Limitless Lab" />
-        <meta property="og:description" content="Courses, tools, and programs that help people and organizations grow beyond limits with human-centered AI." />
+        <meta property="og:description" content="Human-centered AI and innovation company driving transformation through design, technology, and education across ASEAN since 2018." />
         <meta property="og:url" content="https://limitlesslab.org/" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Grow Beyond Limits Using Human-Centered AI | Limitless Lab" />
-        <meta name="twitter:description" content="Courses, tools, and programs that help people and organizations grow beyond limits with human-centered AI." />
+        <meta name="twitter:description" content="Human-centered AI and innovation company driving transformation through design, technology, and education across ASEAN since 2018." />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebPage",
           name: "Grow Beyond Limits Using Human-Centered AI | Limitless Lab",
           url: "https://limitlesslab.org/",
-          description: "Limitless Lab helps entrepreneurs, corporates, governments, and schools across Southeast Asia grow beyond limits using human-centered AI.",
+          description: "Human-centered AI and innovation company driving transformation through design, technology, and education across ASEAN since 2018.",
           inLanguage: "en",
           isPartOf: { "@type": "WebSite", name: "Limitless Lab", url: "https://limitlesslab.org/" },
           publisher: { "@type": "Organization", name: "Limitless Lab", url: "https://limitlesslab.org/" },
