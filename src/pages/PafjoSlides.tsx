@@ -10,9 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import slidePreview from "@/assets/pafjo-slides-preview.png.asset.json";
+import pafjoSlidesPdf from "@/assets/pafjo-slides.pdf.asset.json";
 
-// TODO: replace public/pafjo-slides.pdf with the real deck when ready
-const SLIDES_DOWNLOAD_URL = "/pafjo-slides.pdf";
+const SLIDES_DOWNLOAD_URL = pafjoSlidesPdf.url;
 
 const leadSchema = z.object({
   firstName: z.string().trim().min(1, "Enter your first name").max(80, "Keep your first name under 80 characters"),
