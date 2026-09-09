@@ -35,6 +35,7 @@ import AIHomepage from '@/pages/AIHomepage';
 import ATI from '@/pages/ATI';
 import BookConsultation from '@/pages/BookConsultation';
 import Ikigai from '@/pages/Ikigai';
+import PafjoSlides from '@/pages/PafjoSlides';
 import Entrepreneurs from '@/pages/personas/Entrepreneurs';
 import Corporates from '@/pages/personas/Corporates';
 import Government from '@/pages/personas/Government';
@@ -139,6 +140,7 @@ const AppRoutes = ({ session }: AppRoutesProps) => {
           <Route path="/ati" element={<ATI />} />
           <Route path="/book-consultation" element={<BookConsultation />} />
           <Route path="/ikigai" element={<Ikigai />} />
+          <Route path="/pafjo-slides" element={<PafjoSlides />} />
           <Route path="/entrepreneurs" element={<Entrepreneurs />} />
           <Route path="/corporates" element={<Corporates />} />
           <Route path="/government" element={<Government />} />
