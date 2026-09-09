@@ -9,6 +9,7 @@ import {
   Database,
   AlertCircle,
   GraduationCap,
+  ClipboardList,
 } from 'lucide-react';
 import { UserProfile } from '@/components/layout/UserProfile';
 
@@ -70,6 +71,13 @@ export function AdminSidebar() {
           >
             <AlertCircle className="h-5 w-5" />
             Reports
+          </Link>
+          <Link
+            to="/admin/waitlists"
+            className={`nav-item ${isActive('/admin/waitlists') ? 'active' : ''}`}
+          >
+            <ClipboardList className="h-5 w-5" />
+            Waitlists
           </Link>
 
           {/* Website section */}
