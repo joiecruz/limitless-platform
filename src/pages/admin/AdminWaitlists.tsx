@@ -45,18 +45,10 @@ type PafjoEntry = {
   created_at: string;
 };
 
-function WaitlistTable({
-  source,
-  search,
-  page,
-}: {
-  source: WaitlistSource;
-  search: string;
-  page: number;
-}) {
+function useWaitlist(source: WaitlistSource, search: string, page: number) {
   const debouncedSearch = useDebouncedValue(search.trim(), 350);
 
-  const { data, isLoading, isFetching, error } = useQuery({
+  return useQuery({
     queryKey: ["admin-waitlist", source, debouncedSearch, page],
     queryFn: async () => {
       const from = page * PAGE_SIZE;
@@ -113,25 +105,15 @@ function WaitlistTable({
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
+}
 
+function WaitlistPanel({ source, search, page, onPageChange }: { source: WaitlistSource; search: string; page: number; onPageChange: (page: number) => void }) {
+  const { data, isLoading, isFetching, error } = useWaitlist(source, search, page);
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="space-y-4">
-      <div className="relative max-w-md">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-        <Input
-          value={search}
-          onChange={(event) => {
-            // page is managed by parent; reset via key change is handled by parent
-          }}
-          placeholder="Search name, email, company, or industry"
-          aria-label="Search waitlist entries"
-          className="pl-9"
-        />
-      </div>
-
       <div className="overflow-hidden rounded-md border bg-card">
         {isLoading ? (
           <div className="flex h-72 items-center justify-center">
@@ -234,7 +216,7 @@ function WaitlistTable({
             size="icon"
             aria-label="Previous page"
             disabled={page === 0 || isFetching}
-            onClick={() => {}}
+            onClick={() => onPageChange(Math.max(0, page - 1))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -243,7 +225,7 @@ function WaitlistTable({
             size="icon"
             aria-label="Next page"
             disabled={page + 1 >= totalPages || isFetching}
-            onClick={() => {}}
+            onClick={() => onPageChange(page + 1)}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -258,157 +240,64 @@ export default function AdminWaitlists() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
 
+  const switchTab = (value: WaitlistSource) => {
+    setActiveTab(value);
+    setPage(0);
+    setSearch("");
+  };
+
+  const { data: countData } = useWaitlist(activeTab, search, page);
+  const total = countData?.total ?? 0;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Waitlists</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage IKIGAI bootcamp and PAFJO slides leads
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Waitlists</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage IKIGAI bootcamp and PAFJO slides leads
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <UsersRound className="h-4 w-4" aria-hidden="true" />
+          <span>{total.toLocaleString()} {total === 1 ? "entry" : "entries"}</span>
+        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(value) => { setActiveTab(value as WaitlistSource); setPage(0); setSearch(""); }}>
+      <Tabs value={activeTab} onValueChange={(value) => switchTab(value as WaitlistSource)}>
         <TabsList>
           <TabsTrigger value="ikigai">IKIGAI Bootcamp</TabsTrigger>
           <TabsTrigger value="pafjo">PAFJO Slides</TabsTrigger>
         </TabsList>
 
         <TabsContent value="ikigai" className="space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <WaitlistSearch value={search} onChange={setSearch} />
-            <WaitlistCount source={activeTab} search={search} page={page} />
+          <div className="relative max-w-md">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input
+              value={search}
+              onChange={(event) => { setSearch(event.target.value); setPage(0); }}
+              placeholder="Search name, email, company, or industry"
+              aria-label="Search IKIGAI waitlist entries"
+              className="pl-9"
+            />
           </div>
-          <WaitlistTable source="ikigai" search={search} page={page} />
-          <WaitlistPagination source="ikigai" search={search} page={page} onPageChange={setPage} />
+          <WaitlistPanel source="ikigai" search={search} page={page} onPageChange={setPage} />
         </TabsContent>
 
         <TabsContent value="pafjo" className="space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <WaitlistSearch value={search} onChange={setSearch} />
-            <WaitlistCount source={activeTab} search={search} page={page} />
+          <div className="relative max-w-md">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input
+              value={search}
+              onChange={(event) => { setSearch(event.target.value); setPage(0); }}
+              placeholder="Search name, email, company, or industry"
+              aria-label="Search PAFJO slide leads"
+              className="pl-9"
+            />
           </div>
-          <WaitlistTable source="pafjo" search={search} page={page} />
-          <WaitlistPagination source="pafjo" search={search} page={page} onPageChange={setPage} />
+          <WaitlistPanel source="pafjo" search={search} page={page} onPageChange={setPage} />
         </TabsContent>
       </Tabs>
-    </div>
-  );
-}
-
-function WaitlistSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  return (
-    <div className="relative max-w-md">
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-      <Input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder="Search name, email, company, or industry"
-        aria-label="Search waitlist entries"
-        className="pl-9"
-      />
-    </div>
-  );
-}
-
-function WaitlistCount({ source, search, page }: { source: WaitlistSource; search: string; page: number }) {
-  const debouncedSearch = useDebouncedValue(search.trim(), 350);
-  const { data } = useQuery({
-    queryKey: ["admin-waitlist-count", source, debouncedSearch, page],
-    queryFn: async () => {
-      if (source === "ikigai") {
-        let query = supabase.from("ikigai_waitlist").select("id", { count: "exact", head: true });
-        if (debouncedSearch) {
-          const term = `%${debouncedSearch}%`;
-          query = query.or(`full_name.ilike.${term},email.ilike.${term},company_name.ilike.${term},industry.ilike.${term}`);
-        }
-        const result = await query;
-        return result.count ?? 0;
-      }
-
-      let query = supabase.from("pafjo_slide_leads").select("id", { count: "exact", head: true });
-      if (debouncedSearch) {
-        const term = `%${debouncedSearch}%`;
-        query = query.or(`first_name.ilike.${term},last_name.ilike.${term},email.ilike.${term},company.ilike.${term},industry.ilike.${term}`);
-      }
-      const result = await query;
-      return result.count ?? 0;
-    },
-    staleTime: 30_000,
-  });
-
-  const total = data ?? 0;
-  return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-      <UsersRound className="h-4 w-4" aria-hidden="true" />
-      <span>{total.toLocaleString()} {total === 1 ? "entry" : "entries"}</span>
-    </div>
-  );
-}
-
-function WaitlistPagination({
-  source,
-  search,
-  page,
-  onPageChange,
-}: {
-  source: WaitlistSource;
-  search: string;
-  page: number;
-  onPageChange: (page: number) => void;
-}) {
-  const debouncedSearch = useDebouncedValue(search.trim(), 350);
-  const { data, isFetching } = useQuery({
-    queryKey: ["admin-waitlist-total", source, debouncedSearch, page],
-    queryFn: async () => {
-      if (source === "ikigai") {
-        let query = supabase.from("ikigai_waitlist").select("id", { count: "exact", head: true });
-        if (debouncedSearch) {
-          const term = `%${debouncedSearch}%`;
-          query = query.or(`full_name.ilike.${term},email.ilike.${term},company_name.ilike.${term},industry.ilike.${term}`);
-        }
-        const result = await query;
-        return result.count ?? 0;
-      }
-
-      let query = supabase.from("pafjo_slide_leads").select("id", { count: "exact", head: true });
-      if (debouncedSearch) {
-        const term = `%${debouncedSearch}%`;
-        query = query.or(`first_name.ilike.${term},last_name.ilike.${term},email.ilike.${term},company.ilike.${term},industry.ilike.${term}`);
-      }
-      const result = await query;
-      return result.count ?? 0;
-    },
-    staleTime: 30_000,
-  });
-
-  const total = data ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-  return (
-    <div className="flex items-center justify-between">
-      <p className="text-sm text-muted-foreground">
-        Page {page + 1} of {totalPages}
-      </p>
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="icon"
-          aria-label="Previous page"
-          disabled={page === 0 || isFetching}
-          onClick={() => onPageChange(Math.max(0, page - 1))}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          aria-label="Next page"
-          disabled={page + 1 >= totalPages || isFetching}
-          onClick={() => onPageChange(page + 1)}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
     </div>
   );
 }
