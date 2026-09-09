@@ -23,6 +23,13 @@ export default {
         sans: ["Inter", ...fontFamily.sans],
       },
       colors: {
+        ikigai: {
+          DEFAULT: "hsl(var(--ikigai))",
+          foreground: "hsl(var(--ikigai-foreground))",
+          soft: "hsl(var(--ikigai-soft))",
+          paper: "hsl(var(--ikigai-paper))",
+          ink: "hsl(var(--ikigai-ink))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
