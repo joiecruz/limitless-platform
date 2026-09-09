@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
 import { z } from "zod";
 import {
@@ -14,7 +15,6 @@ import {
   LayoutDashboard,
   Loader2,
   PackageSearch,
-  Rocket,
   ShieldCheck,
   Sparkles,
   UsersRound,
@@ -73,7 +73,7 @@ const audiences = [
   "Anyone who has ever thought, “I wish there were a tool for this”",
 ];
 
-function Eyebrow({ children, inverse = false }: { children: React.ReactNode; inverse?: boolean }) {
+function Eyebrow({ children, inverse = false }: { children: ReactNode; inverse?: boolean }) {
   return (
     <p className={`mb-4 text-xs font-bold uppercase tracking-[0.18em] ${inverse ? "text-white/80" : "text-ikigai"}`}>
       {children}
@@ -229,7 +229,7 @@ export default function Ikigai() {
             </div>
             <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-6">
               {problems.map((problem, index) => (
-                <article key={problem} className={`relative min-h-40 border border-gray-300 bg-${index % 2 ? "ikigai-soft" : "white"} p-5 shadow-[4px_4px_0_hsl(var(--ikigai))] ${index < 3 ? "lg:col-span-2" : "lg:col-span-3"}`}>
+                <article key={problem} className={`relative min-h-40 border border-gray-300 ${index % 2 ? "bg-ikigai-soft" : "bg-white"} p-5 shadow-[4px_4px_0_hsl(var(--ikigai))] ${index < 3 ? "lg:col-span-2" : "lg:col-span-3"}`}>
                   <div className="mb-7 flex gap-1.5" aria-hidden="true"><span className="h-2 w-2 rounded-full bg-ikigai" /><span className="h-2 w-2 rounded-full bg-gray-300" /><span className="h-2 w-2 rounded-full bg-gray-300" /></div>
                   <h3 className="text-xl font-semibold leading-snug">{problem}</h3>
                 </article>
