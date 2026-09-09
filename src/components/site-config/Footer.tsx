@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 
-export function Footer() {
+interface FooterProps {
+  ikigaiBranding?: boolean;
+}
+
+export function Footer({ ikigaiBranding = false }: FooterProps) {
   return (
     <footer className="bg-white border-t border-gray-200 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,6 +18,12 @@ export function Footer() {
               alt="Limitless Lab"
               className="h-8 w-auto"
             />
+            {ikigaiBranding && (
+              <div className="max-w-[220px] border-l-2 border-ikigai pl-4">
+                <p className="font-semibold text-gray-900">IKIGAI Vibe Coding Bootcamp</p>
+                <p className="mt-1 text-sm text-gray-500">A Limitless Lab learning experience</p>
+              </div>
+            )}
           </div>
 
 

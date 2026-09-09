@@ -44,6 +44,7 @@ const staticEntries: SitemapEntry[] = [
   { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
   { path: "/terms-of-service", changefreq: "yearly", priority: "0.3" },
   { path: "/book-consultation", changefreq: "monthly", priority: "0.9" },
+  { path: "/ikigai", changefreq: "monthly", priority: "0.9" },
 ];
 
 async function fetchTable<T>(
