@@ -119,12 +119,26 @@
   }
 }
 
+@keyframes ikigai-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.ikigai-marquee {
+  animation: ikigai-marquee 28s linear infinite;
+  text-shadow: 0 0 12px hsl(var(--ikigai-foreground) / 0.55);
+}
+
 .ikigai-reveal {
   animation: ikigai-reveal 0.65s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ikigai-reveal {
+    animation: none;
+  }
+
+  .ikigai-marquee {
     animation: none;
   }
 

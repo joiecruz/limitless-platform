@@ -1070,28 +1070,46 @@ export type Database = {
       ikigai_waitlist: {
         Row: {
           business_or_profession: string
+          company_name: string | null
           created_at: string
           email: string
+          employee_count: string | null
+          first_name: string | null
           full_name: string
           id: string
+          industry: string | null
+          last_name: string | null
+          referral_source: string | null
           system_to_build: string
           updated_at: string
         }
         Insert: {
           business_or_profession: string
+          company_name?: string | null
           created_at?: string
           email: string
+          employee_count?: string | null
+          first_name?: string | null
           full_name: string
           id?: string
+          industry?: string | null
+          last_name?: string | null
+          referral_source?: string | null
           system_to_build: string
           updated_at?: string
         }
         Update: {
           business_or_profession?: string
+          company_name?: string | null
           created_at?: string
           email?: string
+          employee_count?: string | null
+          first_name?: string | null
           full_name?: string
           id?: string
+          industry?: string | null
+          last_name?: string | null
+          referral_source?: string | null
           system_to_build?: string
           updated_at?: string
         }

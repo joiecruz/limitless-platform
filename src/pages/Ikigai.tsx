@@ -20,19 +20,23 @@ import {
   UsersRound,
   WandSparkles,
 } from "lucide-react";
-import { AINav } from "@/components/ai-homepage/AINav";
 import { Footer } from "@/components/site-config/Footer";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import heroIllustration from "@/assets/ikigai-business-system.jpg";
 
 const waitlistSchema = z.object({
-  fullName: z.string().trim().min(1, "Enter your full name").max(120, "Keep your name under 120 characters"),
+  firstName: z.string().trim().min(1, "Enter your first name").max(80, "Keep your first name under 80 characters"),
+  lastName: z.string().trim().min(1, "Enter your last name").max(80, "Keep your last name under 80 characters"),
+  company: z.string().trim().min(1, "Enter your company or business name").max(160, "Keep this under 160 characters"),
   email: z.string().trim().email("Enter a valid email address").max(255, "Keep your email under 255 characters"),
-  business: z.string().trim().min(1, "Tell us about your business or profession").max(160, "Keep this under 160 characters"),
+  employeeCount: z.string().min(1, "Select your team size"),
+  industry: z.string().min(1, "Select your industry"),
+  referralSource: z.string().min(1, "Tell us how you heard about us"),
   system: z.string().trim().min(10, "Tell us a little more about what you want to build").max(1000, "Keep this under 1,000 characters"),
 });
 
@@ -81,18 +85,12 @@ function Eyebrow({ children, inverse = false }: { children: ReactNode; inverse?:
   );
 }
 
-function WaitlistButton({ className = "", inverse = false }: { className?: string; inverse?: boolean }) {
-  const scrollToForm = () => {
-    const form = document.getElementById("ikigai-waitlist");
-    form?.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.setTimeout(() => document.getElementById("fullName")?.focus({ preventScroll: true }), 650);
-  };
-
+function WaitlistButton({ className = "", inverse = false, onClick }: { className?: string; inverse?: boolean; onClick: () => void }) {
   return (
     <Button
       type="button"
       size="lg"
-      onClick={scrollToForm}
+      onClick={onClick}
       className={`${inverse ? "bg-white text-ikigai hover:bg-ikigai-soft" : "bg-ikigai text-ikigai-foreground hover:bg-ikigai/90"} h-12 px-7 text-base shadow-sm ${className}`}
     >
       Join the Waitlist
@@ -106,7 +104,9 @@ export default function Ikigai() {
   const formSectionRef = useRef<HTMLElement>(null);
   const [heroVisible, setHeroVisible] = useState(true);
   const [formVisible, setFormVisible] = useState(false);
-  const [values, setValues] = useState<WaitlistValues>({ fullName: "", email: "", business: "", system: "" });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [heroEmail, setHeroEmail] = useState("");
+  const [values, setValues] = useState<WaitlistValues>({ firstName: "", lastName: "", company: "", email: "", employeeCount: "", industry: "", referralSource: "", system: "" });
   const [errors, setErrors] = useState<WaitlistErrors>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "duplicate" | "error">("idle");
 
@@ -132,6 +132,12 @@ export default function Ikigai() {
     if (status === "error") setStatus("idle");
   };
 
+  const openWaitlist = (email = "") => {
+    const normalizedEmail = email.trim();
+    if (normalizedEmail) updateValue("email", normalizedEmail);
+    setDialogOpen(true);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const parsed = waitlistSchema.safeParse(values);
@@ -150,9 +156,15 @@ export default function Ikigai() {
 
     setStatus("submitting");
     const { error } = await supabase.from("ikigai_waitlist").insert({
-      full_name: parsed.data.fullName,
+      first_name: parsed.data.firstName,
+      last_name: parsed.data.lastName,
+      full_name: `${parsed.data.firstName} ${parsed.data.lastName}`,
       email: parsed.data.email.toLowerCase(),
-      business_or_profession: parsed.data.business,
+      company_name: parsed.data.company,
+      business_or_profession: parsed.data.company,
+      employee_count: parsed.data.employeeCount,
+      industry: parsed.data.industry,
+      referral_source: parsed.data.referralSource,
       system_to_build: parsed.data.system,
     });
 
@@ -189,37 +201,32 @@ export default function Ikigai() {
         })}</script>
       </Helmet>
 
-      <AINav />
+      <div className="fixed inset-x-0 top-0 z-40 overflow-hidden border-b border-white/20 bg-ikigai py-3 text-white shadow-[0_0_24px_hsl(var(--ikigai)/0.45)]" aria-label="Bootcamp highlights">
+        <div className="ikigai-marquee flex w-max items-center gap-8 whitespace-nowrap text-xs font-bold uppercase tracking-[0.18em] sm:text-sm">
+          {["Build with AI", "No coding required", "Two hands-on days", "Launch your own system", "For business owners", "Build with AI", "No coding required", "Two hands-on days", "Launch your own system", "For business owners"].map((item, index) => <span key={`${item}-${index}`} className="flex items-center gap-8"><span>{item}</span><Sparkles className="h-4 w-4" aria-hidden="true" /></span>)}
+        </div>
+      </div>
       <main>
-        <section ref={heroRef} className="relative pt-28 sm:pt-32 pb-16 lg:pb-24" aria-labelledby="ikigai-title">
-          <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-            <div className="ikigai-reveal">
+        <section ref={heroRef} className="relative flex min-h-[720px] items-center pb-20 pt-28 sm:min-h-[760px] sm:pt-32" aria-labelledby="ikigai-title">
+          <div className="mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+            <div className="ikigai-reveal mx-auto">
               <Eyebrow>IKIGAI VIBE CODING BOOTCAMP<br /><span className="font-medium normal-case tracking-normal text-gray-500">By Limitless Lab</span></Eyebrow>
-              <h1 id="ikigai-title" className="max-w-2xl text-5xl font-bold leading-[1.02] sm:text-6xl lg:text-7xl">
+              <h1 id="ikigai-title" className="mx-auto max-w-4xl text-5xl font-bold leading-[1.02] sm:text-6xl lg:text-8xl">
                 Take control of your business.
               </h1>
-              <p className="mt-6 max-w-xl text-2xl font-semibold leading-tight text-ikigai sm:text-3xl">
+              <p className="mx-auto mt-6 max-w-3xl text-2xl font-semibold leading-tight text-ikigai sm:text-3xl">
                 Create your own business system—in just 2 days.
               </p>
-              <p className="mt-6 max-w-xl text-lg leading-8 text-gray-600">
+              <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
                 No coding experience needed. Bring your business challenge and leave with a custom, working system that is live and ready to use.
               </p>
-              <div className="mt-8">
-                <WaitlistButton />
+              <form className="mx-auto mt-9 flex max-w-2xl flex-col gap-3 sm:flex-row" onSubmit={(event) => { event.preventDefault(); openWaitlist(heroEmail); }}>
+                <Label htmlFor="hero-email" className="sr-only">Email address</Label>
+                <Input id="hero-email" type="email" inputMode="email" autoComplete="email" required placeholder="Enter your email address" value={heroEmail} onChange={(event) => setHeroEmail(event.target.value)} className="h-14 flex-1 border-gray-300 bg-white px-5 text-base focus-visible:ring-ikigai" />
+                <Button type="submit" size="lg" className="h-14 bg-ikigai px-8 text-base text-white shadow-[0_0_20px_hsl(var(--ikigai)/0.3)] hover:bg-ikigai/90">Join the Waitlist <ArrowRight aria-hidden="true" /></Button>
+              </form>
+              <div>
                 <p className="mt-3 text-sm text-gray-500">Be the first to know when enrollment opens.</p>
-              </div>
-            </div>
-            <div className="relative ikigai-reveal [animation-delay:120ms]">
-              <div className="absolute -left-3 top-8 h-20 w-20 rotate-6 border-2 border-ikigai/20 bg-ikigai-soft" aria-hidden="true" />
-              <img
-                src={heroIllustration}
-                alt="A business owner transforming scattered spreadsheets, messages, and notes into one organized business dashboard"
-                width={1408}
-                height={1104}
-                className="relative w-full border border-gray-200 bg-white object-cover shadow-[10px_12px_0_hsl(var(--ikigai-soft))]"
-              />
-              <div className="absolute -bottom-5 right-5 -rotate-2 bg-ikigai px-5 py-3 text-sm font-bold text-white shadow-md">
-                Messy → made useful
               </div>
             </div>
           </div>
@@ -272,7 +279,7 @@ export default function Ikigai() {
                   <p>You’ll learn how to use AI-powered tools to turn your ideas and workflows into a custom business system—without needing to become a programmer.</p>
                   <p>By the end of the bootcamp, you’ll have a working system that is live, usable, and designed for your business.</p>
                 </div>
-                <div className="mt-8"><WaitlistButton /></div>
+                <div className="mt-8"><WaitlistButton onClick={() => openWaitlist()} /></div>
               </div>
               <div className="border border-gray-200 bg-ikigai-paper p-6 sm:p-8">
                 <div className="grid gap-5 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
@@ -371,51 +378,14 @@ export default function Ikigai() {
           </div>
         </section>
 
-        <section ref={formSectionRef} id="ikigai-waitlist" className="scroll-mt-16 bg-ikigai py-20 text-white sm:py-28" aria-labelledby="waitlist-heading">
-          <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+        <section ref={formSectionRef} id="ikigai-waitlist" className="scroll-mt-16 bg-ikigai py-20 text-center text-white sm:py-28" aria-labelledby="waitlist-heading">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <div>
               <Sparkles className="mb-7 h-11 w-11" aria-hidden="true" />
               <h2 id="waitlist-heading" className="text-4xl font-bold leading-tight sm:text-5xl">Stop adjusting your business to fit generic software.</h2>
               <p className="mt-6 text-2xl font-semibold leading-tight">Build a system that fits your business.</p>
-              <p className="mt-6 max-w-xl text-lg leading-8 text-white/85">Join the waitlist to receive first access, bootcamp updates, and an exclusive founding cohort offer.</p>
-            </div>
-
-            <div className="bg-white p-6 text-ikigai-ink shadow-[10px_10px_0_hsl(var(--ikigai-ink))] sm:p-9">
-              {status === "success" || status === "duplicate" ? (
-                <div role="status" aria-live="polite" className="flex min-h-[420px] flex-col justify-center text-center">
-                  <CheckCircle2 className="mx-auto h-14 w-14 text-ikigai" aria-hidden="true" />
-                  <h3 className="mt-6 text-3xl font-bold">{status === "success" ? "You’re on the list!" : "You’re already on the list!"}</h3>
-                  <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-gray-600">We’ll let you know as soon as enrollment for the IKIGAI Vibe Coding Bootcamp opens. Get ready to build a better way to run your business.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} noValidate aria-busy={status === "submitting"} className="space-y-5">
-                  <div>
-                    <Label htmlFor="fullName">Full name</Label>
-                    <Input id="fullName" name="fullName" autoComplete="name" value={values.fullName} onChange={(event) => updateValue("fullName", event.target.value)} maxLength={120} aria-invalid={Boolean(errors.fullName)} aria-describedby={errors.fullName ? "fullName-error" : undefined} className="mt-2 h-12 border-gray-300 focus-visible:ring-ikigai" />
-                    {errors.fullName && <p id="fullName-error" className="mt-1.5 text-sm text-red-700">{errors.fullName}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email address</Label>
-                    <Input id="email" name="email" type="email" inputMode="email" autoComplete="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} maxLength={255} aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "email-error" : undefined} className="mt-2 h-12 border-gray-300 focus-visible:ring-ikigai" />
-                    {errors.email && <p id="email-error" className="mt-1.5 text-sm text-red-700">{errors.email}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="business">Business or profession</Label>
-                    <Input id="business" name="business" autoComplete="organization" value={values.business} onChange={(event) => updateValue("business", event.target.value)} maxLength={160} aria-invalid={Boolean(errors.business)} aria-describedby={errors.business ? "business-error" : undefined} className="mt-2 h-12 border-gray-300 focus-visible:ring-ikigai" />
-                    {errors.business && <p id="business-error" className="mt-1.5 text-sm text-red-700">{errors.business}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="system">What business system would you like to build?</Label>
-                    <Textarea id="system" name="system" value={values.system} onChange={(event) => updateValue("system", event.target.value)} maxLength={1000} rows={4} aria-invalid={Boolean(errors.system)} aria-describedby={errors.system ? "system-error" : undefined} className="mt-2 min-h-28 resize-y border-gray-300 focus-visible:ring-ikigai" />
-                    {errors.system && <p id="system-error" className="mt-1.5 text-sm text-red-700">{errors.system}</p>}
-                  </div>
-                  {status === "error" && <p role="alert" className="border border-red-200 bg-red-50 p-3 text-sm text-red-800">We couldn’t save your details. Please try again in a moment.</p>}
-                  <Button type="submit" size="lg" disabled={status === "submitting"} className="h-12 w-full bg-ikigai text-base text-white hover:bg-ikigai/90 focus-visible:ring-ikigai">
-                    {status === "submitting" ? <><Loader2 className="animate-spin" aria-hidden="true" />Joining…</> : <><WandSparkles aria-hidden="true" />Join the IKIGAI Waitlist</>}
-                  </Button>
-                  <p className="text-center text-sm text-gray-500">Limited slots will be available for the first cohort.</p>
-                </form>
-              )}
+              <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-white/85">Join the waitlist to receive first access, bootcamp updates, and an exclusive founding cohort offer.</p>
+              <WaitlistButton inverse onClick={() => openWaitlist()} className="mt-9" />
             </div>
           </div>
         </section>
@@ -425,9 +395,40 @@ export default function Ikigai() {
 
       {!heroVisible && !formVisible && status !== "success" && status !== "duplicate" && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ikigai/20 bg-white/95 p-3 shadow-lg backdrop-blur md:hidden">
-          <WaitlistButton className="w-full" />
+          <WaitlistButton className="w-full" onClick={() => openWaitlist()} />
         </div>
       )}
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-h-[92vh] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto rounded-lg border-gray-200 p-6 sm:p-10">
+          {status === "success" || status === "duplicate" ? (
+            <div role="status" aria-live="polite" className="flex min-h-[360px] flex-col justify-center text-center">
+              <CheckCircle2 className="mx-auto h-14 w-14 text-ikigai" aria-hidden="true" />
+              <DialogTitle className="mt-6 text-3xl">{status === "success" ? "You’re on the list!" : "You’re already on the list!"}</DialogTitle>
+              <DialogDescription className="mx-auto mt-5 max-w-lg text-lg leading-8">We’ll let you know as soon as enrollment for the IKIGAI Vibe Coding Bootcamp opens. Get ready to build a better way to run your business.</DialogDescription>
+            </div>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">Join the waitlist</DialogTitle>
+                <DialogDescription className="text-base">Tell us a bit about your business—we’ll let you know as soon as you’re in.</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} noValidate aria-busy={status === "submitting"} className="mt-4 grid gap-5 sm:grid-cols-2">
+                {([['firstName', 'First name', 'given-name'], ['lastName', 'Last name', 'family-name']] as const).map(([field, label, autoComplete]) => <div key={field}><Label htmlFor={field}>{label}</Label><Input id={field} autoComplete={autoComplete} value={values[field]} onChange={(event) => updateValue(field, event.target.value)} maxLength={80} aria-invalid={Boolean(errors[field])} className="mt-2 h-12 border-gray-300 focus-visible:ring-ikigai" />{errors[field] && <p className="mt-1.5 text-sm text-red-700">{errors[field]}</p>}</div>)}
+                <div className="sm:col-span-2"><Label htmlFor="company">Company or business name</Label><Input id="company" autoComplete="organization" value={values.company} onChange={(event) => updateValue('company', event.target.value)} maxLength={160} aria-invalid={Boolean(errors.company)} className="mt-2 h-12 border-gray-300 focus-visible:ring-ikigai" />{errors.company && <p className="mt-1.5 text-sm text-red-700">{errors.company}</p>}</div>
+                <div className="sm:col-span-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" inputMode="email" autoComplete="email" value={values.email} onChange={(event) => updateValue('email', event.target.value)} maxLength={255} aria-invalid={Boolean(errors.email)} className="mt-2 h-12 border-gray-300 focus-visible:ring-ikigai" />{errors.email && <p className="mt-1.5 text-sm text-red-700">{errors.email}</p>}</div>
+                <div><Label>Number of employees</Label><Select value={values.employeeCount} onValueChange={(value) => updateValue('employeeCount', value)}><SelectTrigger className="mt-2 h-12"><SelectValue placeholder="Select one" /></SelectTrigger><SelectContent>{['Just me', '2–10', '11–50', '51–200', '201+'].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent></Select>{errors.employeeCount && <p className="mt-1.5 text-sm text-red-700">{errors.employeeCount}</p>}</div>
+                <div><Label>Industry</Label><Select value={values.industry} onValueChange={(value) => updateValue('industry', value)}><SelectTrigger className="mt-2 h-12"><SelectValue placeholder="Select one" /></SelectTrigger><SelectContent>{['Professional services', 'Education', 'Retail & e-commerce', 'Hospitality', 'Health & wellness', 'Creative industries', 'Technology', 'Other'].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent></Select>{errors.industry && <p className="mt-1.5 text-sm text-red-700">{errors.industry}</p>}</div>
+                <div className="sm:col-span-2"><Label>How did you hear about us?</Label><Select value={values.referralSource} onValueChange={(value) => updateValue('referralSource', value)}><SelectTrigger className="mt-2 h-12"><SelectValue placeholder="Select one" /></SelectTrigger><SelectContent>{['Social media', 'Search engine', 'Friend or colleague', 'Limitless Lab event', 'Email newsletter', 'Other'].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent></Select>{errors.referralSource && <p className="mt-1.5 text-sm text-red-700">{errors.referralSource}</p>}</div>
+                <div className="sm:col-span-2"><Label htmlFor="system">What business system would you like to build?</Label><Textarea id="system" value={values.system} onChange={(event) => updateValue('system', event.target.value)} maxLength={1000} rows={3} aria-invalid={Boolean(errors.system)} className="mt-2 min-h-24 resize-y border-gray-300 focus-visible:ring-ikigai" />{errors.system && <p className="mt-1.5 text-sm text-red-700">{errors.system}</p>}</div>
+                {status === "error" && <p role="alert" className="border border-red-200 bg-red-50 p-3 text-sm text-red-800 sm:col-span-2">We couldn’t save your details. Please try again in a moment.</p>}
+                <Button type="submit" size="lg" disabled={status === "submitting"} className="h-13 w-full bg-ikigai text-base text-white hover:bg-ikigai/90 sm:col-span-2">{status === "submitting" ? <><Loader2 className="animate-spin" aria-hidden="true" />Joining…</> : <>Join the IKIGAI Waitlist <ArrowRight aria-hidden="true" /></>}</Button>
+                <p className="text-center text-sm text-gray-500 sm:col-span-2">Limited slots will be available for the first cohort.</p>
+              </form>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
