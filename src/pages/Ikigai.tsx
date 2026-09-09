@@ -26,7 +26,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+
 import { supabase } from "@/integrations/supabase/client";
 
 const waitlistSchema = z.object({
@@ -37,7 +37,7 @@ const waitlistSchema = z.object({
   employeeCount: z.string().min(1, "Select your team size"),
   industry: z.string().min(1, "Select your industry"),
   referralSource: z.string().min(1, "Tell us how you heard about us"),
-  system: z.string().trim().min(10, "Tell us a little more about what you want to build").max(1000, "Keep this under 1,000 characters"),
+  system: z.string().trim().min(1, "Tell us what business system you want to build").max(255, "Keep this under 255 characters"),
 });
 
 type WaitlistValues = z.infer<typeof waitlistSchema>;
@@ -420,7 +420,7 @@ export default function Ikigai() {
                 <div><Label>Number of employees</Label><Select value={values.employeeCount} onValueChange={(value) => updateValue('employeeCount', value)}><SelectTrigger className="mt-2 h-12"><SelectValue placeholder="Select one" /></SelectTrigger><SelectContent>{['Just me', '2–10', '11–50', '51–200', '201+'].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent></Select>{errors.employeeCount && <p className="mt-1.5 text-sm text-red-700">{errors.employeeCount}</p>}</div>
                 <div><Label>Industry</Label><Select value={values.industry} onValueChange={(value) => updateValue('industry', value)}><SelectTrigger className="mt-2 h-12"><SelectValue placeholder="Select one" /></SelectTrigger><SelectContent>{['Professional services', 'Education', 'Retail & e-commerce', 'Hospitality', 'Health & wellness', 'Creative industries', 'Technology', 'Other'].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent></Select>{errors.industry && <p className="mt-1.5 text-sm text-red-700">{errors.industry}</p>}</div>
                 <div className="sm:col-span-2"><Label>How did you hear about us?</Label><Select value={values.referralSource} onValueChange={(value) => updateValue('referralSource', value)}><SelectTrigger className="mt-2 h-12"><SelectValue placeholder="Select one" /></SelectTrigger><SelectContent>{['Social media', 'Search engine', 'Friend or colleague', 'Limitless Lab event', 'Email newsletter', 'Other'].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent></Select>{errors.referralSource && <p className="mt-1.5 text-sm text-red-700">{errors.referralSource}</p>}</div>
-                <div className="sm:col-span-2"><Label htmlFor="system">What business system would you like to build?</Label><Textarea id="system" value={values.system} onChange={(event) => updateValue('system', event.target.value)} maxLength={1000} rows={3} aria-invalid={Boolean(errors.system)} className="mt-2 min-h-24 resize-y border-gray-300 focus-visible:ring-ikigai" />{errors.system && <p className="mt-1.5 text-sm text-red-700">{errors.system}</p>}</div>
+                <div className="sm:col-span-2"><Label htmlFor="system">What business system would you like to build?</Label><Input id="system" value={values.system} onChange={(event) => updateValue('system', event.target.value)} maxLength={255} placeholder="e.g., client CRM, booking system, inventory tracker" aria-invalid={Boolean(errors.system)} className="mt-2 h-12 border-gray-300 focus-visible:ring-ikigai" />{errors.system && <p className="mt-1.5 text-sm text-red-700">{errors.system}</p>}</div>
                 {status === "error" && <p role="alert" className="border border-red-200 bg-red-50 p-3 text-sm text-red-800 sm:col-span-2">We couldn’t save your details. Please try again in a moment.</p>}
                 <Button type="submit" size="lg" disabled={status === "submitting"} className="h-13 w-full bg-ikigai text-base text-white hover:bg-ikigai/90 sm:col-span-2">{status === "submitting" ? <><Loader2 className="animate-spin" aria-hidden="true" />Joining…</> : <>Join the IKIGAI Waitlist <ArrowRight aria-hidden="true" /></>}</Button>
                 <p className="text-center text-sm text-gray-500 sm:col-span-2">Limited slots will be available for the first cohort.</p>
