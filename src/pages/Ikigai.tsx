@@ -103,7 +103,9 @@ function WaitlistButton({ className = "", inverse = false }: { className?: strin
 
 export default function Ikigai() {
   const heroRef = useRef<HTMLElement>(null);
-  const [showSticky, setShowSticky] = useState(false);
+  const formSectionRef = useRef<HTMLElement>(null);
+  const [heroVisible, setHeroVisible] = useState(true);
+  const [formVisible, setFormVisible] = useState(false);
   const [values, setValues] = useState<WaitlistValues>({ fullName: "", email: "", business: "", system: "" });
   const [errors, setErrors] = useState<WaitlistErrors>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "duplicate" | "error">("idle");
@@ -111,8 +113,16 @@ export default function Ikigai() {
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
-    const observer = new IntersectionObserver(([entry]) => setShowSticky(!entry.isIntersecting), { threshold: 0.1 });
+    const observer = new IntersectionObserver(([entry]) => setHeroVisible(entry.isIntersecting), { threshold: 0.1 });
     observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const formSection = formSectionRef.current;
+    if (!formSection) return;
+    const observer = new IntersectionObserver(([entry]) => setFormVisible(entry.isIntersecting), { threshold: 0.05 });
+    observer.observe(formSection);
     return () => observer.disconnect();
   }, []);
 
@@ -206,7 +216,6 @@ export default function Ikigai() {
                 alt="A business owner transforming scattered spreadsheets, messages, and notes into one organized business dashboard"
                 width={1408}
                 height={1104}
-                fetchPriority="high"
                 className="relative w-full border border-gray-200 bg-white object-cover shadow-[10px_12px_0_hsl(var(--ikigai-soft))]"
               />
               <div className="absolute -bottom-5 right-5 -rotate-2 bg-ikigai px-5 py-3 text-sm font-bold text-white shadow-md">
@@ -362,7 +371,7 @@ export default function Ikigai() {
           </div>
         </section>
 
-        <section id="ikigai-waitlist" className="scroll-mt-16 bg-ikigai py-20 text-white sm:py-28" aria-labelledby="waitlist-heading">
+        <section ref={formSectionRef} id="ikigai-waitlist" className="scroll-mt-16 bg-ikigai py-20 text-white sm:py-28" aria-labelledby="waitlist-heading">
           <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
             <div>
               <Sparkles className="mb-7 h-11 w-11" aria-hidden="true" />
@@ -414,7 +423,7 @@ export default function Ikigai() {
 
       <Footer ikigaiBranding />
 
-      {showSticky && status !== "success" && status !== "duplicate" && (
+      {!heroVisible && !formVisible && status !== "success" && status !== "duplicate" && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-ikigai/20 bg-white/95 p-3 shadow-lg backdrop-blur md:hidden">
           <WaitlistButton className="w-full" />
         </div>
