@@ -37,7 +37,7 @@ const waitlistSchema = z.object({
   employeeCount: z.string().min(1, "Select your team size"),
   industry: z.string().min(1, "Select your industry"),
   referralSource: z.string().min(1, "Tell us how you heard about us"),
-  system: z.string().trim().min(10, "Tell us a little more about what you want to build").max(1000, "Keep this under 1,000 characters"),
+  system: z.string().trim().min(1, "Tell us what business system you want to build").max(255, "Keep this under 255 characters"),
 });
 
 type WaitlistValues = z.infer<typeof waitlistSchema>;
