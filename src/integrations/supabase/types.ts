@@ -1772,6 +1772,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pafjo_slide_leads: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          industry: string | null
+          last_name: string | null
+          referral_source: string | null
+          team_size: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          industry?: string | null
+          last_name?: string | null
+          referral_source?: string | null
+          team_size?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          industry?: string | null
+          last_name?: string | null
+          referral_source?: string | null
+          team_size?: string | null
+        }
+        Relationships: []
+      }
       pages: {
         Row: {
           content: Json
