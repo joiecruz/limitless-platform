@@ -167,7 +167,7 @@ export default function PafjoSlides() {
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Download the slides</h2>
             <p className="mt-2 text-base text-gray-600">
-              Enter your email and we'll send you the full deck instantly.
+              Enter your email to unlock the full deck and download it instantly.
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
