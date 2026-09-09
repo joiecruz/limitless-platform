@@ -698,11 +698,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://limitlesslab.org/courses/limitlessbiz-ai-for-msme-advancement</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://limitlesslab.org/courses/ai-by-design-workshop-on-ai-basics-and-ai-agents-creation</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -714,6 +709,11 @@
   </url>
   <url>
     <loc>https://limitlesslab.org/courses/ux-design-workshop</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://limitlesslab.org/courses/limitlessbiz-ai-for-msme-advancement</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
