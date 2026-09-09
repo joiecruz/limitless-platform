@@ -1067,6 +1067,36 @@ export type Database = {
           },
         ]
       }
+      ikigai_waitlist: {
+        Row: {
+          business_or_profession: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          system_to_build: string
+          updated_at: string
+        }
+        Insert: {
+          business_or_profession: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          system_to_build: string
+          updated_at?: string
+        }
+        Update: {
+          business_or_profession?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          system_to_build?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       innovation_tools: {
         Row: {
           brief_description: string | null
